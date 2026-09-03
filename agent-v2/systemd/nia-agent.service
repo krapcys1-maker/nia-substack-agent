@@ -1,0 +1,40 @@
+[Unit]
+Description=Your Publication — agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/nia-substack-bot
+Environment=AGENT_V2_SERVER=1
+Environment=PYTHONUNBUFFERED=1
+
+# Sufit pamieci: Chromium potrafi rosnac przy dlugich przebiegach, a OOM zabija
+# agenta bez sladu w logu. Przy 12 GB na maszynie 3 GB starcza z zapasem,
+# a przekroczenie konczy sie czytelnym bledem zamiast cichej smierci.
+MemoryMax=3G
+ExecStart=/home/ubuntu/nia-substack-bot/.venv/bin/python agent-v2/run.py --dzien --wyslij
+
+# Sufit 2,5 godziny: zawieszony proces nie ma blokowac zamka w nieskonczonosc.
+#
+# Ten komentarz mowil wczesniej „same przerwy to ~42 minuty, bo agent czeka
+# 10-25 min po notce" i to bylo NIEPRAWDA od czasu, gdy odstep miedzy notkami
+# podniesiono do 45-90 minut (config.ODSTEPY). Dwa przebiegi zginely tu od
+# SIGTERM, bo agent zasypial na 90 minut, majac 20 minut do konca. Limit nie
+# jest juz jedyna obrona: `run.rytm` nie zaczyna przerwy, ktora sie nie miesci.
+# JEDYNA LICZBA W JEDNYM MIEJSCU: config.LIMIT_CZASU_PRZEBIEGU_S ma byc rowny
+# tej wartosci, inaczej agent liczy sobie inny koniec niz systemd.
+TimeoutStartSec=9000
+
+# BEZ Restart=. To jest zadanie jednorazowe uruchamiane z zegara, nie usluga.
+# Automatyczny restart po bledzie oznaczalby ponawianie platnych wywolan bez
+# nadzoru — a to najprostsza droga do rachunku, ktorego nikt nie zamawial.
+
+# BEZ [Install]. Ta usluga ma jedno wejscie: nia-agent.timer. Sekcja [Install]
+# z WantedBy=multi-user.target sprawiala, ze `systemctl enable nia-agent`
+# — polecenie, ktore kazdy odruchowo wpisuje — uruchamialoby przebieg TAKZE
+# przy kazdym starcie systemu, poza zegarem i z `--wyslij`. Na serwerze nigdy
+# do tego nie doszlo (usluga byla `disabled`), ale to nie jest zabezpieczenie,
+# tylko szczescie. Bez tej sekcji usluga jest `static`: zegar ja odpala,
+# `enable` nie ma czego wlaczyc. Tak samo jak nia-alarm i nia-artykul.

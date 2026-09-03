@@ -1,0 +1,10 @@
+[Unit]
+Description=Zegar kontroli sesji agenta NIA
+
+[Timer]
+OnCalendar=*-*-* 07:00:00
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,147 @@
+# === Sekrety i konfiguracja lokalna (NIGDY nie commitować) ===
+# Pliki z poświadczeniami trzymanymi po polsku i po angielsku. Dodane po tym,
+# jak "haslo i login do konta na substack.txt" wylądował w katalogu repo jako
+# plik nieśledzony, ale NIE ignorowany — czyli jeden `git add -A` od wypchnięcia
+# hasła do Substacka na GitHuba.
+*haslo*
+*hasło*
+*login*
+*password*
+*.credentials
+konto*.txt
+
+.env
+.env.*
+!.env.example
+config/accounts.yaml
+config/growth_policy.yaml
+config/pricing_profiles.yaml
+
+# === Dane runtime ===
+data/*
+!data/.gitkeep
+
+# === Diagnostyka: surowe odpowiedzi modelu (mogą zawierać treść z internetu) ===
+# Już objęte przez "data/*" powyżej — ta reguła jest tu jawnie, żeby wymóg
+# "folder musi być ignorowany przez Git" był widoczny bez doczytywania ogólnej reguły.
+data/debug/
+
+# === Profile przeglądarki / sesje (gdy powstaną) ===
+data/browser-profiles/
+browser-profiles/
+**/browser-profiles/
+playwright/.auth/
+**/playwright/.auth/
+storage-state*.json
+**/storage-state*.json
+cookies*.json
+session*.json
+
+# === Lokalne bazy danych (łącznie z plikami roboczymi SQLite) ===
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# === Klucze, certyfikaty i pliki poświadczeń ===
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+secrets*.json
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+
+# === Logi i pliki tymczasowe ===
+*.log
+logs/
+runtime/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# === Screenshoty (ciężkie binaria) — indeks trzymamy, pliki opcjonalnie poza gitem ===
+# Odkomentuj, jeśli nie chcesz wersjonować obrazów:
+# docs/screenshots/*.png
+
+# === OS / edytory ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.fleet/
+
+# === agent-v2: nowy agent ma wlasny .env ===
+agent-v2/.env
+agent-v2/data/
+
+# Osobista konfiguracja uprawnien Claude Code — nie czesc projektu
+.claude/settings.local.json
+
+# === 2026-08-23: zatkane dziury w siatce na sekrety ===
+# Przy porzadkach na GitHubie sprawdzilem, ktore nazwy plikow by sie
+# przeslizgnely. `haslo i login do konta na substack.txt` byl chroniony
+# przez wzorzec `*login*` — czyli przez PRZYPADEK W NAZWIE, nie przez regule.
+# Nazwa `klucze api.txt` juz by przeszla, a repozytorium jest publiczne.
+#
+# Wzorce nizej sa szersze niz to, co dzis lezy na dysku. To jest celowe:
+# siatka na sekrety ma lapac to, czego jeszcze nie ma.
+*sekret*
+*sekrety*
+*klucz*
+*klucze*
+*logowania*
+*api-key*
+*apikey*
+*api_key*
+*.pem
+*.p12
+id_rsa*
+id_ed25519*
+
+# === konfiguracja instalacji ===
+# `konfiguracja.toml` niesie uchwyt konta, nazwe marki i nisze — czyli
+# TOZSAMOSC. Nie jest sekretem w sensie klucza, ale jest tym, co odroznia
+# jedna instalacje od drugiej i czego nie chcemy w repozytorium.
+# Wzorzec do skopiowania stoi w `konfiguracja.example.toml`, ktory JEST w gicie.
+konfiguracja.toml
+**/konfiguracja.toml
+!konfiguracja.example.toml
+
+# === lista wlasnych tozsamosci do pilnowania ===
+# Wzorce, ktorych audyt szuka w drzewie: poprzedni uchwyt konta, adres
+# serwera, tytuly opublikowanych tekstow. Lista rzeczy, ktorych nie
+# chcesz publikowac, sama nie moze byc opublikowana.
+narzedzia/dawne-tozsamosci.txt
+!narzedzia/dawne-tozsamosci.example.txt
+
+# === korpus stylu: dostarcza go OPERATOR, nie repozytorium ===
+# W tym katalogu lezalo 9383 slowa cudzej, opublikowanej publicystyki —
+# w publicznym repozytorium. Korpus i jego przypiecia opisuja JEDNA
+# instalacje i nie maja znaczenia w cudzym klonie.
+agent-v2/prompts/styl/*.txt
+agent-v2/prompts/styl/przypiecia.json
+!agent-v2/prompts/styl/README.md

@@ -1,0 +1,57 @@
+[Unit]
+Description=Zegar agenta NIA
+
+[Timer]
+# GODZINY DOBRANE POD STREFE CZYTELNIKOW, nie pod nasza wygode. Zapisane w UTC,
+# bo serwer stoi na UTC i tak ma zostac; w nawiasie czas wschodniego wybrzeza
+# w okresie letnim (UTC-4).
+#
+# Badanie na 9 641 notkach: najgorsze okno tygodnia to 8:00-12:00 ET, bo wtedy
+# publikuja wszyscy i konkurencja jest najwieksza. Najlepsze to 15:00-22:00 ET
+# w dni robocze i wieczor weekendu. Nasz przebieg o 15:00 UTC to bylo dokladnie
+# 11:00 ET, czyli srodek najgorszego okna.
+#
+# Nasze wlasne dane wskazuja ten sam kierunek, ale sa za slabe, zeby na nich
+# polegac: dwie najmocniejsze notki wyszly 23:57 i 08:02 ET, obie w weekend,
+# przy jednej notce na godzine w probce.
+#
+# SPRZECZNOSC ZRODEL, 2026-08-19 — zapisana, bo bez tego ktos ja odkryje
+# jeszcze raz i znowu bedzie przestawial zegar.
+#
+# Drugie zrodlo (wzorce ruchu newsletterow, nie pomiar na naszym koncie) mowi
+# dokladnie odwrotnie o poranku: 07:00-10:00 ET to szczyt, 11:00 ET dolek,
+# 12:00-13:30 bump lunchowy, 19:00-22:00 szczyt wieczorny. Wedlug niego nasz
+# przebieg o 19:20 UTC (15:20 ET) lezy w martwej strefie; wedlug badania
+# zacytowanego wyzej lezy w NAJLEPSZYM oknie.
+#
+# Obie tezy moga byc prawdziwe naraz — najwiekszy ruch i najwieksza
+# konkurencja to to samo okno, a wynik zalezy od tego, ktore z nich wazy
+# wiecej. Nie mamy wlasnych danych, zeby to rozstrzygnac.
+#
+# DECYZJA: nie ruszamy. Oba zrodla zgadzaja sie co do wieczoru i przebieg
+# o 23:40 UTC (19:40 ET) siedzi w nim juz teraz. Przestawianie godzin na
+# spornych przeslankach zniszczyloby jedyna porownywalnosc, jaka bysmy mieli.
+# Wracamy do pytania przy ~30 artykulach i wlasnym pomiarze odpowiedzi.
+# DWA PRZEBIEGI DOLOZONE 30 sierpnia 2026, TRZY ISTNIEJACE NIETKNIETE.
+#
+# Decyzja „nie ruszamy godzin" powyzej zostaje w mocy i celowo jej nie lamie:
+# przestawienie 11:20 / 19:20 / 23:40 na spornych przeslankach zniszczyloby
+# jedyna porownywalnosc, jaka mamy. Dokladamy natomiast pojemnosc, bo bez niej
+# normy sa nieosiagalne z arytmetyki, a nie z jakosci: 19 komentarzy przy
+# odstepie 5-15 min to 236 min samego czekania, notki potrzebuja kolejnych 190,
+# a trzy przebiegi daja 450 min lacznie. Zapasu nie bylo zadnego.
+#
+# Obie nowe godziny leza tam, gdzie OBA sporne zrodla sie zgadzaja: 17:00 UTC
+# to 13:00 ET (bump lunchowy wg zrodla drugiego, poza najgorszym oknem wg
+# pierwszego), 21:30 UTC to 17:30 ET (srodek najlepszego okna 15:00-22:00 ET
+# wg pierwszego, przed wieczornym szczytem wg drugiego).
+OnCalendar=*-*-* 11:20:00
+OnCalendar=*-*-* 17:00:00
+OnCalendar=*-*-* 19:20:00
+OnCalendar=*-*-* 21:30:00
+OnCalendar=*-*-* 23:40:00
+Persistent=true
+RandomizedDelaySec=1500
+
+[Install]
+WantedBy=timers.target

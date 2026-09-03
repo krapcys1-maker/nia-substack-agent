@@ -1,0 +1,20 @@
+[Unit]
+Description=Zegar artykulu tygodniowego
+
+[Timer]
+# WTOREK 14:00 UTC = 10:00 rano u czytelnikow w Nowym Jorku.
+#
+# Research o godzinach wysylki newsletterow (MailerLite, 2,1 mln kampanii):
+# szczyt otwarc miedzy 8 a 11 rano czasu ODBIORCY, a roznica miedzy dniami
+# tygodnia to okolo JEDEN punkt procentowy otwarc (46,5 wobec 47,5). Czyli
+# godzina ma znaczenie male, a dzien prawie zadne.
+#
+# Wniosek zapisany, zeby nie wracac do tematu: to jest dzwignia rzedu 1-3 punktow
+# procentowych. Wiecej zalezy od tytulu, tresci i regularnosci niz od zegara.
+# Wybieramy sensowna pore i przestajemy ja optymalizowac.
+OnCalendar=Tue *-*-* 14:00:00
+Persistent=true
+RandomizedDelaySec=900
+
+[Install]
+WantedBy=timers.target

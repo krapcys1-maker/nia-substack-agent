@@ -1,0 +1,125 @@
+# Zestaw testow przy kazdym pushu i kazdym pull requeście.
+#
+# DLACZEGO NIE `pytest`: testy w tym projekcie sa SAMODZIELNYMI SKRYPTAMI.
+# Kazdy konczy sie kodem 0 albo 1 i wypisuje wlasne podsumowanie. Pytest
+# uruchamia je jako pliki bez funkcji `test_*` i raportuje „0 collected",
+# czyli zielono nad niczym — dokladnie ta klasa bledu, ktora ten projekt zna
+# i przed ktora sie broni.
+#
+# CO TEN PRZEBIEG POMIJA I DLACZEGO:
+#   * `tests/platne/` — te wolaja prawdziwe API i kosztuja pieniadze;
+#   * piec testow wymienionych nizej jako ZNANE — brak playwrighta w obrazie,
+#     brak danych produkcyjnych, brak kluczy. Sa wypisane Z NAZWY i kazdy ma
+#     przy sobie powod, zeby szosty nie doszedl po cichu.
+#
+# Testy czytajace historie gita (`historia.wymaga_historii`) pomijaja sie same
+# z jawnym komunikatem, gdy commitow odniesienia nie ma — dlatego `fetch-depth`
+# jest pelny, zeby w tym repozytorium mogly sie NAPRAWDE uruchomic.
+
+name: testy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  darmowe:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.10 to minimum dla samego bota; 3.11 dodaje `tomllib`, czyli
+        # `konfiguracja.toml`. Obie wersje musza przechodzic.
+        python: ["3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # kontrdowody siegaja po SHA sprzed naprawy
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: instalacja zaleznosci
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: czy requirements zgadza sie z importami
+        run: python narzedzia/zaleznosci.py --sprawdz
+
+      - name: czy mapa funkcji jest aktualna
+        run: |
+          python narzedzia/mapa_funkcji.py
+          git diff --exit-code docs/FUNCTION_MAP.md \
+            || (echo "::error::mapa funkcji rozjechala sie z kodem — uruchom: python narzedzia/mapa_funkcji.py" && exit 1)
+
+      - name: czy dokumentacja odtworzeniowa jest aktualna
+        run: |
+          python agent-v2/dokumentacja-zrodla/sklej.py
+          git diff --exit-code agent-v2/JAK_ZBUDOWANY_JEST_BOT.md \
+            || (echo "::error::dokumentacja rozjechala sie z kodem — uruchom: python agent-v2/dokumentacja-zrodla/sklej.py" && exit 1)
+
+      - name: zestaw testow
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          # ZNANE OBLANIA. Kazde ma przyczyne SRODOWISKOWA, opisana
+          # w docs/TROUBLESHOOTING.md pozycja 4 — zadne nie jest wada kodu.
+          #   test_artykul              brak playwrighta w obrazie
+          #   test_czas                 wymaga SIGTERM (przechodzi na Linuksie)
+          #   test_podlogi_playbook     wymaga pliku artykulu z produkcji
+          #   test_zapora_platnych_...  wymaga .env z kluczami
+          #   test_komplet_sciezek      wymaga NIEPUSTEGO agent-v2/data/;
+          #                             na swiezym checkoucie katalog jest pusty
+          #                             i asercja "policzone na N plikach" ma N=0
+          ZNANE="test_artykul test_czas test_podlogi_playbook test_zapora_platnych_wywolan test_komplet_sciezek"
+          zdane=0; oblane=0; pominiete=0; niespodzianki=""
+          for t in agent-v2/tests/test_*.py; do
+            nazwa=$(basename "$t" .py)
+            wyjscie=$(timeout 120 python "$t" 2>&1) && kod=0 || kod=$?
+            if [ "$kod" -eq 0 ]; then
+              if printf '%s' "$wyjscie" | grep -q "POMINIETE: brak wersji"; then
+                pominiete=$((pominiete+1))
+              else
+                zdane=$((zdane+1))
+              fi
+            else
+              oblane=$((oblane+1))
+              case " $ZNANE " in
+                *" $nazwa "*) echo "  znane oblanie: $nazwa" ;;
+                *) niespodzianki="$niespodzianki $nazwa"
+                   echo "::error::NIEOCZEKIWANE OBLANIE: $nazwa"
+                   printf '%s\n' "$wyjscie" | tail -25 ;;
+              esac
+            fi
+          done
+          echo
+          echo "zdane=$zdane  pominiete=$pominiete  oblane=$oblane"
+          if [ -n "$niespodzianki" ]; then
+            echo "::error::oblaly sie testy spoza listy znanych:$niespodzianki"
+            exit 1
+          fi
+
+      - name: audyt — tozsamosc, sekrety, spojnosc generowanego
+        run: |
+          # JEDNA IMPLEMENTACJA, nie dwie. Workflow mial wlasna kopie skanu
+          # tozsamosci — z nazwa poprzedniego konta wpisana jako wzorzec.
+          # Dwie kopie tej samej reguly to dwie rozne reguly, ktore sie
+          # rozjezdzaja; a przy okazji nazwa stala przez to w PUBLICZNYM
+          # repozytorium i dalo sie ja tam znalezc wyszukiwarka.
+          #
+          # `narzedzia/audyt.py` sprawdza to samo i wiecej: wzorce
+          # uniwersalne (adresy IP, ssh, klucze), wzorce wlasne z pliku
+          # `narzedzia/dawne-tozsamosci.txt` (poza repozytorium, wiec w CI
+          # go nie ma i sekcja jest wtedy pusta — o czym audyt mowi wprost),
+          # sklejone literaly przez AST, zakazane pliki, prawdziwe klucze
+          # API, aktualnosc obu generowanych map i spojnosc konfiguratora.
+          #
+          # Sekcja 9 audytu to KONTRDOWOD na nim samym: wstrzykuje trzy
+          # przecieki i sprawdza, ze kazdy zostaje zlapany. Audyt, ktory
+          # zawsze mowi OK, jest nieodrozninalny od zepsutego.
+          python narzedzia/audyt.py --historia

@@ -1,0 +1,10 @@
+# Do uruchamiania testow. `pytest` jest importowany WYLACZNIE w agent-v2/tests/,
+# nigdy w kodzie produkcyjnym — sprawdzone drzewem skladni.
+#
+# Wieksza czesc zestawu chodzi bez pytesta, bo testy sa samodzielnymi skryptami
+# (`python agent-v2/tests/test_x.py`). Pytest jest potrzebny dla `conftest.py`,
+# ktory podstawia atrapy pod platne wywolania.
+
+-r requirements.txt
+
+pytest>=8.0

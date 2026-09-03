@@ -1,0 +1,226 @@
+# =============================================================================
+# NIA Substack Bot — konfiguracja
+#
+# Skopiuj ten plik jako `agent-v2/konfiguracja.toml` i przestaw pod siebie:
+#
+#     cp konfiguracja.example.toml agent-v2/konfiguracja.toml
+#
+# Plik jest OPCJONALNY. Jego brak znaczy „uzyj wartosci z `agent-v2/config.py`",
+# wiec bot chodzi tak samo, jak chodzil przed jego pojawieniem sie.
+#
+# ZASADY, KTORE TU OBOWIAZUJA:
+#
+#   * Podajesz WARTOSCI, nie decyzje. `config.py` zostaje jedynym zrodlem
+#     prawdy: przelicza sufity tokenow, wywodzi sciezki, sprawdza spojnosc.
+#   * Kazde pole jest sprawdzane przy starcie. Zla wartosc albo LITEROWKA
+#     W NAZWIE POLA ZATRZYMUJE START z czytelnym komunikatem — konfiguracja,
+#     ktora po cichu ignoruje blad, jest gorsza od jej braku.
+#   * Sekcje mozna pomijac w calosci. Pola tez.
+#   * Trzech rzeczy tu NIE MA celowo: sufitu „bez limitu" (to zmienna
+#     srodowiskowa NIA_NO_LIMIT, nie domyslna wartosc w pliku), progow bramek
+#     (wyniki pomiarow, nie suwaki) i przelacznika ujawniania AI (w config.py
+#     stoi wprost, ze to wybor publiczny, nie ustawienie techniczne).
+#
+# Wymaga Pythona 3.11 — `tomllib`. To jedyne miejsce w agencie, ktore tego
+# wymaga; bez tego pliku wystarczy 3.10.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# KONTO — kim jest ta publikacja
+# -----------------------------------------------------------------------------
+[konto]
+# Uchwyt Substacka: czesc przed `.substack.com`.
+# Do 2026-09-03 stal w DWOCH niezaleznych miejscach w kodzie i zmiana jednego
+# dawala bota, ktory publikuje na jednym koncie, a czyta profil drugiego.
+uchwyt = "your-handle"
+
+# Nazwa marki, tak jak ma ja widziec model. Trafia do komunikatow systemowych
+# skauta i pisarza. UWAGA: pliki `agent-v2/prompts/*.md` nadal maja ja wpisana
+# w tresci — ich przepiecie to osobna robota (docs/MAPA_KONFIGURACJI.md, cz. 5).
+nazwa_marki = "Your Publication"
+
+# Strefa CZYTELNIKA, nie serwera. Decyduje o oknie publikacji ponizej.
+strefa_czytelnika = "America/New_York"
+
+
+# -----------------------------------------------------------------------------
+# TEMAT — o czym jest to konto
+# -----------------------------------------------------------------------------
+[temat]
+# Jedno zdanie, podawane modelowi doslownie. Wchodzi w komunikat systemowy
+# skauta: „a publication about {nisza}".
+nisza = "how everyday things are made and regulated"
+
+# Jezyk tresci. STERUJE TYLKO CZTEREMA ETAPAMI (pisarz, notka, komentarz,
+# odpowiedz). Prompty i bramki `gates.py` sa po angielsku — zmiana samego tego
+# pola daje bota, ktory dostaje instrukcje po angielsku i pisze po innemu,
+# a bramki cicho przestaja cokolwiek lapac. Patrz docs/MAPA_KONFIGURACJI.md
+# czesc 4.3.
+jezyk = "English"
+
+# Slowa, po ktorych KOD rozpoznaje, ze cos nalezy do naszego rewiru. Lista jest
+# jawna i krotka celowo: ma sie dac przeczytac i zakwestionowac.
+# WYMOG: kazde haslo z `hasla_szukania` musi zawierac co najmniej jedno z nich
+# (pilnuje `tests/test_szukanie_celow.py`).
+znaki_niszy = [
+    "standard", "rule", "regulat", "code", "codes", "certif",
+    "test", "safety", "design", "material", "tolerance", "label",
+    "approval", "liability", "procurement", "patent", "protection",
+    "requirement", "inspect", "measurement", "manufactur", "packaging",
+]
+
+# Czym agent szuka cudzych postow do komentowania.
+# WYMOG: CO NAJMNIEJ 19 hasel, pokrywajacych trzy rozne obszary tematu.
+# Dwadziescia hasel o tym samym daje te sama garstke kont, co trzy.
+hasla_szukania = [
+    "engineering standards", "building codes", "product safety",
+    "industrial design history", "materials testing", "measurement standards",
+    "manufacturing tolerances", "packaging regulation",
+    "consumer protection", "food labelling rules", "workplace safety rules",
+    "accessibility standards", "public transport rules", "housing regulation",
+    "medical device approval", "road design",
+    "standards bodies", "regulatory capture", "certification costs",
+    "insurance requirements", "procurement rules", "liability law",
+    "patent disputes", "supply chain standards",
+]
+
+# Siatka dziedzin, w ktorych szuka sie ciekawostek. Kazda pozycja to nie
+# slowo-klucz, tylko OPIS MIEJSCA, w ktorym cos ciekawego siedzi — krotkie
+# hasla daja modelowi za maly uchwyt.
+# WYMOG: `len(GENERATORY) * len(dziedziny) >= 400`. Przy 14 wzorcach znaczy to
+# co najmniej 29 dziedzin (pilnuje `tests/test_generatory.py`).
+dziedziny = [
+    "how a standard becomes mandatory, and who sat in the room",
+    "the tolerance on a part, and what happens at the edge of it",
+    "why two versions of the same object are not interchangeable",
+    "a dimension that is round in one country and not in another",
+    "the test a product must pass, and what the test does not check",
+    "a material that was replaced, and what the replacement cannot do",
+    "why a fastener, thread or fitting comes in exactly these sizes",
+    "the difference between a rating and a guarantee",
+    "what a printed number on a package is actually the ratio of",
+    "a rating measured under conditions nobody encounters",
+    "how a certification is audited, and how often",
+    "reproducing a published measurement, and how often it fails",
+    "the gap between a showroom demonstration and a bad day",
+    "a figure that is a legal minimum quoted as a typical value",
+    "who pays for a certification, and what that buys",
+    "an insurance requirement that shaped a design",
+    "a cost hidden in one price and paid by a different group",
+    "what a warranty excludes, and why exactly that",
+    "a procurement rule that decided what got built",
+    "the cheapest possible version that still passes",
+    "a rule written after one specific accident",
+    "an approval process, and what it delegates to the maker",
+    "a workplace limit and the study it came from",
+    "an accessibility requirement and what it changed for everyone",
+    "how a dispute over a patent changed a whole category",
+    "a labelling rule and the argument it settled",
+    "a threshold in law that a machine has to rule on",
+    "who is liable when a certified thing fails",
+    "a constraint that disappeared while its shape stayed",
+    "a standard that lost, and what we use instead",
+    "a hype cycle in this field that resolved, and how",
+    "the people who were right early and ignored",
+]
+
+
+# -----------------------------------------------------------------------------
+# ZRODLA — skad biora sie tematy
+# -----------------------------------------------------------------------------
+[zrodla]
+# Kanaly YouTube, ktore w TWOJEJ niszy od lat wybieraja, o czym warto mowic.
+# Bot bierze z nich ZDARZENIE stojace za naglowkiem i sprawdza je sam; nie
+# bierze naglowkow ani obietnic.
+#
+# PUSTE JEST DOZWOLONE i nie zabija przebiegu: `zaczyn_z_kanalow` oddaje wtedy
+# „(nothing fetched today)", a prompt radzi sobie sama siatka dziedzin.
+#
+# Identyfikator zdobywa sie tak: youtube.com/@uchwyt przekierowuje na sciane
+# zgody, ale zapytanie HTTP z ciasteczkiem `CONSENT=YES+cb...` i `SOCS=CAI`
+# oddaje HTML, w ktorym siedzi `"externalId":"(UC...)"`. Sam kanal RSS zgody
+# nie wymaga.
+kanaly_youtube = { }
+# przyklad:
+# kanaly_youtube = { "Nazwa kanalu" = "UCxxxxxxxxxxxxxxxxxxxxxx" }
+
+# Hosty, ktore nigdy nie oddaly tresci albo odmawiaja automatycznego czytania.
+# Respektujemy je zamiast obchodzic.
+blokowane_hosty = [
+    "federalregister.gov", "regulations.gov", "congress.gov", "ecfr.gov",
+    "sciencedirect.com", "tandfonline.com", "academia.edu", "researchgate.net",
+]
+
+
+# -----------------------------------------------------------------------------
+# MODELE — ktora rola na ktorym modelu
+# -----------------------------------------------------------------------------
+# Podajesz TYLKO te role, ktore chcesz zmienic. Reszta zostaje z `config.py`.
+# Nieznana nazwa roli zatrzymuje start i wypisuje liste znanych.
+#
+# Podzial domyslny, kazdy zmierzony a nie zgadniety:
+#   claude-fable-5-1   artykul     — wygral A/B na tej samej karcie dowodowej
+#   claude-opus-5      notki       — notki daja wiekszosc przyrostu subskrypcji
+#   deepseek-v4-pro    13 rol      — SimpleQA 57,9 wobec 34,1: przewaga w PAMIECI
+#                                    FAKTOW, czyli tym, czego wymaga „gdzie
+#                                    indziej ten sam mechanizm dziala"
+#   deepseek-v4-flash  wydobywcze  — praca na PODANYM tekscie, trzy razy taniej
+#   gpt-image-1.5      okladka     — awaria tutaj nigdy nie blokuje artykulu
+[modele]
+role = { }
+# przyklad — same notki na tanszy model:
+# role = { note = "deepseek-v4-pro" }
+
+
+# -----------------------------------------------------------------------------
+# WOLUMENY — ile czego dziennie
+# -----------------------------------------------------------------------------
+# Wszystko w widelkach [od, do], bo STALA LICZBA DZIENNIE WYGLADA JAK ROBOT.
+# Losowane raz na dobe z ziarnem z daty, wiec wszystkie przebiegi doby licza
+# ten sam budzet, a kolejne dni rozny.
+[wolumeny]
+komentarze_dziennie = [15, 23]
+lajki_dziennie = [10, 16]
+restacki_dziennie = [1, 2]
+follow_miesiecznie = [10, 16]
+subskrypcje_miesiecznie = [12, 20]
+przebiegow_dziennie = 5
+
+
+# -----------------------------------------------------------------------------
+# PIENIADZE — sufity
+# -----------------------------------------------------------------------------
+# Sufit miesieczny to JEDYNA twarda blokada w calym systemie: po jego
+# przekroczeniu przebieg przerywa i nic nie wychodzi.
+# Sufit na przebieg obowiazuje ZAWSZE, takze przy NIA_NO_LIMIT.
+[pieniadze]
+sufit_miesieczny_usd = 40.0
+sufit_dzienny_usd = 5.0
+sufit_przebiegu_usd = 1.60
+
+
+# -----------------------------------------------------------------------------
+# PUBLIKOWANIE — kiedy i w jakim ksztalcie
+# -----------------------------------------------------------------------------
+[publikowanie]
+# Okno w godzinach strefy CZYTELNIKA. Wolno od pierwszej do drugiej-1.
+okno_et = [6, 22]
+
+# Godziny wewnatrz okna, w ktorych i tak nic nie wychodzi.
+martwe_godziny_et = [12, 13]
+
+# Ile notek promuje jeden artykul i przez ile dni artykul jest w kolejce.
+# Kilka linkow jednego dnia to nie promocja, tylko natrectwo.
+notek_promujacych = 3
+okno_promocji_dni = 7
+
+# MIKS NOTEK NA DOBE. Liczba notek dziennie to DLUGOSC TEJ LISTY i nic innego
+# — osobna stala „ile notek" kusila do rozjazdu z miksem, wiec jej nie ma.
+# Dozwolone typy: ARTYKUL, CIEKAWOSTKA, DYSKUSJA, MYSL, SPROSTOWANIE.
+miks_notek = ["CIEKAWOSTKA", "CIEKAWOSTKA", "DYSKUSJA", "SPROSTOWANIE", "MYSL"]
+
+# Ciche dni: srednio jeden na ile. Konto, ktore publikuje KAZDEGO dnia bez
+# wyjatku, tez ma rytm maszyny.
+ciche_dni_wlaczone = true
+cichy_dzien_na_ile = 8

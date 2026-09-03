@@ -1,0 +1,38 @@
+# Tozsamosci, ktore NIE MOGA wrocic do drzewa.
+#
+# Skopiuj ten plik jako `narzedzia/dawne-tozsamosci.txt` i wpisz swoje.
+# Ten plik jest w .gitignore i NIE trafia do repozytorium — bo lista rzeczy,
+# ktorych nie chcesz publikowac, sama nie moze byc opublikowana.
+#
+# Po co to jest. Repozytorium powstalo z konta o konkretnej nazwie i przy
+# czyszczeniu okazalo sie, ze nazwa potrafi przezyc caly przebieg: w jednym
+# miejscu byla rozbita miedzy dwa literaly pythonowe i zaden grep po pelnej
+# nazwie jej nie widzial. `narzedzia/audyt.py` sprawdza wiec dwie drogi —
+# po zrodle i po WARTOSCI sklejonych literalow — ale musi wiedziec, CZEGO
+# szukac, a to wie tylko wlasciciel.
+#
+# Jedna pozycja na linie. To sa WYRAZENIA REGULARNE, wiec kropke w adresie
+# trzeba poprzedzic backslashem. Puste linie i te zaczynajace sie od # sa
+# pomijane.
+#
+# Audyt bez tego pliku nadal dziala i nadal sprawdza rzeczy UNIWERSALNE:
+# adresy IP, logowanie po ssh, klucze prywatne, klucze API, pliki sesji
+# i listy subskrybentow. Ten plik dokłada to, co specyficzne dla ciebie.
+
+# --- przyklady, zastap swoimi ---------------------------------------------
+
+# poprzedni uchwyt konta
+# mojestarekonto
+
+# poprzednia nazwa marki — `\s+` zamiast spacji, bo w kodzie bywa rozbita
+# miedzy dwa literaly albo przecieta koncem linii
+# Moja\s+Stara\s+Marka
+
+# adres serwera produkcyjnego
+# 203\.0\.113\.42
+
+# tytuly opublikowanych artykulow, ktore da sie wygooglac
+# The Title Of A Real Article
+
+# uchwyty osob trzecich, ktore kiedys byly w atrapach testow
+# jakisczytelnik

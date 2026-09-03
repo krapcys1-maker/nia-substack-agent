@@ -1,0 +1,13 @@
+[Unit]
+Description=Kontrola sesji, zdrowia agenta i alarm do wlasciciela
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/nia-substack-bot
+Environment=AGENT_V2_SERVER=1
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/ubuntu/nia-substack-bot/.venv/bin/python agent-v2/alarm.py
+TimeoutStartSec=600

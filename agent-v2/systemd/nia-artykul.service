@@ -1,0 +1,30 @@
+[Unit]
+Description=Your Publication — artykul tygodniowy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/nia-substack-bot
+Environment=AGENT_V2_SERVER=1
+Environment=PYTHONUNBUFFERED=1
+# PRZESTAWIONE 30 sierpnia 2026 z `run.py --wyslij` na `artykul_z_puli.py`.
+#
+# `artykul_z_puli.py` powstal 25 sierpnia WLASNIE PO TO, zeby zastapic sciezke
+# skauta: skaut wymaga dwoch udokumentowanych precedensow, a pod AI takie tematy
+# sa tylko trzy — zasilki, auta autonomiczne, gielda — wiec trzy artykuly z
+# rzedu wyszly o zautomatyzowanej biurokracji zamiast o AI.
+#
+# Zastepnik napisano, uzywano RECZNIE i nigdy nie wpieto w zegar. Ta jednostka
+# przez piec dni wskazywala na sciezke, ktora zastapiono, wiec gdyby timer
+# wystartowal, produkowalby dokladnie te monokulture — i pomijal bramke
+# „uniesie artykul", podpytania do researchu, glebokosc z pieciu filarow oraz
+# spizarnie kandydatow. Ta sama klasa zaniedbania, co szampon w kolejce
+# promocyjnej: zmiana zrobiona, resztka po niej nie sprzatnieta.
+#
+# `--wyslij` wlacza publikacje; bez niego artykul konczy na dysku. Bramka
+# sprawdzania faktow przed publikacja jest po obu stronach ta sama.
+ExecStart=/home/ubuntu/nia-substack-bot/.venv/bin/python agent-v2/artykul_z_puli.py --wyslij
+MemoryMax=3G
+TimeoutStartSec=5400

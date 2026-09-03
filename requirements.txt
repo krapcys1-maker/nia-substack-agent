@@ -1,0 +1,30 @@
+# Dependencies, derived from the SYNTAX TREE of every import under agent-v2/
+# rather than written from memory. That is why `openai` and `requests` are NOT
+# here: the article cover image goes through `httpx` straight to
+# https://api.openai.com/v1/images/generations, with no SDK involved.
+#
+# Verify it yourself:
+#   python narzedzia/zaleznosci.py --sprawdz
+#
+# Python 3.10 or newer. The code uses no `match`, no `except*`, no
+# `datetime.UTC` and no `zip(strict=)`; every `X | Y` annotation is guarded by
+# `from __future__ import annotations`. Developed and measured on 3.12.
+
+# --- model transport ---
+anthropic>=0.40            # notes (Opus), article (Fable), repair pass
+httpx>=0.27                # DeepSeek, OpenAI Images, YouTube RSS, page fetching
+
+# --- configuration ---
+python-dotenv>=1.0         # reads agent-v2/.env
+
+# --- research: fetching and reading sources ---
+trafilatura>=1.8           # article text extraction
+pypdf>=4.0                 # primary sources are often PDFs
+
+# --- Substack layer ---
+# After installing, fetch the browser too:  playwright install chromium
+#
+# WARNING: that is not enough to PUBLISH. Cloudflare fingerprints headless mode
+# and the note simply never appears. Publishing needs a REAL Chrome with a
+# display. See docs/INSTALL.md, step 5.
+playwright>=1.45

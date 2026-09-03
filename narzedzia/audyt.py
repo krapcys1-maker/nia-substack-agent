@@ -1,0 +1,375 @@
+# -*- coding: utf-8 -*-
+"""Audyt przed wydaniem: czy w drzewie nie ma tozsamosci, sekretow i sprzecznosci.
+
+Ten plik istnieje, bo skany robione recznie mialy dziury, i to nie teoretyczne:
+
+  * skan po nazwie konta NIE ZNALAZL jej w `SCOUT_SYSTEM`, gdzie byla rozbita
+    miedzy dwa literaly pythonowe (`'Nothing Is "` + `"Accidental'`);
+  * skan po frazie tematu NIE ZNALAZL jej w promptach, gdzie byla przecieta
+    koncem linii (`artificial\\nintelligence`);
+  * skan `git ls-files` nie widzi HISTORII, a w niej lezalo 12 zacommitowanych
+    baz danych, ktorych nie ma w zadnej galezi.
+
+Kazda z tych dziur ma tutaj wlasna sekcje. Audyt sprawdza CZTERY drogi:
+po zrodle, po WARTOSCI sklejonych literalow, po nazwach plikow i po historii.
+
+Uruchomienie:
+    python narzedzia/audyt.py           # drzewo robocze
+    python narzedzia/audyt.py --historia  # takze cala historia gita (wolne)
+"""
+from __future__ import annotations
+
+import ast
+import pathlib
+import re
+import subprocess
+import sys
+
+KORZEN = pathlib.Path(__file__).resolve().parent.parent
+
+# --- tozsamosc: wzorce UNIWERSALNE i te wlasne ------------------------------
+#
+# Wzorce ponizej sa niezalezne od konta: adresy IP, logowanie po ssh, nazwy
+# kluczy. Sa tu, bo nie zdradzaja niczyjej tozsamosci, a lapia jej wyciek.
+TOZSAMOSC_UNIWERSALNA = [
+    (r"\b(?:\d{1,3}\.){3}\d{1,3}\b(?<!0\.0\.0\.0)(?<!127\.0\.0\.1)",
+     "adres IP w drzewie"),
+    (r"ssh\s+(?:-i\s+\S+\s+)?[a-z_][a-z0-9_-]*@[\w.-]+", "polecenie ssh na konkretny host"),
+    (r"id_(?:rsa|ed25519|ecdsa)_\w+", "nazwa konkretnego klucza SSH"),
+    (r"[a-z_][a-z0-9_-]*@(?:\d{1,3}\.){3}\d{1,3}", "logowanie uzytkownik@adres"),
+]
+
+# WZORCE WLASNE — poprzednia nazwa konta, adres serwera, tytuly opublikowanych
+# tekstow. NIE STOJA W REPOZYTORIUM i to jest cala rzecz: narzedzie pilnujace
+# przeciekow nie moze samo byc przeciekiem.
+#
+# Do 2026-09-03 stala tu wpisana nazwa poprzedniego konta jako wzorzec do
+# szukania. Dzialalo — i jednoczesnie znaczylo, ze ta nazwa jest w publicznym
+# repozytorium i da sie ja znalezc wyszukiwarka. Dla kogokolwiek innego
+# pilnowanie CUDZEGO starego uchwytu i tak nie ma sensu.
+#
+# Wzorzec: `narzedzia/dawne-tozsamosci.example.txt`. Plik roboczy jest
+# w .gitignore.
+PLIK_WLASNYCH = pathlib.Path(__file__).resolve().parent / "dawne-tozsamosci.txt"
+
+
+def tozsamosc_wlasna() -> list[tuple[str, str]]:
+    """Wzorce z pliku poza repozytorium. Brak pliku = pusta lista."""
+    if not PLIK_WLASNYCH.exists():
+        return []
+    out = []
+    for linia in PLIK_WLASNYCH.read_text(encoding="utf-8").splitlines():
+        linia = linia.strip()
+        if not linia or linia.startswith("#"):
+            continue
+        try:
+            re.compile(linia)
+        except re.error as exc:
+            raise SystemExit("%s: zly wzorzec %r (%s)"
+                             % (PLIK_WLASNYCH.name, linia, exc))
+        out.append((linia, "wzorzec wlasny z %s" % PLIK_WLASNYCH.name))
+    return out
+
+
+# Pliki, ktorych NIGDY nie moze byc w repozytorium.
+ZAKAZANE_PLIKI = [
+    (r"(^|/)\.env$", "plik z kluczami"),
+    (r"storage-state", "sesja przegladarki"),
+    # DANE, nie modul. Pierwsza wersja brzmiala `subskryben` i trafiala
+    # w `agent-v2/kopia_subskrybentow.py` — czyli w NARZEDZIE robiace kopie,
+    # a nie w kopie. Audyt krzyczacy na wlasny kod uczy ignorowania audytu.
+    (r"subskrybenci.*\.(csv|json|txt)$", "lista subskrybentow (cudze adresy e-mail)"),
+    (r"(^|/)konfiguracja\.toml$", "konfiguracja instalacji (uchwyt konta)"),
+    (r"\.db$", "baza danych"),
+    (r"dziennik\.jsonl$", "dziennik dzialan"),
+    (r"(^|/)kopie/", "kopie list subskrybentow"),
+]
+
+# Prawdziwe klucze API. Atrapy w testach musza przechodzic, wiec wzorzec
+# wymaga DLUGOSCI, jaka ma prawdziwy klucz.
+SEKRETY = [
+    (r"sk-ant-[A-Za-z0-9_-]{40,}", "klucz Anthropic"),
+    (r"sk-proj-[A-Za-z0-9_-]{40,}", "klucz OpenAI"),
+    (r"-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----", "klucz prywatny"),
+]
+
+NIGDY_NIE_PASUJE = r"(?!x)x"
+
+POMIN_SUFIKSY = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".db", ".pyc"}
+zdane = oblane = 0
+
+
+def sprawdz(nazwa: str, warunek: bool, szczegol: object = "") -> None:
+    global zdane, oblane
+    if warunek:
+        zdane += 1
+        print("  OK    %s" % nazwa)
+    else:
+        oblane += 1
+        print("  BLAD  %s   %s" % (nazwa, szczegol))
+
+
+def sledzone() -> list[pathlib.Path]:
+    out = subprocess.run(["git", "-C", str(KORZEN), "ls-files"],
+                         capture_output=True, text=True, encoding="utf-8")
+    return [KORZEN / n for n in out.stdout.splitlines() if n.strip()]
+
+
+# Zawiniecie wiersza w komentarzu (`#`), w cytacie Markdown (`>`)
+# i w bloku dokumentacyjnym (` * `). Znak wiodacy razem z otaczajaca
+# spacja znika, a w jego miejsce wchodzi JEDNA spacja.
+LAMANIE = re.compile(r"[ \t]*\r?\n[ \t]*(?:#+|>+|\*)?[ \t]*")
+
+
+def bez_lamania(t: str) -> str:
+    return LAMANIE.sub(" ", t)
+
+
+# Znaki, ktore nigdy nie stoja W SRODKU nazwy, ale potrafia stanac miedzy
+# jej czesciami w zrodle: cudzyslow, apostrof, backtick, plus, ukosnik.
+SKLEJKI = re.compile(r"[\"'`+\\]+")
+
+
+def bez_sklejek(t: str) -> str:
+    return re.sub(r"[ \t]{2,}", " ", SKLEJKI.sub("", bez_lamania(t)))
+
+
+def teksty() -> list[tuple[pathlib.Path, str]]:
+    out = []
+    for p in sledzone():
+        if p.suffix.lower() in POMIN_SUFIKSY or not p.is_file():
+            continue
+        try:
+            t = p.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        # SKLEJONA KOPIA DOKLEJONA DO ORYGINALU. Wzorce maja `\s+`
+        # zamiast spacji, zeby przezyc zawiniecie wiersza — ale
+        # w KOMENTARZU nastepna linia zaczyna sie od `#`, ktory bialym
+        # znakiem nie jest. Tak przezyl w `run.py` tytul prawdziwego
+        # artykulu, zlamany po slowie „Was": stalo tam `Was` + koniec
+        # linii + wciecie + `#` + ` Never`, a wzorzec szukal `Was\s+Never`.
+        # Audyt swiecil na zielono nad jawnym tytulem przez cala serie
+        # przebiegow. Skanujemy oryginal ORAZ wersje bez lamania —
+        # trafienie w ktorejkolwiek jest bledem.
+        # TRZECI WIDOK: bez cudzyslowow, apostrofow, backtickow, plusow
+        # i ukosnikow. Bez niego nazwa konta przezyla W OPISIE TEGO, JAK
+        # SIE CHOWALA — komentarz cytowal rozbity literal w calosci,
+        # a miedzy slowami stalo `" "`, wiec ani wzorzec ze `\s+`, ani
+        # sklejanie zawiniec go nie widzialo. Czlowiek czytal nazwe
+        # bez wysilku; skan nie.
+        out.append((p, "\n".join((t, bez_lamania(t), bez_sklejek(t)))))
+    return out
+
+
+def wzgledna(p: pathlib.Path) -> str:
+    return str(p.relative_to(KORZEN)).replace("\\", "/")
+
+
+def main() -> int:
+    pliki = teksty()
+    ten_plik = pathlib.Path(__file__).resolve()
+    # PLIKI, KTORE WZORCE TOZSAMOSCI ZAWIERAJA Z DEFINICJI, bo ich SZUKAJA.
+    # Bez tego audyt zglasza sam siebie i workflow CI, a audyt dajacy zawsze
+    # cztery falszywe alarmy przestaje byc czytany.
+    # PLIKI, KTORE ZAWIERAJA WZORCE Z DEFINICJI. Po dolozeniu widoku
+    # `bez_sklejek` doszedl trzeci: przyklad w pliku-wzorcu zapisany jako
+    # `203\.0\.113\.42` po zdjeciu ukosnikow jest poprawnym adresem IP.
+    # Sam adres pochodzi z zakresu RFC 5737, zarezerwowanego wlasnie do
+    # dokumentacji — nie prowadzi donikad.
+    SZUKAJACE = {ten_plik,
+                 (KORZEN / ".github/workflows/testy.yml").resolve(),
+                 (KORZEN / "narzedzia/dawne-tozsamosci.example.txt").resolve()}
+
+    print("=== 1. TOZSAMOSC W ZRODLE ===")
+    print("    przeszukane pliki: %d" % len(pliki))
+    wlasne = tozsamosc_wlasna()
+    if wlasne:
+        print("    wzorcow wlasnych z %s: %d" % (PLIK_WLASNYCH.name, len(wlasne)))
+    else:
+        print("    (brak %s — sprawdzam tylko wzorce uniwersalne;"
+              % PLIK_WLASNYCH.name)
+        print("     wzorzec: %s)" % (PLIK_WLASNYCH.name + ".example" if False
+                                     else "dawne-tozsamosci.example.txt"))
+    for wzorzec, opis in TOZSAMOSC_UNIWERSALNA + wlasne:
+        traf = [(wzgledna(p), t) for p, t in pliki
+                if p.resolve() not in SZUKAJACE and re.search(wzorzec, t, re.I)]
+        # NAZWA WZORCA W KOMUNIKACIE. Bez tego raport dawal piecdziesiat
+        # linii „brak: wzorzec wlasny z dawne-tozsamosci.txt" — nie do
+        # odroznienia od siebie — i przy trafieniu nie bylo wiadomo, CZEGO
+        # szukac w pliku. Zajelo mi to osobne dochodzenie, ktore raport
+        # powinien byl oszczedzic.
+        etykieta = opis if opis != "wzorzec wlasny z %s" % PLIK_WLASNYCH.name             else "wzorzec %s" % wzorzec[:34]
+        sprawdz("brak: %s" % etykieta, not traf, [f for f, _ in traf][:4])
+
+    print()
+    print("=== 2. TOZSAMOSC W SKLEJONYCH LITERALACH ===")
+    # `"Nothing Is " "Accidental"` to dwa literaly. Grep po zrodle ich nie
+    # zlaczy; `ast.literal_eval` tak. Ta sekcja istnieje dokladnie dlatego,
+    # ze taka nazwa raz przezyla caly przebieg czyszczenia.
+    # Sklejone literaly sprawdzamy TYMI SAMYMI wzorcami wlasnymi — bo to
+    # wlasnie one przezyly czyszczenie, rozbite miedzy dwa literaly.
+    wlasne_wz = [w for w, _ in tozsamosc_wlasna()]
+    if not wlasne_wz:
+        print("    (brak wzorcow wlasnych — ta sekcja nie ma czego szukac)")
+    wzorzec = re.compile("|".join(wlasne_wz) if wlasne_wz else NIGDY_NIE_PASUJE,
+                         re.I)
+    znalezione = []
+    zbadane = 0
+    for p, t in pliki:
+        if p.suffix != ".py" or p.resolve() in SZUKAJACE:
+            continue
+        try:
+            drzewo = ast.parse(t, filename=str(p))
+        except SyntaxError:
+            continue
+        zbadane += 1
+        for n in ast.walk(drzewo):
+            if isinstance(n, ast.Assign):
+                try:
+                    v = ast.literal_eval(n.value)
+                except Exception:                      # noqa: BLE001
+                    continue
+                if isinstance(v, str) and wzorzec.search(v):
+                    znalezione.append("%s:%d" % (wzgledna(p), n.lineno))
+    print("    zbadane moduly: %d" % zbadane)
+    sprawdz("zadna sklejona stala nie niesie tozsamosci", not znalezione, znalezione)
+
+    print()
+    print("=== 3. PLIKI, KTORYCH NIE MOZE BYC ===")
+    nazwy = [wzgledna(p) for p in sledzone()]
+    for wzorzec, opis in ZAKAZANE_PLIKI:
+        traf = [n for n in nazwy if re.search(wzorzec, n)]
+        sprawdz("brak: %s" % opis, not traf, traf[:4])
+
+    print()
+    print("=== 4. PRAWDZIWE KLUCZE (atrapy w testach maja przechodzic) ===")
+    for wzorzec, opis in SEKRETY:
+        traf = [wzgledna(p) for p, t in pliki
+                if p.resolve() not in SZUKAJACE and re.search(wzorzec, t)]
+        sprawdz("brak: %s" % opis, not traf, traf[:4])
+
+    print()
+    print("=== 5. SPOJNOSC: CZY GENEROWANE JEST AKTUALNE ===")
+    for polecenie, plik in (
+            (["python", "narzedzia/mapa_funkcji.py"], "docs/FUNCTION_MAP.md"),
+            (["python", "agent-v2/dokumentacja-zrodla/sklej.py"],
+             "agent-v2/JAK_ZBUDOWANY_JEST_BOT.md")):
+        subprocess.run(polecenie, cwd=KORZEN, capture_output=True)
+        roznica = subprocess.run(
+            ["git", "-C", str(KORZEN), "diff", "--stat", "--", plik],
+            capture_output=True, text=True, encoding="utf-8")
+        sprawdz("%s nie rozjechal sie z kodem" % plik,
+                not roznica.stdout.strip(), roznica.stdout.strip()[:120])
+
+    print()
+    print("=== 6. SPOJNOSC: ZALEZNOSCI ===")
+    wynik = subprocess.run(["python", "narzedzia/zaleznosci.py", "--sprawdz"],
+                           cwd=KORZEN, capture_output=True, text=True,
+                           encoding="utf-8")
+    sprawdz("requirements.txt zgadza sie z importami", wynik.returncode == 0,
+            (wynik.stdout or "").strip().splitlines()[-1:] )
+
+    print()
+    print("=== 7. SPOJNOSC: KONFIGURATOR ===")
+    sys.path.insert(0, str(KORZEN / "agent-v2"))
+    import config          # noqa: E402
+    import konfiguracja    # noqa: E402
+
+    brakujace = [n for n, _ in konfiguracja.POLA.values()
+                 if n is not None and not hasattr(config, n)]
+    sprawdz("kazde pole konfiguracji wskazuje na istniejaca stala", not brakujace,
+            brakujace)
+    przyklad = KORZEN / "konfiguracja.example.toml"
+    sprawdz("plik przykladowy istnieje i jest w gicie",
+            przyklad.exists() and "konfiguracja.example.toml" in nazwy)
+    sprawdz("uchwyt konta ma JEDNO zrodlo",
+            config.SUBSTACK_HANDLE == __import__("browser").PROFIL_HANDLE)
+
+    print()
+    print("=== 8. SPOJNOSC: PROGI PILNOWANE PRZEZ TESTY ===")
+    sprawdz("hasel szukania jest >= 19", len(config.HASLA_SZUKANIA) >= 19,
+            len(config.HASLA_SZUKANIA))
+    # SIATKA ZALEZY OD LICZBY DZIEDZIN, KTORA PODAJE OPERATOR. Prog 400
+    # opisuje NASZA pule (14 wzorcow x 46 dziedzin). Przy czterech wlasnych
+    # dziedzinach wychodzi 56 i audyt oblewal, nie zglaszajac zadnej awarii —
+    # a to jest narzedzie, ktore ma odrozniac awarie od decyzji.
+    #
+    # Prog niezalezny od konfiguracji jest inny i nizszy: siatka ma dawac
+    # z zapasem wiecej komorek niz notek w ciagu doby, inaczej ten sam wzorzec
+    # w tej samej dziedzinie wraca po kilku dniach.
+    komorki = len(config.GENERATORY) * len(config.DZIEDZINY_CIEKAWOSTEK)
+    na_dobe = max(1, len(config.NOTE_MIX_OTHER_DAY))
+    if (KORZEN / "agent-v2" / "konfiguracja.toml").exists():
+        sprawdz("siatka daje co najmniej 10 komorek na notke",
+                komorki >= 10 * na_dobe,
+                "%d komorek przy %d notkach na dobe — dopisz dziedziny"
+                % (komorki, na_dobe))
+    else:
+        sprawdz("siatka wzorce x dziedziny >= 400", komorki >= 400, komorki)
+    poza = [h for h in config.HASLA_SZUKANIA
+            if not any(z in h.lower() for z in config.ZNAKI_NISZY)]
+    sprawdz("kazde haslo miesci sie w niszy", not poza, poza)
+
+    print()
+    print("=== 9. KONTRDOWOD: CZY TEN AUDYT W OGOLE COKOLWIEK LAPIE ===")
+    # Audyt, ktory zawsze mowi OK, jest nieodrozninalny od audytu zepsutego.
+    # Ta sekcja wstrzykuje TRZY przecieki do tekstu w pamieci i sprawdza, ze
+    # kazdy zostaje zlapany. Kazdy odpowiada dziurze, ktora NAPRAWDE zdarzyla
+    # sie w tym repozytorium:
+    #
+    #   A. nazwa w jednym literale       — zwykly skan zrodla ja lapie
+    #   B. nazwa ROZBITA miedzy dwa      — skan zrodla NIE lapie, AST tak.
+    #      literaly pythonowe              TO PRZEZYLO CALE CZYSZCZENIE
+    #      i pierwsze wydanie publiczne.
+    #   C. nazwa PRZECIETA koncem linii  — dlatego wzorce uzywaja `\s+`,
+    #                                      nie spacji
+    WZ = r"Marka\s+Kontrolna"
+    PROBKI = [
+        ("A: jeden literal", 'X = "Marka Kontrolna"', True),
+        ("B: dwa literaly", 'X = ("Marka "\n     "Kontrolna")', False),
+        ("C: przeciete linia", "publikacja Marka\nKontrolna i tyle", True),
+    ]
+    for nazwa, tekst, ma_zlapac_zrodlo in PROBKI:
+        zlapane = bool(re.search(WZ, tekst, re.I))
+        sprawdz("  %-22s skan zrodla: %s" % (nazwa, "lapie" if zlapane else "NIE lapie"),
+                zlapane == ma_zlapac_zrodlo, tekst[:40])
+
+    # I to samo przez drzewo skladni — tu probka B MUSI zostac zlapana,
+    # bo inaczej sekcja 2 jest ozdoba.
+    zrodlo_b = 'X = ("Marka "\n     "Kontrolna")'
+    try:
+        drzewo_b = ast.parse(zrodlo_b)
+        wartosci = [ast.literal_eval(n.value) for n in ast.walk(drzewo_b)
+                    if isinstance(n, ast.Assign)]
+    except Exception:                                  # noqa: BLE001
+        wartosci = []
+    sprawdz("  B przez AST: sklejona wartosc widoczna",
+            any(isinstance(v, str) and re.search(WZ, v, re.I) for v in wartosci),
+            wartosci)
+
+    # I kontrdowod do kontrdowodu: wzorzec nie moze lapac czegokolwiek.
+    sprawdz("  wzorzec nie lapie tekstu bez marki",
+            not re.search(WZ, "zwykly tekst bez niczego", re.I))
+
+    if "--historia" in sys.argv:
+        print()
+        print("=== 10. HISTORIA GITA (nie tylko drzewo) ===")
+        out = subprocess.run(
+            ["git", "-C", str(KORZEN), "log", "--all", "--diff-filter=A",
+             "--name-only", "--format="],
+            capture_output=True, text=True, encoding="utf-8")
+        wszystkie = {n for n in out.stdout.splitlines() if n.strip()}
+        print("    plikow kiedykolwiek dodanych: %d" % len(wszystkie))
+        for wzorzec, opis in ZAKAZANE_PLIKI:
+            traf = sorted(n for n in wszystkie if re.search(wzorzec, n))
+            sprawdz("w historii brak: %s" % opis, not traf,
+                    "%d plikow, np. %s" % (len(traf), traf[:2]) if traf else "")
+
+    print()
+    print("=== WYNIK AUDYTU: %d zdanych, %d oblanych ===" % (zdane, oblane))
+    return 1 if oblane else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

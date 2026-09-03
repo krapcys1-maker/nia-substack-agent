@@ -1,0 +1,30 @@
+# Zaleznosci agenta. Wersje przypiete, bo serwer ma zachowywac sie tak samo jak
+# ten komputer — a nie tak, jak akurat wypadnie w dniu instalacji.
+#
+# Po instalacji potrzebna jest jeszcze przegladarka Playwrighta:
+#   python -m playwright install chromium
+#   python -m playwright install-deps chromium     # tylko Linux
+#
+# OpenAI (grafiki) NIE wymaga pakietu — idzie przez urllib ze standardowej
+# biblioteki, wiec jest o jedna zaleznosc mniej do pilnowania.
+
+anthropic==0.116.0
+httpx==0.28.1
+python-dotenv==1.2.2
+playwright==1.62.0
+
+# Wyciaganie tresci ze stron zrodlowych w etapie `fetch`. BRAKOWALO GO na
+# serwerze i wyszlo dopiero przy pierwszym prawdziwym uruchomieniu sciezki
+# artykulu: potok przeszedl wybor tematu, odsiew i szukanie zrodel, zaplacil
+# 0,59 USD i przewrocil sie na `import trafilatura`. Zaden test tego nie zlapal,
+# bo wszystkie sprawdzaly moduly agenta, a nie ten jeden import w srodku funkcji.
+trafilatura==2.2.0
+
+# PDF-y w etapie `fetch`. Nie z ostroznosci, tylko z policzonej straty:
+# na 84 probach pobrania 16 adresow bylo PDF-ami i udaly sie DWA. Czternascie
+# porazek z dwudziestu dziewieciu — prawie polowa wszystkiego, co nam
+# przepadalo — to byly PDF-y, bo `trafilatura` czyta HTML, a `response.text`
+# dla PDF-a jest binarnym smieciem. Ministerstwa i urzedy publikuja wlasnie
+# w PDF, wiec traciliśmy systematycznie zrodla PIERWOTNE, czyli te
+# najcenniejsze.
+pypdf==6.1.1
