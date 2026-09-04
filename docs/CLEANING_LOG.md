@@ -212,11 +212,29 @@ longer exist, so `tests/historia.py` makes them skip cleanly and say why,
 rather than fail. They no longer prove what they used to prove. That is the
 price of a history that begins here, and it is written down rather than hidden.
 
-**And an honest figure for the rest.** At the time of writing, 21% of the code
-has been read line by line; the remaining 79% has been through the seven sweeps
-above but not through a person's eyes. Every one of those sweeps found something
-the earlier ones missed, so the reading continues. Any claim stronger than that
-would be a guess dressed as a measurement.
+**And an honest figure for the rest.** The tree is 70,269 lines of Python:
+29,741 in the agent's 27 modules, 38,422 in 140 test files, 2,106 in the tools.
+This is where the line-by-line reading stands, and it is deliberately a table
+rather than a percentage, because a percentage hides which half you got.
+
+| module | lines | read line by line |
+|---|---:|---|
+| `stages.py` | 7,401 | **all of it** |
+| `browser.py` | 5,204 | to ~1,080 |
+| `config.py` | 2,922 | in parts, following the sweeps |
+| `run.py` | 2,845 | to ~800, plus several later regions |
+| `llm.py` | 823 | most |
+| `konfiguracja.py`, `jezyki.py`, `style.py` | ~800 | all — they were rewritten |
+| `audyt_systemu.py`, `audyt_tematow.py` | 980 | the parts touched here |
+| the other 15 modules | ~9,000 | **not yet** |
+| the 140 test files | 38,422 | roughly 30 of them, in the parts touched |
+
+The unread part has been through all eleven sweeps but not through a person's
+eyes. Every one of those sweeps found something the earlier ones could not, and
+reading found things no sweep could — so neither substitutes for the other, and
+the reading continues.
+
+Anything stronger than this table would be a guess dressed as a measurement.
 
 ## 10. How to check the claim rather than believe it
 
