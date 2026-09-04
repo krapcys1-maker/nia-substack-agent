@@ -527,7 +527,7 @@ Jedyna warstwa miedzy `run.py` a dostawca.
 
 | linia | funkcja | znaczniki | co robi | wolana przez |
 |---|---|---|---|---|
-| 45 | `_dostawca(model)` | — | Czyj to model. | `llm._preflight` |
+| 45 | `_dostawca(model)` | — | Czyj to model. | `llm._preflight`, `llm.call` |
 | 63 | `_preflight(purpose, conn, run_id)` | DB | Warunki, które decydują, czy wywołanie może się w ogóle udać. | `llm.call`, `llm.obraz` |
 | 177 | `_narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. | `llm._call_claude` |
 | 186 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` | — | — | `llm.call` |
@@ -539,10 +539,10 @@ Jedyna warstwa miedzy `run.py` a dostawca.
 | 449 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call` |
 | 487 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
 | 514 | `call(purpose, system, user, conn, run_id, web_search, collect_urls)` | DB | Woła model właściwy dla etapu i zapisuje koszt. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.ratuj_json`, `stages.bibliotekarz` *(+22)* |
-| 605 | `obraz(opis, conn, run_id)` | DB | Generuje grafikę do artykułu i zapisuje jej koszt tam, gdzie resztę. | `stages.grafika` |
-| 660 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
-| 725 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki` |
-| 770 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `stages.bibliotekarz`, `stages.classify` *(+21)* |
+| 623 | `obraz(opis, conn, run_id)` | DB | Generuje grafikę do artykułu i zapisuje jej koszt tam, gdzie resztę. | `stages.grafika` |
+| 678 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
+| 743 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki` |
+| 788 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `stages.bibliotekarz`, `stages.classify` *(+21)* |
 
 ---
 

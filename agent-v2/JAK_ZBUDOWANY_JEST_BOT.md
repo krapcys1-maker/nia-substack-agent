@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 28 928 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 28 946 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -419,7 +419,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-805 wierszy, 15 funkcji na poziomie modułu, 3 klas
+823 wierszy, 15 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6390,7 +6390,25 @@ def call(
     """
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
-    provider = "deepseek" if model.startswith("deepseek") else "anthropic"
+
+    # DOSTAWCE ROZSTRZYGA `_dostawca`, TAK SAMO JAK KONTROLA KLUCZY.
+    #
+    # Stalo tu wlasne `"deepseek" if model.startswith("deepseek") else
+    # "anthropic"` — czyli DRUGIE miejsce decydujace o tym samym, i o jednego
+    # dostawce ubozsze. Dzis nie pekalo tylko dlatego, ze obrazy chodza osobna
+    # funkcja (`llm.obraz`), wiec `gpt-image-1.5` nigdy tu nie trafia. Model
+    # tekstowy OpenAI dopisany do `MODEL_FOR` poszedlby jednak do Anthropic
+    # z jego identyfikatorem, a odpowiedz brzmialaby jak awaria dostawcy.
+    #
+    # `_dostawca` istnieje dokladnie po to, zeby te dwa miejsca sie nie
+    # rozjechaly — i to jest zdanie z jego wlasnego docstringa.
+    provider = _dostawca(model)
+    if provider not in ("anthropic", "deepseek"):
+        raise PreflightFailed(
+            "etap %r chodzi na %s, a `call` nie ma sciezki dla dostawcy %r.\n"
+            "Obrazy maja wlasna funkcje `llm.obraz`; model tekstowy nowego "
+            "dostawcy wymaga galezi tutaj i wpisu w `_dostawca`."
+            % (purpose, model, provider or "nieznany"))
 
     # STALA, KTORA WYGLADA JAK USTAWIENIE. Wpis w EFFORT czyta sie jak decyzja
     # o kosztach, a przy modelu spoza Claude nie robi NIC.
