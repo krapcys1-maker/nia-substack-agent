@@ -36,6 +36,12 @@ import pathlib
 import shutil
 import sys
 
+sys.path.insert(0, "agent-v2/tests")
+import wlasna_konfiguracja  # noqa: E402
+
+wlasna_konfiguracja.pomin_gdy_bez_tomllib(
+    "czy stale pochodne ida za wczytana konfiguracja")
+
 sys.path.insert(0, "agent-v2")
 
 PLIK = pathlib.Path("agent-v2/konfiguracja.toml")

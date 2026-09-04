@@ -34,6 +34,12 @@ BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
 """
 import pathlib
 import sys
+
+sys.path.insert(0, "agent-v2/tests")
+import wlasna_konfiguracja  # noqa: E402
+wlasna_konfiguracja.pomin_gdy_bez_tomllib(
+    "czy plik przykladowy ma komplet pol")
+
 import tomllib
 
 sys.path.insert(0, "agent-v2")

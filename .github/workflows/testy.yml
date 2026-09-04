@@ -82,7 +82,12 @@ jobs:
             nazwa=$(basename "$t" .py)
             wyjscie=$(timeout 120 python "$t" 2>&1) && kod=0 || kod=$?
             if [ "$kod" -eq 0 ]; then
-              if printf '%s' "$wyjscie" | grep -q "POMINIETE: brak wersji"; then
+              # POMINIECIE MA BYC LICZONE JAKO POMINIECIE, nie jako zdane.
+              # Wzorzec pytal tylko o „POMINIETE: brak wersji" (kontrdowody
+              # przypiete do SHA). Testy konfiguracji pomijaja sie z innego
+              # powodu — `tomllib` jest od Pythona 3.11 — i wpadaly do rubryki
+              # „zdane", czyli zielono nad testem, ktory sie nie wykonal.
+              if printf '%s' "$wyjscie" | grep -qE "^=== POMINIETY|POMINIETE: brak wersji"; then
                 pominiete=$((pominiete+1))
               else
                 zdane=$((zdane+1))

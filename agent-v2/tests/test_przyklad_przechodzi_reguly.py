@@ -46,8 +46,14 @@ BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
 import pathlib
 import sys
 
+sys.path.insert(0, "agent-v2/tests")
+import wlasna_konfiguracja  # noqa: E402
+
 sys.path.insert(0, "agent-v2")
 import config           # noqa: E402
+wlasna_konfiguracja.pomin_gdy_bez_tomllib(
+    "czy przyklad przechodzi reguly stawiane kazdemu")
+
 import konfiguracja     # noqa: E402
 
 zdane = oblane = 0

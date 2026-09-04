@@ -78,3 +78,26 @@ def pomin_gdy_wlasna(powod: str) -> None:
     print()
     print("=== POMINIETY (wlasna konfiguracja) ===")
     sys.exit(0)
+
+
+def pomin_gdy_bez_tomllib(co_bada: str) -> None:
+    """Konczy przebieg kodem 0 na Pythonie starszym niz 3.11.
+
+    `tomllib` wszedl do biblioteki standardowej w 3.11, a 3.10 jest nadal
+    wspieranym minimum dla samego bota — `konfiguracja.toml` jest dodatkiem,
+    nie warunkiem dzialania. Test badajacy ten plik nie ma wiec na 3.10 czego
+    badac i MA to powiedziec, zamiast konczyc sie sladem stosu.
+
+    Czerwone CI przy poprawnym kodzie uczy ignorowania CI — dokladnie tak samo
+    jak audyt oblewajacy na poprawnej instalacji.
+    """
+    if sys.version_info >= (3, 11):
+        return
+    print("  POMINIETY: %s" % co_bada)
+    print("  Powod: `tomllib` jest od Pythona 3.11, a tu chodzi %d.%d."
+          % (sys.version_info[0], sys.version_info[1]))
+    print("  To NIE jest wada kodu: 3.10 to wspierane minimum dla bota,")
+    print("  a `konfiguracja.toml` jest dodatkiem wymagajacym 3.11.")
+    print()
+    print("=== POMINIETY (brak tomllib) ===")
+    sys.exit(0)
