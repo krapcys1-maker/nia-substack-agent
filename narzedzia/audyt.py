@@ -332,7 +332,7 @@ def main() -> int:
 
     print()
     print("=== 2c. IDENTYFIKATORY SUBSTACKA (adres, nie liczba) ===")
-    # `note/c-322783482` wyglada w tescie jak liczba, a otwiera jedna konkretna
+    # `note/c-<dziewiec cyfr>` wyglada w tescie jak liczba, a otwiera jedna konkretna
     # notke jednego konkretnego konta. Szukanie po DLUGOSCI liczby tonie
     # w sufitach tokenow i rozmiarach plikow; szukanie po KSZTALCIE adresu ma
     # zero falszywych trafien — i wlasnie dlatego znalazlo cztery sztuki, ktore
@@ -592,12 +592,21 @@ def main() -> int:
 
     # E. IDENTYFIKATOR SUBSTACKA. Sekcja 2c istnieje przez cztery numery, ktore
     # przezyly przeczesywke po dlugosci liczby. Kontrdowod musi pokazac, ze
-    # wzorzec rozroznia trzy rzeczy: prawdziwy identyfikator, atrape i zwykla
-    # liczbe o tej samej dlugosci stojaca bez adresu.
+    # wzorzec rozroznia trzy rzeczy: identyfikator o prawdziwym KSZTALCIE,
+    # atrape i zwykla liczbe o tej samej dlugosci stojaca bez adresu.
+    #
+    # PROBKA JEST ZBUDOWANA, NIE WZIETA Z DZIENNIKA. Stal tu numer wyjety
+    # z prawdziwej interakcji — otwieral jedna konkretna notke jednego
+    # konkretnego konta. Do dowodu wystarczy, ze liczba jest PONIZEJ progu
+    # atrap; skad pochodzi, nie ma dla wzorca zadnego znaczenia, a w repozytorium
+    # publicznym prawdziwy numer jest wskaznikiem na czyjas notke. Plik audytu
+    # jest zwolniony z sekcji 2c (musi zawierac to, czego szuka), wiec zaden
+    # inny straznik by tego nie zdjal — to jest wlasnie ten rodzaj miejsca,
+    # w ktorym prawdziwa dana przezywa czyszczenie.
     for opis, probka, ma_zlapac in (
-            ("prawdziwy", "note/c-322783482", True),
+            ("prawdziwy ksztalt", "note/c-123456789", True),
             ("atrapa", "note/c-900000021", False),
-            ("liczba bez adresu", "sufit 322783482 tokenow", False)):
+            ("liczba bez adresu", "sufit 123456789 tokenow", False)):
         m = KSZTALT_ID.search(probka)
         zlapane = bool(m) and int(m.group(1)) < ATRAPA_OD
         sprawdz("  E: %-18s %s" % (opis, "lapie" if ma_zlapac else "NIE lapie"),
