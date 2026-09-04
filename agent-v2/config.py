@@ -190,10 +190,10 @@ MODEL_FOR = {
     "synthesis": DEEPSEEK_PRO,
     # TO JEST PRODUKT. Fable 5 po porównaniu A/B na identycznej karcie: krótszy
     # i bliższy celu długości (1127 wobec 1204 słów), ale przede wszystkim
-    # dokładniejszy — wyłapał, że przepis o przywiązanych nakrętkach jest węższy
-    # niż jego popularne streszczenie, i skorygował omówienie RTÉ. Opus tego nie
-    # zauważył. Kosztuje 3,5x więcej, co przy 4 artykułach miesięcznie znaczy
-    # $2,12 zamiast $0,61.
+    # dokładniejszy — wyłapał, że cytowany przepis jest WĘŻSZY niż jego
+    # popularne streszczenie, i poprawił po tym omówienie w tekście. Opus tego
+    # nie zauważył. Kosztuje 3,5x więcej, co przy 4 artykułach miesięcznie
+    # znaczy $2,12 zamiast $0,61.
     "write": FABLE,
     "review": DEEPSEEK_PRO,
     # Obserwacja formy: beaty, eskalacja, moment przylapania, znajomosc

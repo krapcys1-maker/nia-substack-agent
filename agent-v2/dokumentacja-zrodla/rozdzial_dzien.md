@@ -734,7 +734,7 @@ Wpięcie w dzień:
     return None
 ```
 
-`_o_tym_samym` porównuje rdzenie słów obcięte do 6 znaków, po odsianiu `_PUSTE_SLOWA` (pół korpusu to amerykańskie przepisy, więc „federal rules require" łączyłoby dowolne dwa fakty). Wymaga DWÓCH warunków naraz: ≥2 wspólnych słów znaczących i ≥15% udziału. Powód konkretny: 17 sierpnia poszły dwie notki o jednym z tematow w odstępie trzynastu minut, bo `zapas.pop(0)` brał pierwszy z brzegu, a promowany artykuł też był o jednym z tematow.
+`_o_tym_samym` porównuje rdzenie słów obcięte do 6 znaków, po odsianiu `_PUSTE_SLOWA`. Ta lista ma DWIE części: słowa funkcyjne angielszczyzny stoją w kodzie (`_PUSTE_SLOWA_OGOLNE`), a słownictwo dziedziny przychodzi z `config.PUSTE_SLOWA_NISZY` i jest domyślnie puste — jedno wyliczenie dostrojone do jednej niszy zabierałoby wykrywaczowi te rdzenie, które w innej niszy odróżniają tematy. Wymaga DWÓCH warunków naraz: ≥2 wspólnych słów znaczących i ≥15% udziału. Powód konkretny: 17 sierpnia poszły dwie notki o tym samym w odstępie trzynastu minut, bo `zapas.pop(0)` brał pierwszy z brzegu, a promowany artykuł mówił akurat o tym samym.
 
 #### 6.4 Pisanie jednej notki — `stages.note` (stages.py:808)
 

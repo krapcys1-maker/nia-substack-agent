@@ -841,7 +841,7 @@ Losowanie zamknięcia — sześć równoprawnych ruchów (`RUCH_KONCOWY_MIX`, `c
 
 Powód losowania jest zapisany w kodzie i to jest sedno tego etapu:
 
-> Dwa teksty napisane po naprawie szamponu mialy identyczny szkielet, bo prompt zamawial go doslownie: ten sam drogowskaz, trzy paralele, to samo zamkniecie. Powtarzalna forma zdradza maszyne tak samo jak powtarzana tresc.
+> Dwa teksty napisane zaraz po poprzedniej poprawce mialy identyczny szkielet, bo prompt zamawial go doslownie: ten sam drogowskaz, trzy paralele, to samo zamkniecie. Powtarzalna forma zdradza maszyne tak samo jak powtarzana tresc.
 
 ##### Korpus stylu
 

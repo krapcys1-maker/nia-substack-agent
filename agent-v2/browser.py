@@ -2734,7 +2734,7 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
                 # 95 komentarzy, czyli NAJCZESTSZE nasze dzialanie, i jedyne,
                 # o ktorym nie wiedzielismy zupelnie nic poza tym, ze bylo.
                 #
-                # Ma to takie samo znaczenie, co przy komentarzach: konto o AI,
+                # Ma to takie samo znaczenie, co przy komentarzach: konto o swojej niszy,
                 # ktore lajkuje pod rezerwa paliwowa, wydaje najczestszy gest
                 # na publicznosc bez powodu, zeby nas obserwowac. Bez zapisu
                 # nie da sie tego nawet ZMIERZYC, a wiec i naprawic.
@@ -3363,7 +3363,7 @@ def polec_publikacje(fraza: str, powod: str,
     Substack liczy je z historii czytania konta, a ta pochodzi sprzed
     przestawienia na AI. To ta sama skaza, co w banku tematow i w dziewieciu
     promptach — tylko po stronie Substacka, gdzie nie da sie jej wyczyscic
-    inaczej niz czytajac nowe rzeczy. Publikacja o AI polecajaca newsletter
+    inaczej niz czytajac nowe rzeczy. Publikacja polecajaca newsletter
     o masle to dokladnie ten „wyglad bota", ktorego wlasciciel nie chce.
 
     Dlatego szukamy SAMI: okno „Dodaj rekomendacje" ma pole „Wyszukaj osobe

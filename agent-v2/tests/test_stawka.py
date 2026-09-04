@@ -7,8 +7,9 @@ Loewenstein pisze to wprost: konsumpcja informacji jest nagradzajaca, ale po
 zdobyciu wystarczajacej ilosci ciekawosc SPADA.
 
 Pismo zbudowane wylacznie na pytaniach zamknietych produkuje wiec czytelnikow
-ZASPOKOJONYCH I ODCHODZACYCH. Wlasciciel nazwal to krocej: „nie wiem, czy lody
-sa zimne — tak — i mozna jebnac historie lodow, ale to bedzie nudne".
+ZASPOKOJONYCH I ODCHODZACYCH. Krocej: nikt nie potrzebuje sie dowiedziec,
+ze lody sa zimne — a historie lodow da sie napisac i bedzie nudna.
+Zaskoczenie samo w sobie nie jest stawka.
 
 Do tego dwa znaleziska z literatury, ktore uderzaja w zalozenie, ze samo
 „mylisz sie" niesie tekst:
@@ -16,7 +17,7 @@ Do tego dwa znaleziska z literatury, ktore uderzaja w zalozenie, ze samo
     najmniej zaskakujaca (223 tweety, ~4400 podajacych dalej, n=226 i n=301);
     manipulowana nowosc nie przewidywala udostepnien w ogole,
   - osobista i spoleczna ISTOTNOSC zwieksza chec podania dalej przyczynowo
-    (szesc badan plus preрejestrowany eksperyment).
+    (szesc badan plus prerejestrowany eksperyment).
 
 Dlatego zlamane przekonanie ZOSTAJE — wzielo sie z prawdziwej porazki i dziala —
 ale przestaje byc jedyna droga.

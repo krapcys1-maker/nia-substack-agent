@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 074 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 093 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -143,7 +143,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2843 wierszy, 26 funkcji na poziomie modułu, 1 klas
+2845 wierszy, 26 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -158,7 +158,7 @@ wiec nie da sie go rozjechac z kodem.
 | `zmiesci_sie(rodzaj, ile, udzial)` | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. |
 | `ile_przebiegow_zostalo(conn)` | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. |
 | `_slug(tekst)` *(wewn.)* | Nazwa do porownywania: same litery i cyfry ASCII, malymi. |
-| `_slug_hosta(host)` *(wewn.)* | Pierwszy czlon adresu jako slug: `www.ryanpuzycki.com` -> `ryanpuzycki`. |
+| `_slug_hosta(host)` *(wewn.)* | Pierwszy czlon adresu jako slug: `www.imienazwisko.com` -> `imienazwisko`. |
 | `_reakcje_z_dziennika()` *(wewn.)* | Jeden przebieg po dzienniku, dwie odpowiedzi o tych samych ludziach. |
 | `kogo_juz_dotknelismy()` | Slugi nazw ludzi, ktorzy zareagowali na NASZA tresc — z dziennika. |
 | `nasi_czytelnicy()` | Uchwyty ludzi, ktorzy JUZ nas czytaja — z `czytelnicy.jsonl`. Tylko odczyt. |
@@ -176,7 +176,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7345 wierszy, 133 funkcji na poziomie modułu, 0 klas
+7361 wierszy, 134 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -305,6 +305,7 @@ wiec nie da sie go rozjechac z kodem.
 | `dopisz_kandydatow(kandydaci)` | Przepuszcza kandydatow przez bramke i dokłada do indeksu. |
 | `wez_kandydatow(ile)` | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. |
 | `co_zadzialalo(ile)` | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. |
+| `_tabela_odbioru(naj, ile)` *(wewn.)* | Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt. |
 | `posortuj_bank(conn, run_id, ile)` | Ustawia bank pomyslow od najmocniejszego i wyrzuca slabe. |
 | `_termin_waznosci(dni)` *(wewn.)* | Kiedy ta kandydatura przestaje byc tematem. Data z godzina, w UTC. |
 | `_po_terminie(k)` *(wewn.)* | Czy kandydatura jest juz po swoim terminie przydatnosci. |
@@ -666,7 +667,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-373 wierszy, 6 funkcji na poziomie modułu, 0 klas
+374 wierszy, 6 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1651,7 +1652,7 @@ Losowanie zamknięcia — sześć równoprawnych ruchów (`RUCH_KONCOWY_MIX`, `c
 
 Powód losowania jest zapisany w kodzie i to jest sedno tego etapu:
 
-> Dwa teksty napisane po naprawie szamponu mialy identyczny szkielet, bo prompt zamawial go doslownie: ten sam drogowskaz, trzy paralele, to samo zamkniecie. Powtarzalna forma zdradza maszyne tak samo jak powtarzana tresc.
+> Dwa teksty napisane zaraz po poprzedniej poprawce mialy identyczny szkielet, bo prompt zamawial go doslownie: ten sam drogowskaz, trzy paralele, to samo zamkniecie. Powtarzalna forma zdradza maszyne tak samo jak powtarzana tresc.
 
 ##### Korpus stylu
 
@@ -2905,7 +2906,7 @@ Wpięcie w dzień:
     return None
 ```
 
-`_o_tym_samym` porównuje rdzenie słów obcięte do 6 znaków, po odsianiu `_PUSTE_SLOWA` (pół korpusu to amerykańskie przepisy, więc „federal rules require" łączyłoby dowolne dwa fakty). Wymaga DWÓCH warunków naraz: ≥2 wspólnych słów znaczących i ≥15% udziału. Powód konkretny: 17 sierpnia poszły dwie notki o jednym z tematow w odstępie trzynastu minut, bo `zapas.pop(0)` brał pierwszy z brzegu, a promowany artykuł też był o jednym z tematow.
+`_o_tym_samym` porównuje rdzenie słów obcięte do 6 znaków, po odsianiu `_PUSTE_SLOWA`. Ta lista ma DWIE części: słowa funkcyjne angielszczyzny stoją w kodzie (`_PUSTE_SLOWA_OGOLNE`), a słownictwo dziedziny przychodzi z `config.PUSTE_SLOWA_NISZY` i jest domyślnie puste — jedno wyliczenie dostrojone do jednej niszy zabierałoby wykrywaczowi te rdzenie, które w innej niszy odróżniają tematy. Wymaga DWÓCH warunków naraz: ≥2 wspólnych słów znaczących i ≥15% udziału. Powód konkretny: 17 sierpnia poszły dwie notki o tym samym w odstępie trzynastu minut, bo `zapas.pop(0)` brał pierwszy z brzegu, a promowany artykuł mówił akurat o tym samym.
 
 #### 6.4 Pisanie jednej notki — `stages.note` (stages.py:808)
 
@@ -4139,7 +4140,7 @@ Komentarz w kodzie nazywa to *„najostrzejszą regułą w całym potoku"*, a uz
                        "'your'): %r" % skutek[:70])
 ```
 
-Historia tej bramki jest zapisana w komentarzu i jest najlepszym uzasadnieniem w całym module. Pierwszy przebieg na Federal Register wypuścił **sześć kandydatów na sześć** — kwoty połowowe dla posiadaczy zezwoleń na takle pelagiczne, opłaty karne dla przetwórców orzechów włoskich, dodatek za wypalanie kontrolowane dla strażaków leśnych i formatowanie nagłówka w samym Federal Register. Każdy miał decydenta, datę, złamane przekonanie i skutek. Żaden nie nadawał się do publikacji, bo przekonanie trzymała **branża**, a nie czytelnik. Komentarz dodaje wniosek metodologiczny: *„Zero odrzucen na prawdziwych danych bylo zreszta samo w sobie ostrzezeniem: bramka, ktora nigdy nie zagryzla, nie jest bramka."*
+Historia tej bramki jest zapisana w komentarzu i jest najlepszym uzasadnieniem w całym module. Pierwszy przebieg na rejestrze rozporządzeń wypuścił **sześć kandydatów na sześć**: cztery zmiany stawek i opłat dla wąskich grup zawodowych, dodatek branżowy i zmiana formatowania nagłówka w samym rejestrze. Każdy miał decydenta, datę, złamane przekonanie i skutek. Żaden nie nadawał się do publikacji, bo przekonanie trzymała **branża**, a nie czytelnik. Komentarz dodaje wniosek metodologiczny: *„Zero odrzucen na prawdziwych danych bylo zreszta samo w sobie ostrzezeniem: bramka, ktora nigdy nie zagryzla, nie jest bramka."*
 
 Rozwiązanie jest **strukturalne, nie słownikowe**, bo lista słów branżowych z natury przecieka:
 

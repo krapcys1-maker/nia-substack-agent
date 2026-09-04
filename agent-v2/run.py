@@ -398,7 +398,7 @@ def ile_przebiegow_zostalo(conn) -> int:
 # mailem, ktore sciaga ich na nasz profil — a nasza lista obserwowanych jest
 # publiczna i Substack nie daje jej ukryc (subskrypcje maja ustawienie
 # prywatnosci, obserwacje nie). Losowanie z calosci znaczylo wiec: w 58
-# przypadkach na 100 zapraszamy na profil o AI kogos, kto czytal u nas
+# przypadkach na 100 zapraszamy na wlasny profil kogos, kto czytal u nas
 # o czym innym, i zostawiamy po sobie publiczny slad.
 PRZESTAWIENIE_KONTA_NA_AI = "2026-08-25"
 
@@ -473,8 +473,10 @@ REAKCJE_JUZ_CZYTA = ("follow", "free_subscription", "paid_subscription")
 def _slug(tekst: str) -> str:
     """Nazwa do porownywania: same litery i cyfry ASCII, malymi.
 
-    Znaki spoza ASCII wypadaja celowo — „Eunnuri (은누리) Lee" ma zostac
-    `eunnurilee`, bo tak samo nazywa sie host tej osoby.
+    Znaki spoza ASCII wypadaja celowo. Nazwa wyswietlana potrafi niesc
+    imie zapisane rodzimym pismem w nawiasie obok zapisu lacinskiego, a host
+    tej samej osoby ma w adresie sam zapis lacinski. Bez odsiania znakow
+    spoza ASCII te dwa napisy nigdy by sie nie zeszly.
     """
     import re
 
@@ -482,7 +484,7 @@ def _slug(tekst: str) -> str:
 
 
 def _slug_hosta(host: str) -> str:
-    """Pierwszy czlon adresu jako slug: `www.ryanpuzycki.com` -> `ryanpuzycki`."""
+    """Pierwszy czlon adresu jako slug: `www.imienazwisko.com` -> `imienazwisko`."""
     h = str(host or "").strip().lower().rstrip("/")
     if h.startswith("www."):
         h = h[4:]
@@ -671,7 +673,7 @@ def reagujacy_jako_cele() -> tuple[list[str], dict]:
 
     ODSIEW TEMATYCZNY JEJ NIE DOTYCZY, i to tez jest swiadome. Granica
     `PRZESTAWIENIE_KONTA_NA_AI` pyta „czy czytalismy ich PO tym, jak konto
-    zaczelo pisac o AI" — bo host z historii moze pochodzic sprzed zmiany
+    zmienilo temat" — bo host z historii moze pochodzic sprzed zmiany
     tematu. Reagujacy nie ma tego problemu: on zareagowal na TE tresc, ktora
     konto wystawia dzis. Sam jest swiezszym dowodem niz data komentarza.
 
@@ -1698,7 +1700,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         POWIADOMIENIE MAILEM, a nasza lista obserwowanych jest publiczna
         i Substack nie daje jej ukryc (subskrypcje maja ustawienie
         prywatnosci, obserwacje nie). Losowy host sprzed przestawienia konta
-        to nie jest neutralne pudlo — to zaproszenie na profil o AI wyslane
+        to nie jest neutralne pudlo — to zaproszenie na wlasny profil wyslane
         komus, kto czytal u nas o czym innym, plus publiczny slad.
 
         PULA JEST ODSIEWANA PRZED LOSOWANIEM (poprawka z 1 wrzesnia 2026).
@@ -1773,7 +1775,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             # NIE WRACAMY DO LOSU Z CALOSCI, i to jest decyzja, nie
             # przeoczenie. Odsiew tematyczny nie jest preferencja, tylko
             # granica: host sprzed przestawienia konta dostaje od nas maila
-            # z zaproszeniem na profil o AI, ktorego nie chcial. Zero
+            # z zaproszeniem na wlasny profil, ktorego nie chcial. Zero
             # z podanym powodem jest uczciwe; zero udajace wynik nie.
             if wyslij:
                 browser.zapisz_w_dzienniku(

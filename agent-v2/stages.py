@@ -1968,8 +1968,10 @@ def wiek_zrodla_w_dniach(data_zrodla: str, teraz=None) -> int | None:
 def nazywa_wersje(tekst: str) -> str:
     """Czy zdanie nazywa konkretna wersje produktu. Zwraca ja albo pusty napis.
 
-    Wlasciciel: „nie ma mi pisac o GPT 5.0, jak jest juz 5.5". Zdanie z numerem
-    wersji starzeje sie razem z nia, nawet gdy sam fakt pozostaje prawdziwy.
+    Decyzja wlasciciela, i jest sluszna w kazdej dziedzinie, w ktorej rzeczy maja
+    numery wydan: zdanie nazywajace wersje starzeje sie razem z nia, nawet gdy
+    sam fakt pozostaje prawdziwy. Tekst mowiacy o „wersji 5.0", gdy w obiegu
+    jest 5.5, czyta sie jak nieaktualny — niezaleznie od tego, czy jest.
     """
     import re as _re
 
@@ -3200,11 +3202,10 @@ def wybierz_material(zapas: list[dict[str, Any]],
     """Bierze fakt, ktory NIE jest o tym samym, co juz dzis wystawiamy.
 
     Poprzednio bylo `zapas.pop(0)` — pierwszy z brzegu. W przebiegu z 17 sierpnia
-    wyszukiwanie oddalo osiem faktow: okna w samolotach, napiwki, symbol
-    zasilania, kabiny w toaletach, sygnalizacja dla pieszych, etykiety
-    energetyczne, rekawy lotniskowe — i temat pierwszy. Pierwszy z listy byl o jednym z tematow,
-    a notka promujaca artykul tego dnia tez byla o jednym z tematow. Poszly dwie notki
-    o tym samym w odstepie trzynastu minut.
+    wyszukiwanie oddalo OSIEM faktow o osmiu roznych rzeczach. Wybor wzial
+    ten pierwszy z listy — a byl to akurat jedyny, ktory mowil o tym samym,
+    co notka promujaca artykul tego dnia. Poszly dwie notki o tym samym
+    w odstepie trzynastu minut.
 
     Roznorodnosc byla w puli. Zabraklo jej dopiero w wyborze.
 
@@ -3247,7 +3248,7 @@ def wybierz_material(zapas: list[dict[str, Any]],
             continue
         # To samo pytanie o POPRZEDNIE DNI, ale ostrzej — inaczej ochrona przed
         # powtorka konczyla sie o polnocy. 23 i 24 sierpnia poszly dwie notki o
-        # tym samym symbolu na butelce szamponu. Od 25 sierpnia ta lista nie ma
+        # tym samym drobiazgu na opakowaniu. Od 25 sierpnia ta lista nie ma
         # konca: pamietamy WSZYSTKIE wystawione notki, nie ostatnie dwanascie.
         if any(_zderzenie(temat, u, **POROWNANIE_MIEDZY_DNIAMI)
                for u in wczesniej_rdzenie):
@@ -3264,8 +3265,8 @@ def wybierz_material(zapas: list[dict[str, Any]],
         # samym w ciagu dnia — i to jest ta „plaskosc".
         #
         # Rzadkosc liczymy w KORPUSIE wystawionych notek: nazwa, ktora pada
-        # w polowie z nich (np. „OpenAI"), nie odroznia niczego i blokowalaby
-        # wszystko.
+        # w polowie z nich — w kazdej niszy jest taka jedna albo dwie — nie
+        # odroznia niczego i blokowalaby wszystko.
         if teksty_wczesniej:
             fakt_tekst = "%s %s" % (f.get("domain") or "", f.get("fact") or "")
             wspolna = next(
@@ -3296,9 +3297,9 @@ def notki_dnia(
     `ile` i `od` wybieraja czesc planu przypisana do biezacego przebiegu; bez
     `ile` funkcja bierze cale piec pozycji. Podawanie modelowi calej puli faktow
     naraz nie daje roznorodnosci, tylko piec wariantow tego samego: przy
-    pierwszym realnym przebiegu cztery z pieciu kandydatur chwycily ten sam fakt
-    o windzie. Jedna notka dostaje wiec jeden fakt i zestaw dnia rozni sie z
-    konstrukcji, a nie z nadziei.
+    pierwszym realnym przebiegu cztery z pieciu kandydatur chwycily TEN SAM
+    fakt z puli. Jedna notka dostaje wiec jeden fakt i zestaw dnia rozni sie
+    z konstrukcji, a nie z nadziei.
     """
     typy = list(config.NOTE_MIX_ARTICLE_DAY if dzien_artykulu
                 else config.NOTE_MIX_OTHER_DAY)
@@ -3358,7 +3359,7 @@ def notki_dnia(
     #   - slaby i powtorzony kandydat nie znikal nigdy, wiec bank zapelnil
     #     sie blizniakami: zmierzone 31 sierpnia na 53 wpisach — ACME-5.3 osiem
     #     razy, SkladnikA siedem, PortalModeli piec. To z takiego banku wyszly
-    #     trzy notki o jednym modelu w jeden dzien.
+    #     trzy notki o tej samej rzeczy w jeden dzien.
     #
     # Wolamy PRZED wzieciem materialu i tylko wtedy, gdy jest co sortowac.
     # Awaria sedziego nie moze zabrac dnia: bank nieposortowany jest gorszy
@@ -3374,7 +3375,7 @@ def notki_dnia(
     zapas = list(ciekawostki)
     dzien: list[dict[str, Any]] = []
     # O czym juz dzis mowimy. Promowany artykul liczy sie od razu — to od niego
-    # zaczela sie wpadka z dwiema notkami o jednym z tematow w odstepie trzynastu minut.
+    # zaczela sie wpadka z dwiema notkami o tym samym w odstepie trzynastu minut.
     juz_o_tym: list[str] = []
     # Co poszlo w swiat w poprzednich dniach — WSZYSTKO, od pierwszej notki.
     # Trzymane OSOBNO od `juz_o_tym`, bo porownuje sie ostrzejszym progiem —
@@ -3382,7 +3383,7 @@ def notki_dnia(
     wczesniejsze = pamiec_wystawionych()
     # TEKSTY OSOBNO — patrz `teksty_ostatnich_notek`. Odciski nie niosa
     # wielkich liter ani cyfr, wiec po nich nie da sie rozpoznac nazwy
-    # wlasnej, a to ona zlapala trzy notki o jednym modelu w jeden dzien.
+    # wlasnej, a to ona zlapala trzy notki o tej samej rzeczy w jeden dzien.
     teksty_notek = teksty_ostatnich_notek()
     print("  [pamiec] notek w pamieci: %d (%s)"
           % (len(wczesniejsze),
@@ -3404,7 +3405,7 @@ def notki_dnia(
             #
             # Zamiast dowodu dostaje KONTEKST: o czym mowi sie w tej dziedzinie
             # w tym tygodniu. Nie po to, zeby cytowac — po to, zeby mysl byla
-            # o czyms biezacym, a nie o AI w ogolnosci.
+            # o czyms biezacym, a nie o dziedzinie w ogolnosci.
             material = {"nie_cytuj_tego": (
                 "Context only. These are things being discussed this week. "
                 "Do NOT quote, cite, or state any of them as fact — you have "
@@ -6892,22 +6893,27 @@ def co_zadzialalo(ile: int = 6) -> str:
     if not naj:
         return "(no measurements available yet)"
 
-    # TYLKO POMIARY Z EPOKI AI. Konto do 25 sierpnia pisalo o przedmiotach
-    # codziennych i te notki nadal siedza w statystykach — dwie najslabsze w
-    # calym zbiorze dotycza symbolu na butelce szamponu.
+    # TYLKO POMIARY Z OBECNEJ EPOKI KONTA. Notki sprzed zmiany tematu nadal
+    # siedza w statystykach — na tym koncie dwie najslabsze w calym zbiorze
+    # byly wlasnie stamtad.
     #
     # Podanie ich sedziemu jako dowodu „co dziala na tym koncie" jest DOKLADNIE
     # ta sama wada, ktora tego samego dnia wycielismy z dziewieciu promptow:
     # uczenie na materiale sprzed przestawienia. Gorzej nawet, bo tu wyglada na
     # twardy pomiar — a mierzy inna publikacje, czytana przez innych ludzi.
     #
-    # Wlasciciel zlapal to natychmiast: „jaki szampon, o ai piszemy".
     # DATA PUBLIKACJI, NIE POMIARU. Pole `kiedy` w statystykach to chwila, w
     # ktorej ZMIERZYLISMY notke, wiec jest zawsze dzisiejsza — pierwsza wersja
-    # tego filtru nie odsiala niczego i szampon przeszedl dalej. Prawdziwa data
-    # wystawienia siedzi w dzienniku dzialan, razem z trescia, wiec laczymy
-    # jedno z drugim po poczatku tekstu.
+    # tego filtru nie odsiewala wiec NICZEGO i cala stara epoka szla dalej.
+    # Prawdziwa data wystawienia siedzi w dzienniku dzialan, razem z trescia,
+    # wiec laczymy jedno z drugim po poczatku tekstu.
+    #
+    # PUSTA GRANICA ZNACZY „TO KONTO NIE ZMIENIALO TEMATU" i nie odsiewa nic —
+    # patrz `config.DATA_PRZESTAWIENIA`. Wychodzimy wtedy od razu, zeby nie
+    # czytac calego dziennika po to, by na koncu niczego nie odrzucic.
     granica = config.DATA_PRZESTAWIENIA
+    if not granica:
+        return _tabela_odbioru(naj, ile)
     kiedy_wystawiona: dict[str, str] = {}
     try:
         import json as _js
@@ -6943,6 +6949,16 @@ def co_zadzialalo(ile: int = 6) -> str:
               % (odsiane, granica), flush=True)
     naj = po_przestawieniu
 
+    return _tabela_odbioru(naj, ile)
+
+
+def _tabela_odbioru(naj: dict, ile: int) -> str:
+    """Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt.
+
+    Wydzielone z `odbior_notek`, bo ta ma DWA wyjscia: z odsianiem pomiarow
+    sprzed zmiany tematu i bez niego. Powtorzony osiem linii nizej ten sam
+    kod rozjechalby sie przy pierwszej zmianie miary.
+    """
     def punkty(r):
         return (statystyki._liczba(r.get("polubienia"))
                 + 3 * statystyki._liczba(r.get("odpowiedzi")))
@@ -6980,7 +6996,7 @@ def posortuj_bank(conn: sqlite3.Connection, run_id: int | None = None,
     pozniej wychodzil w chudy dzien.
 
     Brakowalo tez dwoch sprawdzen, ktorych nie robil NIKT w calym potoku:
-    czy temat jest w ogole O AI, i czy jest ciekawy.
+    czy temat nalezy w ogole do NASZEJ niszy, i czy jest ciekawy.
 
     RANKING, NIE OCENA — i to nie jest szczegol. Pytany o noty model daje
     prawie wszystkiemu to samo wysokie 8: samooceny w tym potoku degeneruja do

@@ -3,28 +3,30 @@
 
 ZMIERZONE na 82 udanych komentarzach z tygodnia:
 
-    82 komentarze  ->  3 odpowiedzi   (4%)
-    z 30 postow o AI bylo 4-6
+    82 komentarze          ->  3 odpowiedzi   (4%)
+    30 z nich pod postami z NASZEJ niszy  ->  4-6% odpowiedzi
 
-Reszta to bylo etykietowanie zywnosci, rezerwa paliwowa USA, korespondencyjni
-przyjaciele, odpornosc na odre, transport kontenerowy, Ksiega Henocha, oplaty
-za bilety. Kazdy z tych komentarzy mogl byc doskonaly i nie przyniesc nic, bo
-ktos czytajacy o rezerwie paliwowej nie ma powodu chciec publikacji o AI.
+Pozostale piecdziesiat dwa poszly pod teksty o rzeczach, ktorych ta publikacja
+nie dotyka wcale — od etykiet na zywnosci po historie starozytna. Kazdy z tych
+komentarzy mogl byc doskonaly i nie przyniesc nic: ktos czytajacy o czym innym
+nie ma powodu chciec akurat nas.
 
 Rozklad byl przy tym prawie plaski — po jednym komentarzu na publikacje, po
 kilkudziesieciu roznych newsletterach. Nikt nie widzial nas dwa razy.
 
-PRZYCZYNA BYLA NAPISANA WPROST W REGULE. Prompt nazywal konto publikacja o AI,
-ale zadne z dwoch kryteriow nie wymagalo, zeby POST byl o AI — a pierwsze wprost
-to rozszerzalo: „It does not have to be the post's subject". Model stosowal
-regule POPRAWNIE: pod rezerwa paliwowa jest system i mamy co dodac, wiec dwa
-razy tak. To resztka po epoce przedmiotow, ta sama klasa co dziewiec promptow
-poprawionych tego samego dnia.
+PRZYCZYNA BYLA NAPISANA WPROST W REGULE. Prompt nazywal konto publikacja o swojej
+niszy, ale zadne z dwoch kryteriow nie wymagalo, zeby POST tez byl z tej niszy —
+a pierwsze wprost to rozszerzalo: „It does not have to be the post's subject".
+Model stosowal regule POPRAWNIE: pod dowolnym tekstem da sie znalezc watek,
+w ktorym mamy co dodac, wiec odpowiadal „tak" dwa razy z trzech. To ta sama
+klasa wady, co przyklady z poprzedniej niszy w dziewieciu promptach, poprawione
+tego samego dnia.
 
-CZEGO TA POPRAWKA NIE ROBI. Nie rusza `ODSTEP_DNI_NA_PUBLIKACJE` — wlasciciel
-byl jednoznaczny: „nie chce zeby jak bot wygladac, on nie ma nakurwiac na jednym
-profilu". Odstep zostaje. Rozpoznawalnosc ma sie brac z WEZSZEJ PULI odwiedzanej
-w tym samym rytmie, nie z czestszego pisania w jednym miejscu.
+CZEGO TA POPRAWKA NIE ROBI. Nie rusza `ODSTEP_DNI_NA_PUBLIKACJE`. Decyzja
+wlasciciela jest jednoznaczna: konto ma nie wygladac jak bot, wiec nie wolno mu
+zageszczac obecnosci w jednym miejscu. Odstep zostaje. Rozpoznawalnosc ma sie
+brac z WEZSZEJ PULI odwiedzanej w tym samym rytmie, nie z czestszego pisania
+w jednym miejscu.
 
 BEZ PYTESTA, bez sieci. Uruchamiac z korzenia repozytorium.
 """

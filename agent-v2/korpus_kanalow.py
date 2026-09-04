@@ -8,7 +8,8 @@ przegral 650 razy i pobil rekord czlowieka.
 
 Roznica nie jest w dziedzinie, tylko w tym, ze kazdy z tych tematow **da sie
 opowiedziec komus przy stole**. Praca o rownowadze plazmy nie da sie, choc jest
-lepsza nauka. Kanaly o AI robia ten dobor od lat i maja na nim liczniki — wiec
+lepsza nauka. Kanaly z tej dziedziny robia ten dobor od lat i maja na nim
+liczniki — wiec
 zamiast zgadywac, co jest ciekawe, czytamy, co ONI wybrali.
 
 CZEGO STAD NIE BIERZEMY. Naglowkow. „This Will Change EVERYTHING" obiecuje rzecz,

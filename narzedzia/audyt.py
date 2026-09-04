@@ -23,6 +23,7 @@ import ast
 import pathlib
 import re
 import subprocess
+import unicodedata
 import sys
 
 KORZEN = pathlib.Path(__file__).resolve().parent.parent
@@ -258,6 +259,62 @@ def main() -> int:
     sprawdz("zadna sklejona stala nie niesie tozsamosci", not znalezione, znalezione)
 
     print()
+    print("=== 2b. PISMO, KTOREGO TEN KOD NIE POTRZEBUJE ===")
+    # Slowo „pre<cyrylickie r>ejestrowany" przezylo siedem przeczesywek
+    # i czytanie linia po linii. Wyglada jak polskie slowo i nie znajdzie go
+    # zadne szukanie po jego lacinskim zapisie.
+    #
+    # To ta sama klasa, co znaki sterujace w liscie wzorcow: napis, ktory
+    # wyglada normalnie i nie da sie go dopasowac. Tedy tez wchodza tu nazwy
+    # ludzi — wklejone imie przyjezdza razem z pismem rodzimym.
+    #
+    # NIE ZABRANIAMY OBCYCH LITER. Substack ma interfejs po niemiecku i kod
+    # slusznie szuka „Veröffentlichen". Oblewamy tylko na pismach, ktorych
+    # zadna potrzeba tego kodu nie tlumaczy; zachodnioeuropejskie znaki
+    # wypisujemy jako ostrzezenie, bo tam mieszkaja i UI, i nazwiska.
+    ZAKRESY_OBCE = (
+        (0x0370, 0x03FF, "greka"), (0x0400, 0x04FF, "cyrylica"),
+        (0x0530, 0x058F, "ormianski"), (0x0590, 0x05FF, "hebrajski"),
+        (0x0600, 0x06FF, "arabski"), (0x0900, 0x097F, "dewanagari"),
+        (0x0E00, 0x0E7F, "tajski"), (0x3040, 0x30FF, "kana"),
+        (0x3400, 0x9FFF, "hanzi"), (0xAC00, 0xD7AF, "hangul"),
+    )
+
+    def _obce(znak: str) -> str:
+        k = ord(znak)
+        for od, do, nazwa in ZAKRESY_OBCE:
+            if od <= k <= do:
+                return nazwa
+        return ""
+
+    POLSKIE = set("ĄĆĘŁŃÓŚŻŹąćęłńóśżź")
+    twarde, miekkie = [], []
+    for p, _ in pliki:
+        if p.resolve() in SZUKAJACE:
+            continue
+        # Trzy widoki tu nie pomagaja i zaciemniaja numer linii — czytamy plik.
+        try:
+            surowy = p.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for nr, linia in enumerate(surowy.splitlines(), 1):
+            for znak in linia:
+                if ord(znak) < 128 or znak in POLSKIE:
+                    continue
+                if not unicodedata.category(znak).startswith("L"):
+                    continue          # myslniki, cudzyslowy, strzalki
+                pismo = _obce(znak)
+                gdzie = "%s:%d  %r" % (wzgledna(p), nr, znak)
+                (twarde if pismo else miekkie).append(
+                    "%s %s" % (gdzie, pismo or "lacinka rozszerzona"))
+    if miekkie:
+        print("    do obejrzenia (litery lacinskie spoza polskiego): %d"
+              % len(miekkie))
+        for wiersz in miekkie[:6]:
+            print("      %s" % wiersz)
+    sprawdz("zadne obce pismo w drzewie", not twarde, twarde[:4])
+
+    print()
     print("=== 3. PLIKI, KTORYCH NIE MOZE BYC ===")
     nazwy = [wzgledna(p) for p in sledzone()]
     for wzorzec, opis in ZAKAZANE_PLIKI:
@@ -373,6 +430,16 @@ def main() -> int:
     # I kontrdowod do kontrdowodu: wzorzec nie moze lapac czegokolwiek.
     sprawdz("  wzorzec nie lapie tekstu bez marki",
             not re.search(WZ, "zwykly tekst bez niczego", re.I))
+
+    # D. HOMOGLIF. Sekcja 2b istnieje przez jedno slowo, w ktorym lacinskie
+    # „r" bylo cyrylickie. Kontrdowod musi pokazac OBIE polowy: ze szukanie
+    # po zapisie lacinskim tego NIE widzi, i ze sprawdzenie po kodzie znaku
+    # widzi. Bez pierwszej polowy druga niczego nie dowodzi.
+    podszyte = "preрejestrowany"
+    sprawdz("  D: homoglif niewidoczny dla szukania po literach",
+            "prerejestrowany" not in podszyte, podszyte)
+    sprawdz("  D: i widoczny po kodzie znaku",
+            any(0x0400 <= ord(z) <= 0x04FF for z in podszyte), podszyte)
 
     if "--historia" in sys.argv:
         print()

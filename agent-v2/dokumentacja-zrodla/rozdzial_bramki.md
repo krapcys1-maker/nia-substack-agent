@@ -124,7 +124,7 @@ Komentarz w kodzie nazywa to *„najostrzejszą regułą w całym potoku"*, a uz
                        "'your'): %r" % skutek[:70])
 ```
 
-Historia tej bramki jest zapisana w komentarzu i jest najlepszym uzasadnieniem w całym module. Pierwszy przebieg na Federal Register wypuścił **sześć kandydatów na sześć** — kwoty połowowe dla posiadaczy zezwoleń na takle pelagiczne, opłaty karne dla przetwórców orzechów włoskich, dodatek za wypalanie kontrolowane dla strażaków leśnych i formatowanie nagłówka w samym Federal Register. Każdy miał decydenta, datę, złamane przekonanie i skutek. Żaden nie nadawał się do publikacji, bo przekonanie trzymała **branża**, a nie czytelnik. Komentarz dodaje wniosek metodologiczny: *„Zero odrzucen na prawdziwych danych bylo zreszta samo w sobie ostrzezeniem: bramka, ktora nigdy nie zagryzla, nie jest bramka."*
+Historia tej bramki jest zapisana w komentarzu i jest najlepszym uzasadnieniem w całym module. Pierwszy przebieg na rejestrze rozporządzeń wypuścił **sześć kandydatów na sześć**: cztery zmiany stawek i opłat dla wąskich grup zawodowych, dodatek branżowy i zmiana formatowania nagłówka w samym rejestrze. Każdy miał decydenta, datę, złamane przekonanie i skutek. Żaden nie nadawał się do publikacji, bo przekonanie trzymała **branża**, a nie czytelnik. Komentarz dodaje wniosek metodologiczny: *„Zero odrzucen na prawdziwych danych bylo zreszta samo w sobie ostrzezeniem: bramka, ktora nigdy nie zagryzla, nie jest bramka."*
 
 Rozwiązanie jest **strukturalne, nie słownikowe**, bo lista słów branżowych z natury przecieka:
 

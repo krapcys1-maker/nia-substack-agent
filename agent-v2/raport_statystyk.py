@@ -30,7 +30,7 @@ def _skrot(tekst: str, ile: int = 46) -> str:
 
 
 # Dzien, w ktorym konto przestalo pisac o ukrytych systemach w zwyklych
-# rzeczach, a zaczelo o AI. Wszystko starsze opisuje INNA publikacje i
+# rzeczach, a potem zmienilo temat. Wszystko starsze opisuje INNA publikacje i
 # mieszanie tego z dzisiejszym stanem juz raz doprowadzilo do zlej decyzji.
 PIVOT = "2026-08-25"
 

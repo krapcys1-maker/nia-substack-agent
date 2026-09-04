@@ -1,7 +1,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2843 wierszy, 26 funkcji na poziomie modułu, 1 klas
+2845 wierszy, 26 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -16,7 +16,7 @@
 | `zmiesci_sie(rodzaj, ile, udzial)` | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. |
 | `ile_przebiegow_zostalo(conn)` | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. |
 | `_slug(tekst)` *(wewn.)* | Nazwa do porownywania: same litery i cyfry ASCII, malymi. |
-| `_slug_hosta(host)` *(wewn.)* | Pierwszy czlon adresu jako slug: `www.ryanpuzycki.com` -> `ryanpuzycki`. |
+| `_slug_hosta(host)` *(wewn.)* | Pierwszy czlon adresu jako slug: `www.imienazwisko.com` -> `imienazwisko`. |
 | `_reakcje_z_dziennika()` *(wewn.)* | Jeden przebieg po dzienniku, dwie odpowiedzi o tych samych ludziach. |
 | `kogo_juz_dotknelismy()` | Slugi nazw ludzi, ktorzy zareagowali na NASZA tresc — z dziennika. |
 | `nasi_czytelnicy()` | Uchwyty ludzi, ktorzy JUZ nas czytaja — z `czytelnicy.jsonl`. Tylko odczyt. |
@@ -34,7 +34,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7345 wierszy, 133 funkcji na poziomie modułu, 0 klas
+7361 wierszy, 134 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -163,6 +163,7 @@
 | `dopisz_kandydatow(kandydaci)` | Przepuszcza kandydatow przez bramke i dokłada do indeksu. |
 | `wez_kandydatow(ile)` | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. |
 | `co_zadzialalo(ile)` | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. |
+| `_tabela_odbioru(naj, ile)` *(wewn.)* | Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt. |
 | `posortuj_bank(conn, run_id, ile)` | Ustawia bank pomyslow od najmocniejszego i wyrzuca slabe. |
 | `_termin_waznosci(dni)` *(wewn.)* | Kiedy ta kandydatura przestaje byc tematem. Data z godzina, w UTC. |
 | `_po_terminie(k)` *(wewn.)* | Czy kandydatura jest juz po swoim terminie przydatnosci. |
@@ -524,7 +525,7 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-373 wierszy, 6 funkcji na poziomie modułu, 0 klas
+374 wierszy, 6 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
