@@ -111,8 +111,14 @@ IMAGE_TIMEOUT_S = 300
 # dwa kawalki i cudzyslow miedzy nimi. Dlatego audyt sklada literaly
 # przez `ast.literal_eval` i dopiero WYNIK porownuje ze wzorcami.
 #
-# Prompty w `prompts/*.md` nadal maja ja wpisana w tresci — ich przepiecie na
-# pole to osobna robota, opisana w docs/MAPA_KONFIGURACJI.md czesc 5.
+# ZDANIE, KTORE TU STALO, PRZESTALO BYC PRAWDA I TO TEZ JEST WADA. Brzmialo:
+# „Prompty w `prompts/*.md` nadal maja ja wpisana w tresci — ich przepiecie na
+# pole to osobna robota". Przepiecie zostalo zrobione tego samego dnia:
+# dziewiec promptow sklada nazwe z `{marka}` (patrz `stages._pola_wspolne`),
+# a `tests/test_prompty_o_niszy.py` oblewa, gdy ktorys wroci do wpisywania jej
+# w tresci. Notatka „do zrobienia", ktora przezyla swoja robote, kaze szukac
+# problemu, ktorego nie ma — i to jest ten sam koszt, co notatka, ktora
+# obiecuje kontrole, ktorej nie ma.
 NAZWA_MARKI = "Your Publication"
 
 SUBSTACK_HANDLE = "your-handle"
@@ -204,9 +210,9 @@ MODEL_FOR = {
     # Komentarze ida na DeepSeek V4 Pro, notki na Claude Opus 5. Notka ma jeden
     # wariant (`NOTE_CANDIDATES = 1`), wiec nie powstaje pula kilkunastu
     # kandydatow do wyboru.
-    # PODZIAL PO TESCIE A/B NA TYM SAMYM POSCIE. Pro przynioslo konkretny
-    # precedens (konkretny precedens prawny z data) i nazwalo
-    # asymetrie kosztu bledu; flash dal trafna, ale ogolniejsza uwage. Roznica
+    # PODZIAL PO TESCIE A/B NA TYM SAMYM POSCIE. Pro przynioslo KONKRETNY
+    # precedens — nazwana sprawe z data — i nazwalo asymetrie kosztu bledu;
+    # flash dal uwage trafna, ale ogolnikowa. Roznica
     # kosztu to ~12 USD miesiecznie i placimy ja TAM, GDZIE TEKST JEST PUBLICZNY
     # I TRWALY — a nie tam, gdzie model tylko wybiera z listy albo opisuje obrazek.
     # NOTKA IDZIE DO FABLE — zmiana na galezi v2-test, po A/B na tym samym
@@ -548,7 +554,17 @@ WEB_SEARCH_USD_PER_1K = 10.00
 import datetime as _dt_sufit  # noqa: E402
 _DZIS_UTC = _dt_sufit.datetime.now(_dt_sufit.timezone.utc).strftime("%Y-%m-%d")
 SUFIT_PODNIESIONY_NA = "2026-08-30"
-DAILY_LIMIT_USD = 10.00 if _DZIS_UTC == SUFIT_PODNIESIONY_NA else 5.00
+SUFIT_DZIENNY_BAZOWY = 5.00
+# Podniesienie WYGASA SAMO: jutro plik jest ten sam, a sufit z powrotem bazowy.
+DAILY_LIMIT_USD = (SUFIT_DZIENNY_BAZOWY * 2.0
+                   if _DZIS_UTC == SUFIT_PODNIESIONY_NA
+                   else SUFIT_DZIENNY_BAZOWY)
+
+
+# O ILE PODNOSI SIE SUFIT W DNIU PRACY PRZY WLASCICIELU. Mnoznik, nie druga
+# liczba: sufit dzienny jest polem konfiguracji, a wpisana tu kwota
+# rozjechalaby sie z nim przy pierwszej zmianie.
+SUFIT_PODNIESIONY_RAZY = 2.0
 
 
 def sufit_dnia(dzien: str) -> float:
@@ -558,13 +574,19 @@ def sufit_dnia(dzien: str) -> float:
     Ale alarm kosztu patrzy takze na WCZORAJ — a wczoraj sufit mogl byc inny.
 
     Zmierzone 31 sierpnia: alarm doniosl „Wczoraj wydane $7.22 przy dziennym
-    suficie $5.0". Wczorajszy sufit wynosil DZIESIEC (podniesiony na jeden
-    dzien pracy przy wlascicielu), wiec zaden sufit nie zostal przekroczony —
-    alarm porownal wczorajszy wydatek z dzisiejsza wartoscia stalej.
+    suficie $5.0". Wczorajszy sufit wynosil DWA RAZY WIECEJ (podniesiony na
+    jeden dzien pracy przy wlascicielu), wiec zaden sufit nie zostal
+    przekroczony — alarm porownal wczorajszy wydatek z dzisiejsza wartoscia.
 
     Falszywy alarm uczy ignorowac alarmy, a ten akurat ma pilnowac pieniedzy.
+
+    LICZY SIE OD `DAILY_LIMIT_USD`, NIE OD LICZB WPISANYCH TUTAJ. Stalo tu
+    `return 10.00 if ... else 5.00` — dwie kwoty wpisane drugi raz, obok pola
+    konfiguracji, ktore mowi to samo. Konto z sufitem 3 USD dostawaloby alarm
+    dopiero po piatym, a konto z sufitem 20 — codziennie o niczym.
     """
-    return 10.00 if str(dzien)[:10] == SUFIT_PODNIESIONY_NA else 5.00
+    return (DAILY_LIMIT_USD * SUFIT_PODNIESIONY_RAZY
+            if str(dzien)[:10] == SUFIT_PODNIESIONY_NA else DAILY_LIMIT_USD)
 
 # SUFIT TORU TESTOWEGO — osobny od produkcyjnego i CELOWO NIE NIESKONCZONY.
 #
@@ -616,7 +638,7 @@ DISCOVERY_MAX_SEARCHES = 8
 # pojdzie do pisarza. Prog z danych, nie z przeczucia: artykuly, ktore wyszly
 # dobrze, mialy 6-7 pobranych zrodel; ten, ktory wyszedl najcienszy i z jedynym
 # faktem bez pokrycia, mial trzy. Czworka lapie tamten przypadek, a nie rusza
-# artykulu o autobusie (cztery zrodla, zero uwag z bramek).
+# tekstu, ktory wyszedl czysto na czterech zrodlach i zero uwag z bramek.
 # Ile znakow preambuly czytamy. Najgestszy dokument z pomiaru mial 519 tys.
 # znakow, a uzasadnienie siedzi na poczatku — dalej ida zalaczniki i tabele.
 FEDREG_MAX_ZNAKOW = 60_000
@@ -659,9 +681,9 @@ CARD_MAX_CLAIM_CHARS = 240
 # DLUGOSC SKALOWANA DO MATERIALU, nie stala.
 #
 # Bylo `TARGET_WORDS = 1075` przy `MIN_WORDS = 950`, wiec pisarz MUSIAL napisac
-# tysiac slow z czegokolwiek dostal. Artykul o symbolu otwartego sloiczka dostal
-# material na trzysta i wypelnil reszte: ten sam mechanizm trzy razy, trzy
-# akapity o tym, czego dowody nie mowia, i opowiesc o wlasnym researchu.
+# tysiac slow z czegokolwiek dostal. Jeden artykul dostal material na TRZYSTA
+# i wypelnil reszte: ten sam mechanizm trzy razy, trzy akapity o tym, czego
+# dowody nie mowia, i opowiesc o wlasnym researchu.
 #
 # Teraz odsiew ocenia, czy temat ma DRUGI AKT, a dlugosc idzie za ta ocena.
 # Waski temat nie jest odrzucany — dostaje krotsza forme, i to jest w porzadku.
@@ -678,8 +700,8 @@ DLUGOSC_WG_GLEBOKOSCI = {
     # Bez tego wpisu THIN wpadal w galaz domyslna, czyli RICH, i temat
     # o najmniejszej ilosci materialu dostawal 1075 slow do wypelnienia.
     # To jest DOKLADNIE ta usterka, przed ktora cala ta tabela powstala:
-    # artykul o symbolu otwartego sloiczka mial material na trzysta slow
-    # i wypelnil tysiac tym samym mechanizmem opisanym trzy razy.
+    # tekst z materialem na trzysta slow wypelnil tysiac tym samym
+    # mechanizmem opisanym trzy razy.
     "THIN":   {"cel": 420,  "min": 300, "max": 560},
 }
 
