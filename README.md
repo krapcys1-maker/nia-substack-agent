@@ -1,4 +1,4 @@
-# NIA Substack Bot
+# NIA — Substack agent
 
 [![tests](../../actions/workflows/testy.yml/badge.svg)](../../actions/workflows/testy.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -21,7 +21,17 @@ a provider invoice, to the cent.
 
 The account identity, the subject matter and the source list have been removed.
 What ships is the machine plus an example configuration you are expected to
-replace. [docs/INSTALL.md](docs/INSTALL.md) says exactly where.
+replace — or one of four ready [subject packs](packs/README.md), so you do not
+have to invent twenty search terms before the first run.
+[docs/INSTALL.md](docs/INSTALL.md) says exactly where everything goes.
+
+Two things here are unusual enough to be worth your next thirty seconds.
+[docs/CLEANING_LOG.md](docs/CLEANING_LOG.md) records how one account's identity
+was taken out of a working tree — **including the sweeps that found nothing and
+why**, which is the part nobody publishes. And section 9 of
+`narzedzia/audyt.py` injects three leaks into the audit to check that the audit
+catches them, because a check that has never fired is indistinguishable from a
+broken one. That habit is the reason the numbers above can be trusted.
 
 ---
 
