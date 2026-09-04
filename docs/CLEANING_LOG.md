@@ -256,16 +256,18 @@ rather than a percentage, because a percentage hides which half you got.
 | `run.py` | 2,845 | **all of it** |
 | `config.py` | 2,985 | **all of it** |
 | `wzajemnosc.py` | 1,442 | **all of it** |
-| `llm.py` | 823 | most |
+| `llm.py` | 837 | **all of it** |
+| `alarm.py` | 1,053 | **all of it** |
 | `konfiguracja.py`, `jezyki.py`, `style.py` | ~800 | all — they were rewritten |
 | `audyt_systemu.py`, `audyt_tematow.py` | 980 | the parts touched here |
-| `norma.py` | 1,120 | the first quarter |
+| `norma.py` | 1,170 | **all of it** |
 | `raport_statystyk.py`, `korpus_kanalow.py` | 660 | the parts touched here |
-| the other 12 modules | ~7,900 | **not yet** |
+| the other 10 modules | ~5,900 | **not yet** |
 | the 143 test files | 39,086 | roughly 35 of them, in the parts touched |
 
-That is 20,150 of the 29,940 lines in the agent's modules — 67% — and it is
-the five files that carry every publishing decision and every setting.
+That is 24,050 of the 29,940 lines in the agent's modules — 80% — and it is
+every file that carries a publishing decision, a setting, a money guard
+or an alarm.
 
 The unread part has been through all thirteen sweeps but not through a person's
 eyes. Every one of those sweeps found something the earlier ones could not, and
