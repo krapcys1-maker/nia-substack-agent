@@ -4669,8 +4669,8 @@ def potwierdz_adres_artykulu(page, tytul: str) -> str:
     """Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu.
 
     Adres byl skladany przez zamiane tytulu na slug, a Substack slugi SKRACA:
-    „The Hole in Example Article Nine Is Doing Exactly What It Should" dostalo
-    adres uciety po czterech slowach. Zgadniety adres odpowiadal 302,
+    dziewieciowyrazowy tytul dostal adres uciety po CZTERECH pierwszych
+    slowach. Zgadniety adres odpowiadal 302,
     wiec notka promujaca dzialala tylko dzieki przekierowaniu, ktorego Substack
     nam nie obiecal. Notka promujaca z martwym linkiem jest gorsza niz jej brak.
 
@@ -4803,7 +4803,7 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
         # zapora przepuszcza je zgodnie z zasadą „przy wątpliwości próbuję" —
         # Playwright czekał pełne 15 sekund na aktywność elementu, którego nie
         # ma, i kończył wyjątkiem. Zdarzyło się to dwa razy pierwszego dnia na
-        # produkcji: scalesignals i glowwithella.
+        # produkcji: dwie rozne publikacje.
         #
         # Bierzemy pierwszą WIDOCZNĄ, a brak pola mówimy wprost zamiast
         # wywracać się na czasie. Wyjątek i tak nie niósł żadnej informacji
@@ -4874,8 +4874,8 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
         # PORAZKA TEZ MUSI ZOSTAWIC SLAD. Zapis stal wylacznie w galezi
         # „wysylamy i przycisk byl", wiec TRZY konce tej funkcji nie trafialy
         # do dziennika w ogole: „nie ma pola komentarza pod tym postem"
-        # (zdarzylo sie dwa razy pierwszego dnia na produkcji — scalesignals
-        # i glowwithella), brak przycisku wysylki i kazdy wyjatek.
+        # (zdarzylo sie dwa razy pierwszego dnia na produkcji — publikacja16
+        # i publikacja17), brak przycisku wysylki i kazdy wyjatek.
         #
         # CO BYLO WIDAC, A CO NIE — poprawione 1 wrzesnia, bo poprzednia wersja
         # tego komentarza mowila nieprawde. Zapis w galezi wysylkowej stal TRZY

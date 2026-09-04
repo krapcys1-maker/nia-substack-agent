@@ -1025,7 +1025,7 @@ Potem strona, przewinięcie i wybór pola:
             return wynik
 ```
 
-Nie `locator("textarea").first`: pierwsza w DOM to nie zawsze widoczna, a przy braku pola Playwright czekał pełne 15 s i kończył wyjątkiem — zdarzyło się dwa razy pierwszego dnia produkcji (scalesignals, glowwithella).
+Nie `locator("textarea").first`: pierwsza w DOM to nie zawsze widoczna, a przy braku pola Playwright czekał pełne 15 s i kończył wyjątkiem — zdarzyło się dwa razy pierwszego dnia produkcji, u dwóch różnych publikacji.
 
 Pod postem pole to **`textarea`**, pod notką **`[contenteditable]`** — dwa różne edytory, jeden selektor ich nie obsłuży. Przycisk: `("Post", "Opublikuj", "Wyślij", "Comment", "Skomentuj")`.
 

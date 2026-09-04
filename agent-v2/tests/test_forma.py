@@ -147,7 +147,7 @@ try:
         {"kiedy": "2026-08-17T10:00:00+00:00", "rodzaj": "notka", "udane": True,
          "tekst": "The stop sign is the only octagonal traffic sign."},
         {"kiedy": "2026-08-17T11:00:00+00:00", "rodzaj": "notka", "udane": True,
-         "tekst": "The hole in a pen cap is a safety vent."},
+         "tekst": "The hole in a cap is a safety vent."},
         {"kiedy": "2026-08-17T12:00:00+00:00", "rodzaj": "komentarz", "udane": True,
          "tekst": "Something else entirely here."},
     ]) + "\n", encoding="utf-8")
@@ -198,7 +198,7 @@ print("=== 5. CZY NASZE DOTYCHCZASOWE NOTKI BY TO ZLAPALY ===")
 # tu dwanascie POCZATKOW PRAWDZIWYCH, WYSTAWIONYCH NOTEK, przepisanych slowo
 # w slowo; reszta zdania nie brala udzialu w niczym.
 NASZE = ["American practice differs here", "American rules say otherwise",
-         "The hole in a pen", "An older standard allowed",
+         "The hole in a cap", "An older standard allowed",
          "Every printed copy carries", "The stop sign is",
          "In most modern lifts", "Federal accessibility rules require",
          "The four-digit code on", "US law forces disclosure",

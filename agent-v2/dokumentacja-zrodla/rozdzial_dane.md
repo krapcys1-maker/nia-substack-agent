@@ -768,7 +768,7 @@ Sześć przebiegów, które wyprodukowały artykuł:
 
 | przebieg | artykuł | wywołań | koszt |
 |---|---|---|---|
-| 14 | The Hole in Your Example Article Nine… | 4 | $0,4164 |
+| 14 | Example Article Nine | 4 | $0,4164 |
 | 16 | The Clock You Start Yourself | 15 | **$0,9622** |
 | 17 | The Gas You Didn't Buy | 9 | $0,7397 |
 | 19 | Example Article Eleven Is a Local Calculation… | 13 | $0,6667 |

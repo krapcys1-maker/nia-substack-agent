@@ -3198,7 +3198,7 @@ Potem strona, przewinięcie i wybór pola:
             return wynik
 ```
 
-Nie `locator("textarea").first`: pierwsza w DOM to nie zawsze widoczna, a przy braku pola Playwright czekał pełne 15 s i kończył wyjątkiem — zdarzyło się dwa razy pierwszego dnia produkcji (scalesignals, glowwithella).
+Nie `locator("textarea").first`: pierwsza w DOM to nie zawsze widoczna, a przy braku pola Playwright czekał pełne 15 s i kończył wyjątkiem — zdarzyło się dwa razy pierwszego dnia produkcji, u dwóch różnych publikacji.
 
 Pod postem pole to **`textarea`**, pod notką **`[contenteditable]`** — dwa różne edytory, jeden selektor ich nie obsłuży. Przycisk: `("Post", "Opublikuj", "Wyślij", "Comment", "Skomentuj")`.
 
@@ -5956,7 +5956,7 @@ Sześć przebiegów, które wyprodukowały artykuł:
 
 | przebieg | artykuł | wywołań | koszt |
 |---|---|---|---|
-| 14 | The Hole in Your Example Article Nine… | 4 | $0,4164 |
+| 14 | Example Article Nine | 4 | $0,4164 |
 | 16 | The Clock You Start Yourself | 15 | **$0,9622** |
 | 17 | The Gas You Didn't Buy | 9 | $0,7397 |
 | 19 | Example Article Eleven Is a Local Calculation… | 13 | $0,6667 |

@@ -17,7 +17,7 @@ od poczatku — to wlasnie z niej pochodzi tamten pomiar.
 Naprawde brakowalo TRZECH klas, tych, ktore nie dochodzily do klikniecia:
 
   - „nie ma pola komentarza pod tym postem" (wczesny return; zdarzylo sie dwa
-    razy pierwszego dnia na produkcji — scalesignals i glowwithella),
+    razy pierwszego dnia na produkcji — dwie rozne publikacje),
   - brak przycisku wysylki,
   - kazdy wyjatek.
 
