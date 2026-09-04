@@ -179,8 +179,18 @@ WZORCE: dict[str, dict[str, tuple[str, str]]] = {
         ),
         # Polszczyzna nie ma jednego slowa „you". Zwrot do czytelnika idzie
         # przez zaimki i przez CZASOWNIK w drugiej osobie, wiec wzorzec jest
-        # szerszy — a to nie szkodzi, bo cecha mierzy POZYCJE pierwszego
-        # trafienia, a nie ich liczbe.
+        # szerszy — cecha mierzy POZYCJE pierwszego trafienia, a nie ich liczbe.
+        #
+        # ZNANA NIEDOKLADNOSC, ZAPISANA ZAMIAST PRZEMILCZANEJ: koncowka
+        # `-asz/-esz/-isz/-ysz` lapie tez rzeczowniki („afisz", „towarzysz"),
+        # wiec pierwsze trafienie moze wypasc wczesniej, niz stoi prawdziwy
+        # zwrot do czytelnika. Cena jest mala i jednostronna: cecha to jeden
+        # z SZESCIU zgrubnych kubelkow ksztaltu, a przesuniecie cwiartki jest
+        # mniej szkodliwe niz wartosc STALA — ta ostatnia zgadza sie zawsze
+        # i obniza faktyczny prog `powtorzona_forma` (patrz komentarz przy
+        # wersji angielskiej). Zawezenie do samych zaimkow oddaloby wlasnie
+        # stala: tekst zwracajacy sie do czytelnika samym czasownikiem
+        # dostawalby „brak".
         "ZWROT_DO_CZYTELNIKA": (
             r"\b(ty|ciebie|tobie|cie|twoj\w*|wasz\w*|wy|was|wam)\b"
             r"|\b\w+(asz|esz|isz|ysz)\b",

@@ -270,16 +270,19 @@ rather than a percentage, because a percentage hides which half you got.
 | `run.py` | 2,845 | **all of it** |
 | `config.py` | 2,985 | **all of it** |
 | `wzajemnosc.py` | 1,442 | **all of it** |
-| `llm.py` | 837 | **all of it** |
+| `llm.py` | 848 | **all of it** |
+| `gates.py` | 599 | **all of it** |
+| `statystyki.py` | 530 | **all of it** |
+| `db.py`, `kanal.py`, `bramki.py` | 940 | **all of them** |
+| `style.py`, `konfiguracja.py`, `jezyki.py` | 800 | **all of them** |
+| `kopia_subskrybentow.py`, `audyt_researchu.py`, `aktualne_modele.py` | 590 | **all of them** |
 | `alarm.py` | 1,053 | **all of it** |
-| `konfiguracja.py`, `jezyki.py`, `style.py` | ~800 | all — they were rewritten |
-| `audyt_systemu.py`, `audyt_tematow.py` | 980 | the parts touched here |
 | `norma.py` | 1,170 | **all of it** |
-| `raport_statystyk.py`, `korpus_kanalow.py` | 660 | the parts touched here |
-| the other 10 modules | ~5,900 | **not yet** |
+| `audyt_systemu.py`, `audyt_tematow.py`, `raport_statystyk.py`, `korpus_kanalow.py` | 1,680 | the parts touched here |
+| `migracja_okno_promocji.py` | 97 | **not yet** |
 | the 143 test files | 39,086 | roughly 35 of them, in the parts touched |
 
-That is 24,050 of the 29,940 lines in the agent's modules — 80% — and it is
+That is 28,170 of the 29,970 lines in the agent's modules — 94% — and it is
 every file that carries a publishing decision, a setting, a money guard
 or an alarm.
 

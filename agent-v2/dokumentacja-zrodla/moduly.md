@@ -346,7 +346,7 @@
 
 ### `jezyki.py` — wzorce bramek zalezne od jezyka; przy jezyku bez wzorcow bramka jest JAWNIE wylaczona zamiast cicho nic nie lapac
 
-279 wierszy, 5 funkcji na poziomie modułu, 0 klas
+289 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

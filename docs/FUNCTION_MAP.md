@@ -447,11 +447,11 @@ Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 238 | `_ostrzez(jezyk, czego_brak)` | — | Raz na proces, ale GLOSNO. | `jezyki.frazy`, `jezyki.wzorzec` |
-| 250 | `wzorzec(nazwa, jezyk)` | DEAD? | Skompilowany wzorzec bramki dla tego jezyka. | — |
-| 259 | `frazy(nazwa, jezyk)` | DEAD? | Lista fraz dla tego jezyka. | — |
-| 268 | `znane_jezyki()` | DEAD? | — | — |
-| 272 | `brakujace(jezyk)` | DEAD? | Czego brakuje temu jezykowi wobec angielskiego. | — |
+| 248 | `_ostrzez(jezyk, czego_brak)` | — | Raz na proces, ale GLOSNO. | `jezyki.frazy`, `jezyki.wzorzec` |
+| 260 | `wzorzec(nazwa, jezyk)` | DEAD? | Skompilowany wzorzec bramki dla tego jezyka. | — |
+| 269 | `frazy(nazwa, jezyk)` | DEAD? | Lista fraz dla tego jezyka. | — |
+| 278 | `znane_jezyki()` | DEAD? | — | — |
+| 282 | `brakujace(jezyk)` | DEAD? | Czego brakuje temu jezykowi wobec angielskiego. | — |
 
 ---
 
