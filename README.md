@@ -7,7 +7,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 123 tests · 16 gates on every finished text
+26 model roles · 126 tests · 16 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -72,17 +72,20 @@ cannot see.
 | **[docs/PLUGGING_IN_AN_ACCOUNT.md](docs/PLUGGING_IN_AN_ACCOUNT.md)** | **start here if you want to run it.** Every decision about a publication — name, subject, sources, model split, daily volumes, budget — and the one place each one goes |
 | **[docs/INSTALL.md](docs/INSTALL.md)** | zero to running, step by step — including the one step no software can do for you |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | how it works and where everything lives: both pipelines, all 26 roles, every directory |
-| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **535 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
-| **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | twelve problems with symptom, meaning and fix. **Read before your first run** |
+| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **541 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
+| **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | split in two: what will bite you on a fresh clone, and what already bit us and is fixed. **Read before your first run** |
 | **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
 | **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
 | **[docs/IDENTITY_MAP.md](docs/IDENTITY_MAP.md)** | every physical occurrence of the account's name, subject and voice, classified FIELD / INJECTED / GENERATED / TEMPLATE / BY HAND. Generated |
 | **[docs/CLEANING_LOG.md](docs/CLEANING_LOG.md)** | what was taken out when this stopped being one account's working tree, and exactly where each thing stood |
 
+The Polish original of the troubleshooting journal, with the measurement
+behind each entry, is [docs/ROZWIAZYWANIE_PROBLEMOW.md](docs/ROZWIAZYWANIE_PROBLEMOW.md).
+
 The bot's own design documents are in `agent-v2/` and are in Polish:
 `DOKTRYNA.md` (what it must and must not do — canonical, and its closing
 "Discrepancies" section is part of the document), `JAK_DZIALA_V2.md`
-(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,900 lines,
+(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,985 lines,
 **generated from the code** and guarded by a test so it cannot drift.
 
 ---

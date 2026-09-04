@@ -1,38 +1,40 @@
-# Mapa funkcji — pelny spis
+# Function map — every function in the bot
 
-Plik **generowany**: `python narzedzia/mapa_funkcji.py`. Nie edytuj go recznie.
-Zrodlem jest **drzewo skladni** modulow, nie grep po napisach.
+**Generated** by `python narzedzia/mapa_funkcji.py`. Do not edit by hand.
+Built from the modules' **syntax tree**, not from grepping for strings.
 
-Zakres: wylacznie `agent-v2/*.py`, czyli to, co odpalaja timery systemd.
-`archiwum/` jest poza mapa — nie stoi na zadnej zywej sciezce.
+Scope: `agent-v2/*.py` only — what the systemd timers actually run.
 
-## Liczby
+The **what it does** column comes from each function's own docstring, so it is in Polish: that is the language of this codebase, and the README says so. Everything this generator writes itself is in English.
 
-| co | ile |
+## Counts
+
+| what | how many |
 |---|---|
-| modulow | 25 |
-| funkcji i metod razem | 541 |
-| funkcji wolajacych platny model | 25 |
-| funkcji dotykajacych przegladarki | 62 |
-| funkcji dotykajacych bazy | 41 |
+| modules | 25 |
+| functions and methods | 541 |
+| functions that call a paid model | 25 |
+| functions that touch the browser | 62 |
+| functions that touch the database | 41 |
 
-## Legenda
+## Legend
 
-| znacznik | znaczy |
+| marker | means |
 |---|---|
-| **$**(etap) | wola platny model; w nawiasie `purpose`, po ktorym rozlicza sie koszt w tabeli `calls` |
-| WWW | dotyka przegladarki (`page.*`, `context.*`, `browser.*`) — czyli warstwy Substacka |
-| DB | czyta albo pisze baze |
-| MARTWA? | zadna krawedz wywolania w `agent-v2/*.py` na nia nie wskazuje |
+| **$**(stage) | calls a paid model; the bracket holds the `purpose` the cost is booked under in the `calls` table |
+| WWW | touches the browser (`page.*`, `context.*`, `browser.*`) — the Substack layer |
+| DB | reads or writes the database |
+| DEAD? | no call edge in `agent-v2/*.py` points at it |
 
-`MARTWA?` to **podejrzenie, nie werdykt**. Wywolanie przez zmienna,
-`getattr`, slownik funkcji albo `functools.partial` nie tworzy krawedzi,
-a `main()` i wejscia z systemd sa bez wolajacych z definicji. Dla platnych
-wywolan werdykt wydaje `agent-v2/tests/test_kanal_platnego_wywolania.py`.
+`DEAD?` is a **suspicion, not a verdict**. A call through a variable,
+`getattr`, a dispatch table or `functools.partial` leaves no edge, and
+`main()` plus the systemd entry points have no callers by definition.
+For paid calls the verdict comes from
+`agent-v2/tests/test_kanal_platnego_wywolania.py`.
 
-## Spis modulow
+## Modules
 
-| modul | funkcji | platnych | WWW | DB | rola |
+| module | functions | paid | WWW | DB | what it is for |
 |---|---|---|---|---|---|
 | [`aktualne_modele.py`](#agent-v2aktualne-modele-py) | 4 | 1 | 0 | 0 | Jakie modele istnieja DZISIAJ — pytane na zywo, nie brane z pamieci. |
 | [`alarm.py`](#agent-v2alarm-py) | 25 | 0 | 1 | 6 | Alarm do właściciela i kontrola zdrowia agenta. |
@@ -69,7 +71,7 @@ Jakie modele istnieja DZISIAJ — pytane na zywo, nie brane z pamieci.
 
 4 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 69 | `_swieze(dane)` | — | Czy zapisana odpowiedz jest jeszcze wazna. | `aktualne_modele.pobierz` |
 | 83 | `wczytaj()` | — | Ostatnia zapisana odpowiedz. | `aktualne_modele.jako_tekst`, `aktualne_modele.pobierz` |
@@ -87,7 +89,7 @@ Alarm do właściciela i kontrola zdrowia agenta.
 
 25 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 36 | `_ustawienia()` | — | — | `alarm.skonfigurowany`, `alarm.wyslij` |
 | 49 | `skonfigurowany()` | — | — | `alarm (poziom modulu)`, `alarm.wyslij` |
@@ -126,7 +128,7 @@ Artykul bierze temat z tej samej puli, co notki.
 
 18 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 109 | `temat_z_faktu(conn, run_id, fakt)` | **$**(wybor) | Zamienia udokumentowany fakt w brief artykulu. | `artykul_z_puli._przebieg` |
 | 146 | `glebokosc_z_oceny(ocena)` | — | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. | `artykul_z_puli._napisz_i_zapisz` |
@@ -156,7 +158,7 @@ Audyt segmentu researchu na ZYWYCH danych, jednym poleceniem.
 
 3 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 41 | `etap(nr, nazwa)` | — | — | `audyt_researchu.main` |
 | 48 | `werdykt(nazwa, stan, szczegol)` | — | — | `audyt_researchu.main` |
@@ -171,7 +173,7 @@ Audyt CALEGO systemu na zywych danych, jednym poleceniem.
 
 7 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 139 | `czy_pominiecie(rodzaj)` | — | Czy ten wpis jest pominieciem. | `audyt_systemu.main`, `audyt_systemu.policz_rodzaje` |
 | 144 | `policz_rodzaje(wpisy)` | — | (udane, nieudane, pominiete) — trzy liczniki, bo stany naprawde sa trzy. | `audyt_systemu.main` |
@@ -190,7 +192,7 @@ Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem.
 
 4 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 41 | `etap(nr, nazwa)` | — | — | `audyt_tematow.main` |
 | 48 | `werdykt(nazwa, stan, szczegol)` | — | — | `audyt_tematow.main` |
@@ -206,7 +208,7 @@ Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci.
 
 7 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 48 | `_zrodlo(nazwa)` | — | — | `bramki.przerwania_w_petlach`, `bramki.warunki_przed_wystawieniem`, `bramki.wstrzymania_publikacji` |
 | 60 | `_komentarz_nad(linie, nr, ile)` | — | Ostatnia linia komentarza nad wskazanym wierszem — zwykle uzasadnienie. | `bramki.przerwania_w_petlach`, `bramki.wstrzymania_publikacji` |
@@ -225,11 +227,11 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 
 97 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 44 | `wlasciwe_konto(page)` | MARTWA? | Czy jestesmy na WLASCIWYM koncie tuz przed publikacja. | — |
-| 84 | `pod_rzad_nieudanych(rodzaj)` | MARTWA? | Ile porazek tego rodzaju poszlo BEZPOSREDNIO po sobie w tym przebiegu. | — |
-| 93 | `slad_przebiegu()` | MARTWA? | Podsumowanie tego, co ten proces zrobil — do wypisania na koncu. | — |
+| 44 | `wlasciwe_konto(page)` | DEAD? | Czy jestesmy na WLASCIWYM koncie tuz przed publikacja. | — |
+| 84 | `pod_rzad_nieudanych(rodzaj)` | DEAD? | Ile porazek tego rodzaju poszlo BEZPOSREDNIO po sobie w tym przebiegu. | — |
+| 93 | `slad_przebiegu()` | DEAD? | Podsumowanie tego, co ten proces zrobil — do wypisania na koncu. | — |
 | 106 | `dopisz_wynik(rodzaj, wynik, **szczegoly)` | — | Jeden wpis na dzialanie — takze wtedy, gdy sie NIE UDALO, i z powodem. | `browser._klik_na_profilu`, `browser.obserwuj_profil`, `browser.polec_publikacje`, `browser.wystaw_artykul` *(+7)* |
 | 217 | `zapisz_w_dzienniku(rodzaj, **szczegoly)` | — | Dziennik DZIALAN, nie wywolan modelu. | `browser.dopisz_skutki`, `browser.dopisz_wynik`, `browser.obserwuj_profil`, `browser.polub_w_kanale` *(+4)* |
 | 241 | `z_dziennika_dzis()` | — | Ile komentarzy i polubien poszlo dzis — wedlug naszego zapisu. | `browser.ile_dzis_wystawione` |
@@ -243,87 +245,87 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 | 464 | `plaski(tekst)` | — | Tekst sprowadzony do znakow, ktore SAMI piszemy — do POROWNYWANIA. | `browser.numer_naszej_notki`, `browser.potwierdz_artykul`, `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
 | 494 | `api_json(page, sciezka, baza)` | WWW | Czyta API WCHODZĄC na adres, zamiast wołać `fetch` ze strony. | `browser._artykuly_z_panelu`, `browser._watek_z_paginacja`, `browser.dopisz_skutki`, `browser.ile_dzis_wystawione` *(+19)* |
 | 529 | `podlacz_sie()` | WWW | Podłącza się do Chrome'a, którego uruchomił i zalogował WŁAŚCICIEL. | `browser._klik_na_profilu`, `browser.dopisz_skutki`, `browser.ile_dzis_wystawione`, `browser.kogo_polecamy` *(+24)* |
-| 619 | `sprawdz_sesje()` | WWW | Czy Chrome właściciela jest zalogowany i co agent w nim widzi. | `browser (poziom modulu)` |
-| 653 | `sprawdz_serwer()` | WWW | Odpowiada na JEDNO pytanie: czy zapisana sesja żyje z adresu tego serwera. | `browser (poziom modulu)` |
-| 701 | `zaloguj()` | WWW | Otwiera prawdziwe okno przeglądarki i czeka, aż właściciel się zaloguje. | `browser (poziom modulu)` |
-| 757 | `rozpoznanie()` | WWW | Sprawdza, czy agent umie się poruszać po zalogowanym koncie. | `browser (poziom modulu)` |
-| 828 | `_plaskie(galaz)` | — | Rozwija gałąź wątku do płaskiej listy komentarzy. | `browser._watek_z_paginacja`, `browser.juz_sie_odezwalismy`, `browser.nieodpowiedziane`, `browser.odpowiedzi_na_nasze_komentarze` *(+1)* |
-| 843 | `_kiedy(c)` | — | — | `browser.komentarze_pod_artykulami`, `browser.nieodpowiedziane`, `browser.odpowiedzi_na_nasze_komentarze` |
-| 852 | `ile_dzis_wystawione()` | WWW | Ile notek, komentarzy i polubien poszlo dzisiaj. | `run.dzien` |
-| 920 | `statystyki_pozycji(pozycje)` | WWW | Pobiera statystyki NASZYCH tresci — jedna przegladarka na cala liste. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 1040 | `_ludzie_z_zakladki_ze_stanem(page)` | WWW | Kto jest na tej zakladce ORAZ czy zakladke w ogole udalo sie odczytac. | `browser._ludzie_z_zakladki`, `browser.kto_nas_czyta` |
-| 1071 | `_ludzie_z_zakladki(page)` | — | Sama lista ludzi z zakladki. | `browser.odswiez_kogo_obserwujemy` |
-| 1076 | `kto_nas_czyta(page)` | WWW | KTO nas obserwuje i subskrybuje — imiennie i z data. | `browser.zapisz_czytelnikow` |
-| 1175 | `zapisz_czytelnikow(page)` | — | Zrzut listy czytelnikow do pliku, jeden wiersz na wywolanie. | `browser.nasze_pozycje_do_pomiaru` |
-| 1272 | `kogo_obserwujemy()` | — | Kogo juz obserwujemy — Z DYSKU, BEZ SIECI. | `browser.czy_juz_obserwujemy`, `browser.odswiez_kogo_obserwujemy`, `browser.zapamietaj_obserwowanego`, `run.dzien` *(+2)* |
-| 1299 | `_zapisz_kogo_obserwujemy(pamiec)` | — | Nigdy nie przerywa dzialania — to pamiec pomocnicza, nie warunek pracy. | `browser.odswiez_kogo_obserwujemy`, `browser.zapamietaj_obserwowanego` |
-| 1312 | `zapamietaj_obserwowanego(uchwyt, host)` | — | Dopisuje JEDNEGO do pamieci — po udanej obserwacji albo po zastaniu „Unfollow" w menu. | `browser.obserwuj_profil`, `run.dzien`, `run.dzien.obserwuj` |
-| 1335 | `czy_juz_obserwujemy(host, pamiec)` | — | Czy ten HOST wskazuje kogos, kogo juz obserwujemy. | `run.dzien`, `run.dzien.obserwuj` |
-| 1355 | `odswiez_kogo_obserwujemy(page)` | WWW | Przepisuje pamiec ze strony `/@my/following`. | `browser.nasze_pozycje_do_pomiaru` |
-| 1395 | `zapisz_wzrost_konta(profil)` | — | Ilu nas czyta DZISIAJ — jedna linia na pomiar, historia zostaje. | `browser.nasze_pozycje_do_pomiaru` |
-| 1482 | `_wiersze_zrodel(dane)` | — | Lista pozycji z odpowiedzi o zrodlach — niezaleznie od klucza. | `browser._zapisy_ogolem`, `browser.zapisz_zrodla_ruchu` |
-| 1495 | `_cos_w_odpowiedzi(dane)` | — | Czy odpowiedz W OGOLE cos niesie — odroznia „pusto" od „nie wiem". | `browser.zapisz_zrodla_ruchu` |
-| 1520 | `_suma_pola(wiersze, *pola)` | — | Suma pierwszego istniejacego pola po wierszach. | `browser._z_totali`, `browser._zapisy_wezla`, `browser.zapisz_zrodla_ruchu` |
-| 1541 | `_z_miar(wezel, nazwy)` | — | Liczba z `metrics: [{"name": "Subscribers", "total": 5}, ...]`. | `browser._z_totali`, `browser._zapisy_wezla` |
-| 1559 | `_zapisy_wezla(wezel)` | — | Zapisy z jednej galezi — obojetne, w ktorym z dwoch ksztaltow przyszly. | `browser._zapisy_ogolem`, `browser._zapisy_per_notka` |
-| 1566 | `_z_totali(dane, nazwy)` | — | Liczba z pola `totals` — panel podaje je LISTA, nie slownikiem. | `browser._zapisy_ogolem`, `browser.zapisz_zrodla_ruchu` |
-| 1579 | `_zapisy_ogolem(dane)` | — | Laczna liczba zapisow z drzewa `growth/sources`, albo `None`. | `browser.zapisz_zrodla_ruchu` |
-| 1595 | `_zapisy_per_notka(dane)` | — | {numer notki: zapisy} — z dowolnie zagniezdzonego drzewa. | `browser.zapisz_zrodla_ruchu` |
-| 1620 | `zapisz_zrodla_ruchu(page, dni)` | WWW | SKAD naprawde biora sie zapisy — tabela zrodel, jedna linia na odczyt. | `browser.statystyki_pozycji` |
-| 1824 | `_artykuly_z_panelu(page, baza)` | — | Nasze artykuly razem ze statystykami — JEDNYM zapytaniem. | `browser.nasze_pozycje_do_pomiaru` |
-| 1869 | `_artykuly_z_panelu.licz(*klucze)` | — | — | `browser._artykuly_z_panelu` |
-| 1906 | `nasze_pozycje_do_pomiaru(page, ile)` | — | Co wystawilismy i ma wlasny numer — czyli co da sie zmierzyc. | `browser.statystyki_pozycji` |
-| 2071 | `dopisz_skutki()` | WWW | Dopisuje do dziennika, CO Z NASZYCH DZIALAN WYNIKLO. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 2222 | `odpowiedzi_na_nasze_komentarze(ile)` | WWW | Odpowiedzi na NASZE komentarze zostawione pod CUDZYMI tekstami. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 2334 | `komentarze_pod_artykulami(ile)` | WWW | Cudze komentarze pod NASZYMI artykulami, na ktore nie odpisalismy. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 2391 | `nieodpowiedziane(ile)` | WWW | Cudze odpowiedzi pod naszymi notkami, na które jeszcze nie odpisaliśmy. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 2450 | `sluchaj_publikacji(page)` | WWW | Zbiera kody odpowiedzi na zapytania PUBLIKUJACE. | `browser.wystaw_notke` |
-| 2467 | `id_z_odpowiedzi(odpowiedzi)` | — | Identyfikator notki, ktory Substack oddal przy zapisie. | `browser.wystaw_notke` |
-| 2500 | `numer_naszej_notki(page, tekst, prob)` | WWW | Numer notki odczytany z NASZEGO PROFILU po jej tresci. | `browser.potwierdz_notke`, `browser.restackuj_w_kanale`, `browser.wystaw_notke` |
-| 2536 | `potwierdz_notke(page, tekst, prob)` | — | Pyta Substacka, czy notka naprawdę wisi na naszym profilu. | `browser.wystaw_notke` |
-| 2567 | `_autor_przy_przycisku(przycisk)` | — | Kto napisal wpis, przy ktorym stoi ten przycisk. | `browser.polub_w_kanale` |
-| 2615 | `_uchwyt_wezla(lokator)` | — | Uchwyt do KONKRETNEGO wezla DOM, albo None. | `browser.polub_w_kanale` |
-| 2629 | `_stan_przycisku(uchwyt)` | — | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. | `browser.polub_w_kanale`, `browser.potwierdz_polubienie` |
-| 2654 | `potwierdz_polubienie(uchwyt, przed)` | — | Czy przycisk po klknieciu wyglada inaczej niz przed nim. | `browser.polub_w_kanale` |
-| 2685 | `polub_w_kanale(ile, wyslij)` | WWW | Polubienia w kanale czytelnika. | `run.dzien`, `run.dzien.polubienia` |
-| 2799 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` | WWW | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. | `browser.zasubskrybuj` |
-| 2868 | `pobierz_subskrybentow()` | WWW | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. | `kopia_subskrybentow.pobierz_z_panelu` |
-| 2938 | `zloz_wiersze_subskrybentow(surowe)` | — | Sklada wiersze z komorek tabeli panelu: adres, typ i data rozpoczecia. | `browser._wiersze_subskrybentow` |
-| 2976 | `_wiersze_subskrybentow(page)` | WWW | Czyta komorki tabeli z panelu i oddaje je zlozone. | `browser.pobierz_subskrybentow` |
-| 3040 | `_pozycje_menu(page)` | WWW | Teksty pozycji OTWARTEGO menu, w kolejnosci ekranu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
-| 3059 | `_otworz_menu_profilu(page)` | WWW | Klika kolko „..." w naglowku profilu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
-| 3081 | `potwierdz_obserwacje(page)` | WWW | Czy menu profilu mowi teraz, ze go OBSERWUJEMY. | `browser.obserwuj_profil` |
-| 3150 | `obserwuj_profil(handle, wyslij)` | WWW | Obserwuje cudzy profil — jego notki trafiaja do naszego kanalu. | `run.dzien`, `run.dzien.obserwuj` |
-| 3312 | `kogo_polecamy(page)` | WWW | Kogo nasza publikacja poleca — z API, nie z pamieci. | `browser.polec_publikacje` |
-| 3344 | `polec_publikacje(fraza, powod, wyslij)` | WWW MARTWA? | Dodaje REKOMENDACJE publikacji. | — |
-| 3453 | `zasubskrybuj(handle, wyslij)` | — | Subskrybuje cudzy profil. | `run.dzien`, `run.dzien.subskrybuj` |
-| 3459 | `_esc(t)` | — | — | `browser.rozbierz_artykul` |
-| 3463 | `rozbierz_artykul(sciezka)` | — | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. | `browser.wystaw_artykul` |
-| 3546 | `wypelnij_artykul(page, artykul, obraz)` | WWW | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. | `browser.wystaw_artykul` |
-| 3591 | `wstaw_przycisk_subskrypcji(page)` | WWW | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. | `browser.wypelnij_artykul` |
-| 3627 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
-| 3642 | `ustaw_oswiadczenie_ai(wyslij)` | WWW MARTWA? | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | — |
-| 3720 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 3834 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser.wystaw_artykul` |
-| 3844 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
-| 3941 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
-| 3974 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
-| 4010 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
-| 4181 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki` |
-| 4302 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
-| 4329 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
-| 4343 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
-| 4388 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
-| 4508 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
-| 4576 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
-| 4614 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
-| 4652 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
-| 4662 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
-| 4695 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
-| 4753 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
-| 4966 | `read_pages(urls)` | WWW | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
-| 5003 | `restackuj_w_kanale(ile, decyzja, wyslij)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
-| 5170 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.restackuj_w_kanale` |
+| 626 | `sprawdz_sesje()` | WWW | Czy Chrome właściciela jest zalogowany i co agent w nim widzi. | `browser (poziom modulu)` |
+| 660 | `sprawdz_serwer()` | WWW | Odpowiada na JEDNO pytanie: czy zapisana sesja żyje z adresu tego serwera. | `browser (poziom modulu)` |
+| 708 | `zaloguj()` | WWW | Otwiera prawdziwe okno przeglądarki i czeka, aż właściciel się zaloguje. | `browser (poziom modulu)` |
+| 764 | `rozpoznanie()` | WWW | Sprawdza, czy agent umie się poruszać po zalogowanym koncie. | `browser (poziom modulu)` |
+| 835 | `_plaskie(galaz)` | — | Rozwija gałąź wątku do płaskiej listy komentarzy. | `browser._watek_z_paginacja`, `browser.juz_sie_odezwalismy`, `browser.nieodpowiedziane`, `browser.odpowiedzi_na_nasze_komentarze` *(+1)* |
+| 850 | `_kiedy(c)` | — | — | `browser.komentarze_pod_artykulami`, `browser.nieodpowiedziane`, `browser.odpowiedzi_na_nasze_komentarze` |
+| 859 | `ile_dzis_wystawione()` | WWW | Ile notek, komentarzy i polubien poszlo dzisiaj. | `run.dzien` |
+| 927 | `statystyki_pozycji(pozycje)` | WWW | Pobiera statystyki NASZYCH tresci — jedna przegladarka na cala liste. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 1047 | `_ludzie_z_zakladki_ze_stanem(page)` | WWW | Kto jest na tej zakladce ORAZ czy zakladke w ogole udalo sie odczytac. | `browser._ludzie_z_zakladki`, `browser.kto_nas_czyta` |
+| 1078 | `_ludzie_z_zakladki(page)` | — | Sama lista ludzi z zakladki. | `browser.odswiez_kogo_obserwujemy` |
+| 1083 | `kto_nas_czyta(page)` | WWW | KTO nas obserwuje i subskrybuje — imiennie i z data. | `browser.zapisz_czytelnikow` |
+| 1182 | `zapisz_czytelnikow(page)` | — | Zrzut listy czytelnikow do pliku, jeden wiersz na wywolanie. | `browser.nasze_pozycje_do_pomiaru` |
+| 1279 | `kogo_obserwujemy()` | — | Kogo juz obserwujemy — Z DYSKU, BEZ SIECI. | `browser.czy_juz_obserwujemy`, `browser.odswiez_kogo_obserwujemy`, `browser.zapamietaj_obserwowanego`, `run.dzien` *(+2)* |
+| 1306 | `_zapisz_kogo_obserwujemy(pamiec)` | — | Nigdy nie przerywa dzialania — to pamiec pomocnicza, nie warunek pracy. | `browser.odswiez_kogo_obserwujemy`, `browser.zapamietaj_obserwowanego` |
+| 1319 | `zapamietaj_obserwowanego(uchwyt, host)` | — | Dopisuje JEDNEGO do pamieci — po udanej obserwacji albo po zastaniu „Unfollow" w menu. | `browser.obserwuj_profil`, `run.dzien`, `run.dzien.obserwuj` |
+| 1342 | `czy_juz_obserwujemy(host, pamiec)` | — | Czy ten HOST wskazuje kogos, kogo juz obserwujemy. | `run.dzien`, `run.dzien.obserwuj` |
+| 1362 | `odswiez_kogo_obserwujemy(page)` | WWW | Przepisuje pamiec ze strony `/@my/following`. | `browser.nasze_pozycje_do_pomiaru` |
+| 1402 | `zapisz_wzrost_konta(profil)` | — | Ilu nas czyta DZISIAJ — jedna linia na pomiar, historia zostaje. | `browser.nasze_pozycje_do_pomiaru` |
+| 1489 | `_wiersze_zrodel(dane)` | — | Lista pozycji z odpowiedzi o zrodlach — niezaleznie od klucza. | `browser._zapisy_ogolem`, `browser.zapisz_zrodla_ruchu` |
+| 1502 | `_cos_w_odpowiedzi(dane)` | — | Czy odpowiedz W OGOLE cos niesie — odroznia „pusto" od „nie wiem". | `browser.zapisz_zrodla_ruchu` |
+| 1527 | `_suma_pola(wiersze, *pola)` | — | Suma pierwszego istniejacego pola po wierszach. | `browser._z_totali`, `browser._zapisy_wezla`, `browser.zapisz_zrodla_ruchu` |
+| 1548 | `_z_miar(wezel, nazwy)` | — | Liczba z `metrics: [{"name": "Subscribers", "total": 5}, ...]`. | `browser._z_totali`, `browser._zapisy_wezla` |
+| 1566 | `_zapisy_wezla(wezel)` | — | Zapisy z jednej galezi — obojetne, w ktorym z dwoch ksztaltow przyszly. | `browser._zapisy_ogolem`, `browser._zapisy_per_notka` |
+| 1573 | `_z_totali(dane, nazwy)` | — | Liczba z pola `totals` — panel podaje je LISTA, nie slownikiem. | `browser._zapisy_ogolem`, `browser.zapisz_zrodla_ruchu` |
+| 1586 | `_zapisy_ogolem(dane)` | — | Laczna liczba zapisow z drzewa `growth/sources`, albo `None`. | `browser.zapisz_zrodla_ruchu` |
+| 1602 | `_zapisy_per_notka(dane)` | — | {numer notki: zapisy} — z dowolnie zagniezdzonego drzewa. | `browser.zapisz_zrodla_ruchu` |
+| 1627 | `zapisz_zrodla_ruchu(page, dni)` | WWW | SKAD naprawde biora sie zapisy — tabela zrodel, jedna linia na odczyt. | `browser.statystyki_pozycji` |
+| 1831 | `_artykuly_z_panelu(page, baza)` | — | Nasze artykuly razem ze statystykami — JEDNYM zapytaniem. | `browser.nasze_pozycje_do_pomiaru` |
+| 1876 | `_artykuly_z_panelu.licz(*klucze)` | — | — | `browser._artykuly_z_panelu` |
+| 1913 | `nasze_pozycje_do_pomiaru(page, ile)` | — | Co wystawilismy i ma wlasny numer — czyli co da sie zmierzyc. | `browser.statystyki_pozycji` |
+| 2078 | `dopisz_skutki()` | WWW | Dopisuje do dziennika, CO Z NASZYCH DZIALAN WYNIKLO. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 2229 | `odpowiedzi_na_nasze_komentarze(ile)` | WWW | Odpowiedzi na NASZE komentarze zostawione pod CUDZYMI tekstami. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 2341 | `komentarze_pod_artykulami(ile)` | WWW | Cudze komentarze pod NASZYMI artykulami, na ktore nie odpisalismy. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 2398 | `nieodpowiedziane(ile)` | WWW | Cudze odpowiedzi pod naszymi notkami, na które jeszcze nie odpisaliśmy. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 2457 | `sluchaj_publikacji(page)` | WWW | Zbiera kody odpowiedzi na zapytania PUBLIKUJACE. | `browser.wystaw_notke` |
+| 2474 | `id_z_odpowiedzi(odpowiedzi)` | — | Identyfikator notki, ktory Substack oddal przy zapisie. | `browser.wystaw_notke` |
+| 2507 | `numer_naszej_notki(page, tekst, prob)` | WWW | Numer notki odczytany z NASZEGO PROFILU po jej tresci. | `browser.potwierdz_notke`, `browser.restackuj_w_kanale`, `browser.wystaw_notke` |
+| 2543 | `potwierdz_notke(page, tekst, prob)` | — | Pyta Substacka, czy notka naprawdę wisi na naszym profilu. | `browser.wystaw_notke` |
+| 2574 | `_autor_przy_przycisku(przycisk)` | — | Kto napisal wpis, przy ktorym stoi ten przycisk. | `browser.polub_w_kanale` |
+| 2622 | `_uchwyt_wezla(lokator)` | — | Uchwyt do KONKRETNEGO wezla DOM, albo None. | `browser.polub_w_kanale` |
+| 2636 | `_stan_przycisku(uchwyt)` | — | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. | `browser.polub_w_kanale`, `browser.potwierdz_polubienie` |
+| 2661 | `potwierdz_polubienie(uchwyt, przed)` | — | Czy przycisk po klknieciu wyglada inaczej niz przed nim. | `browser.polub_w_kanale` |
+| 2692 | `polub_w_kanale(ile, wyslij)` | WWW | Polubienia w kanale czytelnika. | `run.dzien`, `run.dzien.polubienia` |
+| 2806 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` | WWW | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. | `browser.zasubskrybuj` |
+| 2875 | `pobierz_subskrybentow()` | WWW | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. | `kopia_subskrybentow.pobierz_z_panelu` |
+| 2945 | `zloz_wiersze_subskrybentow(surowe)` | — | Sklada wiersze z komorek tabeli panelu: adres, typ i data rozpoczecia. | `browser._wiersze_subskrybentow` |
+| 2983 | `_wiersze_subskrybentow(page)` | WWW | Czyta komorki tabeli z panelu i oddaje je zlozone. | `browser.pobierz_subskrybentow` |
+| 3047 | `_pozycje_menu(page)` | WWW | Teksty pozycji OTWARTEGO menu, w kolejnosci ekranu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
+| 3066 | `_otworz_menu_profilu(page)` | WWW | Klika kolko „..." w naglowku profilu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
+| 3088 | `potwierdz_obserwacje(page)` | WWW | Czy menu profilu mowi teraz, ze go OBSERWUJEMY. | `browser.obserwuj_profil` |
+| 3157 | `obserwuj_profil(handle, wyslij)` | WWW | Obserwuje cudzy profil — jego notki trafiaja do naszego kanalu. | `run.dzien`, `run.dzien.obserwuj` |
+| 3319 | `kogo_polecamy(page)` | WWW | Kogo nasza publikacja poleca — z API, nie z pamieci. | `browser.polec_publikacje` |
+| 3351 | `polec_publikacje(fraza, powod, wyslij)` | WWW DEAD? | Dodaje REKOMENDACJE publikacji. | — |
+| 3460 | `zasubskrybuj(handle, wyslij)` | — | Subskrybuje cudzy profil. | `run.dzien`, `run.dzien.subskrybuj` |
+| 3466 | `_esc(t)` | — | — | `browser.rozbierz_artykul` |
+| 3470 | `rozbierz_artykul(sciezka)` | — | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. | `browser.wystaw_artykul` |
+| 3553 | `wypelnij_artykul(page, artykul, obraz)` | WWW | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. | `browser.wystaw_artykul` |
+| 3598 | `wstaw_przycisk_subskrypcji(page)` | WWW | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. | `browser.wypelnij_artykul` |
+| 3634 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
+| 3649 | `ustaw_oswiadczenie_ai(wyslij)` | WWW DEAD? | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | — |
+| 3727 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 3841 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser.wystaw_artykul` |
+| 3851 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
+| 3948 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
+| 3981 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
+| 4017 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
+| 4188 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki` |
+| 4309 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
+| 4336 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
+| 4350 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
+| 4395 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
+| 4515 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
+| 4583 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
+| 4621 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
+| 4659 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
+| 4669 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
+| 4702 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
+| 4760 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
+| 4973 | `read_pages(urls)` | WWW | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
+| 5010 | `restackuj_w_kanale(ile, decyzja, wyslij)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
+| 5177 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.restackuj_w_kanale` |
 
 ---
 
@@ -334,13 +336,13 @@ Jedyne miejsce ze stałymi.
 
 28 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 57 | `_korpus_stylu()` | — | — | `config (poziom modulu)` |
 | 82 | `_env(name, default)` | — | — | `config (poziom modulu)` |
 | 394 | `stawka_deepseek(model, kiedy)` | — | Stawka DeepSeeka z uwzglednieniem pory doby po wejsciu nowej taryfy. | `llm._cost` |
 | 416 | `pora_na_publikacje(kiedy)` | — | Czy teraz wolno wystawiac NOTKI — wg zegara CZYTELNIKOW, nie serwera. | `run.dzien` |
-| 462 | `w_szczycie(kiedy)` | MARTWA? | Czy teraz obowiazuje droga taryfa. | — |
+| 462 | `w_szczycie(kiedy)` | DEAD? | Czy teraz obowiazuje droga taryfa. | — |
 | 488 | `narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie. | `llm._narzedzie_wyszukiwania` |
 | 554 | `sufit_dnia(dzien)` | — | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. | `alarm.koszt` |
 | 705 | `kotwica_dlugosci(glebokosc)` | — | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. | `stages.write` |
@@ -357,9 +359,9 @@ Jedyne miejsce ze stałymi.
 | 2385 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
 | 2440 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
 | 2455 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
-| 2476 | `uzyj_katalogu_danych(katalog, utworz)` | MARTWA? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
+| 2476 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
 | 2504 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
-| 2539 | `przywroc_katalog_danych(zdjecie)` | MARTWA? | Cofa `uzyj_katalogu_danych`. | — |
+| 2539 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
 | 2660 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
 | 2668 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
 | 2774 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
@@ -374,7 +376,7 @@ Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK.
 
 11 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 40 | `kanal(nazwa)` | — | Na czas bloku kazde zapisane wywolanie dostaje `akcja = nazwa`. | `run.main`, `stages._na_kanal`, `stages._na_kanal.zewnetrzny`, `stages._na_kanal.zewnetrzny.wewnetrzny` |
 | 115 | `now()` | — | — | `db.finish_run`, `db.record_call`, `db.start_run`, `stages.dopisz_kandydatow` *(+6)* |
@@ -397,7 +399,7 @@ Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu.
 
 21 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 66 | `_digit_tokens(text)` | — | — | `gates._korpus_pobranych`, `gates.deterministic_floors`, `gates.numbers_outside_corpus` |
 | 70 | `_niepobrane(card)` | — | Twierdzenia oznaczone `not_fetched` — dolozone, nie wyciagniete. | `gates.deterministic_floors` |
@@ -430,13 +432,13 @@ Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma.
 
 5 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 216 | `_ostrzez(jezyk, czego_brak)` | — | Raz na proces, ale GLOSNO. | `jezyki.frazy`, `jezyki.wzorzec` |
-| 228 | `wzorzec(nazwa, jezyk)` | MARTWA? | Skompilowany wzorzec bramki dla tego jezyka. | — |
-| 237 | `frazy(nazwa, jezyk)` | MARTWA? | Lista fraz dla tego jezyka. | — |
-| 246 | `znane_jezyki()` | MARTWA? | — | — |
-| 250 | `brakujace(jezyk)` | MARTWA? | Czego brakuje temu jezykowi wobec angielskiego. | — |
+| 228 | `wzorzec(nazwa, jezyk)` | DEAD? | Skompilowany wzorzec bramki dla tego jezyka. | — |
+| 237 | `frazy(nazwa, jezyk)` | DEAD? | Lista fraz dla tego jezyka. | — |
+| 246 | `znane_jezyki()` | DEAD? | — | — |
+| 250 | `brakujace(jezyk)` | DEAD? | Czego brakuje temu jezykowi wobec angielskiego. | — |
 
 ---
 
@@ -447,7 +449,7 @@ Kanal czytelnika — jedyne zrodlo celow do komentowania.
 
 10 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 18 | `_historia()` | — | — | `kanal._za_niedawno_u_nich`, `kanal.posty_z_kanalu`, `kanal.zapamietaj_komentarz`, `run.dzien` *(+2)* |
 | 29 | `zapamietaj_komentarz(post)` | — | Odnotowuje, u kogo dzis komentowalismy. | `run.dzien`, `run.dzien.komentarze` |
@@ -469,7 +471,7 @@ Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach.
 
 10 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 62 | `_napis(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
 | 68 | `_liczba(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
@@ -478,9 +480,9 @@ Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach.
 | 87 | `_widelki(v, gdzie)` | — | Zakres [od, do]. | `konfiguracja (poziom modulu)` |
 | 98 | `_slownik_list(v, gdzie)` | — | Tablica `klucz = [napisy]`. | `konfiguracja (poziom modulu)` |
 | 118 | `_slownik_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
-| 178 | `sciezka(agent_dir)` | MARTWA? | — | — |
-| 182 | `wczytaj(plik)` | MARTWA? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
-| 220 | `zastosuj(dane, cfg)` | MARTWA? | Wklada wartosci do modulu `config`. | — |
+| 178 | `sciezka(agent_dir)` | DEAD? | — | — |
+| 182 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
+| 220 | `zastosuj(dane, cfg)` | DEAD? | Wklada wartosci do modulu `config`. | — |
 
 ---
 
@@ -491,7 +493,7 @@ Kopia listy subskrybentow — jedyne aktywo, ktorego nie da sie odtworzyc.
 
 4 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 72 | `_wierszy(tekst)` | — | — | `kopia_subskrybentow.main` |
 | 76 | `_to_lista_subskrybentow(tekst)` | — | Czy to naprawde eksport listy, a nie przypadkowy plik albo strona HTML. | `kopia_subskrybentow.main` |
@@ -507,7 +509,7 @@ Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja.
 
 6 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 108 | `oczysc(tytul)` | — | Zdejmuje obietnice, zostawia zdarzenie. | `korpus_kanalow.przetworz` |
 | 117 | `przetworz(wpisy)` | — | (nazwa_kanalu, element) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
@@ -525,7 +527,7 @@ Jedyna warstwa miedzy `run.py` a dostawca.
 
 16 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 45 | `_dostawca(model)` | — | Czyj to model. | `llm._preflight`, `llm.call` |
 | 63 | `_preflight(purpose, conn, run_id)` | DB | Warunki, które decydują, czy wywołanie może się w ogóle udać. | `llm.call`, `llm.obraz` |
@@ -553,7 +555,7 @@ Jednorazowe uzupelnienie pola `dodane` w kolejce promocji.
 
 2 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 34 | `daty_publikacji()` | — | Tytul artykulu -> data pierwszej udanej publikacji (YYYY-MM-DD). | `migracja_okno_promocji.main` |
 | 62 | `main()` | — | — | `migracja_okno_promocji (poziom modulu)` |
@@ -567,7 +569,7 @@ Ile agent naprawde zrobil, dzien po dniu, wobec normy.
 
 16 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 244 | `budzety_dzienne()` | — | Ile agent SOBIE ZALOZYL kazdego dnia — z pliku, nie z dzisiejszej konfiguracji. | `norma.main` |
 | 293 | `_data(dzien)` | — | „2026-08-30" -> datetime w UTC. | `norma._poprawna_data`, `norma.dni_okna`, `norma.main` |
@@ -595,7 +597,7 @@ Co przyniosla kazda notka, restack i artykul — do czytania przez czlowieka.
 
 5 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 27 | `_skrot(tekst, ile)` | — | — | `raport_statystyk.main` |
 | 41 | `_mediana(liczby)` | — | — | `raport_statystyk.dwie_epoki` |
@@ -614,7 +616,7 @@ Jedno polecenie uruchamiające — to samo lokalnie i na serwerze.
 
 39 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 59 | `_utf8_stdout()` | — | Konsola Windows domyślnie cp1252 i wywala się na polskich znakach. | `run.main` |
 | 72 | `cached(stage, produce, use_cache)` | — | Zapisuje wynik etapu i oddaje go z dysku zamiast płacić drugi raz. | `run.main` |
@@ -665,7 +667,7 @@ Etapy lancucha, po kolei, w pamieci.
 
 157 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 50 | `_na_kanal(nazwa)` | DB | Wszystko, co ta funkcja zaplaci, ksieguje sie na kanal `nazwa`. | `artykul_z_puli.main`, `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` *(+16)* |
 | 80 | `_na_kanal.zewnetrzny(f)` | DB | — | `stages._na_kanal` |
@@ -688,16 +690,16 @@ Etapy lancucha, po kolei, w pamieci.
 | 663 | `_po_rowno_ze_zrodel(komentarze, ile)` | — | Wycinek listy, ktory NIE MOZE zaglodzic zadnego miejsca rozmowy. | `stages.wybierz_do_odpowiedzi` |
 | 695 | `wybierz_do_odpowiedzi(conn, run_id, komentarze)` | **$**(wybor) | Komu odpisac, gdy komentarzy jest wiecej niz kilka. | `run.dzien`, `run.dzien.odpowiedzi` |
 | 772 | `reply_to(conn, run_id, comment, evidence)` | **$**(reply) | Odpowiedź na komentarz pod własną treścią — do szuflady. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 847 | `plan_tygodnia(dzien_artykulu)` | MARTWA? | Harmonogram tygodnia: co i kiedy wychodzi. | — |
+| 847 | `plan_tygodnia(dzien_artykulu)` | DEAD? | Harmonogram tygodnia: co i kiedy wychodzi. | — |
 | 894 | `grafika(conn, run_id, draft, sciezka_artykulu)` | **$**((zmienna), grafika) | Nagłówek graficzny artykułu. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
 | 963 | `_wiek_konta_w_dniach(conn)` | DB | Ile dni działa to konto — liczone od pierwszego przebiegu w bazie. | `stages.budzet_dnia` |
 | 976 | `budzet_dnia(conn)` | — | Ile czego agent może dziś zrobić — losowane z widełek, nie stałe. | `run.dzien` |
 | 1004 | `budzet_dnia.losuj(widelki)` | — | — | `stages.budzet_dnia`, `stages.budzet_dnia.z_miesiaca` |
 | 1017 | `budzet_dnia.z_miesiaca(widelki)` | — | — | `stages.budzet_dnia` |
 | 1041 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` | — | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. | `stages.budzet_dnia` |
-| 1090 | `sesje_dnia()` | MARTWA? | Rozkłada dzień na kilka posiedzeń zamiast jednego ciągu. | — |
+| 1090 | `sesje_dnia()` | DEAD? | Rozkłada dzień na kilka posiedzeń zamiast jednego ciągu. | — |
 | 1117 | `losuj_odstep(co)` | — | Losuje przerwę, ale jej NIE odsypia. | `stages.odczekaj` |
-| 1133 | `odczekaj(co, ile)` | MARTWA? | Przerwa po działaniu, dobrana do tego, ile ono zajmuje CZLOWIEKOWI. | — |
+| 1133 | `odczekaj(co, ile)` | DEAD? | Przerwa po działaniu, dobrana do tego, ile ono zajmuje CZLOWIEKOWI. | — |
 | 1173 | `_klucz_faktu(tekst)` | — | Odcisk faktu odporny na przestawienie słów i inną liczbę w tym samym zdaniu. | `alarm.powtorki`, `stages.dopisz_kandydatow`, `stages.znajdz_ciekawostki` |
 | 1179 | `tekst_faktu(x)` | — | Fakt bywa slownikiem (`{"fact": ..., "url": ...}`), a bywa samym zdaniem. | `stages.notki_dnia`, `stages.wczytaj_zuzyte`, `stages.zapisz_zuzyte` |
 | 1191 | `wczytaj_zuzyte()` | — | — | `alarm.powtorki`, `stages.zapisz_zuzyte`, `stages.znajdz_ciekawostki` |
@@ -749,7 +751,7 @@ Etapy lancucha, po kolei, w pamieci.
 | 3534 | `ocen_restack(conn, run_id, notka)` | **$**(restack) | Czy podac te notke dalej i z jakim zdaniem. | `run.dzien`, `run.dzien.restacki` |
 | 3610 | `_podloga_z_pamieci(tekst)` | — | Dwie podlogi, ktore dzialaja BEZ karty dowodowej. | `stages._zapora_komentarza`, `stages.comment_on`, `stages.ocen_restack` |
 | 3628 | `_otwarcie_formulka(zdanie)` | — | Czy zdanie zaczyna sie od zapowiedzi ruchu zamiast od samego ruchu. | `stages.ocen_restack` |
-| 3670 | `sprawdz_fakty(conn, run_id, post)` | **$**(factcheck) MARTWA? | Szuka faktów do komentarza, zamiast pozwolić modelowi pisać z pamięci. | — |
+| 3670 | `sprawdz_fakty(conn, run_id, post)` | **$**(factcheck) DEAD? | Szuka faktów do komentarza, zamiast pozwolić modelowi pisać z pamięci. | — |
 | 3706 | `bez_wstrzykniecia(tekst, wlasny_adres_ok)` | — | Czy w naszym tekscie nie ma sladu cudzych POLECEN. | `stages._zapora_komentarza`, `stages._zapora_notki`, `stages.bramka_kandydata`, `stages.comment_on` *(+4)* |
 | 3774 | `_status_twierdzenia(c)` | — | Status twierdzenia, znormalizowany. | `stages.napraw_obalone`, `stages.zweryfikuj` |
 | 3798 | `zweryfikuj(conn, run_id, tekst, kontekst)` | **$**(factcheck) | Sprawdza to, co model NAPISAŁ — nie to, czego szukał przed pisaniem. | `artykul_z_puli._napisz_i_zapisz`, `run.main`, `stages.comment_on`, `stages.napraw_obalone` *(+1)* |
@@ -792,9 +794,9 @@ Etapy lancucha, po kolei, w pamieci.
 | 5806 | `bank_fragmentow(conn, dni)` | DB | Nieuzyte fragmenty ze wszystkich artykulow — zaplacone i nieprzeczytane. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
 | 5847 | `bibliotekarz(conn, run_id, bank)` | **$**(bibliotekarz) | Grupuje bank po MECHANIZMIE. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
 | 5900 | `wczytaj_bank_notek()` | — | Gotowe notki czekajace na swoj moment. | `stages.dopisz_do_banku_notek`, `stages.stan_banku_notek`, `stages.wez_z_banku_notek` |
-| 5911 | `dopisz_do_banku_notek(notki)` | MARTWA? | Dokłada notki do banku, pomijajac te, ktore juz tam sa. | — |
-| 5937 | `wez_z_banku_notek(ile)` | DB MARTWA? | Wyjmuje najstarsze niewykorzystane notki i ZNACZY je jako wyjete. | — |
-| 5957 | `stan_banku_notek()` | MARTWA? | Ile mamy zapasu — do wypisania przy starcie przebiegu. | — |
+| 5911 | `dopisz_do_banku_notek(notki)` | DEAD? | Dokłada notki do banku, pomijajac te, ktore juz tam sa. | — |
+| 5937 | `wez_z_banku_notek(ile)` | DB DEAD? | Wyjmuje najstarsze niewykorzystane notki i ZNACZY je jako wyjete. | — |
+| 5957 | `stan_banku_notek()` | DEAD? | Ile mamy zapasu — do wypisania przy starcie przebiegu. | — |
 | 5989 | `warto_pisac(conn, run_id, card)` | **$**(warto_pisac) | Etap przed pisarzem: czy jest tu luka, ktora obcy poczuje. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
 | 6036 | `warto_pisac.jest(klucz)` | — | — | `stages.warto_pisac` |
 | 6136 | `zbierz_pytania(wpisy)` | DB | Wyławia z odpowiedzi czytelnikow te, ktore sa PYTANIAMI, i zapisuje je. | `run.dzien`, `run.dzien.odpowiedzi` |
@@ -821,9 +823,9 @@ Etapy lancucha, po kolei, w pamieci.
 | 7109 | `_po_terminie(k)` | — | Czy kandydatura jest juz po swoim terminie przydatnosci. | `audyt_tematow.main`, `stages.bank_pelny`, `stages.wez_kandydatow` |
 | 7131 | `bank_pelny()` | — | Czy zapas wystarczy, zeby NIE placic za nowe szukanie. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
 | 7150 | `zwroc_kandydatow(kandydaci)` | — | Oddaje do puli kandydatow, ktorych ostatecznie NIE uzyto. | `artykul_z_puli._przebieg`, `artykul_z_puli.wybierz_fakt`, `audyt_tematow.main`, `stages.notki_dnia` |
-| 7192 | `stan_indeksu()` | MARTWA? | Ile mamy zapasu i ile odsialismy — do wypisania przy starcie. | — |
-| 7216 | `korpus_fedreg(ile_dokumentow, ile_gestych)` | MARTWA? | Preambuly przepisow, w ktorych regulator ODPOWIADA na zastrzezenia. | — |
-| 7292 | `kandydaci_z_fedreg(conn, run_id, dokument)` | **$**(fedreg) MARTWA? | Wyciaga kandydatow z jednej preambuly i oddaje w ksztalcie indeksu. | — |
+| 7192 | `stan_indeksu()` | DEAD? | Ile mamy zapasu i ile odsialismy — do wypisania przy starcie. | — |
+| 7216 | `korpus_fedreg(ile_dokumentow, ile_gestych)` | DEAD? | Preambuly przepisow, w ktorych regulator ODPOWIADA na zastrzezenia. | — |
+| 7292 | `kandydaci_z_fedreg(conn, run_id, dokument)` | **$**(fedreg) DEAD? | Wyciaga kandydatow z jednej preambuly i oddaje w ksztalcie indeksu. | — |
 
 ---
 
@@ -834,7 +836,7 @@ Statystyki wystawionych pozycji: kto to zobaczyl i co z tego wyniklo.
 
 11 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 84 | `_liczba(x)` | — | Cokolwiek z API -> int. | `stages.co_zadzialalo`, `stages.co_zadzialalo.punkty`, `statystyki._pozycje`, `statystyki._suma` *(+3)* |
 | 126 | `_karty(dane)` | — | `cards` -> {cardId: karta}. | `statystyki.z_kart` |
@@ -857,7 +859,7 @@ Głos redakcyjny: korpus próbek i dwa profile stylu.
 
 9 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 44 | `_plik_przypiec()` | — | — | `style.load_examples`, `style.wczytaj_przypiecia` |
 | 52 | `_sha256(text)` | — | — | `style.load_examples` |
@@ -867,7 +869,7 @@ Głos redakcyjny: korpus próbek i dwa profile stylu.
 | 116 | `load_examples()` | — | Zwraca zatwierdzone fragmenty stylu albo rzuca, jeśli korpus się nie zgadza. | `stages.write` |
 | 163 | `load_profiles()` | — | Profil pozytywny i negatywny stylu artykułu. | `stages.write` |
 | 186 | `_z_marka(tekst)` | — | Podstawia `{marka}` w profilu stylu. | `style.load_profiles` |
-| 191 | `corpus_words()` | MARTWA? | Wszystkie słowa korpusu — podłoga porównuje tekst z korpusem, nie z alfabetem. | — |
+| 191 | `corpus_words()` | DEAD? | Wszystkie słowa korpusu — podłoga porównuje tekst z korpusem, nie z alfabetem. | — |
 
 ---
 
@@ -878,7 +880,7 @@ Czy zaczepieni odwzajemniaja sie, i skad naprawde biora sie czytelnicy.
 
 26 funkcji.
 
-| linia | funkcja | znaczniki | co robi | wolana przez |
+| line | function | markers | what it does | called by |
 |---|---|---|---|---|
 | 156 | `wczytaj(nazwa)` | — | Wiersze pliku JSONL z katalogu danych. | `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.okno_pomiaru` *(+5)* |
 | 184 | `_chwila(tekst)` | — | ISO-8601 na moment w UTC, bez strefy. | `wzajemnosc._licznik_z_chwili`, `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly` *(+7)* |

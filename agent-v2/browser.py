@@ -579,7 +579,14 @@ def podlacz_sie():
                 "  2. zaloguj sie w nim na Substacku RECZNIE\n"
                 "  3. wroc tutaj i powtorz: python agent-v2/browser.py sesja\n"
                 "\n"
-                "Na SERWERZE: ustaw NIA_SERVER=1 i skopiuj gotowy plik sesji do\n"
+                # NAZWA ZMIENNEJ MUSI BYC TA SAMA, CO W `config.py`. Stalo tu
+                # `NIA_SERVER=1` — zmienna, ktorej nie czyta ANI JEDNA linia
+                # w tym repozytorium. Kod pyta o `AGENT_V2_SERVER` (config.py),
+                # tak samo jak trzy jednostki systemd, `wdroz.sh` i
+                # `.env.example`. Komunikat byl jedynym miejscem z tamta nazwa,
+                # wiec nikt nie mial jak jej skonfrontowac — a czyta go
+                # czlowiek, ktoremu wlasnie nie dziala instalacja.
+                "Na SERWERZE: ustaw AGENT_V2_SERVER=1 i skopiuj gotowy plik sesji do\n"
                 f"  {SESSION_FILE}\n"
                 "\n"
                 "Dlaczego recznie: automatyczne logowanie zapetla CAPTCHE i jest\n"

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Generator `docs/MAPA_FUNKCJI.md` — pelny spis funkcji agenta, z DRZEWA SKLADNI.
+"""Generator `docs/FUNCTION_MAP.md` — pelny spis funkcji agenta, z DRZEWA SKLADNI.
 
 W tym projekcie obowiazuje zasada „grep w zrodle nie jest dowodem, ze kod
 dziala", wiec ten generator nie szuka napisow. Dla kazdego modulu produkcyjnego
@@ -12,7 +12,7 @@ dziala", wiec ten generator nie szuka napisow. Dla kazdego modulu produkcyjnego
   * czy dotyka bazy;
   * KTO JA WOLA — krawedzie wywolan rozwiazane po module i po nazwie.
 
-Funkcja bez wolajacych dostaje znacznik `MARTWA?`. To jest PODEJRZENIE, nie
+Funkcja bez wolajacych dostaje znacznik `DEAD?`. To jest PODEJRZENIE, nie
 werdykt: wywolanie przez zmienna, `getattr`, slownik funkcji albo
 `functools.partial` nie tworzy krawedzi, a wejscia z systemd i `main()` sa
 bez wolajacych z definicji. Werdykt dla PLATNYCH wywolan wydaje
@@ -236,37 +236,40 @@ def main() -> int:
 
     L: list[str] = []
     A = L.append
-    A("# Mapa funkcji — pelny spis\n")
-    A("Plik **generowany**: `python narzedzia/mapa_funkcji.py`. Nie edytuj go recznie.")
-    A("Zrodlem jest **drzewo skladni** modulow, nie grep po napisach.\n")
-    A("Zakres: wylacznie `agent-v2/*.py`, czyli to, co odpalaja timery systemd.")
-    A("`archiwum/` jest poza mapa — nie stoi na zadnej zywej sciezce.\n")
+    A("# Function map — every function in the bot\n")
+    A("**Generated** by `python narzedzia/mapa_funkcji.py`. Do not edit by hand.")
+    A("Built from the modules' **syntax tree**, not from grepping for strings.\n")
+    A("Scope: `agent-v2/*.py` only — what the systemd timers actually run.\n")
+    A("The **what it does** column comes from each function's own docstring, "
+      "so it is in Polish: that is the language of this codebase, and the "
+      "README says so. Everything this generator writes itself is in English.\n")
 
-    A("## Liczby\n")
-    A("| co | ile |")
+    A("## Counts\n")
+    A("| what | how many |")
     A("|---|---|")
-    A("| modulow | %d |" % len(moduly))
-    A("| funkcji i metod razem | %d |" % razem)
-    A("| funkcji wolajacych platny model | %d |" % platnych)
-    A("| funkcji dotykajacych przegladarki | %d |" % z_www)
-    A("| funkcji dotykajacych bazy | %d |" % z_baza)
+    A("| modules | %d |" % len(moduly))
+    A("| functions and methods | %d |" % razem)
+    A("| functions that call a paid model | %d |" % platnych)
+    A("| functions that touch the browser | %d |" % z_www)
+    A("| functions that touch the database | %d |" % z_baza)
     A("")
 
-    A("## Legenda\n")
-    A("| znacznik | znaczy |")
+    A("## Legend\n")
+    A("| marker | means |")
     A("|---|---|")
-    A("| **$**(etap) | wola platny model; w nawiasie `purpose`, po ktorym rozlicza sie koszt w tabeli `calls` |")
-    A("| WWW | dotyka przegladarki (`page.*`, `context.*`, `browser.*`) — czyli warstwy Substacka |")
-    A("| DB | czyta albo pisze baze |")
-    A("| MARTWA? | zadna krawedz wywolania w `agent-v2/*.py` na nia nie wskazuje |")
+    A("| **$**(stage) | calls a paid model; the bracket holds the `purpose` the cost is booked under in the `calls` table |")
+    A("| WWW | touches the browser (`page.*`, `context.*`, `browser.*`) — the Substack layer |")
+    A("| DB | reads or writes the database |")
+    A("| DEAD? | no call edge in `agent-v2/*.py` points at it |")
     A("")
-    A("`MARTWA?` to **podejrzenie, nie werdykt**. Wywolanie przez zmienna,")
-    A("`getattr`, slownik funkcji albo `functools.partial` nie tworzy krawedzi,")
-    A("a `main()` i wejscia z systemd sa bez wolajacych z definicji. Dla platnych")
-    A("wywolan werdykt wydaje `agent-v2/tests/test_kanal_platnego_wywolania.py`.\n")
+    A("`DEAD?` is a **suspicion, not a verdict**. A call through a variable,")
+    A("`getattr`, a dispatch table or `functools.partial` leaves no edge, and")
+    A("`main()` plus the systemd entry points have no callers by definition.")
+    A("For paid calls the verdict comes from")
+    A("`agent-v2/tests/test_kanal_platnego_wywolania.py`.\n")
 
-    A("## Spis modulow\n")
-    A("| modul | funkcji | platnych | WWW | DB | rola |")
+    A("## Modules\n")
+    A("| module | functions | paid | WWW | DB | what it is for |")
     A("|---|---|---|---|---|---|")
     for m in sorted(moduly):
         z, opis, _g = moduly[m]
@@ -294,7 +297,7 @@ def main() -> int:
         if plik in WEJSCIA:
             A("**Wejscie produkcyjne:** %s\n" % WEJSCIA[plik])
         A("%d funkcji.\n" % len(z.funkcje))
-        A("| linia | funkcja | znaczniki | co robi | wolana przez |")
+        A("| line | function | markers | what it does | called by |")
         A("|---|---|---|---|---|")
         for nazwa in sorted(z.funkcje, key=lambda n: z.funkcje[n]["linia"]):
             d = z.funkcje[nazwa]
@@ -308,7 +311,7 @@ def main() -> int:
                 znaki.append("DB")
             kto = sorted(uzywajacy.get(pelna, ()))
             if not kto:
-                znaki.append("MARTWA?")
+                znaki.append("DEAD?")
             kto_txt = ", ".join("`%s`" % k for k in kto[:4])
             if len(kto) > 4:
                 kto_txt += " *(+%d)*" % (len(kto) - 4)
