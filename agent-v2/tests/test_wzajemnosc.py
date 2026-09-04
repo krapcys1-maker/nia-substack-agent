@@ -189,7 +189,7 @@ def dziennik_produkcyjny():
     for dzien in ("16", "16", "16"):
         w.append(zaczepienie("subskrypcja", "www",
                              "2026-08-%sT13:00:00+00:00" % dzien, False))
-    for cel, dzien in (("theweeklyscrapbook", "25"), ("newyorker", "26"),
+    for cel, dzien in (("publikacja-b", "25"), ("newyorker", "26"),
                        ("post", "26")):
         w.append(zaczepienie("subskrypcja", cel,
                              "2026-08-%sT14:00:00+00:00" % dzien, False,

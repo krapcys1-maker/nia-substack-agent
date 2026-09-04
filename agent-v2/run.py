@@ -899,7 +899,7 @@ def kogo_juz_subskrybujemy() -> set[str]:
 
     `subskrybuj` nie sprawdzalo niczego. Zmierzone 1 wrzesnia 2026 na
     produkcyjnym dzienniku: 18 prob subskrypcji, 6 w kosz. Jedna z nich to
-    `theweeklyscrapbook` — konto zasubskrybowane 16 sierpnia, na ktore agent
+    `publikacja-b` — konto zasubskrybowane 16 sierpnia, na ktore agent
     wszedl ponownie 25 sierpnia i zapisal porazke „nie ma przycisku
     subskrypcja". Przycisku nie bylo, bo mowil juz „Subscribed".
 
@@ -908,7 +908,7 @@ def kogo_juz_subskrybujemy() -> set[str]:
     * `udane=True` — subskrypcja weszla. Druga jest bezcelowa.
     * `udane=False` z powodem „nie ma przycisku subskrypcja" — profil
       ODPOWIEDZIAL, tylko nie tym, czego chcielismy. Tak wyglada i konto juz
-      zasubskrybowane (`theweeklyscrapbook`), i publikacja bez substackowego
+      zasubskrybowane (`publikacja-b`), i publikacja bez substackowego
       przycisku (`newyorker`, `post`). W obu przypadkach kolejne wejscie da
       dokladnie ten sam wynik.
 
@@ -965,7 +965,7 @@ def czy_juz_subskrybujemy(host: str, zamkniete: set[str],
 
     Dla wlasnej domeny probujemy jeszcze mapy `host->uchwyt` z pamieci
     obserwowanych — to ten sam plik, ktory odsiewa obserwacje, i jedyne
-    miejsce, gdzie `www.malone.news` laczy sie z `autor1`. Gdy mapy nie ma,
+    miejsce, gdzie `www.wlasnadomena.example` laczy sie z `autor1`. Gdy mapy nie ma,
     oddajemy False i sprawdzamy jeszcze raz PO rozwiazaniu uchwytu; kosztuje to
     zapytanie, ale nie kosztuje slotu.
     """
@@ -1358,8 +1358,8 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # rusza sieci, wiec nie ma powodu, zeby stala za platna ocena.
         #
         # ZMIERZONE 30 sierpnia 2026: 11 nieudanych komentarzy z 92 prob, a
-        # adresy sie powtarzaly — slowboring.com, thebignewsletter.com,
-        # malone.news wracaly do oceny w kazdym przebiegu.
+        # adresy sie powtarzaly — publikacja-c.example, publikacja-d.example,
+        # wlasnadomena.example wracaly do oceny w kazdym przebiegu.
         #
         # HOST POROWNUJEMY DOKLADNIE TAK JAK ZAPORA: samo `netloc.lower()`, bez
         # zdejmowania `www.`, bo `hosty_gdzie_komentarz_nie_wchodzi` buduje
@@ -1736,7 +1736,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # dziennik zapisywal PORAZKE, a slot dnia przepadal. Zmierzone tego
         # dnia na zywym koncie: 26 obserwowanych, 92 hosty w historii, 8 na
         # pewno wspolnych juz po samym mapowaniu nazwy hosta (naprawde wiecej,
-        # bo `www.malone.news` to `autor1`) — czyli okolo jednego dnia na
+        # bo `www.wlasnadomena.example` to `autor1`) — czyli okolo jednego dnia na
         # siedem zjadanego na pustym losowaniu i zapisywanego jako awaria.
         #
         # Pamiec czytamy RAZ na blok: to jeden plik z dysku, a nie zapytanie
@@ -1822,7 +1822,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             # UCHWYT SPRAWDZAMY DRUGI RAZ, JUZ PO ROZWIAZANIU. Dla wlasnej
             # domeny (24 z 92 hostow w puli) nazwa konta wychodzi dopiero
             # z API, wiec odsiew po hoscie nie mial jej jak rozpoznac:
-            # `www.malone.news` to `autor1`, ktorego obserwujemy od dawna.
+            # `www.wlasnadomena.example` to `autor1`, ktorego obserwujemy od dawna.
             # Zlapane tutaj oszczedza cale wejscie na profil, a zapisana mapa
             # host->uchwyt sprawia, ze jutro odsieje sie juz przed losowaniem.
             if uchwyt and uchwyt in pamiec["uchwyty"]:
@@ -1903,7 +1903,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         `config.SUBSKRYPCJE_MIESIECZNIE`.
 
         ODSIEW DUBLI, ktorego ten blok nie mial wcale. Zmierzone na dzienniku:
-        18 prob, 6 w kosz, w tym `theweeklyscrapbook` — konto zasubskrybowane
+        18 prob, 6 w kosz, w tym `publikacja-b` — konto zasubskrybowane
         16 sierpnia, na ktore agent wszedl ponownie 25 sierpnia i zapisal
         porazke „nie ma przycisku subskrypcja", bo przycisk mowil juz
         „Subscribed". Duble ida teraz jak pominiecia obserwacji: osobnym

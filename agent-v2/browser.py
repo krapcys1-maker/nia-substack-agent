@@ -180,7 +180,7 @@ def dopisz_wynik(rodzaj: str, wynik: dict, **szczegoly) -> None:
         # taki wyjatek szedl do dziennika jako `o_hoscie=True`, czyli jako dowod
         # przeciwko hostowi. Zmierzone side-by-side na atrapie Playwrighta,
         # wyjatek w `page.goto` PO klknieciu: dwa wpisy, jeden host, i
-        # `slowboring.com` uznany za martwy na 14 dni, choc nie powiedzial nam
+        # `publikacja-c.example` uznany za martwy na 14 dni, choc nie powiedzial nam
         # ani slowa. Petla domykala sie sama — sito w `run.py` wycina cele
         # z takiego hosta PRZED platna ocena, wiec host nie mial jak zdobyc
         # wpisu `udane=True`, ktory jako jedyny kasuje go z listy.
@@ -1249,7 +1249,7 @@ def zapisz_czytelnikow(page=None) -> dict[str, Any] | None:
 # „kogo obserwowac" i `_ludzie_z_zakladki` czyta z niej dokladnie liste
 # obserwowanych. Historia komentarzy miala tego dnia 92 hosty; osiem z nich
 # pokrywalo sie z ta lista juz po samym TANIM mapowaniu `host.split(".")[0]`,
-# a naprawde wiecej (`www.malone.news` -> `autor1`,
+# a naprawde wiecej (`www.wlasnadomena.example` -> `autor1`,
 # `moneywithkatie.substack.com` -> `katiegattitassin`). Przy budzecie okolo
 # 0,43 obserwacji na dobe i pokryciu 8 z 92 hostow oznacza to mniej wiecej
 # jedna zbedna probe na 27 dni — do 1 wrzesnia zapisywana jako PORAZKA.
@@ -1275,10 +1275,10 @@ def kogo_obserwujemy() -> dict[str, Any]:
     `uchwyty`: {uchwyt: kiedy} — stan przepisany ze strony `/following` plus to,
     czego dowiedzielismy sie po drodze.
     `hosty`:   {host: uchwyt} — mapa hosta z historii komentarzy na uchwyt,
-    ktorej NIE DA SIE wyprowadzic ze zrzutu. Bez niej `www.malone.news` nie ma
+    ktorej NIE DA SIE wyprowadzic ze zrzutu. Bez niej `www.wlasnadomena.example` nie ma
     jak trafic w `autor1`, bo tanie `host.split(".")[0]` dziala wylacznie
     dla adresow w domenie Substacka, a i tam bywa mylne
-    (`theweeklyscrapbook.substack.com` to konto `weeklyscrapbook`).
+    (`publikacja-b.substack.com` to konto `publikacja-b`).
     """
     import json as _json
 
@@ -4400,7 +4400,7 @@ def hosty_gdzie_komentarz_nie_wchodzi(min_prob: int = 2,
     i 7 odpowiedzi z 47. Sprawdzone u zrodla — 0 z 6 sprawdzalnych bylo jednak
     opublikowanych, wiec to prawdziwa strata, a nie blad rozpoznania. Kosztowalo
     0,61 USD, czyli 92 procent calego przepalenia. Adresy powtarzaly sie:
-    slowboring.com, thebignewsletter.com, malone.news — publikacje, ktore
+    publikacja-c.example, publikacja-d.example, wlasnadomena.example — publikacje, ktore
     CZYTAC pozwalaja wszystkim, a KOMENTOWAC nie.
 
     PROG DWOCH PROB, nie jednej — tak samo jak przy zrodlach: jedno niepowodzenie
@@ -4414,7 +4414,7 @@ def hosty_gdzie_komentarz_nie_wchodzi(min_prob: int = 2,
     dowodem czegokolwiek: timeout, padnieta sesja i zamkniety Chrome zapisuja
     sie tak samo jak odmowa Substacka. Odtworzone na atrapie: dwa wpisy
     `TimeoutError`/`TargetClosedError`, dwa rozne posty, jeden host — i
-    `slowboring.com` uznany za martwy, choc nie powiedzial nam ani slowa.
+    `publikacja-c.example` uznany za martwy, choc nie powiedzial nam ani slowa.
 
     SAMO KLKNIECIE TO ZA MALO — poprawione po tym, jak pierwsza wersja tego
     rozroznienia oparla `o_hoscie` wylacznie na fladze `klikniete`. Flaga
@@ -4577,7 +4577,7 @@ def uchwyt_publikacji(host: str) -> str | None:
     """Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API.
 
     `host.split(".")[0]` dziala wylacznie dla adresow w domenie Substacka. Przy
-    wlasnej domenie (`www.slowboring.com`) dawalo **"www"** i agent probowal
+    wlasnej domenie (`www.publikacja-c.example`) dawalo **"www"** i agent probowal
     obserwowac konto o takiej nazwie: trzy z czterech subskrypcji dziennie szly
     w prozne, a dziennik pokazywal `komu='www'` trzy razy pod rzad.
 

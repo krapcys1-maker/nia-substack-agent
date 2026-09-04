@@ -3,31 +3,22 @@
 DLACZEGO TO POWSTALO. Tor artykulu mial wlasnego skauta z wlasna teoria:
 temat zasluguje na tysiac slow, gdy ma co najmniej dwa udokumentowane
 PRECEDENSY — przeszle katastrofy, po ktorych zmieniono przepis („regulamin to
-blizna"). Ta teoria byla dobra dla poprzedniej publikacji, o zwyklych rzeczach
-i przepisach za nimi: schodach przeciwpozarowych, chlodzeniu jajek, swiatlach.
+blizna").
 
-Pod AI daje monokulture. Jedyne tematy AI z dwiema spisanymi katastrofami to
-zasilki, auta autonomiczne i gielda — wiec trzy artykuly z rzedu wyszly o
-zautomatyzowanej biurokracji, a nie o AI.
+Ta teoria jest dobra dokladnie tak dlugo, jak dlugo nisza ma duzo SPISANYCH
+katastrof. Gdy ich nie ma, daje MONOKULTURE — i tak sie stalo: w rewirze,
+w ktorym tylko trzy obszary mialy po dwie udokumentowane awarie, trzy artykuly
+z rzedu wyszly o tych samych trzech obszarach. Publikacja pisala o
+instytucjach, a nie o rzeczy, ktorej dotyczy.
 
 Tymczasem pula ciekawostek — ta sama, z ktorej biora sie notki — produkuje
-dokladnie te tematy, ktorych wlasciciel chce. Zmierzone na przebiegu 25 sierpnia
-2026, wszystkie z zrodlem i data:
+tematy, ktorych wlasciciel chce, a kazdy z nich ma juz zrodlo i date.
+Zmierzone na jednym przebiegu: szesc faktow, kazdy z nazwana instytucja,
+liczba i dokumentem za nia. ZADEN nie mial dwoch katastrof i kazdy niosl
+artykul.
 
-    Kenia projektuje prawo wiazace OpenAI, Mete i Anthropic swoimi standardami
-      pracy; anotatorzy zarabiaja 1,46-3,74 USD/h
-    ludzie oceniajacy odpowiedzi systematycznie nagradzaja przytakiwanie,
-      i stad sluzalczosc modeli
-    NATO kupilo Palantir Maven; w operacji 2026 produkowal cel co 86 sekund
-    Stanford: zatrudnienie 22-25-latkow w zawodach wystawionych na AI o 19%
-      ponizej trendu
-    audyt Cambridge: tylko 4 z 30 agentow publikuje karte bezpieczenstwa
-    model, gdy rozpozna, ze jest testowany, odpowiada tak, by chronic wlasne
-      preferencje
-
-Wlasciciel zatwierdzil ten rodzaj wprost. Wiec artykul nie wymysla tematu od
-zera i nie sprawdza, czy ma dwie katastrofy — bierze SWIEZY fakt z tej puli
-i drazy go dalej.
+Wiec artykul nie wymysla tematu od zera i nie sprawdza, czy ma dwie
+katastrofy — bierze SWIEZY fakt z tej puli i drazy go dalej.
 
 Reszta lancucha zostaje bez zmian: dyskoveria, pobieranie, klasyfikacja,
 synteza, bramka warto_pisac, pisarz, recenzent, forma, zapis, grafika.
@@ -291,10 +282,10 @@ def wybierz_fakt(conn, run_id, ile: int = 8) -> dict:
 
     # DWIE PAMIECI, NIE JEDNA — i to kosztowalo caly artykul.
     #
-    # Pierwsza wersja pytala tylko o poprzednie ARTYKULY. 25 sierpnia o 11:28
-    # poszla notka o kenijskich anotatorach i stawce 12,50 USD za godzine, a po
-    # poludniu artykul wzial z puli dokladnie ten sam fakt i napisal o nim
-    # tysiac slow. Zaden artykul o tym nie byl, wiec straznik milczal.
+    # Pierwsza wersja pytala tylko o poprzednie ARTYKULY. Rano poszla notka
+    # oparta na jednym fakcie z puli, a po poludniu artykul wzial z puli
+    # DOKLADNIE TEN SAM fakt i napisal o nim tysiac slow. Zaden artykul o tym
+    # nie byl, wiec straznik milczal.
     #
     # Konto ma jednego czytelnika, nie dwoch. Dla niego notka i artykul o tym
     # samym w jeden dzien to po prostu dwa razy to samo.
@@ -505,8 +496,8 @@ def _przebieg(conn, run_id: int) -> int:
     #
     # ZMIERZONE na prawdziwej parze `wez_kandydatow`/`zwroc_kandydatow`
     # (indeks w katalogu tymczasowym, osiem kandydatow, `ranga` 0-7):
-    #     z oddaniem w petli:  1. Nairobi | 2. Nairobi | 3. Nairobi
-    #     bez oddania w petli: 1. Nairobi | 2. Palantir | 3. Cambridge
+    #     z oddaniem w petli:  1. MiastoA | 2. MiastoA | 3. MiastoA
+    #     bez oddania w petli: 1. MiastoA | 2. FirmaC | 3. UczelniaB
     # Czyli cztery oplacone wywolania `temat_z_faktu` na TYM SAMYM fakcie,
     # kandydaci 2-8 nietknieci, a ekran drukowal „-- proba N: nastepny fakt --".
     #
@@ -653,8 +644,8 @@ def _przebieg(conn, run_id: int) -> int:
     # Bez znacznika rozbrajal obie:
     #   `gates.szerokosc_podstawy` liczylo host, ktorego nikt nie pobral, wiec
     #     `WASKA_PODSTAWA` milczala na artykule stojacym realnie na jednym
-    #     zrodle — a ta uwaga powstala dokladnie po takim artykule (0020,
-    #     „The Fossil of a Vote", jeden odnosnik);
+    #     zrodle — a ta uwaga powstala dokladnie po takim artykule, ktory mial
+    #     w calej sekcji `## Sources` JEDEN odnosnik;
     #   `gates.numbers_outside_corpus` bierze korpus z `json.dumps(card)`, wiec
     #     liczby z tego faktu stawaly sie „obecne w materiale dowodowym".
     #
@@ -707,7 +698,7 @@ def _przebieg(conn, run_id: int) -> int:
     #   przebieg 1 — powtorzony temat (wybor tematu)
     #   przebieg 2 — powtorzony temat, tym razem z dzisiejsza notka
     #   przebieg 3 — metaanaliza cytowana z drugiej reki (dyskoveria)
-    #                oraz butelka po sosie w naglowku (grafika)
+    #                oraz okladka z przedmiotem spoza tematu (grafika)
     #   przebieg 4 — filtr adresow blokowal zrodla pierwotne (dyskoveria)
     #
     # Trzy z czterech widac bylo na karcie dowodowej: jakie zrodla, jakiej
@@ -1369,8 +1360,8 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     # DLACZEGO TO TU DOSZLO. Sciezka artykulu byla rozdarta na dwie polowy i
     # zadna nie umiala calej roboty:
     #   `run.py --wyslij` publikuje i ma bramke faktow, ale bierze temat od
-    #     skauta — a wlasnie skaut dawal pod AI monokulture (patrz naglowek
-    #     tego pliku: trzy artykuly z rzedu o zautomatyzowanej biurokracji),
+    #     skauta — a wlasnie skaut dawal monokulture (patrz naglowek tego
+    #     pliku: trzy artykuly z rzedu o tych samych trzech obszarach),
     #   ten plik bierze temat z puli, ma bramke „uniesie artykul", podpytania
     #     i glebokosc z filarow — i nie umial opublikowac ani jednej linijki.
     # `nia-artykul.service` wskazywal caly czas na te pierwsza. Zastepnik

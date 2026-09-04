@@ -62,10 +62,10 @@ nazw: uchwyt uzytkownika (`@ktos` — tak wygladaja czytelnicy), nazwe
 wyswietlana (tak wygladaja reakcje: `skutek.kto` to lista nazw, nie uchwytow)
 oraz pole `komu` zaczepionych, ktore jest MIESZANKA DWOCH PRZESTRZENI NAZW.
 `browser.uchwyt_publikacji` (browser.py:3907) dla hosta w domenie Substacka
-oddaje sama poddomene publikacji (`theweeklyscrapbook.substack.com` ->
-`theweeklyscrapbook`), a dla wlasnej domeny — uchwyt AUTORA z `publishedBylines`
-(`www.malone.news` -> `autor1`). Polowa celow jest wiec porownywalna
-z uchwytami czytelnikow, a polowa nie: autor publikacji `theweeklyscrapbook`
+oddaje sama poddomene publikacji (`publikacja-b.substack.com` ->
+`publikacja-b`), a dla wlasnej domeny — uchwyt AUTORA z `publishedBylines`
+(`www.wlasnadomena.example` -> `autor1`). Polowa celow jest wiec porownywalna
+z uchwytami czytelnikow, a polowa nie: autor publikacji `publikacja-b`
 moze nas subskrybowac jako ktos zupelnie inaczej nazwany i dopasowanie tego
 NIE ZOBACZY. Dlatego kazde zestawienie ma dwie kupki: „na pewno" (rowne
 uchwyty) i „niepewne" (nazwa wyswietlana czytelnika po znormalizowaniu rowna
@@ -98,10 +98,16 @@ DZIENNIK = "dziennik.jsonl"
 CZYTELNICY = "czytelnicy.jsonl"
 WZROST = "wzrost.jsonl"
 
-# Dzien, w ktorym konto przestawiono na temat AI. Wszystko wczesniejsze zaczepia
-# ludzi od jedzenia, mody i literatury i nie mowi nic o dzisiejszej publicznosci
-# — zmierzone: 53 z 92 hostow w historii komentarzy pochodzi sprzed tej daty.
-KOTWICA_AI = "2026-08-25"
+# Dzien, w ktorym konto przestawiono na BIEZACA nisze. Wszystko wczesniejsze
+# zaczepia ludzi z poprzedniej dziedziny i nie mowi nic o dzisiejszej
+# publicznosci — zmierzone: 53 z 92 hostow w historii komentarzy pochodzi
+# sprzed tej daty.
+#
+# PRZESTAW TO RAZEM Z NISZA. Data jest wpisana, bo dotyczy JEDNEJ instalacji:
+# na swiezym koncie nie ma czego odcinac i wartosc moze zostac dowolnie
+# wczesna. Nie jest polem konfiguracji, bo pole, ktore ma sens tylko po
+# przestawieniu tematu, kusiloby do ustawiania go „na wszelki wypadek".
+KOTWICA_NISZY = "2026-08-25"
 
 # Ponizej tylu obserwacji nie wyciagamy wniosku o czasie odzewu, tylko mowimy,
 # ze probka jest za mala. Prog nie jest okragly dla ozdoby: przy n < 10 mediana
@@ -491,7 +497,7 @@ def zaczepienia() -> dict[str, dict]:
         # dostawalo sie „0 przed, 0 po", czyli obraz bloku, ktory nigdy nie
         # wstal. Prawda jest inna i wazniejsza: probowal, ale ANI RAZU po
         # przestawieniu konta na AI, wiec jego cisza jest z innego powodu.
-        po_kotwicy = kiedy[:10] >= KOTWICA_AI
+        po_kotwicy = kiedy[:10] >= KOTWICA_NISZY
         kubel["prob_od_kotwicy" if po_kotwicy else "prob_przed_kotwica"] += 1
         if w.get("udane"):
             kubel["udane"].append(pozycja)
@@ -581,7 +587,7 @@ def odwzajemnienie() -> dict[str, dict]:
         # wrzucenie ich do jednego mianownika rozcienczaloby dzisiejsze
         # pytanie o publicznosc AI danymi o blogach kulinarnych.
         def _od_kotwicy(lista):
-            return [t for t in lista if str(t["kiedy"])[:10] >= KOTWICA_AI]
+            return [t for t in lista if str(t["kiedy"])[:10] >= KOTWICA_NISZY]
 
         orzekalnych_od_kotwicy = (kubel["udane_od_kotwicy"]
                                   - len(_od_kotwicy(nieorzekalne)))
@@ -617,7 +623,7 @@ def odwzajemnienie() -> dict[str, dict]:
 def slepe_okno() -> dict:
     """O ile nasze najstarsze zaczepienie wyprzedza pierwszy zrzut czytelnikow.
 
-    Zmierzone 1 wrzesnia 2026: subskrypcja `theweeklyscrapbook` z 16 sierpnia
+    Zmierzone 1 wrzesnia 2026: subskrypcja `publikacja-b` z 16 sierpnia
     17:53Z wobec pierwszego zrzutu 31 sierpnia 04:24Z — 14,4 dnia, w ktorych
     ktos mogl przyjsc i odejsc bez zadnego sladu. Bez tej liczby zdanie
     „0 z 12 sie odwzajemnilo" czyta sie jak „nikt nigdy", a znaczy tylko
@@ -1235,7 +1241,7 @@ def raport() -> list[str]:
                      " sama osoba moze miec oba rozne.")
         L.append("    proby wg ery konta: %d przed przestawieniem na AI (%s),"
                  " %d po"
-                 % (d["prob_przed_kotwica"], KOTWICA_AI, d["prob_od_kotwicy"]))
+                 % (d["prob_przed_kotwica"], KOTWICA_NISZY, d["prob_od_kotwicy"]))
         if d["udane_od_kotwicy"] and d["orzekalnych_od_kotwicy"] > 0:
             L.append("    z samej ery AI: odwzajemnilo sie %d z %d orzekalnych"
                      " (%s), przy %d udanych probach"

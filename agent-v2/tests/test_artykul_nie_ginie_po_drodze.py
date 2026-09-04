@@ -415,10 +415,10 @@ _DALEKO = (_dt.datetime.now(_dt.timezone.utc)
 # klasy — `kiedy` + BANK_MAKS_DNI wypadajace dokladnie dzis — `test_indeks_
 # kandydatow.py` zaliczyl 1 wrzesnia 2026.
 FAKTY_INDEKSU = [
-    "A committee in Nairobi fixed the hourly rate paid to data annotators.",
-    "Palantir Maven produced one target every 86 seconds during a NATO drill.",
-    "Cambridge auditors found four of thirty agents publish a safety card.",
-    "Stanford measured employment of young workers below trend in exposed jobs.",
+    "A committee in MiastoA fixed the hourly rate paid to data annotators.",
+    "a targeting system produced one target every 86 seconds during a a military exercise.",
+    "UczelniaB auditors found four of thirty agents publish a safety card.",
+    "UczelniaA measured employment of young workers below trend in exposed jobs.",
     "Human raters reward agreement, and that is where sycophancy comes from.",
     "A court in Seoul ruled scraped lyrics were not covered by fair dealing.",
     "Chile requires public bodies to log every automated refusal of a benefit.",
@@ -541,8 +541,8 @@ try:
     # KONTRDOWOD DO CELU DRUGIEGO — I TO ON JEST TU NAJWAZNIEJSZY.
     # Powtarzamy STARY ksztalt: oddanie do puli WEWNATRZ petli, na tej samej
     # prawdziwej parze i tym samym indeksie. Zmierzone:
-    #     z oddaniem w petli:  Nairobi | Nairobi | Nairobi
-    #     bez oddania w petli: Nairobi | Palantir | Cambridge
+    #     z oddaniem w petli:  MiastoA | MiastoA | MiastoA
+    #     bez oddania w petli: MiastoA | FirmaC | UczelniaB
     # Czyli cztery oplacone wywolania `temat_z_faktu` na jednym fakcie i
     # kandydaci 2-8 nietknieci, przy ekranie drukujacym „nastepny fakt".
     def trzy_proby(oddawaj_w_petli):

@@ -245,7 +245,7 @@ def wyczysc():
     browser._POD_RZAD_ZLE.clear()
 
 
-ADRES = "https://slowboring.com/p/przyklad"
+ADRES = "https://publikacja-c.example/p/przyklad"
 TEKST = "Trzy zdania o czyms konkretnym."
 
 
@@ -352,7 +352,7 @@ sprawdz("po drugiej — 2, wiec `run.rytm` podwoi przerwe",
 # rozroznienia dwa nasze timeouty zamykaly publikacje na zawsze, a zdjecie
 # jej z listy wymagalo UDANEGO komentarza, ktorego zapora juz nie przepuszcza.
 sprawdz("dwie porazki bez klikniecia NIE skreslaja hosta",
-        "slowboring.com" not in browser.hosty_gdzie_komentarz_nie_wchodzi(),
+        "publikacja-c.example" not in browser.hosty_gdzie_komentarz_nie_wchodzi(),
         browser.hosty_gdzie_komentarz_nie_wchodzi())
 
 # A teraz dwie porazki, ktore o hoscie mowia: przycisk byl, klik poszedl,
@@ -366,7 +366,7 @@ sprawdz("a wpis bez klikniecia niesie `o_hoscie` FALSE",
         [w.get("o_hoscie") for w in lista][0] is False, lista[:1])
 martwe = browser.hosty_gdzie_komentarz_nie_wchodzi()
 sprawdz("host po dwoch klknieciach bez potwierdzenia trafia na liste martwych",
-        "slowboring.com" in martwe, martwe)
+        "publikacja-c.example" in martwe, martwe)
 
 # Jedno udane wystawienie zeruje serie i zdejmuje host z listy.
 komentarz(Strona(pola=[Element()], przyciski=("Post",)),
@@ -375,7 +375,7 @@ sprawdz("powodzenie zeruje serie porazek",
         browser.pod_rzad_nieudanych("komentarz") == 0,
         browser.pod_rzad_nieudanych("komentarz"))
 sprawdz("i zdejmuje host z listy martwych",
-        "slowboring.com" not in browser.hosty_gdzie_komentarz_nie_wchodzi(),
+        "publikacja-c.example" not in browser.hosty_gdzie_komentarz_nie_wchodzi(),
         browser.hosty_gdzie_komentarz_nie_wchodzi())
 
 print()
@@ -745,8 +745,8 @@ def dwa_timeouty(modul):
     modul._W_SERII.clear()
     modul._OSTATNIA.clear()
     modul._POD_RZAD_ZLE.clear()
-    for adres, wyjatek in (("https://slowboring.com/p/a", TimeoutError("Timeout")),
-                           ("https://slowboring.com/p/b",
+    for adres, wyjatek in (("https://publikacja-c.example/p/a", TimeoutError("Timeout")),
+                           ("https://publikacja-c.example/p/b",
                             RuntimeError("TargetClosedError"))):
         podepnij(Strona(wyjatek_goto=wyjatek), modul=modul)
         modul.juz_sie_odezwalismy = lambda page, url: False
@@ -763,7 +763,7 @@ bez_niej = dwa_timeouty(bez_klasyfikacji)
 print("    Z POPRAWKA: %s     BEZ NIEJ: %s" % (z_poprawka or set(), bez_niej))
 sprawdz("dwa NASZE wyjatki nie skreslaja hosta", z_poprawka == set(), z_poprawka)
 sprawdz("KONTRDOWOD: bez klasyfikacji host jest martwy",
-        "slowboring.com" in bez_niej, bez_niej)
+        "publikacja-c.example" in bez_niej, bez_niej)
 # I dowod, ze wpisy jednak powstaly — inaczej sekcja mierzylaby pusty dziennik.
 sprawdz("a wpisy o obu porazkach i tak sa w dzienniku", len(wpisy()) == 2, wpisy())
 

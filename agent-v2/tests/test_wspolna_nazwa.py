@@ -23,8 +23,8 @@ BANK BYL PELEN BLIZNIAKOW, co to napedzalo. Zmierzone tego samego dnia na
 53 wpisach po przestawieniu konta:
 
     ACME-5.3        8 wpisow        Ox Alpha        4
-    Jalapeno       7               Spirit Airlines 3
-    Hugging Face   5               Jane Street     3
+    Papryczka       7               Spirit Airlines 3
+    PortalModeli   5               FirmaD     3
 
 Wykrywacz bliźniakow W PARTII istnial i dzialal (`_dzielą_rzadkie`), ale byl
 funkcja LOKALNA w `wez_kandydatow` — sciezka notek go nie widziala, a
@@ -107,24 +107,24 @@ print()
 print("=== 5. RZADKOSC LICZONA W KORPUSIE ===")
 # Nazwa, ktora pada w polowie naszych notek („OpenAI"), nie odroznia niczego.
 korpus = ["OpenAI said this. " * 2, "OpenAI said that.", "OpenAI again.",
-          "Something about Jalapeno chips."]
+          "Something about Papryczka chips."]
 sprawdz("czesta nazwa nie blokuje",
         not stages.wspolna_nazwa("OpenAI raised prices", "OpenAI hired someone",
                                  korpus))
 sprawdz("rzadka nazwa blokuje",
-        stages.wspolna_nazwa("The Jalapeno chip is inference-only",
-                             "Nvidia lost to Jalapeno on watts", korpus)
-        == "jalapeno")
+        stages.wspolna_nazwa("The Papryczka chip is inference-only",
+                             "Nvidia lost to Papryczka on watts", korpus)
+        == "papryczka")
 
 # OGRANICZENIE, KTORE PRZYJMUJEMY SWIADOMIE. Nazwa stojaca WYLACZNIE na
-# poczatku zdania przepada — „Jalapeno beat the GB200" nie odda `jalapeno`.
+# poczatku zdania przepada — „Papryczka beat the GB200" nie odda `papryczka`.
 # To cena za odsianie „Cheap", „Three", „Same" i kazdego innego pierwszego
 # slowa. Przy notce na 50-60 slow nazwa pada zwykle takze w srodku zdania,
 # a falszywe trafienie kosztuje notke: przy realizacji normy 63% to nie
 # jest darmowe. Test zapisuje to jako ZNANE, nie udaje, ze nie istnieje.
 sprawdz("nazwa tylko na poczatku zdania przepada (znane ograniczenie)",
-        not stages.wspolna_nazwa("The Jalapeno chip is inference-only",
-                                 "Jalapeno beat the GB200", korpus))
+        not stages.wspolna_nazwa("The Papryczka chip is inference-only",
+                                 "Papryczka beat the GB200", korpus))
 sprawdz("bez korpusu wystarczy sama wspolna nazwa",
         stages.wspolna_nazwa("OpenAI raised prices", "OpenAI hired someone")
         == "openai")

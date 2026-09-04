@@ -7,7 +7,7 @@ recenzja przeszla, okladka wygenerowana. Bramka faktow przed publikacja
 ODMOWILA, i mialo to jeden powod:
 
     karta:  „the other sources are undated IN THE EXCERPTS"
-    tekst:  „the OpenAI, Hugging Face and CyberScoop accounts ARE UNDATED"
+    tekst:  „the three publisher accounts ARE UNDATED"
 
 Karta byla ostrozna. Pisarz skreslil trzy slowa i zamienil zdanie o NASZYM
 MATERIALE w zdanie o CUDZYCH DOKUMENTACH. Sprawdzacz otworzyl te strony,

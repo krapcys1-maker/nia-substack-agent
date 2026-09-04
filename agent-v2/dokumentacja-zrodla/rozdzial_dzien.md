@@ -1145,7 +1145,7 @@ Pula to **wyłącznie klucze `gdzie_komentowalismy.json`** — czyli hosty, u kt
         return None
 ```
 
-`host.split(".")[0]` przy własnej domenie (`www.slowboring.com`) dawało **"www"** i agent próbował obserwować konto o tej nazwie — dziennik pokazywał `komu='www'` trzy razy pod rząd.
+`host.split(".")[0]` przy własnej domenie (`www.publikacja-c.example`) dawało **"www"** i agent próbował obserwować konto o tej nazwie — dziennik pokazywał `komu='www'` trzy razy pod rząd.
 
 #### 9.2 Jedno kliknięcie i tylko jedno — `_klik_na_profilu` (browser.py:1067)
 

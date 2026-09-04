@@ -128,24 +128,24 @@ Artykul bierze temat z tej samej puli, co notki.
 
 | linia | funkcja | znaczniki | co robi | wolana przez |
 |---|---|---|---|---|
-| 118 | `temat_z_faktu(conn, run_id, fakt)` | **$**(wybor) | Zamienia udokumentowany fakt w brief artykulu. | `artykul_z_puli._przebieg` |
-| 155 | `glebokosc_z_oceny(ocena)` | — | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. | `artykul_z_puli._napisz_i_zapisz` |
-| 193 | `glebokosc_z_oceny._surowy(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny`, `artykul_z_puli.glebokosc_z_oceny._filar` |
-| 201 | `glebokosc_z_oceny._filar(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny` |
-| 217 | `uniesie_artykul(brief)` | — | Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania. | `artykul_z_puli._przebieg` |
-| 251 | `uniesie_artykul._pusty(s)` | — | — | `artykul_z_puli.uniesie_artykul` |
-| 264 | `wybierz_fakt(conn, run_id, ile)` | — | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. | `artykul_z_puli._przebieg` |
-| 328 | `main()` | DB | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. | `artykul_z_puli (poziom modulu)` |
-| 385 | `_zrob_miejsce_na_fakt(card)` | — | Robi miejsce na wstrzykniete twierdzenie, nie tracac zadnego ZRODLA. | `artykul_z_puli._przebieg` |
-| 409 | `_zrob_miejsce_na_fakt._host(c)` | — | — | `artykul_z_puli._zrob_miejsce_na_fakt` |
-| 428 | `_rozszerz_najstarsze(card, data_faktu)` | — | Data wstrzyknietego zrodla wazy — ale TYLKO w strone ostrzezenia. | `artykul_z_puli._przebieg` |
-| 458 | `_przebieg(conn, run_id)` | DB | — | `artykul_z_puli.main` |
-| 839 | `_katalog_ratunku()` | — | Katalog OBOK `ARTICLES_DIR`, nigdy w nim. | `artykul_z_puli._ratuj_tekst` |
-| 863 | `_opublikuj(sciezka)` | WWW | Wystawia gotowy artykul, probujac wiecej niz raz. | `artykul_z_puli._napisz_i_zapisz` |
-| 915 | `_ramka(powod, brak, katalog)` | — | Ostrzezenie, ktore idzie na POCZATEK `.md`, a nie tylko obok niego. | `artykul_z_puli._ratuj_tekst` |
-| 985 | `_zrodla(card)` | — | Sekcja `## Sources` — bez pytania bazy o nazwy zrodel. | `artykul_z_puli._ratuj_tekst` |
-| 1003 | `_ratuj_tekst(run_id, brief, card, draft, etap, exc, raport)` | — | Gotowy tekst na dysk, gdy budzet albo wylacznik przerywa PO pisaniu. | `artykul_z_puli._napisz_i_zapisz` |
-| 1127 | `_napisz_i_zapisz(conn, run_id, brief, card)` | — | Od bramki „warto pisac" do zapisu i grafiki. | `artykul_z_puli._przebieg` |
+| 109 | `temat_z_faktu(conn, run_id, fakt)` | **$**(wybor) | Zamienia udokumentowany fakt w brief artykulu. | `artykul_z_puli._przebieg` |
+| 146 | `glebokosc_z_oceny(ocena)` | — | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. | `artykul_z_puli._napisz_i_zapisz` |
+| 184 | `glebokosc_z_oceny._surowy(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny`, `artykul_z_puli.glebokosc_z_oceny._filar` |
+| 192 | `glebokosc_z_oceny._filar(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny` |
+| 208 | `uniesie_artykul(brief)` | — | Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania. | `artykul_z_puli._przebieg` |
+| 242 | `uniesie_artykul._pusty(s)` | — | — | `artykul_z_puli.uniesie_artykul` |
+| 255 | `wybierz_fakt(conn, run_id, ile)` | — | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. | `artykul_z_puli._przebieg` |
+| 319 | `main()` | DB | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. | `artykul_z_puli (poziom modulu)` |
+| 376 | `_zrob_miejsce_na_fakt(card)` | — | Robi miejsce na wstrzykniete twierdzenie, nie tracac zadnego ZRODLA. | `artykul_z_puli._przebieg` |
+| 400 | `_zrob_miejsce_na_fakt._host(c)` | — | — | `artykul_z_puli._zrob_miejsce_na_fakt` |
+| 419 | `_rozszerz_najstarsze(card, data_faktu)` | — | Data wstrzyknietego zrodla wazy — ale TYLKO w strone ostrzezenia. | `artykul_z_puli._przebieg` |
+| 449 | `_przebieg(conn, run_id)` | DB | — | `artykul_z_puli.main` |
+| 830 | `_katalog_ratunku()` | — | Katalog OBOK `ARTICLES_DIR`, nigdy w nim. | `artykul_z_puli._ratuj_tekst` |
+| 854 | `_opublikuj(sciezka)` | WWW | Wystawia gotowy artykul, probujac wiecej niz raz. | `artykul_z_puli._napisz_i_zapisz` |
+| 906 | `_ramka(powod, brak, katalog)` | — | Ostrzezenie, ktore idzie na POCZATEK `.md`, a nie tylko obok niego. | `artykul_z_puli._ratuj_tekst` |
+| 976 | `_zrodla(card)` | — | Sekcja `## Sources` — bez pytania bazy o nazwy zrodel. | `artykul_z_puli._ratuj_tekst` |
+| 994 | `_ratuj_tekst(run_id, brief, card, draft, etap, exc, raport)` | — | Gotowy tekst na dysk, gdy budzet albo wylacznik przerywa PO pisaniu. | `artykul_z_puli._napisz_i_zapisz` |
+| 1118 | `_napisz_i_zapisz(conn, run_id, brief, card)` | — | Od bramki „warto pisac" do zapisu i grafiki. | `artykul_z_puli._przebieg` |
 
 ---
 
@@ -880,30 +880,30 @@ Czy zaczepieni odwzajemniaja sie, i skad naprawde biora sie czytelnicy.
 
 | linia | funkcja | znaczniki | co robi | wolana przez |
 |---|---|---|---|---|
-| 150 | `wczytaj(nazwa)` | — | Wiersze pliku JSONL z katalogu danych. | `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.okno_pomiaru` *(+5)* |
-| 178 | `_chwila(tekst)` | — | ISO-8601 na moment w UTC, bez strefy. | `wzajemnosc._licznik_z_chwili`, `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly` *(+7)* |
-| 195 | `_nazwa(tekst)` | — | Nazwa wyswietlana do porownywania: male litery, jedna spacja. | `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.skad_przyszli` |
-| 200 | `_uchwyt(tekst)` | — | Uchwyt do porownywania: male litery, same znaki alfanumeryczne. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie` |
-| 225 | `_licznik_z_chwili(kiedy, liczniki)` | — | Zapis `wzrost.jsonl` z tego samego momentu, co zrzut imienny — albo nic. | `wzajemnosc.pokrycie`, `wzajemnosc.zrzuty_czytelnikow` |
-| 235 | `zrzuty_czytelnikow()` | — | Zrzuty po kolei, KAZDY Z OCENA, CZY NIE JEST OKROJONY. | `wzajemnosc.czytelnicy`, `wzajemnosc.naglowek`, `wzajemnosc.pomiar_oslepl`, `wzajemnosc.raport` |
-| 294 | `czytelnicy()` | — | Uchwyt czytelnika -> co o nim wiemy ze zrzutow. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.opoznienia`, `wzajemnosc.skad_przyszli` |
-| 357 | `kolejnosc(wpis, akcja)` | — | Czy czytelnik pojawil sie PO naszym dzialaniu, PRZED nim, czy nie wiadomo. | `wzajemnosc.odwzajemnienie` |
-| 388 | `okno_pomiaru()` | — | Od kiedy do kiedy w ogole widzimy, kto nas czyta. | `wzajemnosc.naglowek`, `wzajemnosc.raport`, `wzajemnosc.slepe_okno` |
-| 405 | `pokrycie()` | — | Ilu czytelnikow LICZY Substack, a ilu umiemy nazwac po imieniu. | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
-| 452 | `_pusty_kubel()` | — | Swiezy komplet licznikow. | `wzajemnosc.zaczepienia` |
-| 461 | `zaczepienia()` | — | Kogo zaczepilismy — osobno udane, nieudane i POMINIETE. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.slepe_okno` |
-| 507 | `odwzajemnienie()` | — | Ilu z zaczepionych pojawilo sie POTEM na naszej liscie czytelnikow. | `wzajemnosc.naglowek`, `wzajemnosc.opoznienia`, `wzajemnosc.raport` |
-| 583 | `odwzajemnienie._od_kotwicy(lista)` | — | — | `wzajemnosc.odwzajemnienie` |
-| 617 | `slepe_okno()` | — | O ile nasze najstarsze zaczepienie wyprzedza pierwszy zrzut czytelnikow. | `wzajemnosc.raport` |
-| 645 | `_reakcje()` | — | Zdarzenia `skutek` rozdzielone na kubelki plus licznik typow nieznanych. | `wzajemnosc.kanaly`, `wzajemnosc.opoznienia`, `wzajemnosc.skad_przyszli` |
-| 668 | `skad_przyszli()` | — | Ilu naszych czytelnikow zetknelo sie wczesniej z nasza trescia. | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
-| 728 | `_nasze_pozycje()` | — | Identyfikator wystawionej tresci -> rodzaj i chwila wystawienia. | `wzajemnosc.kanaly`, `wzajemnosc.opoznienia` |
-| 756 | `kanal_reakcji(reakcja, pozycje)` | — | Ktorego NASZEGO kanalu dotknal czlowiek — z CELU reakcji, nie z jej typu. | `wzajemnosc.kanaly` |
-| 783 | `opoznienia()` | — | Dwa rozne czasy, celowo NIE zsumowane w jeden. | `wzajemnosc.raport` |
-| 877 | `kanaly()` | — | Co poprzedzilo pojawienie sie czytelnika — osobowo i pozycyjnie. | `wzajemnosc.raport` |
-| 990 | `pomiar_oslepl()` | — | Czy w ogole mamy z czego liczyc wzajemnosc. | `alarm.pomiar_wzajemnosci`, `wzajemnosc.main` |
-| 1069 | `_procent(licznik, mianownik)` | — | — | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
-| 1073 | `naglowek()` | — | Jeden wiersz bez zrzutow albo cztery do szesciu. | `alarm.sprawdz_wszystko` |
-| 1131 | `raport()` | — | Pelna odpowiedz na cztery pytania. | `alarm.przeglad`, `wzajemnosc.main` |
-| 1403 | `main()` | — | — | `wzajemnosc (poziom modulu)` |
+| 156 | `wczytaj(nazwa)` | — | Wiersze pliku JSONL z katalogu danych. | `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.okno_pomiaru` *(+5)* |
+| 184 | `_chwila(tekst)` | — | ISO-8601 na moment w UTC, bez strefy. | `wzajemnosc._licznik_z_chwili`, `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly` *(+7)* |
+| 201 | `_nazwa(tekst)` | — | Nazwa wyswietlana do porownywania: male litery, jedna spacja. | `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.skad_przyszli` |
+| 206 | `_uchwyt(tekst)` | — | Uchwyt do porownywania: male litery, same znaki alfanumeryczne. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie` |
+| 231 | `_licznik_z_chwili(kiedy, liczniki)` | — | Zapis `wzrost.jsonl` z tego samego momentu, co zrzut imienny — albo nic. | `wzajemnosc.pokrycie`, `wzajemnosc.zrzuty_czytelnikow` |
+| 241 | `zrzuty_czytelnikow()` | — | Zrzuty po kolei, KAZDY Z OCENA, CZY NIE JEST OKROJONY. | `wzajemnosc.czytelnicy`, `wzajemnosc.naglowek`, `wzajemnosc.pomiar_oslepl`, `wzajemnosc.raport` |
+| 300 | `czytelnicy()` | — | Uchwyt czytelnika -> co o nim wiemy ze zrzutow. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.opoznienia`, `wzajemnosc.skad_przyszli` |
+| 363 | `kolejnosc(wpis, akcja)` | — | Czy czytelnik pojawil sie PO naszym dzialaniu, PRZED nim, czy nie wiadomo. | `wzajemnosc.odwzajemnienie` |
+| 394 | `okno_pomiaru()` | — | Od kiedy do kiedy w ogole widzimy, kto nas czyta. | `wzajemnosc.naglowek`, `wzajemnosc.raport`, `wzajemnosc.slepe_okno` |
+| 411 | `pokrycie()` | — | Ilu czytelnikow LICZY Substack, a ilu umiemy nazwac po imieniu. | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
+| 458 | `_pusty_kubel()` | — | Swiezy komplet licznikow. | `wzajemnosc.zaczepienia` |
+| 467 | `zaczepienia()` | — | Kogo zaczepilismy — osobno udane, nieudane i POMINIETE. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.slepe_okno` |
+| 513 | `odwzajemnienie()` | — | Ilu z zaczepionych pojawilo sie POTEM na naszej liscie czytelnikow. | `wzajemnosc.naglowek`, `wzajemnosc.opoznienia`, `wzajemnosc.raport` |
+| 589 | `odwzajemnienie._od_kotwicy(lista)` | — | — | `wzajemnosc.odwzajemnienie` |
+| 623 | `slepe_okno()` | — | O ile nasze najstarsze zaczepienie wyprzedza pierwszy zrzut czytelnikow. | `wzajemnosc.raport` |
+| 651 | `_reakcje()` | — | Zdarzenia `skutek` rozdzielone na kubelki plus licznik typow nieznanych. | `wzajemnosc.kanaly`, `wzajemnosc.opoznienia`, `wzajemnosc.skad_przyszli` |
+| 674 | `skad_przyszli()` | — | Ilu naszych czytelnikow zetknelo sie wczesniej z nasza trescia. | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
+| 734 | `_nasze_pozycje()` | — | Identyfikator wystawionej tresci -> rodzaj i chwila wystawienia. | `wzajemnosc.kanaly`, `wzajemnosc.opoznienia` |
+| 762 | `kanal_reakcji(reakcja, pozycje)` | — | Ktorego NASZEGO kanalu dotknal czlowiek — z CELU reakcji, nie z jej typu. | `wzajemnosc.kanaly` |
+| 789 | `opoznienia()` | — | Dwa rozne czasy, celowo NIE zsumowane w jeden. | `wzajemnosc.raport` |
+| 883 | `kanaly()` | — | Co poprzedzilo pojawienie sie czytelnika — osobowo i pozycyjnie. | `wzajemnosc.raport` |
+| 996 | `pomiar_oslepl()` | — | Czy w ogole mamy z czego liczyc wzajemnosc. | `alarm.pomiar_wzajemnosci`, `wzajemnosc.main` |
+| 1075 | `_procent(licznik, mianownik)` | — | — | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
+| 1079 | `naglowek()` | — | Jeden wiersz bez zrzutow albo cztery do szesciu. | `alarm.sprawdz_wszystko` |
+| 1137 | `raport()` | — | Pelna odpowiedz na cztery pytania. | `alarm.przeglad`, `wzajemnosc.main` |
+| 1409 | `main()` | — | — | `wzajemnosc (poziom modulu)` |
 

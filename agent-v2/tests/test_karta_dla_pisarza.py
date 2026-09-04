@@ -8,10 +8,10 @@ ZRODLACH, nie o temacie.
 
     karta:   „Only METR's URL carries an explicit publication date;
               the other sources are undated in the excerpts."
-    tekst 1: „the OpenAI, Hugging Face and CyberScoop accounts are undated"
+    tekst 1: „the three publisher accounts are undated"
     tekst 2: „only METR's carries an explicit publication date; the passages
               we rely on (...) reached us undated"
-    bramka:  „the OpenAI, Hugging Face and CyberScoop accounts ALL carry
+    bramka:  „the three publisher accounts ALL carry
               explicit dates"
 
 PROSBA W PROMPCIE NIE WYSTARCZYLA — I TO JEST SEDNO TEGO TESTU. Po pierwszej

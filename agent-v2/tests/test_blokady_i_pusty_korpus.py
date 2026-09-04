@@ -8,10 +8,10 @@ pozycji i oddal CZTERY, wszystkie pierwotne (historycznie 10 pozycji i 3,0
 pierwotne przy dlugim szukaniu). I wlasnie dlatego przebieg padl — bo dokumenty
 pierwotne prawnicze i akademickie siedza za zaporami:
 
-    opencasebook.org   HTTP 403
-    papers.ssrn.com    HTTP 403
-    canlii.org         HTTP 403
-    law.stanford.edu   PDF bez warstwy tekstowej
+    casebook.example.org   HTTP 403
+    papers.example.com    HTTP 403
+    caselaw.example.org         HTTP 403
+    law.example.edu   PDF bez warstwy tekstowej
     !! nie pobrano ani jednej strony
 
 Poprawiajac JAKOSC zrodel, pogorszylem SKUTECZNOSC pobierania. Dwie wady:
@@ -123,10 +123,10 @@ print("=== 7. SPRAWDZONE NA ZYWO, NA TYCH SAMYCH ADRESACH ===")
 # wierzyc opisowi w commicie.
 #
 #   [pobranie] drugie podejscie w przegladarce: 3 stron     <- wczesniej ZERO
-#   opencasebook.org   16 371 znakow   ODZYSKANE
-#   papers.ssrn.com       263 znaki    strona-zapora
-#   canlii.org              0 znakow
-#   law.stanford.edu   pominiety — skan PDF, przegladarka nic nie zmieni
+#   casebook.example.org   16 371 znakow   ODZYSKANE
+#   papers.example.com       263 znaki    strona-zapora
+#   caselaw.example.org              0 znakow
+#   law.example.edu   pominiety — skan PDF, przegladarka nic nie zmieni
 #   fetch PRZEZYL zero pobran, wyjatek nie poleciał
 #
 # 1 z 3 to ten sam rzad wielkosci, co pomiar na archiwum (7%) — i wystarcza,

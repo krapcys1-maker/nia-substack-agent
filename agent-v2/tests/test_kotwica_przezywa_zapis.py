@@ -5,7 +5,7 @@ SZOSTY RAZ TEGO SAMEGO KSZTALTU W JEDNYM DNIU: sygnal policzony i wyrzucony.
 
 `znajdz_ciekawostki` liczy, z ktorego kanalu wyszedl fakt, i log to pokazuje —
     [ciekawostki] z kanalow: 6 z 6 (100%)
-    · [KANAL:Kanal Przegladowy] OpenAI's first custom inference chip, Jalapeno...
+    · [KANAL:Kanal Przegladowy] OpenAI's first custom inference chip, SkladnikA...
 a w banku wszystkie szesc mialo „z pamieci". Bo pola zapisywane do indeksu ida
 z KSZTALTU ODPOWIEDZI MODELU (`KSZTALT_CIEKAWOSTEK`), a `z_kanalu` liczy KOD po
 odpowiedzi — wiec nie bylo go w kontrakcie i przepadalo.

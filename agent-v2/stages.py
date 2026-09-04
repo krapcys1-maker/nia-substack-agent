@@ -491,10 +491,10 @@ def karta_dla_pisarza(card: dict[str, Any],
 
         karta:   „Only METR's URL carries an explicit publication date;
                   the other sources are undated in the excerpts."
-        tekst 1: „the OpenAI, Hugging Face and CyberScoop accounts are undated"
+        tekst 1: „the three publisher accounts are undated"
         tekst 2: „only METR's carries an explicit publication date; the passages
                   we rely on (...) reached us undated"
-        bramka:  „the OpenAI, Hugging Face and CyberScoop accounts ALL carry
+        bramka:  „the three publisher accounts ALL carry
                   explicit dates"
 
     Po pierwszej porazce poprawilem regule w promptcie. NIE WYSTARCZYLO: zdanie
@@ -3004,7 +3004,7 @@ def nazwy_wlasne(tekst: str) -> set[str]:
     wszystkie trzy notki za rozne, mimo ze mowily o tym samym modelu.
 
     Bierzemy slowa wygladajace na NAZWE, nie zwykle: wielka litera albo cyfra.
-    „ACME-5.3-Flash", „Jalapeno", „GB300" tak; „report", „august" nie.
+    „ACME-5.3-Flash", „SkladnikA", „GB300" tak; „report", „august" nie.
     """
     # POCZATEK ZDANIA NIE ROBI Z SLOWA NAZWY. Bez tego „Cheap models are..."
     # oddawalo `cheap` jako nazwe wlasna, a wtedy dwa dowolne teksty
@@ -3329,7 +3329,7 @@ def notki_dnia(
     #     dokladnie ta wada, dla ktorej ten sedzia powstal.
     #   - slaby i powtorzony kandydat nie znikal nigdy, wiec bank zapelnil
     #     sie blizniakami: zmierzone 31 sierpnia na 53 wpisach — ACME-5.3 osiem
-    #     razy, Jalapeno siedem, Hugging Face piec. To z takiego banku wyszly
+    #     razy, SkladnikA siedem, PortalModeli piec. To z takiego banku wyszly
     #     trzy notki o jednym modelu w jeden dzien.
     #
     # Wolamy PRZED wzieciem materialu i tylko wtedy, gdy jest co sortowac.
@@ -4748,8 +4748,8 @@ def fetch(
                 # BLOKADA (403/401/429/503) — ZLAPANE ZYWYM PRZEBIEGIEM 30
                 # sierpnia i to jest wazniejsza polowa. Odkad dyskoveria
                 # przestala dopychac liste omowieniami i oddaje SAME DOKUMENTY,
-                # trafia prosto w hosty, ktore blokuja najostrzej: SSRN, CanLII,
-                # Stanford Law, opencasebook. Przebieg oddal cztery zrodla, same
+                # trafia prosto w hosty, ktore blokuja najostrzej: repozytoria prawnicze i
+                # uczelniane. Przebieg oddal cztery zrodla, same
                 # pierwotne — i wszystkie cztery padly, trzy na 403. Poprawiajac
                 # JAKOSC zrodel, pogorszylem SKUTECZNOSC pobierania.
                 #
@@ -6571,7 +6571,7 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
     # published standard") dziela cztery slowa z samego szablonu i wygladaja
     # na to samo, nie bedac tym samym. Dwa opisy TEGO SAMEGO faktu dziela
     # natomiast NAZWE albo LICZBE: siedem wariantow chipu mowi „Jalapeño",
-    # „OpenAI" i „Broadcom", a dwa o Jane Street — „Anthropic" i „100".
+    # „OpenAI" i „Broadcom", a dwa o FirmaD — „Anthropic" i „100".
     PODOBIENSTWO = {"min_wspolnych": 4, "prog": 0.35}
     fakty_w_banku = [str(k.get("fact") or "") for k in indeks]
     licznik = {"przyjete": 0, "odrzucone": 0, "znane": 0, "podobne": 0}
@@ -6745,12 +6745,12 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     # RZADKIE SLOWO JAKO DRUGI SYGNAL BLIZNIACTWA.
     #
     # Zmierzone na zywym banku 30 sierpnia: dwie kandydatury o tym samym
-    # frameworku DeepSeek DSpark przeszly obok siebie. Wspolnych rdzeni szesc na
+    # frameworku DeepSeek FrameworkA przeszly obok siebie. Wspolnych rdzeni szesc na
     # dwadziescia piec, udzial 0,240 przy progu 0,30 — o wlos za malo, bo jedna
     # opisywala publikacje z uczelnia, druga numer arXiv, wiec RESZTA slow byla
     # inna. Trzy inne pary tego samego przebiegu zostaly zlapane poprawnie.
     #
-    # Ale wsrod tych szesciu wspolnych stalo `dspark` — nazwa wlasna, ktora nie
+    # Ale wsrod tych szesciu wspolnych stalo `frameworka` — nazwa wlasna, ktora nie
     # wystepuje NIGDZIE INDZIEJ w banku. Dwa fakty dzielace rzadki identyfikator
     # sa tym samym tematem niezaleznie od proporcji, i to jest sygnal, ktory kod
     # potrafi policzyc sam: liczymy, w ilu kandydaturach dany rdzen w ogole
@@ -6768,13 +6768,13 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
         """Rzadkie slowo LUZUJE PROPORCJE, ale nie liczbe wspolnych rdzeni.
 
         Pierwsza wersja wymagala tylko rzadkiego slowa i byla katastrofalna —
-        zywy test na banku pietnastu kandydatur uznal uklad Jalapeno za
-        blizniaka wlamania na Hugging Face, a framework DSpark za blizniaka
+        zywy test na banku pietnastu kandydatur uznal uklad SkladnikA za
+        blizniaka wlamania na PortalModeli, a framework FrameworkA za blizniaka
         kosztow inferencji. Powod prosty: przy pietnastu wpisach mnostwo
         ZWYKLYCH slow trafia sie dokladnie w dwoch, wiec „rzadkie" nie znaczylo
         „charakterystyczne".
 
-        Prawdziwy ksztalt tej wady byl inny. Para DSpark miala SZESC wspolnych
+        Prawdziwy ksztalt tej wady byl inny. Para FrameworkA miala SZESC wspolnych
         rdzeni — czyli powyzej progu liczbowego — i odpadla wylacznie na
         PROPORCJI (0,240 przy 0,30), bo jedna kandydatura opisywala publikacje z
         uczelnia, a druga numer arXiv, wiec reszta slow byla inna. Wiec luzujemy
@@ -6784,11 +6784,11 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
         if len(wspolne) < POROWNANIE_MIEDZY_DNIAMI["min_wspolnych"]:
             return ""
         # NAZWA WLASNA, NIE ZWYKLE SLOWO. Sam prog czestosci nadal dawal
-        # falszywe trafienia — „DSpark" zderzal sie z dokumentami inwestorskimi,
+        # falszywe trafienia — „FrameworkA" zderzal sie z dokumentami inwestorskimi,
         # bo dzielily cztery pospolite rdzenie, z ktorych jeden trafil sie
         # akurat dwa razy. Rdzen, ktory ma odroznic JEDNA RZECZ od innej, musi
         # wygladac jak nazwa: wielka litera albo cyfra w oryginalnym tekscie.
-        # „DSpark", „Jalapeño", „GB300" tak; „report", „august", „single" nie.
+        # „FrameworkA", „Jalapeño", „GB300" tak; „report", „august", „single" nie.
         nazwy = {w.lower()[:6] for tekst in (a, b)
                  for w in re.findall(r"[A-Za-z][A-Za-z0-9'’-]*", tekst)
                  if (w[:1].isupper() and len(w) > 3) or any(c.isdigit() for c in w)}

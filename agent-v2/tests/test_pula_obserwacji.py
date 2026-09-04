@@ -32,8 +32,8 @@ obserwowac" i `_ludzie_z_zakladki` czyta z niej sama liste obserwowanych.
       publikacja1, thebuttergirlfriend, tiffaniedarke, writersartistsyearbook
 
 Naprawde wiecej, bo tanie mapowanie nie widzi wlasnych domen
-(`www.malone.news` -> `autor1`) ani rozjazdow nazw
-(`theweeklyscrapbook.substack.com` -> konto `weeklyscrapbook`). Osiem z 92 to
+(`www.wlasnadomena.example` -> `autor1`) ani rozjazdow nazw
+(`publikacja-b.substack.com` -> konto `publikacja-b`). Osiem z 92 to
 juz okolo 13 procent, czyli mniej wiecej jeden dzien na siedem.
 
 ## Co ten test mierzy
@@ -283,7 +283,7 @@ def uruchom_blok(mod_browser, kod_bloku, hosty, obserwowani_na_substacku,
         host = (host or "").strip().lower()
         if host.endswith(".substack.com"):
             return host.split(".")[0]
-        return {"www.malone.news": "autor1"}.get(host)
+        return {"www.wlasnadomena.example": "autor1"}.get(host)
 
     katalog = pathlib.Path(tempfile.mkdtemp())
     stare = {k: getattr(mod_browser, k) for k in
@@ -357,8 +357,8 @@ def licz_norma(plik_dziennika):
 
 
 # Pula z pomiaru: dwa konta, ktore JUZ obserwujemy (jedno przez wlasna domene,
-# tak jak `www.malone.news`), i jedno wolne.
-PULA = ["publikacja1.substack.com", "www.malone.news", "ixcarus.substack.com"]
+# tak jak `www.wlasnadomena.example`), i jedno wolne.
+PULA = ["publikacja1.substack.com", "www.wlasnadomena.example", "ixcarus.substack.com"]
 NA_SUBSTACKU = {"publikacja1", "autor1"}
 BLOK_TERAZ = wytnij(zrodlo_run(), "obserwuj")
 
@@ -376,11 +376,11 @@ try:
             browser.kogo_obserwujemy()["uchwyty"] == {})
 
     browser.OBSERWOWANI.unlink()
-    browser.zapamietaj_obserwowanego("autor1", host="www.malone.news")
+    browser.zapamietaj_obserwowanego("autor1", host="www.wlasnadomena.example")
     sprawdz("zapamietany uchwyt",
             "autor1" in browser.kogo_obserwujemy()["uchwyty"])
     sprawdz("i host, z ktorego sie wzial — bo pula jest lista hostow",
-            browser.czy_juz_obserwujemy("www.malone.news") is True)
+            browser.czy_juz_obserwujemy("www.wlasnadomena.example") is True)
     sprawdz("konto w domenie Substacka rozpoznane bez mapy hostow",
             browser.czy_juz_obserwujemy("publikacja1.substack.com",
                                         {"uchwyty": {"publikacja1": "x"},
@@ -426,7 +426,7 @@ try:
         Odnosnik("/@autor3", "Autor 3")]))
     sprawdz("zrzut odczytal trzech", ilu == 3, ilu)
     sprawdz("mapa hostow przezyla zrzut",
-            browser.czy_juz_obserwujemy("www.malone.news") is True)
+            browser.czy_juz_obserwujemy("www.wlasnadomena.example") is True)
 
     # SAMOLECZENIE: wlasciciel odobserwowal Malone'a recznie. Zrzut przepisuje
     # liste w calosci, wiec host MUSI wrocic do puli sam — inaczej pamiec
@@ -436,7 +436,7 @@ try:
         Odnosnik("/@autor3", "Autor 3")]))
     sprawdz("po odobserwowaniu zostaje dwoch", ilu2 == 2, ilu2)
     sprawdz("a host wraca do puli",
-            browser.czy_juz_obserwujemy("www.malone.news") is False)
+            browser.czy_juz_obserwujemy("www.wlasnadomena.example") is False)
 
     # PUSTY ODCZYT NIE KASUJE PAMIECI — inaczej jedna awaria strony
     # odblokowalaby cala pule i dzien poszedlby na powtorki.
@@ -456,10 +456,10 @@ print("=== 2. ODSIEW PRZED LOSOWANIEM: OBSERWOWANY NIE WCHODZI DO PULI ===")
 pamiec_pelna = {"zrzut": "2026-09-01T00:00:00+00:00",
                 "uchwyty": {"publikacja1": "2026-09-01T00:00:00+00:00",
                             "autor1": "2026-09-01T00:00:00+00:00"},
-                "hosty": {"www.malone.news": "autor1"}}
+                "hosty": {"www.wlasnadomena.example": "autor1"}}
 konta, wpisy, pam, plik, out = uruchom_blok(
     browser, BLOK_TERAZ, PULA, NA_SUBSTACKU, pamiec=pamiec_pelna,
-    kolejnosc=("publikacja1.substack.com", "www.malone.news",
+    kolejnosc=("publikacja1.substack.com", "www.wlasnadomena.example",
                "ixcarus.substack.com"))
 print("    odwiedzone profile: %s" % konta.odwiedzone)
 print("    klikniete: %s" % konta.klikniete)
@@ -483,7 +483,7 @@ print("=== 3. PAMIEC MOZE BYC PUSTA — SLOT I TAK NIE PRZEPADA ===")
 # nie jest proba.
 konta, wpisy, pam, plik, out = uruchom_blok(
     browser, BLOK_TERAZ, PULA, NA_SUBSTACKU, pamiec=None,
-    kolejnosc=("publikacja1.substack.com", "www.malone.news",
+    kolejnosc=("publikacja1.substack.com", "www.wlasnadomena.example",
                "ixcarus.substack.com"))
 print("    odwiedzone profile: %s" % konta.odwiedzone)
 print("    wpisy: %s" % [(w["rodzaj"], w.get("udane")) for w in wpisy])
@@ -517,9 +517,9 @@ WYKONANE_3, NIEUDANE_3 = wykonane, nieudane   # sekcje nizej porownuja sie z tym
 print()
 print("=== 4. CALA PULA JUZ OBSERWOWANA: STAN POPRAWNY, ALE ZE SLADEM ===")
 konta, wpisy, pam, plik, out = uruchom_blok(
-    browser, BLOK_TERAZ, ["publikacja1.substack.com", "www.malone.news"],
+    browser, BLOK_TERAZ, ["publikacja1.substack.com", "www.wlasnadomena.example"],
     NA_SUBSTACKU, pamiec=pamiec_pelna,
-    kolejnosc=("publikacja1.substack.com", "www.malone.news"))
+    kolejnosc=("publikacja1.substack.com", "www.wlasnadomena.example"))
 sprawdz("ZERO sesji przegladarki — odsiew dziala bez wchodzenia na profile",
         konta.sesje == 0 and konta.odwiedzone == [], konta.odwiedzone)
 sprawdz("ale wpis jest, bo blok bez sladu wyglada na blok, ktorego nie ma",
@@ -544,7 +544,7 @@ print("=== 5a. KONTRDOWOD: BLOK Z `64d881a`, DZISIEJSZY `browser` ===")
 BLOK_STARY = wytnij(zrodlo_run("64d881a"), "obserwuj")
 s_konta, s_wpisy, s_pam, s_plik, s_out = uruchom_blok(
     browser, BLOK_STARY, PULA, NA_SUBSTACKU, pamiec=None,
-    kolejnosc=("publikacja1.substack.com", "www.malone.news",
+    kolejnosc=("publikacja1.substack.com", "www.wlasnadomena.example",
                "ixcarus.substack.com"))
 print("    STARY BLOK: odwiedzone=%s wpisy=%s"
       % (s_konta.odwiedzone, [(w["rodzaj"], w.get("udane")) for w in s_wpisy]))
@@ -657,18 +657,18 @@ sprawdz("i w JEDEN wpis dziennika, ktory nie jest porazka",
 
 # A GDY POMINIECIE IDZIE Z SAMEJ PAMIECI, nie z menu — nikt nic nie zapisal,
 # wiec dzien musi dostac swoje podsumowanie. Wlasna domena, ktorej mapy hostow
-# jeszcze nie ma, ale uchwyt jest znany: dokladnie przypadek `www.malone.news`.
+# jeszcze nie ma, ale uchwyt jest znany: dokladnie przypadek `www.wlasnadomena.example`.
 konta, wpisy, pam, plik, out = uruchom_blok(
-    browser, BLOK_TERAZ, ["www.malone.news"], NA_SUBSTACKU,
+    browser, BLOK_TERAZ, ["www.wlasnadomena.example"], NA_SUBSTACKU,
     pamiec={"zrzut": None, "uchwyty": {"autor1": "2026-09-01T00:00:00+00:00"},
             "hosty": {}},
-    kolejnosc=("www.malone.news",))
+    kolejnosc=("www.wlasnadomena.example",))
 sprawdz("pominiecie z pamieci nie wchodzi nawet na profil",
         konta.odwiedzone == [], konta.odwiedzone)
 sprawdz("ale dzien i tak ma slad, bo nikt inny go nie zostawil",
         [w["rodzaj"] for w in wpisy] == ["obserwacja_pominieta"], wpisy)
 sprawdz("i mapa host->uchwyt jest juz zapisana na jutro",
-        pam["hosty"].get("www.malone.news") == "autor1", pam)
+        pam["hosty"].get("www.wlasnadomena.example") == "autor1", pam)
 
 
 print()

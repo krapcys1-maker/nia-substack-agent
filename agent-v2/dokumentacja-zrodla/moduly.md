@@ -546,7 +546,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1451 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1442 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -622,7 +622,7 @@
 
 ### `wzajemnosc.py` — czy zaczepieni sie odwzajemniaja: liczy PO naszej akcji, osobno stan nieorzekalny
 
-1412 wierszy, 25 funkcji na poziomie modułu, 0 klas
+1418 wierszy, 25 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

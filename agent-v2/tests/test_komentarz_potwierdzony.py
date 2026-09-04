@@ -103,7 +103,7 @@ PRZED = {str(p): odcisk(p) for p in PILNOWANE}
 
 ZRODLO = pathlib.Path("agent-v2/run.py").read_text(encoding="utf-8")
 
-MARTWY = "slowboring.com"      # host z pomiaru 30 sierpnia: 0 wejsc na 2+ proby
+MARTWY = "publikacja-c.example"      # host z pomiaru 30 sierpnia: 0 wejsc na 2+ proby
 ZYWY = "zywy.example"
 
 

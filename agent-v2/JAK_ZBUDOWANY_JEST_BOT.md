@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 28 918 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 28 915 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -688,7 +688,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1451 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1442 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -764,7 +764,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `wzajemnosc.py` — czy zaczepieni sie odwzajemniaja: liczy PO naszej akcji, osobno stan nieorzekalny
 
-1412 wierszy, 25 funkcji na poziomie modułu, 0 klas
+1418 wierszy, 25 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -3314,7 +3314,7 @@ Pula to **wyłącznie klucze `gdzie_komentowalismy.json`** — czyli hosty, u kt
         return None
 ```
 
-`host.split(".")[0]` przy własnej domenie (`www.slowboring.com`) dawało **"www"** i agent próbował obserwować konto o tej nazwie — dziennik pokazywał `komu='www'` trzy razy pod rząd.
+`host.split(".")[0]` przy własnej domenie (`www.publikacja-c.example`) dawało **"www"** i agent próbował obserwować konto o tej nazwie — dziennik pokazywał `komu='www'` trzy razy pod rząd.
 
 #### 9.2 Jedno kliknięcie i tylko jedno — `_klik_na_profilu` (browser.py:1067)
 

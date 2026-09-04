@@ -102,12 +102,12 @@ try:
         "/comments": {"comments": [{"body": NASZ}]},
     })
     wynik = browser.potwierdz_komentarz(
-        FalszywaStrona(), "https://www.slowboring.com/p/jakis-tekst", NASZ)
+        FalszywaStrona(), "https://www.publikacja-c.example/p/jakis-tekst", NASZ)
     sprawdz("komentarz pod ARTYKULEM nadal potwierdzany", bool(wynik), wynik)
     sprawdz("dla artykulu nadal pyta /api/v1/posts/",
             any("/api/v1/posts/" in s for s, _ in pytania), pytania)
     sprawdz("pyta domeny AUTORA, nie substack.com",
-            any(b and "slowboring" in b for _, b in pytania), pytania)
+            any(b and "publikacja-c" in b for _, b in pytania), pytania)
 finally:
     browser.api_json = oryg_api
 
@@ -141,7 +141,7 @@ try:
                               ("all_subscribers", True), (None, True)):
         browser.api_json = podstaw_api({"/api/v1/posts/":
                                         {"id": 1, "write_comment_permissions": prawo}})
-        wynik = browser.mozna_komentowac("https://www.slowboring.com/p/x")
+        wynik = browser.mozna_komentowac("https://www.publikacja-c.example/p/x")
         sprawdz("write_comment_permissions=%-16r -> %s" % (prawo, oczekiwane),
                 wynik is oczekiwane, wynik)
 
@@ -162,7 +162,7 @@ try:
     podstaw_przegladarke()
     browser.api_json = podstaw_api({"/api/v1/posts": [
         {"publishedBylines": [{"handle": "mattstoller"}]}]})
-    for host, oczekiwane in (("www.thebignewsletter.com", "mattstoller"),
+    for host, oczekiwane in (("www.publikacja-d.example", "mattstoller"),
                              ("publikacja9.substack.com", "publikacja9"),
                              ("foo.substack.com", "foo")):
         wynik = browser.uchwyt_publikacji(host)
@@ -176,7 +176,7 @@ try:
 
     # Kontrdowod: stary sposob na tych samych danych.
     sprawdz("STARY sposob dawalby 'www' (test rozroznia)",
-            "www.thebignewsletter.com".split(".")[0] == "www")
+            "www.publikacja-d.example".split(".")[0] == "www")
 finally:
     browser.api_json = oryg_api
     browser.podlacz_sie, browser.wymagaj_sesji = oryg_podlacz, oryg_sesja

@@ -112,9 +112,9 @@ def zle(host, dni_temu=1.0):
 
 try:
     print("=== 1. DWIE PORAZKI I ZERO SUKCESOW ZDEJMUJA HOST ===")
-    zapisz(zle("slowboring.com"), zle("slowboring.com"))
+    zapisz(zle("publikacja-c.example"), zle("publikacja-c.example"))
     sprawdz("host z dwiema porazkami odpada",
-            "slowboring.com" in browser.hosty_gdzie_komentarz_nie_wchodzi(),
+            "publikacja-c.example" in browser.hosty_gdzie_komentarz_nie_wchodzi(),
             browser.hosty_gdzie_komentarz_nie_wchodzi())
 
     print()
@@ -158,10 +158,10 @@ try:
     print("=== 6. NASZA AWARIA NIE JEST WADA HOSTA ===")
     # SCENARIUSZ KONTROLERA, odtworzony na wpisach: dwa razy padlismy sami
     # (timeout, zamkniety Chrome), dwa rozne posty, jeden host. Zanim doszlo
-    # rozroznienie, dawalo to {'slowboring.com'} i `mozna_komentowac` = False
+    # rozroznienie, dawalo to {'publikacja-c.example'} i `mozna_komentowac` = False
     # — czyli publikacje z pomiaru 30 sierpnia agent skreslal za WLASNE awarie.
-    zapisz(k("slowboring.com", False, o_hoscie=False),
-           k("slowboring.com", False, o_hoscie=False))
+    zapisz(k("publikacja-c.example", False, o_hoscie=False),
+           k("publikacja-c.example", False, o_hoscie=False))
     sprawdz("dwa nasze wyjatki nie skreslaja hosta",
             browser.hosty_gdzie_komentarz_nie_wchodzi() == set(),
             browser.hosty_gdzie_komentarz_nie_wchodzi())
@@ -245,18 +245,18 @@ try:
     # `mozna_komentowac` oraz sito w `run.dzien`. Nikt tego dotad nie dotknal
     # zadnym adresem z `www.`, a to na tym stoi zdanie z komentarza w `run.py`:
     # „inna normalizacja odsialaby tutaj co innego, niz odrzuci zapora".
-    zapisz(zle("www.malone.news"), zle("www.malone.news"))
+    zapisz(zle("www.wlasnadomena.example"), zle("www.wlasnadomena.example"))
     lista = browser.hosty_gdzie_komentarz_nie_wchodzi()
-    sprawdz("klucz z dziennika zachowuje `www.`", "www.malone.news" in lista,
+    sprawdz("klucz z dziennika zachowuje `www.`", "www.wlasnadomena.example" in lista,
             lista)
     sprawdz("zapora odrzuca adres z `www.`",
-            browser.mozna_komentowac("https://www.malone.news/p/x") is False)
+            browser.mozna_komentowac("https://www.wlasnadomena.example/p/x") is False)
     # Adres bez `www.` to dla obu stron INNY host — i to jest spojne, nie
     # przypadkowe: skoro zapora i sito licza tak samo, nigdy sie nie rozjada.
     # Nic nie tracimy, bo Substack serwuje publikacje pod jedna forma adresu,
     # a my bierzemy adresy z jego wlasnych odpowiedzi.
     sprawdz("adres bez `www.` nie dziedziczy blokady (zapora i sito licza tak samo)",
-            "malone.news" not in lista, lista)
+            "wlasnadomena.example" not in lista, lista)
 
     print()
     print("=== 11. PAMIEC PLATNYCH HOSTOW ZDEJMUJE `www.` — I W OBIE STRONY ===")
@@ -265,11 +265,11 @@ try:
     # `.removeprefix("www.")`, a sito platnych w `run.dzien` — tak samo.
     browser.PLATNE_HOSTY = KAT / "platne.json"
     browser.PLATNE_HOSTY.write_text("{}", encoding="utf-8")
-    browser.zapamietaj_platny_host("www.thebignewsletter.com", "only_paid")
+    browser.zapamietaj_platny_host("www.publikacja-d.example", "only_paid")
     platne = browser.hosty_tylko_dla_placacych()
     sprawdz("zapamietany host traci `www.`",
-            platne == {"thebignewsletter.com"}, platne)
-    browser.zapomnij_platny_host("www.thebignewsletter.com")
+            platne == {"publikacja-d.example"}, platne)
+    browser.zapomnij_platny_host("www.publikacja-d.example")
     sprawdz("i zdejmuje sie go tez adresem z `www.`",
             browser.hosty_tylko_dla_placacych() == set(),
             browser.hosty_tylko_dla_placacych())
@@ -311,13 +311,13 @@ try:
             bez_okna.hosty_gdzie_komentarz_nie_wchodzi())
 
     # (b) nasze wlasne awarie
-    zapisz(k("slowboring.com", False, o_hoscie=False),
-           k("slowboring.com", False, o_hoscie=False))
+    zapisz(k("publikacja-c.example", False, o_hoscie=False),
+           k("publikacja-c.example", False, o_hoscie=False))
     print("    nasze awarie — z klasyfikacja: %s   bez niej: %s"
           % (browser.hosty_gdzie_komentarz_nie_wchodzi() or set(),
              bez_klas.hosty_gdzie_komentarz_nie_wchodzi()))
     sprawdz("KONTRDOWOD: bez klasyfikacji nasz timeout zabija host",
-            "slowboring.com" in bez_klas.hosty_gdzie_komentarz_nie_wchodzi(),
+            "publikacja-c.example" in bez_klas.hosty_gdzie_komentarz_nie_wchodzi(),
             bez_klas.hosty_gdzie_komentarz_nie_wchodzi())
 
     # (c) stare wpisy — bez klasyfikacji zostaly by uznane za wade hosta

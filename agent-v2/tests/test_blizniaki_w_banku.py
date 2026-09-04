@@ -143,29 +143,29 @@ try:
 
     print()
     print("=== 5. NAZWA WLASNA LAPIE PARE, KTORA PROPORCJA PRZEPUSCILA ===")
-    # ZMIERZONE na zywym banku: dwie kandydatury o tym samym frameworku DSpark
+    # ZMIERZONE na zywym banku: dwie kandydatury o tym samym frameworku FrameworkA
     # mialy SZESC wspolnych rdzeni (powyzej progu liczbowego), ale udzial 0,240
     # przy progu 0,30 — bo jedna opisywala publikacje z uczelnia, druga numer
     # arXiv, wiec RESZTA slow byla inna. Rzadka nazwa wlasna luzuje proporcje,
     # nie liczbe wspolnych rdzeni.
     # PRAWDZIWE TEKSTY Z PRODUKCJI, nie wymyslone — to one ujawnily wade.
-    DSPARK_A = ("DeepSeek's DSpark inference framework (paper with Peking "
+    FRAMEWORK_A = ("DostawcaX's FrameworkA inference framework (paper with uczelnia partnerska "
                 "University, 27 June 2026) sped up single-user generation by "
                 "60–85% on its V4-Flash model with no change to output, "
                 "because a GPU's bottleneck is moving weights from memory "
                 "— decoding several tokens at once costs barely more than "
                 "decoding one.")
-    DSPARK_B = ("DeepSeek's DSpark (arXiv 2607.05147, submitted 6 July 2026) "
+    FRAMEWORK_B = ("DostawcaX's FrameworkA (arXiv 2607.05147, submitted 6 July 2026) "
                 "accelerates per-user generation speeds by 60–85% in live "
                 "traffic on the DeepSeek-V4 serving system by having a small "
                 "drafter model guess tokens in parallel and a "
                 "confidence-scheduled scheduler verify only the tokens likely "
                 "to be accepted.")
     sprawdz("proporcja SAMA ich nie lapie",
-            not stages._o_tym_samym(DSPARK_A, DSPARK_B,
+            not stages._o_tym_samym(FRAMEWORK_A, FRAMEWORK_B,
                                     **stages.POROWNANIE_MIEDZY_DNIAMI))
     stages.INDEKS_KANDYDATOW.write_text(json.dumps([
-        kandydat(DSPARK_A, ranga=0), kandydat(DSPARK_B, ranga=1),
+        kandydat(FRAMEWORK_A, ranga=0), kandydat(FRAMEWORK_B, ranga=1),
         kandydat(OSOBNY, ranga=2),
     ], ensure_ascii=False), encoding="utf-8")
     wziete = stages.wez_kandydatow(3)

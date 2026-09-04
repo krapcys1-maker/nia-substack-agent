@@ -61,18 +61,18 @@ try:
 
     print()
     print("=== 2. JEDNA OBSERWACJA WYSTARCZY ===")
-    browser.zapamietaj_platny_host("slowboring.com", "only_paid")
+    browser.zapamietaj_platny_host("publikacja-c.example", "only_paid")
     sprawdz("host zapamietany po pierwszym razie",
-            "slowboring.com" in browser.hosty_tylko_dla_placacych())
+            "publikacja-c.example" in browser.hosty_tylko_dla_placacych())
     stan = json.loads(browser.PLATNE_HOSTY.read_text(encoding="utf-8"))
     sprawdz("z powodem i data",
-            stan["slowboring.com"]["prawo"] == "only_paid"
-            and stan["slowboring.com"]["kiedy"],
-            stan["slowboring.com"])
+            stan["publikacja-c.example"]["prawo"] == "only_paid"
+            and stan["publikacja-c.example"]["kiedy"],
+            stan["publikacja-c.example"])
 
     print()
     print("=== 3. WWW NIE TWORZY DRUGIEGO WPISU ===")
-    browser.zapamietaj_platny_host("www.slowboring.com", "only_paid")
+    browser.zapamietaj_platny_host("www.publikacja-c.example", "only_paid")
     sprawdz("ten sam host mimo przedrostka",
             len(browser.hosty_tylko_dla_placacych()) == 1,
             browser.hosty_tylko_dla_placacych())
@@ -80,16 +80,16 @@ try:
     print()
     print("=== 4. UDANY KOMENTARZ KASUJE HOST ===")
     # Wydawca moze zmienic ustawienia. Pamiec ma go wtedy puscic sama.
-    browser.zapamietaj_platny_host("thebignewsletter.com", "only_founding")
+    browser.zapamietaj_platny_host("publikacja-d.example", "only_founding")
     sprawdz("dwa hosty na liscie",
             len(browser.hosty_tylko_dla_placacych()) == 2)
-    browser.zapomnij_platny_host("www.thebignewsletter.com")
+    browser.zapomnij_platny_host("www.publikacja-d.example")
     sprawdz("po udanym komentarzu zostaje jeden",
-            browser.hosty_tylko_dla_placacych() == {"slowboring.com"},
+            browser.hosty_tylko_dla_placacych() == {"publikacja-c.example"},
             browser.hosty_tylko_dla_placacych())
     browser.zapomnij_platny_host("nie-bylo-takiego.com")
     sprawdz("kasowanie nieistniejacego nie psuje pliku",
-            browser.hosty_tylko_dla_placacych() == {"slowboring.com"})
+            browser.hosty_tylko_dla_placacych() == {"publikacja-c.example"})
 
     print()
     print("=== 5. ODSIEW DZIALA NA PULI CELOW ===")
@@ -102,8 +102,8 @@ try:
                 not in platne]
 
     pula = [
-        {"url": "https://slowboring.com/p/jeden"},
-        {"url": "https://www.slowboring.com/p/dwa"},
+        {"url": "https://publikacja-c.example/p/jeden"},
+        {"url": "https://www.publikacja-c.example/p/dwa"},
         {"url": "https://otwarty.substack.com/p/trzy"},
         {"url": "https://inny.example.com/p/cztery"},
     ]
@@ -111,7 +111,7 @@ try:
     sprawdz("platny host wypada, takze z www", len(zostalo) == 2,
             [x["url"] for x in zostalo])
     sprawdz("otwarte zostaja",
-            all("slowboring" not in x["url"] for x in zostalo))
+            all("publikacja-c" not in x["url"] for x in zostalo))
 
     print()
     print("=== 6. KONTRDOWOD: BEZ PAMIECI NIC NIE JEST ODSIANE ===")

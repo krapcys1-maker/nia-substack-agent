@@ -38,13 +38,13 @@ KONTRDOWOD (sekcja 7) idzie tym samym scenariuszem przez `browser.py`
 wyciagniety z `git show e88b456:agent-v2/browser.py`. Zmierzone:
 
     STARY e88b456   wyjatek po klknieciu x2 -> o_hoscie [True, True]
-                    hosty_gdzie_komentarz_nie_wchodzi() = {'slowboring.com'}
+                    hosty_gdzie_komentarz_nie_wchodzi() = {'publikacja-c.example'}
                     mozna_komentowac(...)  = False
     Z POPRAWKA      wyjatek po klknieciu x2 -> o_hoscie [False, False]
                     hosty_gdzie_komentarz_nie_wchodzi() = set()
                     mozna_komentowac(...)  = True
 
-    OBIE WERSJE     potwierdzenie „nie ma tego" x2 -> {'slowboring.com'}
+    OBIE WERSJE     potwierdzenie „nie ma tego" x2 -> {'publikacja-c.example'}
                     czyli prawdziwa odmowa nadal zamyka host po dwoch razach.
 
 CALY TEN PLIK PUSZCZONY NA DRZEWIE Z `e88b456:agent-v2/browser.py`:
@@ -284,7 +284,7 @@ def podepnij(strona, modul):
 KATALOG = pathlib.Path(tempfile.mkdtemp(prefix="nia-dowod-"))
 DZIENNIK = KATALOG / "dziennik.jsonl"
 TEKST = "Trzy zdania o czyms konkretnym."
-HOST = "slowboring.com"
+HOST = "publikacja-c.example"
 
 
 def przygotuj(modul):

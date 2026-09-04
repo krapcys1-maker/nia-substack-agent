@@ -28,7 +28,7 @@ Puszczone przez `run.cele_wedlug_pierwszenstwa` na tych DWOCH plikach:
               'po_przestawieniu': 41, 'ze_skutkiem': 3}
     poziom skutku: hedleyrees.substack.com, www.ryanpuzycki.com, davidoks.blog
     `kogo_juz_subskrybujemy` -> 14 uchwytow
-    tanie sito odsiewa 2 z 41: theweeklyscrapbook, tiffaniedarke
+    tanie sito odsiewa 2 z 41: publikacja-b, tiffaniedarke
 
 `www.ryanpuzycki.com` (-> `puzycki`, zasubskrybowany 30 sierpnia) NIE wpada
 w tanie sito, bo to wlasna domena — lapie go dopiero sprawdzenie PO
@@ -336,7 +336,7 @@ def uruchom_blok(kod_bloku, nazwa, historia, konta, budzet=1,
             return host.split(".")[0]
         return {"www.ryanpuzycki.com": "puzycki",
                 "www.a16z.news": "a16z",
-                "www.malone.news": "autor1"}.get(host)
+                "www.wlasnadomena.example": "autor1"}.get(host)
 
     stare = {k: getattr(browser, k) for k in
              ("podlacz_sie", "wymagaj_sesji", "naprawde_wyslac",
@@ -417,7 +417,7 @@ HISTORIA = {
     # od 2026-08-25 wlacznie
     "hedleyrees.substack.com":     "2026-08-31T10:00:00+00:00",
     "www.a16z.news":               "2026-08-30T09:00:00+00:00",
-    "theweeklyscrapbook.substack.com": "2026-08-29T20:17:52+00:00",
+    "publikacja-b.substack.com": "2026-08-29T20:17:52+00:00",
     "www.ryanpuzycki.com":         "2026-08-28T11:00:00+00:00",
 }
 TYLKO_STARE = {h: k for h, k in HISTORIA.items() if k[:10] < "2026-08-25"}
@@ -425,7 +425,7 @@ TYLKO_STARE = {h: k for h, k in HISTORIA.items() if k[:10] < "2026-08-25"}
 # Trzy prawdziwe wiersze z produkcyjnego dziennika, przepisane co do pola.
 DZIENNIK_WSTEPNY = [
     {"kiedy": "2026-08-16T17:53:00+00:00", "rodzaj": "subskrypcja",
-     "udane": True, "komu": "theweeklyscrapbook"},
+     "udane": True, "komu": "publikacja-b"},
     {"kiedy": "2026-08-30T11:53:32+00:00", "rodzaj": "subskrypcja",
      "udane": True, "komu": "puzycki"},
     # Osoba, ktora zareagowala na nasza tresc. Uchwytu tu NIE MA — jest tylko
@@ -539,14 +539,14 @@ sprawdz("i licznik widzi JEDNA wykonana obserwacje, zero porazek",
 
 print()
 print("=== 3. SUBSKRYPCJA: DUBEL NIE ZJADA SLOTU ===")
-# `theweeklyscrapbook` jest w domenie Substacka, wiec lapie go TANIE sito —
+# `publikacja-b` jest w domenie Substacka, wiec lapie go TANIE sito —
 # jeszcze zanim ktokolwiek otworzy przegladarke. Pula ma tylko jego, wiec
 # poprawnym wynikiem jest wpis „pula wyczerpana", a nie proba.
 konta, wpisy, plik, out = uruchom_blok(
     BLOK_SUBSKRYBUJ, "subskrybuj",
-    {"theweeklyscrapbook.substack.com": "2026-08-29T20:17:52+00:00"},
-    Substack(zasubskrybowani={"theweeklyscrapbook"}),
-    kolejnosc=("theweeklyscrapbook.substack.com",),
+    {"publikacja-b.substack.com": "2026-08-29T20:17:52+00:00"},
+    Substack(zasubskrybowani={"publikacja-b"}),
+    kolejnosc=("publikacja-b.substack.com",),
     dziennik_wstepny=DZIENNIK_WSTEPNY)
 print("    odwiedzone profile: %s" % konta.odwiedzone)
 print("    wpisy: %s" % [(w["rodzaj"], w.get("udane")) for w in wpisy[3:]])
@@ -611,19 +611,19 @@ sprawdz("ale wpis NIE obciaza hosta — to awaria po naszej stronie",
 
 # ODMOWA PROFILU JEST PAMIETANA. Konto, ktore odpowiedzialo „nie ma przycisku
 # subskrypcja", nie wraca do puli — to jest dokladnie wpis, ktory 25 sierpnia
-# powstal na `theweeklyscrapbook`.
+# powstal na `publikacja-b`.
 _kat = pathlib.Path(tempfile.mkdtemp())
 _stary_dziennik = browser.DZIENNIK
 try:
     browser.DZIENNIK = _kat / "dziennik.jsonl"
     browser.DZIENNIK.write_text(json.dumps(
         {"kiedy": "2026-08-25T11:38:21+00:00", "rodzaj": "subskrypcja",
-         "udane": False, "komu": "theweeklyscrapbook",
-         "powod": "nie ma przycisku subskrypcja u theweeklyscrapbook"},
+         "udane": False, "komu": "publikacja-b",
+         "powod": "nie ma przycisku subskrypcja u publikacja-b"},
         ensure_ascii=False) + "\n", encoding="utf-8")
     zamk = run.kogo_juz_subskrybujemy()
     sprawdz("odmowa „nie ma przycisku subskrypcja” zamyka konto",
-            "theweeklyscrapbook" in zamk, zamk)
+            "publikacja-b" in zamk, zamk)
     # ALE „NIE WIEM" NIE JEST DOWODEM: timeout albo zamkniety Chrome to awaria
     # po NASZEJ stronie i nie moze skreslac konta na zawsze.
     browser.DZIENNIK.write_text(json.dumps(
@@ -747,9 +747,9 @@ print("=== 5a. KONTRDOWOD: BLOK `subskrybuj` Z `%s` ===" % ODNIESIENIE)
 BLOK_STARY = wytnij(zrodlo_run(ODNIESIENIE), "subskrybuj")
 s_konta, s_wpisy, s_plik, s_out = uruchom_blok(
     BLOK_STARY, "subskrybuj",
-    {"theweeklyscrapbook.substack.com": "2026-08-29T20:17:52+00:00"},
-    Substack(zasubskrybowani={"theweeklyscrapbook"}),
-    kolejnosc=("theweeklyscrapbook.substack.com",),
+    {"publikacja-b.substack.com": "2026-08-29T20:17:52+00:00"},
+    Substack(zasubskrybowani={"publikacja-b"}),
+    kolejnosc=("publikacja-b.substack.com",),
     dziennik_wstepny=DZIENNIK_WSTEPNY)
 print("    STARY BLOK: odwiedzone=%s  wpisy=%s"
       % (s_konta.odwiedzone,
@@ -757,7 +757,7 @@ print("    STARY BLOK: odwiedzone=%s  wpisy=%s"
 s_wyk, s_nieud, _ = licz_norma(s_plik, "subskrypcja")
 print("    STARY BLOK: norma -> wykonane=%d nieudane=%d" % (s_wyk, s_nieud))
 sprawdz("KONTRDOWOD: stary blok WCHODZIL na konto juz zasubskrybowane",
-        s_konta.odwiedzone == ["theweeklyscrapbook"], s_konta.odwiedzone)
+        s_konta.odwiedzone == ["publikacja-b"], s_konta.odwiedzone)
 sprawdz("KONTRDOWOD: i zapisywal to jako PORAZKE subskrypcji",
         s_nieud == 1, (s_wyk, s_nieud))
 sprawdz("a dzisiejszy blok na tych samych danych nie wchodzil nigdzie"
