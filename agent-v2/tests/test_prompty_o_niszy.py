@@ -95,6 +95,17 @@ def _re_escape_ze_zawijaniem(fraza: str) -> str:
     """
     return r"\s+".join(re.escape(s) for s in fraza.split())
 
+def _na_zdania(tekst: str) -> list[str]:
+    """Brief na zdania, zeby wyjatek zakrywal zdanie, a nie caly brief.
+
+    Tniemy po kropce, wykrzykniku i znaku zapytania ORAZ po zlamaniu linii —
+    briefy uzywaja obu. Puste kawalki odpadaja; nic wiecej sie nie dzieje,
+    bo skan i tak szuka fraz, a nie zdan poprawnych gramatycznie.
+    """
+    return [c.strip() for c in re.split(r"(?<=[.!?])\s+|\n+", tekst or "")
+            if c.strip()]
+
+
 PROMPTY = pathlib.Path("agent-v2/prompts")
 
 zdane = oblane = 0
@@ -204,8 +215,18 @@ def zrodla():
     for plik in sorted(PROMPTY.glob("*.md")):
         yield plik.name, plik.read_text(encoding="utf-8").splitlines()
     # NOTE_FORMS jedzie do promptu notki jako `{form_brief}`. To prompt.
+    #
+    # DZIELIMY NA ZDANIA, I TO NIE JEST KOSMETYKA. Skan pomija LINIE, w ktorej
+    # stoi fragment z listy wyjatkow. Gdy caly dwudziestolinijkowy brief byl
+    # jedna „linia", jeden wyjatek — zapis prawdziwej wpadki, chroniony
+    # slusznie — przykrywal wszystko inne w tym samym briefie. Zmierzone
+    # 4 wrzesnia 2026: `ZACZEP_I_KONKRET` niosl obok chronionego zapisu takze
+    # polecenie z poprzedniej niszy, idace do modelu przy KAZDEJ notce tej
+    # formy. Po podziale wyjatek zakrywa jedno zdanie, tak jak w plikach
+    # promptow.
     for nazwa in sorted(config.NOTE_FORMS):
-        yield "config.py:NOTE_FORMS[%s]" % nazwa, [config.NOTE_FORMS[nazwa]]
+        yield ("config.py:NOTE_FORMS[%s]" % nazwa,
+               _na_zdania(config.NOTE_FORMS[nazwa]))
 
     # I TRZECIE MIEJSCE TEJ SAMEJ KLASY, znalezione 4 wrzesnia 2026.
     # `GENERATORY` i `DZIEDZINY_CIEKAWOSTEK` ida do `prompts/ciekawostki.md`
@@ -306,9 +327,22 @@ print("=== 3. WYKRYWACZ SIEGA DO CONFIGU, NIE TYLKO DO PLIKOW ===")
 # Bez tego sekcja 1 moglaby przechodzic dlatego, ze niczego z configu nie
 # przeczytala. Bierzemy miejsce, o ktorym WIEMY, ze trafienie tam jest —
 # zapis wlasnej porazki z FAA — i zadamy, zeby surowy wykrywacz je widzial.
-surowe = trafienia_w_linii(config.NOTE_FORMS["ZACZEP_I_KONKRET"])
-sprawdz("surowy wykrywacz widzi zapis o FAA w NOTE_FORMS", "faa" in surowe,
-        surowe)
+# KONTRDOWOD PRZEZ ZATRUCIE, BO BRIEF JEST JUZ CZYSTY. Poprzednia wersja
+# brala slowo, o ktorym „wiemy, ze tam jest" — a to znaczylo, ze kontrdowod
+# zyl tylko dopoki prompt niosl slownictwo poprzedniej niszy. Sprzatniecie
+# promptu wywalalo test, ktory to sprzatanie mial pilnowac.
+#
+# Bierzemy PRAWDZIWA wartosc z `config.py`, doklejamy do niej jedno slowo
+# z listy i zadamy, zeby wykrywacz je zobaczyl. To dowodzi dokladnie tego,
+# o co chodzi — ze skan siega do configu i dziala na jego tresci — i nie
+# wymaga, zeby cokolwiek brudnego w tym configu zostalo.
+_zatrute = config.NOTE_FORMS["ZACZEP_I_KONKRET"] + " Open the system card."
+sprawdz("surowy wykrywacz widzi slowo z listy w wartosci z config.py",
+        "system card" in trafienia_w_linii(_zatrute),
+        trafienia_w_linii(_zatrute))
+sprawdz("a ta sama wartosc BEZ dopisku jest czysta",
+        not trafienia_w_linii(config.NOTE_FORMS["ZACZEP_I_KONKRET"]),
+        trafienia_w_linii(config.NOTE_FORMS["ZACZEP_I_KONKRET"]))
 sprawdz("a z wyjatkiem to samo miejsce przechodzi",
         not any(t.startswith("config.py:NOTE_FORMS[ZACZEP_I_KONKRET]")
                 for t in wszystkie_trafienia))
@@ -420,17 +454,30 @@ sprawdz("klasyfikacja: lista liczb obejmuje miary z tego pola",
 
 scena = config.NOTE_FORMS["SCENA"]
 zaczep = config.NOTE_FORMS["ZACZEP_I_KONKRET"]
+# ASERCJE PO WLASNOSCI, NIE PO SLOWACH Z JEDNEJ NISZY. Stalo tu
+# `"what is on their screen" in scena` — czyli test WYMAGAL, zeby brief
+# nazywal ekran, i przy koncie o czym innym oblewalby z powodu niezwiazanego
+# z kodem. Pilnujemy tego, co ta poprawka naprawde zmienila: scena zaczyna
+# sie od tego, co czytelnik ma PRZED SOBA TERAZ, i nie wymaga przedmiotu
+# w rece.
 sprawdz("NOTE_FORMS/SCENA nie zaczyna sie od trzymanego przedmiotu",
         "the thing they are holding" not in scena
-        and "what is on their screen" in scena)
+        and "in front of them right now" in scena)
 sprawdz("NOTE_FORMS/SCENA nadal zada JEDNEJ rzeczy czytelnika",
         "ONE thing and theirs" in scena)
-sprawdz("NOTE_FORMS/ZACZEP_I_KONKRET daje konkret z zycia z AI",
-        "the answer an assistant gave" in zaczep)
-sprawdz("NOTE_FORMS/ZACZEP_I_KONKRET zakazuje pracy domowej TEZ z model card",
-        "open a model card" in zaczep)
+sprawdz("NOTE_FORMS/ZACZEP_I_KONKRET zada rzeczy JUZ obecnej w zyciu",
+        "MUST ALREADY BE IN THEIR LIFE" in zaczep)
+# Zakaz ma dotyczyc KAZDEGO dokumentu, nie jednego rodzaju. Stalo tu
+# `"open a model card" in zaczep`, czyli test kazal trzymac w prompcie nazwe
+# dokumentu z poprzedniej niszy.
+sprawdz("NOTE_FORMS/ZACZEP_I_KONKRET zakazuje odsylania do DOWOLNEGO dokumentu",
+        "technical document" in zaczep and "homework" in zaczep)
+# Wlasnosc, nie przyklad: forma ma podac co najmniej dwa PRZYKLADY WIELKOSCI
+# i odroznic je od etykiety zrobionej z cyfr.
+_liczba = config.NOTE_FORMS["LICZBA"]
 sprawdz("NOTE_FORMS/LICZBA daje magnitudy, ktore obcy czuje",
-        "$3 per million tokens" in config.NOTE_FORMS["LICZBA"])
+        "eleven seconds" in _liczba and "a label that happens to be made of"
+        " digits" in _liczba)
 
 # --- przepisane 1 wrzesnia, po kontroli -------------------------------------
 # Sekcja 1 pilnuje, ze slowa znikly. Ta pilnuje, ze SENS zostal — bo przyklad
