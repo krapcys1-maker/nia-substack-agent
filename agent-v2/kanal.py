@@ -101,6 +101,28 @@ def _za_niedawno_u_nich(post: dict) -> bool:
     return (datetime.now(timezone.utc) - kiedy) < timedelta(
         days=config.ODSTEP_DNI_NA_PUBLIKACJE)
 
+def nasz_cel(kandydat: dict) -> bool:
+    """Czy ten cel jest NASZ — po adresie ALBO po uchwycie autora.
+
+    DWIE DROGI, BO ADRES NOTKI NIE NIESIE UCHWYTU. Artykul ma adres
+    `uchwyt.substack.com/p/...`, wiec `nasz_adres` wystarcza. Notka ma
+    `substack.com/note/c-<id>` — pierwszy czlon hosta to `substack`, wiec dla
+    ZADNEGO uchwytu nie wyjdzie „nasza", choc uchwyt autora lezy tuz obok
+    w odpowiedzi API.
+
+    `notki_z_kanalu` sprawdzalo uchwyt od poczatku; `szukaj_nowych` sprawdzalo
+    tylko adres — wiec wlasna notka znaleziona WLASNYM haslem szukania
+    przechodzila przez filtr. Agent mogl skomentowac sam siebie publicznie,
+    pod wlasnym wpisem.
+    """
+    if nasz_adres(str(kandydat.get("url") or "")):
+        return True
+    uchwyt = (config.SUBSTACK_HANDLE or "").strip().lower()
+    if not uchwyt:
+        return False
+    return str(kandydat.get("handle") or "").strip().lower() == uchwyt
+
+
 def nasz_adres(url: str) -> bool:
     """Czy ten adres wskazuje na NASZA publikacje.
 
@@ -150,7 +172,9 @@ def posty_z_kanalu(ile: int = 25) -> list[dict[str, Any]]:
             # tez nas samych, a wybor celow przy pierwszym uruchomieniu uznal
             # nasz wlasny artykul za wart skomentowania — agent
             # komentowalby sam siebie.
-            if nasz_adres(x.get("canonical_url") or ""):
+            if nasz_cel({"url": x.get("canonical_url") or "",
+                         "handle": ((x.get("publication") or {})
+                                    .get("subdomain") or "")}):
                 continue
             kandydat = {
                 "tytul": (x.get("title") or "")[:120],
@@ -242,9 +266,9 @@ def szukaj_nowych(ile: int = 20) -> list[dict]:
     """Szuka NOWYCH kont wyszukiwarka Substacka, poza naszym kregiem.
 
     Wlasciciel postawil sprawe jasno: agent ma szukac nowych kont, a nie
-    komentowac wciaz u tych samych. Kanal czytelnika pokazuje wylacznie to,
-    co juz znamy — jedenascie publikacji, ktore same z siebie nikogo nowego nie
-    przyprowadza.
+    komentowac wciaz u tych samych. Kanal czytelnika pokazuje wylacznie to, co
+    juz znamy — a krag, ktory sam siebie karmi, nie przyprowadza nikogo nowego,
+    niezaleznie od tego, ile publikacji liczy.
 
     Wyszukiwarka oddaje posty i notki spoza kregu. Filtrujemy je tak samo jak
     kanal: nie swieze, nie u tych, u ktorych niedawno bylismy, nie u nas.
@@ -289,6 +313,10 @@ def szukaj_nowych(ile: int = 20) -> list[dict]:
                         "reakcje": kom.get("reaction_count") or 0,
                         "url": f"https://substack.com/note/c-{kom.get('id')}",
                         "id": kom.get("id"),
+                        # UCHWYT AUTORA — bez niego `nasz_cel` nie ma jak
+                        # rozpoznac wlasnej notki, bo jej adres nie niesie
+                        # uchwytu (patrz docstring `nasz_cel`).
+                        "handle": kom.get("handle") or "",
                         "data": kom.get("date") or "",
                         "skad": f"szukanie: {haslo}",
                         "rodzaj": "notka",
@@ -296,7 +324,7 @@ def szukaj_nowych(ile: int = 20) -> list[dict]:
                 else:
                     continue
 
-                if nasz_adres(kandydat["url"] or ""):
+                if nasz_cel(kandydat):
                     odrzucone["nasze"] += 1
                     continue
                 if _za_swiezy(kandydat,

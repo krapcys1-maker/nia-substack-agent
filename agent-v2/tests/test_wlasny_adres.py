@@ -121,5 +121,29 @@ finally:
     config.SUBSTACK_HANDLE = _stary
 
 print()
+print("=== 5. WLASNA NOTKA: ADRES NIE NIESIE UCHWYTU ===")
+# ADRES NOTKI TO `substack.com/note/c-<id>` — pierwszy czlon hosta to
+# `substack`, wiec dla ZADNEGO uchwytu nie wyjdzie „nasza". Uchwyt autora lezy
+# tuz obok, w odpowiedzi API, i do 4 wrzesnia 2026 nie byl w `szukaj_nowych`
+# sprawdzany: wlasna notka znaleziona WLASNYM haslem szukania przechodzila
+# przez filtr, wiec agent mogl skomentowac sam siebie publicznie.
+#
+# `notki_z_kanalu` sprawdzalo uchwyt od poczatku — luke mialo tylko szukanie.
+config.SUBSTACK_HANDLE = "mojapublikacja"
+_nasza = {"url": "https://substack.com/note/c-900000001",
+          "handle": "mojapublikacja"}
+_cudza = {"url": "https://substack.com/note/c-900000002", "handle": "ktosinny"}
+sprawdz("sam ADRES wlasnej notki nie wystarcza (to jest ta luka)",
+        not kanal.nasz_adres(_nasza["url"]))
+sprawdz("ale `nasz_cel` rozpoznaje ja po uchwycie autora",
+        kanal.nasz_cel(_nasza))
+sprawdz("a cudza notka zostaje celem", not kanal.nasz_cel(_cudza))
+sprawdz("nasz artykul nadal rozpoznany po adresie",
+        kanal.nasz_cel({"url": "https://mojapublikacja.substack.com/p/x"}))
+sprawdz("cudzy artykul nadal jest celem",
+        not kanal.nasz_cel({"url": "https://innapublikacja.substack.com/p/x"}))
+config.SUBSTACK_HANDLE = _stary
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)
