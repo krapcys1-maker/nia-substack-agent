@@ -82,6 +82,7 @@ cannot see.
 | **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
 | **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
 | **[docs/IDENTITY_MAP.md](docs/IDENTITY_MAP.md)** | every physical occurrence of the account's name, subject and voice, classified FIELD / INJECTED / GENERATED / TEMPLATE / BY HAND. Generated |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | how to send a subject pack (no Python needed) or a code change, and the four habits review will ask you about |
 | **[docs/CLEANING_LOG.md](docs/CLEANING_LOG.md)** | what was taken out when this stopped being one account's working tree, and exactly where each thing stood |
 
 The Polish original of the troubleshooting journal, with the measurement
