@@ -151,3 +151,8 @@ agent-v2/prompts/styl/przypiecia.json
 # (to pospolite rzeczowniki, dzialajacy przyklad dla kazdego, kto forkuje);
 # lokalna nie, bo opisuje, o czym pisalo TO konto.
 narzedzia/dawne-slownictwo.txt
+
+# Jednostki systemd zbudowane dla konkretnej instalacji przez
+# `narzedzia/jednostki.py`. WYTWOR, nie zrodlo: zrodlem sa szablony
+# w agent-v2/systemd/, a te powstaja z nich przy kazdym uruchomieniu.
+agent-v2/systemd/dla-tej-instalacji/

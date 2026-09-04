@@ -36,7 +36,7 @@ only hard stop.
 agent-v2/            the bot itself
   prompts/           what the models are told — 24 briefs, 4034 lines
   prompts/styl/      the style corpus. EMPTY in the repo, you supply it
-  tests/             130 test_*.py, no pytest, each runs standalone
+  tests/             131 test_*.py, no pytest, each runs standalone
   tests/platne/      the 9 that cost money. Never run by CI
   systemd/           three services and three timers
   dokumentacja-zrodla/  source of the concatenated JAK_ZBUDOWANY_JEST_BOT.md
@@ -94,6 +94,7 @@ way to learn what this bot has already got wrong.
 |---|---|
 | `kreator.py` | **the setup program.** Asks everything, writes `konfiguracja.toml` and `.env` |
 | `audyt.py` | pre-release audit: identity, secrets, contradictions, git history |
+| `jednostki.py` | builds the systemd units for **your** install: path, user, brand. The files in `agent-v2/systemd/` are templates and still carry the paths of the machine they were written on |
 | `przypnij_styl.py` | pins your style corpus so it cannot be swapped silently |
 | `mapa_funkcji.py` | regenerates FUNCTION_MAP.md from the syntax tree |
 | `mapa_tozsamosci.py` | regenerates IDENTITY_MAP.md |
@@ -160,7 +161,7 @@ prompt file directly.
 
 ---
 
-## 6. Tests — 130 files, and what a skip means
+## 6. Tests — 131 files, and what a skip means
 
 No pytest. Each file runs standalone (`python agent-v2/tests/test_x.py`) and
 exits non-zero on failure. That is deliberate: a test you can run alone is a
@@ -205,8 +206,11 @@ Expect three failures on a fresh Windows checkout with no keys: `test_czas`
    volumes.
 2. Put your style corpus in `agent-v2/prompts/styl/`, then
    `python narzedzia/przypnij_styl.py --pokaz` and `--wybor`.
-3. `python narzedzia/audyt.py` — should be all green.
-4. Run the test suite. Three failures above are expected; anything else is real.
-5. `docs/INSTALL.md` before you set `DRY_RUN=false`.
-6. `docs/TROUBLESHOOTING.md` when something goes wrong; it is written from
+3. `python narzedzia/jednostki.py --katalog <where it will live> --uzytkownik <who runs it>`
+   — the systemd units for your install. Skip this and the timers start in a
+   directory that does not exist.
+4. `python narzedzia/audyt.py` — should be all green.
+5. Run the test suite. Three failures above are expected; anything else is real.
+6. `docs/INSTALL.md` before you set `DRY_RUN=false`.
+7. `docs/TROUBLESHOOTING.md` when something goes wrong; it is written from
    failures that actually happened.

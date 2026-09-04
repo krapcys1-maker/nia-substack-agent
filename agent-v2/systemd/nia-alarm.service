@@ -1,5 +1,5 @@
 [Unit]
-Description=Kontrola sesji, zdrowia agenta i alarm do wlasciciela
+Description=Your Publication — kontrola sesji, zdrowia i alarm
 After=network-online.target
 Wants=network-online.target
 

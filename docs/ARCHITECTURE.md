@@ -24,7 +24,7 @@ agent-v2/              the bot. Everything that runs is here
   db.py                four tables, narrow column migrations
   gates.py             deterministic checks on finished text
   prompts/             24 prompt files, read from disk on every call
-  tests/               130 free tests, 9 paid ones in tests/platne/
+  tests/               131 free tests, 9 paid ones in tests/platne/
   systemd/             three services, three timers
   dokumentacja-zrodla/ the generator for the reconstruction document
   data/                database, journal, session — gitignored, never committed

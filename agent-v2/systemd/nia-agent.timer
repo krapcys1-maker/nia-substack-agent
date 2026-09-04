@@ -1,5 +1,5 @@
 [Unit]
-Description=Zegar agenta NIA
+Description=Your Publication — zegar agenta
 
 [Timer]
 # GODZINY DOBRANE POD STREFE CZYTELNIKOW, nie pod nasza wygode. Zapisane w UTC,

@@ -1,5 +1,5 @@
 [Unit]
-Description=Zegar kontroli sesji agenta NIA
+Description=Your Publication — zegar kontroli sesji
 
 [Timer]
 OnCalendar=*-*-* 07:00:00

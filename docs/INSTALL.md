@@ -290,8 +290,24 @@ database with no environment variable to forget.
 | `nia-artykul.timer` | Tuesdays 14:00 UTC | the weekly article |
 | `nia-alarm.timer` | daily 07:00 UTC | health check and alerts |
 
-Before installing them, edit `WorkingDirectory`, `User` and the interpreter path
-in all three `.service` files.
+**Do not edit them by hand.** The three `.service` files carry an install path
+(twice each — `WorkingDirectory` and the interpreter in `ExecStart`), a system
+user, and your brand name in `Description=`. Editing six values across six files
+is how one of them ends up wrong, and the failure looks like a Python error
+rather than a configuration one.
+
+```bash
+python narzedzia/jednostki.py --katalog /srv/bot --uzytkownik bot
+```
+
+It writes `agent-v2/systemd/dla-tej-instalacji/`, takes the brand from
+`konto.nazwa_marki`, and prints the three things that must exist on the server
+before you copy anything. The files in `agent-v2/systemd/` stay as the source —
+they are what the tests and `norma.py` read.
+
+*On Windows in Git Bash*, a POSIX `--katalog` is rewritten by the shell before
+the program sees it (`/srv/bot` arrives as `C:/Program Files/Git/srv/bot`). The
+tool detects that and refuses; prefix the command with `MSYS_NO_PATHCONV=1`.
 
 **One number appears in two files and must match**:
 `config.LIMIT_CZASU_PRZEBIEGU_S` and `TimeoutStartSec=` in `nia-agent.service`.

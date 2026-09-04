@@ -1,5 +1,5 @@
 [Unit]
-Description=Zegar artykulu tygodniowego
+Description=Your Publication — zegar artykulu tygodniowego
 
 [Timer]
 # WTOREK 14:00 UTC = 10:00 rano u czytelnikow w Nowym Jorku.
