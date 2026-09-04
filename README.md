@@ -1,5 +1,9 @@
 # NIA Substack Bot
 
+[![tests](../../actions/workflows/testy.yml/badge.svg)](../../actions/workflows/testy.yml)
+[![license: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](requirements.txt)
+
 An autonomous agent that runs an English-language Substack publication. It picks
 its own topics, researches them on the web, writes the articles, posts Notes,
 comments on other people's posts, replies, likes and restacks — and asks a human
@@ -7,7 +11,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 141 tests · 12 gates on every finished text
+26 model roles · 142 tests · 12 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -245,7 +249,7 @@ figure had reached 137:
 | `+ playwright install chromium` | the last three |
 | `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_zapora_platnych_wywolan` needs a real `ANTHROPIC_API_KEY` to prove the paid-call firewall refuses it |
 
-Measured on this copy: of 141 test files, **137 pass, 2 skip themselves and 2
+Measured on this copy: of 142 test files, **137 pass, 2 skip themselves and 2
 fail**. Both remaining failures are impossible to fix on a fresh Windows install
 and neither says anything about the code. Each is listed with its cause in
 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The count of files is
