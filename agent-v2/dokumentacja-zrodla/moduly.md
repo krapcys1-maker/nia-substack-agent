@@ -358,7 +358,7 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-346 wierszy, 13 funkcji na poziomie modułu, 1 klas
+364 wierszy, 14 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -367,6 +367,7 @@
 | `_liczba(v, gdzie)` *(wewn.)* | — |
 | `_prawda(v, gdzie)` *(wewn.)* | — |
 | `_napis_moze_pusty(v, gdzie)` *(wewn.)* | Napis, ktory WOLNO zostawic pusty. |
+| `_sekwencja_napisow(v)` *(wewn.)* | Lista albo krotka napisow — ale NIE sam napis. |
 | `_lista_napisow(v, gdzie)` *(wewn.)* | — |
 | `_lista_napisow_moze_pusta(v, gdzie)` *(wewn.)* | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. |
 | `_widelki(v, gdzie)` *(wewn.)* | Zakres [od, do]. Wolumeny sa losowane z widelek, nie stale. |

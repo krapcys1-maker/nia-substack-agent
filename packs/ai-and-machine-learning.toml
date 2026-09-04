@@ -1,0 +1,102 @@
+# =============================================================================
+# WSAD TEMATYCZNY — sztuczna inteligencja i uczenie maszynowe
+#
+# Dziedzina, w ktorej najszybciej starzeje sie wiedza modelu: to, co model
+# „wie" o modelach, ma kilka miesiecy i czyta sie od srodka dokladnie tak samo
+# jak fakt biezacy. Dlatego przy tym wsadzie warto zostawic wlaczone pytanie
+# o stan dziedziny (`stan_dziedziny.pytaj = true`) — bot raz na dobe pyta
+# swiata, jak jest, zamiast pytac siebie.
+#
+# Jak go uzyc:  python narzedzia/kreator.py --wsad ai-and-machine-learning
+# =============================================================================
+
+[pack]
+name = "AI and machine learning"
+language = "English"
+description = "Benchmarks, training data, inference economics, evaluation and the rules being written around all of it — the parts with a paper trail."
+added = "2026-09-04"
+
+[temat]
+nisza = "how AI systems are built, measured and regulated"
+jezyk = "English"
+kat_redakcyjny = "what the benchmark actually measured, what the training data actually contained, what the licence actually permits, and who carries the cost when the answer is wrong."
+
+# RUBRYKA, NIE FILTR. Po tych slowach oceniamy, czy hasla szukania trzymaja sie
+# tematu; zaden modul agenta nie odsiewa po nich cudzych postow. O tym, czy
+# konkretny post jest na temat, decyduje model wedlug `prompts/cele.md`.
+znaki_niszy = [
+    "model",
+    "train",
+    "benchmark",
+    "dataset",
+    "eval",
+    "inference",
+    "gpu",
+    "compute",
+    "token",
+    "licens",
+    "safety",
+    "regulat",
+    "chip",
+    "context",
+    "fine-tun",
+    "prompt",
+    "agent",
+    "hallucin",
+    "weight",
+    "latenc",
+]
+
+# Czego agent szuka, zeby znalezc ludzi do rozmowy. Kazde haslo NIESIE ktorys
+# ze znakow wyzej — inaczej agent znajduje posty, a regula celow odrzuca je
+# co do jednego i w logu wyglada to na wybrednosc modelu.
+hasla_szukania = [
+    "model benchmarks",
+    "training data licensing",
+    "open weight models",
+    "inference costs",
+    "gpu supply",
+    "dataset provenance",
+    "evaluation methodology",
+    "context window limits",
+    "fine-tuning results",
+    "compute scaling",
+    "ai regulation",
+    "model safety testing",
+    "token pricing",
+    "chip export controls",
+    "agent frameworks",
+    "hallucination rates",
+    "prompt injection",
+    "model deprecation",
+    "inference latency",
+    "benchmark contamination",
+]
+
+# Soczewki, nie cele. Obracane przy kazdym przebiegu.
+dziedziny = [
+    "a benchmark score, and what the benchmark does not measure",
+    "a number quoted from a paper whose setup nobody reproduces",
+    "what a licence on model weights actually permits",
+    "the gap between a demo and the same system under load",
+    "a dataset whose contents were never fully described",
+    "an evaluation that a system passes for the wrong reason",
+    "the cost of one request, and who ends up paying it",
+    "a capability that appeared, and the measurement that caught it late",
+    "a deprecation with a date, and what depended on it",
+    "a safety test, and the behaviour it does not cover",
+    "a claim about scale that stopped holding, and where",
+    "hardware constraints that decided a design choice",
+    "an export rule and the architecture it produced",
+    "a context limit and what it silently truncates",
+    "a leaderboard position that moved without the system changing",
+    "a term of art used two incompatible ways in one week",
+    "who is liable when a generated answer causes harm",
+    "an early claim that was right, and ignored at the time",
+    "a hype cycle in this field that resolved, and how",
+    "a measurement that was cheap to fake and expensive to verify",
+]
+
+# PUSTE JEST POPRAWNA ODPOWIEDZIA na poczatku. Slowo dopisuje sie dopiero po
+# tym, jak sie zobaczylo, ze wywoluje trzeci falszywy alarm o duplikacie.
+puste_slowa = []

@@ -75,11 +75,17 @@ KLUCZE = (
 class Odpowiadacz:
     """Zrodlo odpowiedzi: czlowiek przy klawiaturze albo plik JSON."""
 
-    def __init__(self, gotowe: dict | None = None):
+    def __init__(self, gotowe: dict | None = None, wsad: dict | None = None):
         self.gotowe = gotowe
         self.interaktywnie = gotowe is None
+        # WSAD TEMATYCZNY PODMIENIA DOMYSLNA ODPOWIEDZ, nie odpowiedz.
+        # Czlowiek widzi ja w nawiasie kwadratowym i moze nadpisac — bo to
+        # nadal JEGO publikacja, a wsad jest tylko dobrym punktem wyjscia.
+        self.wsad = wsad or {}
 
     def zapytaj(self, klucz: str, pytanie: str, domyslne, podpowiedz: str = "") -> object:
+        if klucz in self.wsad:
+            domyslne = self.wsad[klucz]
         if not self.interaktywnie:
             return self.gotowe.get(klucz, domyslne)
         print()
@@ -472,15 +478,46 @@ def main() -> int:
                     help="answer from a JSON file instead of asking")
     ap.add_argument("--bez-kluczy", action="store_true",
                     help="skip the keys section (leave .env alone)")
+    ap.add_argument("--wsad", default="",
+                    help="start from a subject pack (see: python "
+                         "narzedzia/pakiety.py)")
     args = ap.parse_args()
 
     if args.pokaz:
         return pokaz_biezace()
 
+    wsad = None
+    if args.wsad:
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+        import pakiety                                       # noqa: E402
+        try:
+            plik = pakiety.znajdz(args.wsad)
+            wsad, uwagi = pakiety.waliduj(plik)
+        except pakiety.ZlyPakiet as exc:
+            print("  ! %s" % exc)
+            return 1
+        # WSAD MA PRZEJSC TE SAME REGULY, CO KAZDA KONFIGURACJA. Wsad z cudzego
+        # pull requesta, ktory lamie regule strukturalna, dalby bota szukajacego
+        # po ciasnej puli — i nikt by sie nie dowiedzial przed pierwszym pustym
+        # przebiegiem.
+        lamie = pakiety.reguly_strukturalne(wsad, config)
+        if lamie:
+            print("  ! wsad `%s` lamie reguly:" % plik.stem)
+            for w in lamie:
+                print("      %s" % w)
+            return 1
+        opis = pakiety.wczytaj(plik)["pack"]
+        print()
+        print("  WSAD: %s (%s)" % (opis["name"], opis["language"]))
+        print("  %s" % opis["description"])
+        print("  Kazda wartosc z niego jest DOMYSLNA — mozesz ja nadpisac.")
+        for u in uwagi:
+            print("    uwaga: %s" % u)
+
     gotowe = None
     if args.z_pliku:
         gotowe = json.loads(pathlib.Path(args.z_pliku).read_text(encoding="utf-8"))
-    o = Odpowiadacz(gotowe)
+    o = Odpowiadacz(gotowe, wsad)
 
     if o.interaktywnie:
         print()

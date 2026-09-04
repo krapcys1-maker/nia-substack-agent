@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 25 |
-| functions and methods | 562 |
+| functions and methods | 563 |
 | functions that call a paid model | 25 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 41 |
@@ -49,7 +49,7 @@ For paid calls the verdict comes from
 | [`gates.py`](#agent-v2gates-py) | 21 | 0 | 0 | 0 | Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu. |
 | [`jezyki.py`](#agent-v2jezyki-py) | 5 | 0 | 0 | 0 | Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma. |
 | [`kanal.py`](#agent-v2kanal-py) | 12 | 0 | 3 | 0 | Kanal czytelnika — jedyne zrodlo celow do komentowania. |
-| [`konfiguracja.py`](#agent-v2konfiguracja-py) | 13 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach. |
+| [`konfiguracja.py`](#agent-v2konfiguracja-py) | 14 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach. |
 | [`kopia_subskrybentow.py`](#agent-v2kopia-subskrybentow-py) | 4 | 0 | 1 | 0 | Kopia listy subskrybentow — jedyne aktywo, ktorego nie da sie odtworzyc. |
 | [`korpus_kanalow.py`](#agent-v2korpus-kanalow-py) | 6 | 0 | 0 | 0 | Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja. |
 | [`llm.py`](#agent-v2llm-py) | 16 | 0 | 0 | 3 | Jedyna warstwa miedzy `run.py` a dostawca. |
@@ -484,7 +484,7 @@ Kanal czytelnika — jedyne zrodlo celow do komentowania.
 
 Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach.
 
-13 funkcji.
+14 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -493,14 +493,15 @@ Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach.
 | 88 | `_liczba(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
 | 94 | `_prawda(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
 | 100 | `_napis_moze_pusty(v, gdzie)` | — | Napis, ktory WOLNO zostawic pusty. | `konfiguracja (poziom modulu)` |
-| 112 | `_lista_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
-| 119 | `_lista_napisow_moze_pusta(v, gdzie)` | — | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. | `konfiguracja (poziom modulu)` |
-| 135 | `_widelki(v, gdzie)` | — | Zakres [od, do]. | `konfiguracja (poziom modulu)` |
-| 146 | `_slownik_list(v, gdzie)` | — | Tablica `klucz = [napisy]`. | `konfiguracja (poziom modulu)` |
-| 166 | `_slownik_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
-| 251 | `sciezka(agent_dir)` | DEAD? | — | — |
-| 255 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
-| 293 | `zastosuj(dane, cfg)` | DEAD? | Wklada wartosci do modulu `config`. | — |
+| 112 | `_sekwencja_napisow(v)` | — | Lista albo krotka napisow — ale NIE sam napis. | `konfiguracja._lista_napisow`, `konfiguracja._lista_napisow_moze_pusta` |
+| 129 | `_lista_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
+| 136 | `_lista_napisow_moze_pusta(v, gdzie)` | — | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. | `konfiguracja (poziom modulu)` |
+| 152 | `_widelki(v, gdzie)` | — | Zakres [od, do]. | `konfiguracja (poziom modulu)` |
+| 164 | `_slownik_list(v, gdzie)` | — | Tablica `klucz = [napisy]`. | `konfiguracja (poziom modulu)` |
+| 184 | `_slownik_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
+| 269 | `sciezka(agent_dir)` | DEAD? | — | — |
+| 273 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
+| 311 | `zastosuj(dane, cfg)` | DEAD? | Wklada wartosci do modulu `config`. | — |
 
 ---
 

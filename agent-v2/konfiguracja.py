@@ -109,8 +109,25 @@ def _napis_moze_pusty(v: Any, gdzie: str) -> str:
     return v.strip()
 
 
+def _sekwencja_napisow(v: Any) -> bool:
+    """Lista albo krotka napisow — ale NIE sam napis.
+
+    WALIDATOR MA PRZYJMOWAC WLASNY WYNIK. Te funkcje zwracaja krotki, wiec
+    dopoki wymagaly `list`, `waliduj(waliduj(x))` sie wywalalo. Dopoki wartosci
+    szly jedna droga (TOML -> walidator -> stala), nikt tego nie widzial;
+    wyszlo, gdy pojawilo sie drugie zrodlo tych samych pol — wsad tematyczny
+    podawany kreatorowi jako domyslne odpowiedzi.
+
+    `str` jest wykluczony celowo: napis tez jest sekwencja i przeszedlby jako
+    lista pojedynczych liter. To jest cichy blad, ktory potem wyglada na wade
+    modelu.
+    """
+    return (isinstance(v, (list, tuple)) and not isinstance(v, str)
+            and all(isinstance(x, str) for x in v))
+
+
 def _lista_napisow(v: Any, gdzie: str) -> tuple[str, ...]:
-    if not isinstance(v, list) or not v or not all(isinstance(x, str) for x in v):
+    if not _sekwencja_napisow(v) or not v:
         raise BledKonfiguracji(
             "%s: oczekiwano niepustej listy napisow, jest %r" % (gdzie, v))
     return tuple(v)
@@ -125,7 +142,7 @@ def _lista_napisow_moze_pusta(v: Any, gdzie: str) -> tuple[str, ...]:
     „jeszcze nic tu nie nalezy" — i jest to jedyny stan, w ktorym nowa
     instalacja moze byc uczciwie.
     """
-    if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+    if not _sekwencja_napisow(v):
         raise BledKonfiguracji(
             "%s: oczekiwano listy napisow (pusta jest dozwolona), jest %r"
             % (gdzie, v))
@@ -134,7 +151,8 @@ def _lista_napisow_moze_pusta(v: Any, gdzie: str) -> tuple[str, ...]:
 
 def _widelki(v: Any, gdzie: str) -> tuple[int, int]:
     """Zakres [od, do]. Wolumeny sa losowane z widelek, nie stale."""
-    if (not isinstance(v, list) or len(v) != 2
+    # Krotka tez, z tego samego powodu — patrz `_sekwencja_napisow`.
+    if (not isinstance(v, (list, tuple)) or len(v) != 2
             or not all(isinstance(x, int) and not isinstance(x, bool) for x in v)):
         raise BledKonfiguracji(
             "%s: oczekiwano dwoch liczb calkowitych [od, do], jest %r" % (gdzie, v))

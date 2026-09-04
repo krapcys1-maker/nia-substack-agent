@@ -1,0 +1,94 @@
+# =============================================================================
+# WSAD TEMATYCZNY — prawo i publiczne pieniadze
+#
+# UWAGA, ZANIM GO UZYJESZ. To jest jedyny wsad, przy ktorym kat redakcyjny
+# robi cala robote. Bot komentujacy polityke po opinii jest bezuzyteczny
+# i szkodliwy; bot czytajacy ustawe, przetarg i raport pokontrolny — nie jest.
+# Dlatego `kat_redakcyjny` ponizej zada DOKUMENTU i wprost zabrania oceny
+# intencji, a `dziedziny` sa o PROCEDURZE i PIENIADZACH, nie o ludziach.
+#
+# Ten bot ma bramke, ktora odrzuca liczby nieobecne w zebranym materiale,
+# i karte dowodowa przy kazdym twierdzeniu. W tej dziedzinie to nie jest
+# formalnosc — to jedyny powod, dla ktorego wolno ja w ogole tknac.
+#
+# Jak go uzyc:  python narzedzia/kreator.py --wsad laws-and-public-money
+# =============================================================================
+
+[pack]
+name = "Laws and public money"
+language = "English"
+description = "Legislation, procurement, budgets and audit reports read as documents: what the text says, what it cost and who signed it — not who is right."
+added = "2026-09-04"
+
+[temat]
+nisza = "how laws and public spending actually work, read from the documents"
+jezyk = "English"
+kat_redakcyjny = "what the document actually says, what the procedure actually requires, what the figure actually covers and who signed it. Never the motive, never the party, never a prediction about an election — where the record does not settle a question, the text says so and stops."
+
+# RUBRYKA, NIE FILTR — patrz packs/README.md.
+znaki_niszy = [
+    "law",
+    "legisl",
+    "court",
+    "budget",
+    "procure",
+    "audit",
+    "tax",
+    "subsid",
+    "regulat",
+    "statut",
+    "ruling",
+    "spend",
+    "contract",
+    "transparen",
+    "lobby",
+    "oversight",
+    "public",
+    "polic",
+]
+
+hasla_szukania = [
+    "public procurement",
+    "budget transparency",
+    "court rulings",
+    "legislative process",
+    "audit reports",
+    "tax policy",
+    "subsidy programmes",
+    "regulatory impact",
+    "statutory deadlines",
+    "government contracts",
+    "lobbying disclosure",
+    "parliamentary oversight",
+    "public spending",
+    "freedom of information law",
+    "administrative law",
+    "public sector audit",
+    "campaign finance law",
+    "policy evaluation",
+]
+
+dziedziny = [
+    "what a clause actually requires, as opposed to how it is summarised",
+    "a deadline in a statute, and what happens when it passes",
+    "a procurement rule, and the single bidder it produced",
+    "a budget line, and what it is actually the sum of",
+    "an audit finding, and whether anything changed after it",
+    "a definition in law that decides who is covered",
+    "an exemption, and who asked for it on the record",
+    "a threshold that changes the procedure entirely",
+    "a cost estimate at proposal time against the figure paid",
+    "a document that is public in principle and unfindable in practice",
+    "an obligation with no named body responsible for enforcing it",
+    "a rule written after one specific failure",
+    "a fee that funds the regulator that collects it",
+    "a delegated power, and how far it has been taken",
+    "a transitional provision that outlived the transition",
+    "a register that exists, and how complete it is",
+    "an appeal route, and how many people use it",
+    "a figure that is a legal minimum quoted as a typical value",
+    "a consultation, and whose responses changed the text",
+    "a repealed rule whose shape is still in the forms",
+]
+
+puste_slowa = []

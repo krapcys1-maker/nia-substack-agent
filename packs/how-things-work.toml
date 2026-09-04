@@ -1,0 +1,92 @@
+# =============================================================================
+# WSAD TEMATYCZNY — ciekawostki: jak to naprawde dziala
+#
+# Najszerszy z wsadow i przez to najlatwiej go zle uzyc. „Ciekawostka" bez
+# dowodu to anegdota, a ten bot jest zbudowany wokol karty dowodowej — wiec
+# kat redakcyjny celowo zada ZRODLA i POMIARU, nie zaskoczenia.
+#
+# Jak go uzyc:  python narzedzia/kreator.py --wsad how-things-work
+# =============================================================================
+
+[pack]
+name = "How things actually work"
+language = "English"
+description = "Physics, materials, measurement and engineering in ordinary objects — where the number came from and what it does not cover."
+added = "2026-09-04"
+
+[temat]
+nisza = "how ordinary things work, measured rather than asserted"
+jezyk = "English"
+kat_redakcyjny = "where the number came from, who measured it and under what conditions, what the measurement does not cover, and which everyday assumption it quietly overturns."
+
+# RUBRYKA, NIE FILTR — patrz packs/README.md.
+znaki_niszy = [
+    "physic",
+    "chemi",
+    "biolog",
+    "engineer",
+    "measure",
+    "experiment",
+    "material",
+    "energy",
+    "mechan",
+    "optic",
+    "acoust",
+    "thermo",
+    "fluid",
+    "structur",
+    "electric",
+    "magnet",
+    "geolog",
+    "astronom",
+    "friction",
+    "pressure",
+]
+
+hasla_szukania = [
+    "materials science",
+    "measurement history",
+    "engineering failures",
+    "physics experiments",
+    "chemistry of everyday things",
+    "structural engineering",
+    "fluid dynamics",
+    "thermodynamics in practice",
+    "acoustics of buildings",
+    "optics and lenses",
+    "electrical grid",
+    "magnetism applications",
+    "energy storage",
+    "mechanical linkages",
+    "geology and construction",
+    "astronomy instruments",
+    "biology of materials",
+    "experimental method",
+    "friction and wear",
+    "pressure vessels",
+]
+
+dziedziny = [
+    "a number everyone repeats, and the single study it came from",
+    "an effect that is obvious once measured and invisible before",
+    "why a shape is that shape, and what it was fighting",
+    "a unit whose definition changed while the number stayed",
+    "the conditions a rating was measured under, and real ones",
+    "a failure that taught an industry a rule it still follows",
+    "two materials that look interchangeable and are not",
+    "an instrument, and the smallest thing it can honestly see",
+    "a process that works and whose mechanism is still argued about",
+    "an everyday object whose design is a solved optimisation",
+    "a safety margin, and the accident that set it",
+    "something that scales badly, and where it stops working",
+    "a measurement that is easy to take and easy to misread",
+    "an assumption that holds on Earth and nowhere else",
+    "a limit imposed by physics rather than by engineering",
+    "a rule of thumb, and the range where it is actually true",
+    "an old technique that survived every replacement",
+    "a claim that would be cheap to test and never was",
+    "a hype cycle in this field that resolved, and how",
+    "the people who were right early and ignored",
+]
+
+puste_slowa = []
