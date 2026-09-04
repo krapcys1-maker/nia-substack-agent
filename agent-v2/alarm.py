@@ -1023,7 +1023,10 @@ def _co_z_tego_wyszlo(wpisy: list[dict]) -> None:
         sr = statistics.mean(w["komentarzy_przed"] for w in z_pozycja)
         print(f"    srednio bylo przed nami {sr:.0f} komentarzy")
 
-    # KTORE HASLA PRZYNOSZA ROZMOWY. Osiemnascie hasel, a nie wiemy, ktore dzialaja.
+    # KTORE HASLA PRZYNOSZA ROZMOWY. Stalo tu „Osiemnascie hasel" — liczba
+    # wpisana recznie, a audyt zada od `config.HASLA_SZUKANIA` co najmniej
+    # dziewietnastu. Komentarz z liczba, ktorej nikt nie przelicza, myli tak
+    # samo jak zla liczba w raporcie; ile ich jest, mowi sama konfiguracja.
     wg_hasla: dict[str, list[int]] = collections.defaultdict(list)
     for w in wpisy:
         if w.get("rodzaj") != "komentarz" or not w.get("udane"):
