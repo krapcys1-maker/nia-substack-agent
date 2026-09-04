@@ -2475,7 +2475,7 @@ def id_z_odpowiedzi(odpowiedzi: list) -> str:
     """Identyfikator notki, ktory Substack oddal przy zapisie.
 
     BRAKOWALO GO I TO ROZRYWALO POMIAR NA POL. Dziennik zapisywal osobno
-    „wystawilismy notke o trybie samolotowym" i osobno „notka 900000006
+    „wystawilismy notke o takim a takim fakcie" i osobno „notka 900000006
     zebrala trzy polubienia" — bez zadnego pola, po ktorym da sie stwierdzic,
     czy to ta sama. Wiedzielismy, ze publikujemy, i nie wiedzielismy, co
     z tego dziala.
@@ -2734,10 +2734,11 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
                 # 95 komentarzy, czyli NAJCZESTSZE nasze dzialanie, i jedyne,
                 # o ktorym nie wiedzielismy zupelnie nic poza tym, ze bylo.
                 #
-                # Ma to takie samo znaczenie, co przy komentarzach: konto o swojej niszy,
-                # ktore lajkuje pod rezerwa paliwowa, wydaje najczestszy gest
-                # na publicznosc bez powodu, zeby nas obserwowac. Bez zapisu
-                # nie da sie tego nawet ZMIERZYC, a wiec i naprawic.
+                # Ma to takie samo znaczenie, co przy komentarzach: konto,
+                # ktore lajkuje pod tekstami z zupelnie innej dziedziny, wydaje
+                # swoj najczestszy gest na publicznosc bez powodu, zeby nas
+                # obserwowac. Bez zapisu nie da sie tego nawet ZMIERZYC,
+                # a wiec i naprawic.
                 #
                 # Zmierzone przed napisaniem tego kodu: autor stoi JEDEN poziom
                 # nad przyciskiem, 5 na 5 sprawdzonych wpisow w kanale.
@@ -3354,17 +3355,15 @@ def polec_publikacje(fraza: str, powod: str,
 
     CZEMU NIE Z PROPOZYCJI SUBSTACKA. Ekran `/publish/recommendations` podsuwa
     dziesiec publikacji „ktore moze Pan/Pani chciec polecic". Sprawdzone
-    30 sierpnia 2026 — z tych dziesieciu JEDNA dotykala AI:
+    30 sierpnia 2026: z tych dziesieciu DZIEWIEC nalezalo do zupelnie innych
+    dziedzin niz nasza — budownictwo, miasto, srodowisko, kuchnia, finanse
+    osobiste — a jedna dotykala naszego tematu.
 
-        Publikacja Budowlana, Publikacja Miejska, mandates, Publikacja Wlasnej Domeny,
-        Publikacja 1, It's Publikacja Srodowiskowa, Publikacja Umyslowa on Money,
-        Publikacja Raportowa, Publikacja Kulinarna, People of Interest
-
-    Substack liczy je z historii czytania konta, a ta pochodzi sprzed
-    przestawienia na AI. To ta sama skaza, co w banku tematow i w dziewieciu
-    promptach — tylko po stronie Substacka, gdzie nie da sie jej wyczyscic
-    inaczej niz czytajac nowe rzeczy. Publikacja polecajaca newsletter
-    o masle to dokladnie ten „wyglad bota", ktorego wlasciciel nie chce.
+    Substack liczy je z HISTORII CZYTANIA konta, a ta pochodzi sprzed zmiany
+    tematu. To ta sama skaza, co w banku tematow i w dziewieciu promptach,
+    tylko po stronie Substacka — gdzie nie da sie jej wyczyscic inaczej niz
+    czytajac nowe rzeczy. Publikacja polecajaca newsletter o czym innym niz
+    sama pisze to dokladnie ten „wyglad bota", ktorego wlasciciel nie chce.
 
     Dlatego szukamy SAMI: okno „Dodaj rekomendacje" ma pole „Wyszukaj osobe
     lub publikacje...". Sprawdzone na zywo.

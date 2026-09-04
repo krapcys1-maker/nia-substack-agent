@@ -2696,10 +2696,10 @@ shape of the piece is yours, and two pieces built to the same plan are worse
 than either one alone.
 
 **Do not spend the same claim twice.** Once the reader believes something, more
-evidence for it does not move them. The last piece made its first point four
-times — the shape of the symbol, the state mandates, the industry's convenience,
-each a fresh proof of one claim already granted. That is four paragraphs the
-reader spends learning nothing. When you notice you are supporting rather than
+evidence for it does not move them. One finished piece made its first point
+FOUR TIMES over — a physical detail, a rule, an industry's convenience, a cost
+— each one a fresh proof of a claim the reader had already granted in the first
+paragraph. That is four paragraphs the reader spends learning nothing. When you notice you are supporting rather than
 advancing, stop supporting and advance.
 
 **Do not deliver the hardest fact in the voice of a footnote.** There is one

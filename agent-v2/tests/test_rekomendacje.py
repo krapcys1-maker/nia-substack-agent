@@ -3,18 +3,14 @@
 
 CO POKAZALO ROZPOZNANIE NA ZYWO 30 SIERPNIA 2026. Ekran
 `/publish/recommendations` podsuwa dziesiec publikacji „ktore moze Pan/Pani
-chciec polecic". Z tych dziesieciu JEDNA dotykala AI:
+chciec polecic". Z tych dziesieciu DZIEWIEC nalezalo do zupelnie innych
+dziedzin niz nasza — budownictwo, miasto, srodowisko, kuchnia, finanse
+osobiste — a jedna dotykala naszego tematu.
 
-    Publikacja Budowlana, Publikacja Miejska, mandates, Publikacja Wlasnej Domeny,
-    Publikacja 1, It's Publikacja Srodowiskowa with Klara Jedenasta,
-    Publikacja Umyslowa on Money, Publikacja Raportowa, Publikacja Kulinarna,
-    People of Interest
-
-Substack liczy je z historii czytania konta, a ta pochodzi sprzed
-przestawienia na AI — ta sama skaza, co w banku tematow i w dziewieciu
-promptach, tylko po stronie Substacka, gdzie nie da sie jej wyczyscic inaczej
-niz czytajac nowe rzeczy. Publikacja polecajaca newsletter z zupelnie innej
-dziedziny to
+Substack liczy je z HISTORII CZYTANIA konta, a ta pochodzi sprzed zmiany
+tematu: ta sama skaza, co w banku tematow i w dziewieciu promptach, tylko po
+stronie Substacka, gdzie nie da sie jej wyczyscic inaczej niz czytajac nowe
+rzeczy. Publikacja polecajaca newsletter z zupelnie innej dziedziny to
 dokladnie ten „wyglad bota", ktorego wlasciciel nie chce.
 
 DLACZEGO NIE „PO PROSTU NIE KLIKAJMY PROPOZYCJI". Bo okno „Dodaj
@@ -31,6 +27,7 @@ subskrybentom przy zapisie. Dlatego domyslnie NIE zatwierdza.
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo.
 """
 import pathlib
+import re
 import sys
 
 sys.path.insert(0, "agent-v2")
@@ -118,17 +115,26 @@ print("=== 8. ODCZYT LISTY DZIALA OSOBNO ===")
 sprawdz("jest `kogo_polecamy`", "def kogo_polecamy(" in zrodlo)
 sprawdz("czyta z API, nie z pamieci",
         "recommendations/from/" in zrodlo)
-sprawdz("i nie zaklada, ze numer publikacji jest wpisany na sztywno",
-        "9973418" not in zrodlo)
+# ASERCJA PO WLASNOSCI, NIE PO KONKRETNYM NUMERZE. Stal tu numer publikacji
+# tego konta, wpisany po to, zeby sprawdzic, ze go NIE MA w kodzie — czyli
+# test chronil przed wpisaniem numeru na sztywno, sam trzymajac go na sztywno.
+# Pytamy o to, co ma byc PRAWDA: numer bierze sie z API, dwiema drogami.
+sprawdz("i bierze numer publikacji z API, nie z wpisanej liczby",
+        "publication/self" in zrodlo and "publication_id" in zrodlo)
 
 print()
 print("=== 9. SKAZA PROPOZYCJI JEST OPISANA W KODZIE ===")
 # Zeby ktos, kto tu zajrzy za miesiac, nie „uproscil" tego do klikania
 # gotowej listy.
-sprawdz("kod wymienia, co Substack podsuwal",
-        "Publikacja Kulinarna" in blok and "Publikacja Budowlana" in blok)
+# Nie po nazwach publikacji — te byly prawdziwe i wylecialy. Po TYM, co ten
+# akapit ma powiedziec: ile z dziesieciu propozycji bylo nie z naszej dziedziny.
+sprawdz("kod wymienia, ile z propozycji bylo z obcych dziedzin",
+        "DZIEWIEC" in blok and "dziesieciu" in blok)
+# BEZ WZGLEDU NA WIELKOSC LITER. Ten sam projekt ma udokumentowana zapore,
+# ktora przepuszczala adres po zmianie jednej litery na wielka — nie ma powodu
+# powtarzac tego w tescie, ktory pyta o obecnosc zdania, a nie o jego zapis.
 sprawdz("i nazywa przyczyne",
-        "historii czytania" in blok)
+        "historii czytania" in blok.lower())
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))

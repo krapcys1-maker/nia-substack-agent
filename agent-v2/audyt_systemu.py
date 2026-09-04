@@ -397,7 +397,7 @@ def main() -> int:
         # POLUBIENIA TEZ MAJA WIEDZIEC, GDZIE POSZLY. To NAJCZESTSZE nasze
         # dzialanie — 151 wobec 95 komentarzy — i do 31 sierpnia zapisywalo sie
         # jako `{kiedy, rodzaj, udane}` i nic wiecej. Nie dalo sie wiec nawet
-        # ZMIERZYC, czy lajkujemy pod AI, czy pod rezerwa paliwowa.
+        # ZMIERZYC, czy lajkujemy w swojej niszy, czy poza nia.
         lajki = [w for w in po_pivocie
                  if w.get("rodzaj") == "polubienie" and w.get("udane")]
         z_celem = [w for w in lajki if str(w.get("publikacja") or "").strip()]
