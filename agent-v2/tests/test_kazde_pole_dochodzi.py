@@ -36,6 +36,10 @@ Nowe pole dopisane jutro z `None` i zapomniane w `zastosuj` oblewa TUTAJ.
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
     PYTHONIOENCODING=utf-8 python agent-v2/tests/test_kazde_pole_dochodzi.py
 """
+import io
+import re
+import tokenize
+import pathlib
 import sys
 
 sys.path.insert(0, "agent-v2")
@@ -146,6 +150,88 @@ try:
             config.NAZWA_MARKI == "Probna Marka Kontrolna", config.NAZWA_MARKI)
 finally:
     config.NAZWA_MARKI = _stara_marka
+
+print()
+print("=== 4. A CZY KTOKOLWIEK TE STALA POTEM CZYTA ===")
+# DRUGIE OGNIWO TEGO SAMEGO LANCUCHA. Sekcja 1 pilnuje, ze wartosc DOJDZIE do
+# stalej. Tu pytamy, czy stala ma potem czytelnika w kodzie agenta — bo pole,
+# ktore dochodzi donikad, jest dokladnie tak samo martwe jak pole, ktore nie
+# dochodzi wcale, i wyglada tak samo dobrze.
+#
+# Tak przeszla `ZNAKI_NISZY`: pytana, walidowana, meldowana, ustawiana — i
+# czytana wylacznie przez audyt, kreator, jeden test i dokumentacje.
+#
+# CZYTELNIKIEM JEST MODUL AGENTA, nie narzedzie i nie test. `narzedzia/` sluzy
+# operatorowi, testy sluza nam; ani jedno, ani drugie nie zmienia tego, co bot
+# robi w internecie. Liczy sie takze uzycie wewnatrz samego `config.py` (poza
+# definicja) — stamtad ida wyprowadzone sufity i sciezki.
+#
+# KOMENTARZE ODSIEWAMY. Zdanie o stalej nie jest jej uzyciem; bez tego akapit
+# opisujacy pole zwalnialby je z pytania.
+
+
+def _bez_komentarzy(tekst: str) -> str:
+    wiersze = tekst.split(chr(10))
+    try:
+        strumien = tokenize.generate_tokens(io.StringIO(tekst).readline)
+        for typ, _n, (w1, k1), (w2, k2), _l in strumien:
+            if typ != tokenize.COMMENT:
+                continue
+            for nr in range(w1, w2 + 1):
+                if nr - 1 >= len(wiersze):
+                    break
+                linia = wiersze[nr - 1]
+                od = k1 if nr == w1 else 0
+                do = k2 if nr == w2 else len(linia)
+                wiersze[nr - 1] = linia[:od] + " " * max(0, do - od) + linia[do:]
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        return tekst
+    return chr(10).join(wiersze)
+
+
+# POLA BEZ CZYTELNIKA, KTORE ZOSTAJA SWIADOMIE. Kazdy wpis wymaga powodu.
+BEZ_CZYTELNIKA_ZOSTAJA = {
+    "ZNAKI_NISZY": "RUBRYKA, NIE FILTR — po tej liscie audyt, kreator i "
+                   "`test_szukanie_celow.py` oceniaja, czy HASLA_SZUKANIA "
+                   "trzymaja sie tematu, ktory operator sam opisal. O tym, "
+                   "czy KONKRETNY post jest na temat, decyduje model wedlug "
+                   "`prompts/cele.md`. Cztery miejsca twierdzily kiedys, ze "
+                   "ta lista filtruje cudze posty — nie filtruje.",
+}
+
+_moduly = [p for p in pathlib.Path("agent-v2").glob("*.py")
+           if p.name != "konfiguracja.py"]
+_tresc = {p.name: _bez_komentarzy(p.read_text(encoding="utf-8"))
+          for p in _moduly}
+_cfg = _tresc.pop("config.py")
+
+
+def _ma_czytelnika(stala: str) -> bool:
+    wzorzec = r"\b%s\b" % re.escape(stala)
+    if any(re.search(wzorzec, t) for t in _tresc.values()):
+        return True
+    # Uzycie WEWNATRZ `config.py` poza sama definicja tez sie liczy — stamtad
+    # ida wyprowadzone sufity i sciezki (np. `MAX_WORDS` w budzecie tokenow).
+    return len(re.findall(wzorzec, _cfg)) > 1
+
+
+_sieroty = []
+for _sciezka, (_stala, _w) in sorted(konfiguracja.POLA.items()):
+    if not _stala or _stala in BEZ_CZYTELNIKA_ZOSTAJA:
+        continue
+    if not _ma_czytelnika(_stala):
+        _sieroty.append("%s -> %s" % (_sciezka, _stala))
+print("    pol z nazwana stala: %d, zwolnionych z powodem: %d"
+      % (sum(1 for _s, (_k, _v) in konfiguracja.POLA.items() if _k),
+         len(BEZ_CZYTELNIKA_ZOSTAJA)))
+sprawdz("kazde pole ma czytelnika w kodzie agenta", not _sieroty, _sieroty)
+
+# KONTRDOWOD: skan musi umiec zobaczyc sierote. Bez tego przechodzilby takze
+# wtedy, gdyby wzorzec nie pasowal do niczego.
+sprawdz("nazwa, ktorej nigdzie nie ma, jest widziana jako sierota",
+        not _ma_czytelnika("STALA_KTOREJ_NIE_MA_W_ZADNYM_MODULE"))
+sprawdz("a stala z prawdziwym czytelnikiem nie jest",
+        _ma_czytelnika("ODSTEP_DNI_NA_PUBLIKACJE"))
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
