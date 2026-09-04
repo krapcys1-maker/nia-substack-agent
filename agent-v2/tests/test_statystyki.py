@@ -485,5 +485,54 @@ sprawdz("brak obu kart daje zero, nie wyjatek",
         statystyki.z_kart({"cards": []})["wyswietlenia"] == 0)
 
 print()
+print("=== LICZNIKI Z KARTY `note` — DROGA ZAPASOWA ===")
+# 37 z 52 naszych komentarzy dostawalo z tej koncowki SAMA karte podgladu, bez
+# kart statystyk. Dotad zapisywalismy dla nich zera i nie dalo sie odroznic
+# „nikt nie zobaczyl" od „nie wiemy". Karta `note` niesie liczniki ZAWSZE.
+#
+# Ta sciezka nie miala w tescie ani jednego `like_count` — czyli jedyne
+# miejsce, ktore mowi „nie wiemy" zamiast „zero", nie bylo zmierzone niczym.
+_TYLKO_NOTE = {"cards": [
+    {"cardId": "note", "type": "noteCard",
+     "note": {"note": {"like_count": 4, "restack_count": 1, "reply_count": 2}}},
+]}
+_r = statystyki.z_kart(_TYLKO_NOTE)
+sprawdz("polubienia z karty `note`", _r["polubienia"] == 4, _r["polubienia"])
+sprawdz("restacki z karty `note`", _r["restacki"] == 1, _r["restacki"])
+sprawdz("odpowiedzi z karty `note`", _r["odpowiedzi"] == 2, _r["odpowiedzi"])
+sprawdz("i widac, ze zasiegu NIKT nie policzyl",
+        _r["ma_karty_zasiegu"] is False, _r["ma_karty_zasiegu"])
+
+# KARTA STATYSTYK MA PIERWSZENSTWO. Liczniki `note` sa droga ZAPASOWA, nie
+# nadpisaniem — inaczej pelny pomiar z panelu przegrywalby z podgladem.
+_OBIE = {"cards": [
+    {"cardId": "note", "type": "noteCard",
+     "note": {"note": {"like_count": 4, "restack_count": 1, "reply_count": 2}}},
+    {"cardId": "interactions", "type": "listCard",
+     "headers": [{"value": 9}],
+     "items": [{"title": "Like", "value": 7}, {"title": "Reply", "value": 2}]},
+]}
+_ro = statystyki.z_kart(_OBIE)
+sprawdz("karta interakcji wygrywa z licznikiem podgladu",
+        _ro["polubienia"] == 7, _ro["polubienia"])
+sprawdz("a licznik podgladu uzupelnia to, czego karta nie ma",
+        _ro["restacki"] == 1, _ro["restacki"])
+
+print()
+print("=== KSZTALT KARTY `note` JEST ZALOZENIEM, NIE POMIAREM ===")
+# Zejscie idzie o DWA poziomy: `cards["note"]["note"]["note"]`. Pomiar zrobiono
+# na zywym koncie, ale w tescie nie ma jego zrzutu — wiec przypinamy zalozenie
+# WPROST i pokazujemy, ze ksztalt plytszy nie daje NICZEGO. Gdy ktos zrobi
+# prawdziwy pomiar i okaze sie inaczej, ten wiersz powie, gdzie szukac.
+_PLASKA = {"cards": [
+    {"cardId": "note", "type": "noteCard",
+     "like_count": 4, "restack_count": 1, "reply_count": 2},
+]}
+_rp = statystyki.z_kart(_PLASKA)
+sprawdz("plaska karta `note` NIE daje licznikow (zalozony ksztalt to trzy poziomy)",
+        (_rp["polubienia"], _rp["restacki"], _rp["odpowiedzi"]) == (0, 0, 0),
+        (_rp["polubienia"], _rp["restacki"], _rp["odpowiedzi"]))
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 sys.exit(1 if oblane else 0)

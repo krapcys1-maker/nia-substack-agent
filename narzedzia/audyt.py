@@ -420,6 +420,43 @@ def main() -> int:
     sprawdz("kod nie siega po stale konfiguracji, ktorych nie ma",
             not martwe, "; ".join(sorted(set(martwe))))
 
+    # SHA, KTORE NIE WSKAZUJA NA NIC. Historie zalozono od nowa, wiec kazdy
+    # cytat w rodzaju „(`df3de64`)" jest odnosnikiem, ktorego nie da sie
+    # otworzyc — a odnosnik obiecuje, ze da sie sprawdzic.
+    #
+    # TO NIE JEST OBLANIE: po swiadomym wyczyszczeniu historii ich obecnosc
+    # jest spodziewana i policzona w `docs/CLEANING_LOG.md`. Wypisujemy je,
+    # zeby liczba byla ZNANA i zeby nie rosla po cichu, a sprawdzamy jedno:
+    # czy wyjasnienie w ogole gdzies stoi.
+    wiszace: dict[str, set[str]] = {}
+    _sha = re.compile(r"\b[0-9a-f]{7,40}\b")
+    for p, tekst in pliki:
+        if p.suffix.lower() not in (".py", ".md", ".toml", ".yml", ".txt"):
+            continue
+        for m in _sha.finditer(tekst):
+            s = m.group(0)
+            if s.isdigit() or s in ("ed25519",):
+                continue
+            wiszace.setdefault(s, set()).add(wzgledna(p))
+    nieznane = {}
+    for s, gdzie in wiszace.items():
+        if subprocess.run(["git", "cat-file", "-t", s], cwd=KORZEN,
+                          capture_output=True).returncode != 0:
+            nieznane[s] = gdzie
+    if nieznane:
+        print("  ..    %d SHA nie wskazuje na nic w tej historii (spodziewane"
+              " po jej zalozeniu od nowa):" % len(nieznane))
+        for s in sorted(nieznane)[:8]:
+            print("        %-12s %s" % (s, ", ".join(sorted(nieznane[s]))[:80]))
+        if len(nieznane) > 8:
+            print("        (i %d dalszych)" % (len(nieznane) - 8))
+    _dziennik = KORZEN / "docs" / "CLEANING_LOG.md"
+    _tresc_dziennika = (_dziennik.read_text(encoding="utf-8")
+                        if _dziennik.exists() else "")
+    sprawdz("wiszace SHA sa wyjasnione w dzienniku czyszczenia",
+            not nieznane or "commit hashes" in _tresc_dziennika.lower(),
+            "dopisz akapit o SHA z historii produkcyjnej do docs/CLEANING_LOG.md")
+
     print()
     print("=== 8. SPOJNOSC: PROGI PILNOWANE PRZEZ TESTY ===")
     sprawdz("hasel szukania jest >= 19", len(config.HASLA_SZUKANIA) >= 19,

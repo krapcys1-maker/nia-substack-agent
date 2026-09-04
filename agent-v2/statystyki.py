@@ -271,9 +271,20 @@ def z_kart(dane: dict) -> dict:
     #
     # Karta zbiorcza ma pierwszenstwo, gdy jest: pochodzi z panelu statystyk
     # i bywa pelniejsza. Liczniki `note` sa DROGA ZAPASOWA, nie nadpisaniem.
-    _n = _karty(dane).get("note")
-    for _klucz in ("note", "note"):
-        _n = _n.get(_klucz) if isinstance(_n, dict) else None
+    # ZEJSCIE O DWA POZIOMY, NAPISANE WPROST. Stalo tu
+    # `for _klucz in ("note", "note")` — petla po dwuelementowej krotce z tym
+    # samym napisem, czyli sposob na `cards["note"]["note"]["note"]`. Dzialalo,
+    # ale czytalo sie jak literowka. Przy okazji `_karty(dane)` bylo liczone
+    # DRUGI RAZ, choc wynik lezy w `karty` piecdziesiat linii wyzej.
+    #
+    # GLEBOKOSC ZOSTAJE TAKA, JAKA BYLA. Pomiar byl na zywym koncie i nie mam
+    # jak go powtorzyc bez sieci; zmiana na chybil trafil zamienilaby dzialajaca
+    # droge zapasowa w ciche zera. `tests/test_statystyki.py` przypina ten
+    # ksztalt i pokazuje, ze przy plytszym nie ma z czego brac licznikow — przy
+    # pierwszym prawdziwym pomiarze bedzie widac, ktora wersja jest wlasciwa.
+    _n = karty.get("note")
+    for _ in range(2):
+        _n = _n.get("note") if isinstance(_n, dict) else None
     if isinstance(_n, dict):
         for _pole, _skad in (("polubienia", "like_count"),
                              ("restacki", "restack_count"),
@@ -292,8 +303,8 @@ def z_kart(dane: dict) -> dict:
     #
     # `zmierzone` mowi, kiedy PYTALISMY, i to jest zupelnie inna data: pomiary
     # sa zawsze swieze, takze te notek sprzed miesiaca. Przy probie rozdzielenia
-    # epoki AI od epoki o ukrytych systemach trzeba bylo laczyc kazda pozycje
-    # z dziennikiem po numerze — a dziennik numerow starszych notek nie ma
+    # dwoch epok konta (przed zmiana tematu i po niej) trzeba bylo laczyc kazda
+    # pozycje z dziennikiem po numerze — a dziennik numerow starszych notek nie ma
     # (z 29 wystawionych mial SZESC). Dziesieciu notek na 37 nie dalo sie
     # przypisac do zadnej epoki.
     #
@@ -304,7 +315,7 @@ def z_kart(dane: dict) -> dict:
     # wersja szla lancuchem `.get(...) or {}` i wywalala sie AttributeError,
     # gdy `note` bylo napisem zamiast slownika — a wyjatek tutaj zabralby caly
     # pomiar, bo statystyki sa dodatkiem, nie warunkiem dzialania.
-    wystawione = _karty(dane).get("note")
+    wystawione = karty.get("note")
     for klucz in ("note", "note", "timestamp"):
         if not isinstance(wystawione, dict):
             wystawione = None

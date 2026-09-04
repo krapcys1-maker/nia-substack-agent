@@ -239,6 +239,20 @@ honest size of what a wiped history costs:
 They no longer prove what they used to prove. That is the price of a history
 that begins here.
 
+**And the commit hashes left behind.** Fourteen short hashes are still quoted
+across the code and the docs — `df3de64` for the SIGTERM that corrupted seven
+runs, `e88b456` for the commit that wrapped three stages in one `try`, and
+twelve more. They were citations: *you can go and look*. In this repository
+they resolve to nothing, and a citation that cannot be opened is worse than no
+citation, because it promises verification it cannot deliver.
+
+They are kept rather than deleted for one reason: the measurement behind each
+one is real, and the hash is the only handle on it in the **production**
+repository, where those commits still exist. `narzedzia/audyt.py` lists them at
+every run so the number stays known and cannot grow quietly. Anything that
+needs to be checkable in *this* repository has to carry the measurement itself,
+not a pointer to one.
+
 **And an honest figure for the rest.** Measured 2026-09-04, with the counting
 rule spelled out because two documents in this repository once disagreed on the
 number of modules purely by counting different things: `find agent-v2 -name

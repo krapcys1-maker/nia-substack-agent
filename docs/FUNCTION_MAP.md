@@ -855,12 +855,12 @@ Statystyki wystawionych pozycji: kto to zobaczyl i co z tego wyniklo.
 | 144 | `_pozycje(karta)` | — | `items` listCarda -> {tytul: liczba}, w kolejnosci z API. | `statystyki._suma`, `statystyki.z_kart` |
 | 168 | `_suma(karta)` | — | Liczba zbiorcza z karty: `value`, `count`, `total`, naglowek, suma pozycji. | `statystyki.z_kart` |
 | 194 | `z_kart(dane)` | — | Odpowiedz `/api/v1/note_stats/c-{ID}` -> plaski rekord o stalych kluczach. | `browser.statystyki_pozycji` |
-| 319 | `_plik()` | — | Sciezka liczona przy KAZDYM wywolaniu, nie raz przy imporcie. | `audyt_systemu.main`, `statystyki.wczytaj`, `statystyki.zapisz` |
-| 330 | `zapisz(rodzaj, identyfikator, rekord, tekst)` | — | Dopisuje JEDEN pomiar. | `browser.statystyki_pozycji` |
-| 374 | `wczytaj(rodzaj)` | — | Wszystkie pomiary z pliku, w kolejnosci zapisu. | `statystyki.najnowsze_per_pozycja`, `statystyki.podsumowanie` |
-| 410 | `najnowsze_per_pozycja(rodzaj)` | — | {identyfikator: ostatni pomiar}. | `alarm._co_z_tego_wyszlo`, `raport_statystyk.main`, `stages.co_zadzialalo`, `statystyki.podsumowanie` |
-| 435 | `podsumowanie(rodzaj)` | — | Sumy i srednie PO POZYCJACH, nie po pomiarach. | `raport_statystyk.main`, `wzajemnosc.kanaly` |
-| 452 | `podsumowanie._suma_pola(pole)` | — | — | `statystyki.podsumowanie` |
+| 330 | `_plik()` | — | Sciezka liczona przy KAZDYM wywolaniu, nie raz przy imporcie. | `audyt_systemu.main`, `statystyki.wczytaj`, `statystyki.zapisz` |
+| 341 | `zapisz(rodzaj, identyfikator, rekord, tekst)` | — | Dopisuje JEDEN pomiar. | `browser.statystyki_pozycji` |
+| 385 | `wczytaj(rodzaj)` | — | Wszystkie pomiary z pliku, w kolejnosci zapisu. | `statystyki.najnowsze_per_pozycja`, `statystyki.podsumowanie` |
+| 421 | `najnowsze_per_pozycja(rodzaj)` | — | {identyfikator: ostatni pomiar}. | `alarm._co_z_tego_wyszlo`, `raport_statystyk.main`, `stages.co_zadzialalo`, `statystyki.podsumowanie` |
+| 446 | `podsumowanie(rodzaj)` | — | Sumy i srednie PO POZYCJACH, nie po pomiarach. | `raport_statystyk.main`, `wzajemnosc.kanaly` |
+| 463 | `podsumowanie._suma_pola(pole)` | — | — | `statystyki.podsumowanie` |
 
 ---
 

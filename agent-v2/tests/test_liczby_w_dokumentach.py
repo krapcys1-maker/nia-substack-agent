@@ -178,6 +178,22 @@ if "--popraw" in sys.argv:
             p.write_text(nowa_tresc, encoding="utf-8")
             zmienione += 1
             print("  poprawione  %s" % plik)
+    # DLUGOSC DOKUMENTU SKLEJANEGO — poprawiana tak samo, choc nie stoi
+    # w `MIEJSCA` (ma wlasna tolerancje, wiec nie jest zwyklym porownaniem).
+    # Bez tej galezi byla JEDYNA liczba, ktorej nie dalo sie poprawic jedna
+    # komenda — i jedyna, ktora sie rozjechala.
+    _jzb = KORZEN / "agent-v2/JAK_ZBUDOWANY_JEST_BOT.md"
+    _readme = KORZEN / "README.md"
+    if _jzb.exists() and _readme.exists():
+        _ile = len(_jzb.read_text(encoding="utf-8").splitlines())
+        _tresc = _readme.read_text(encoding="utf-8")
+        _nowa = re.sub(r"(JAK_ZBUDOWANY_JEST_BOT\.md` — )[\d,]+( lines)",
+                       lambda m: m.group(1) + format(_ile, ",") + m.group(2),
+                       _tresc)
+        if _nowa != _tresc:
+            _readme.write_text(_nowa, encoding="utf-8")
+            zmienione += 1
+            print("  poprawione  README.md (dlugosc dokumentu sklejanego)")
     print("  zmienionych plikow: %d" % zmienione)
     print("  PRZEBUDUJ dokument sklejany:"
           " python agent-v2/dokumentacja-zrodla/sklej.py")
