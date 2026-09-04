@@ -717,7 +717,7 @@ def reagujacy_jako_cele() -> tuple[list[str], dict]:
     publikacji, nie ma tez przycisku „Subscribe" — blok subskrypcji wejdzie
     u niego raz, zapisze „nie ma przycisku subskrypcja" i `kogo_juz_subskrybujemy`
     zamknie go na zawsze. Kosztuje to JEDNO wejscie na profil, raz na osobe,
-    i jest dokladnie tym samym, co dzis kosztuje `newyorker`. Obserwowanie
+    i jest dokladnie tym samym, co dzis kosztuje `publikacja18`. Obserwowanie
     dziala u kazdego, bo nie wymaga publikacji.
     """
     from datetime import datetime, timedelta, timezone
@@ -1770,7 +1770,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # KRYTERIUM PRZED LOSEM. Do 1 wrzesnia 2026 pula szla przez `shuffle`
         # bez ZADNEGO kryterium — ani wielkosci, ani tematu, ani jezyka, ani
         # swiezosci. `cele_wedlug_pierwszenstwa` wycina hosty, ktorych ostatni
-        # komentarz jest sprzed przestawienia konta na AI (53 z 94 zmierzone
+        # komentarz jest sprzed zmiany tematu konta (53 z 94 zmierzone
         # tego dnia), i stawia na poczatku te, ktore juz zareagowaly na nasza
         # tresc. Los zostaje, ale juz tylko wewnatrz poziomu.
         wszyscy, rachunek = cele_wedlug_pierwszenstwa(historia)
@@ -1954,7 +1954,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         sygnal ma isc mocniejszym kanalem. Znany koszt: reagujacy bez wlasnej
         publikacji nie ma przycisku „Subscribe" — to jedno wejscie na profil,
         po ktorym `kogo_juz_subskrybujemy` zamyka go na zawsze, dokladnie tak
-        samo jak `newyorker`. Obserwowanie dziala u niego dalej.
+        samo jak `publikacja18`. Obserwowanie dziala u niego dalej.
         """
         if not na_teraz.get("subskrypcje"):
             return
@@ -2386,7 +2386,7 @@ def main() -> int:
             flush=True,
         )
         # --- druga runda, gdy korpus wyszedl chudy ---------------------------
-        # Artykul o SPF poszedl do pisarza z TRZEMA zrodlami z dziesieciu
+        # Jeden artykul poszedl do pisarza z TRZEMA zrodlami z dziesieciu
         # proponowanych. To nie jest wada stylu, tylko wada materialu: cienka
         # karta dowodowa znaczy mniej liczb, slabsze paralele i wiecej miejsc,
         # gdzie pisarz musi dolozyc cos z pamieci — i wlasnie tam wyszedl

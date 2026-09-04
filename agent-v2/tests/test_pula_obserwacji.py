@@ -28,7 +28,7 @@ obserwowac" i `_ludzie_z_zakladki` czyta z niej sama liste obserwowanych.
 
     agent-v2/data/gdzie_komentowalismy.json  -> 92 hosty (24 wlasne domeny)
     czesc wspolna po samym `host.split(".")[0]` -> 8 hostow:
-      publikacja9, autor3, howfinanceworks, newyorker,
+      publikacja9, autor3, publikacja19, publikacja18,
       publikacja1, publikacja5, tiffaniedarke, publikacja6
 
 Naprawde wiecej, bo tanie mapowanie nie widzi wlasnych domen
