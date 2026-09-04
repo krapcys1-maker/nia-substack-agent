@@ -97,6 +97,18 @@ def _prawda(v: Any, gdzie: str) -> bool:
     return v
 
 
+def _napis_moze_pusty(v: Any, gdzie: str) -> str:
+    """Napis, ktory WOLNO zostawic pusty.
+
+    `_napis` odrzuca pustke, bo dla uchwytu czy nazwy marki pusta wartosc jest
+    bledem. Tu pustka COS ZNACZY — „zbuduj domyslne z niszy" — wiec musi
+    przejsc, i to jest ta sama poprawka, co przy `_lista_napisow_moze_pusta`.
+    """
+    if not isinstance(v, str):
+        raise BledKonfiguracji("%s: oczekiwano napisu, jest %r" % (gdzie, v))
+    return v.strip()
+
+
 def _lista_napisow(v: Any, gdzie: str) -> tuple[str, ...]:
     if not isinstance(v, list) or not v or not all(isinstance(x, str) for x in v):
         raise BledKonfiguracji(
@@ -179,6 +191,15 @@ POLA: dict[str, tuple[str | None, Any]] = {
     # Przyklady z niszy wstrzykiwane w prompty. Tablica tablic, bo kazda
     # z pieciu list trafia w INNE miejsce briefu — patrz `stages._pola_wspolne`.
     "temat.przyklady": (None, _slownik_list),
+
+    # --- stan dziedziny ------------------------------------------------
+    # Czy raz na dobe pytac swiata, co w tej dziedzinie jest AKTUALNE. Kosztuje
+    # jedno wywolanie z wyszukiwaniem; dziedzina, ktora nie zmienia sie
+    # z tygodnia na tydzien, moze to wylaczyc.
+    "stan_dziedziny.pytaj": ("STAN_DZIEDZINY_PYTAJ", _prawda),
+    # O CO pytac. Puste znaczy „zbuduj z niszy" — patrz
+    # `config.pytanie_o_stan_dziedziny`.
+    "stan_dziedziny.o_co_pytac": ("STAN_DZIEDZINY_PYTANIE", _napis_moze_pusty),
 
     # --- zrodla --------------------------------------------------------
     # WSKAZUJE NA STALA, NIE NA `None`. Stalo tu `(None, ...)`, czyli

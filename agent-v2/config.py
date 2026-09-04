@@ -2491,6 +2491,38 @@ def _znacznik_klienta(marka: str) -> str:
 # JEDNO MIEJSCE, BO INACZEJ ZARAZ BEDA DWA. `norma.py` szukalo zegara wlasnym
 # kodem, `alarm.py` mial nazwe wpisana w tresc maila; obie potrzeby sa tej
 # samej wielkosci co cztery kopie daty przestawienia konta.
+# --- STAN DZIEDZINY: CO JEST AKTUALNE DZISIAJ -------------------------------
+#
+# Model nie ma jak zauwazyc, ze fakt sie przeterminowal: jego wiedza konczy sie
+# kilka miesiecy temu, a nieaktualny fakt czyta sie od srodka dokladnie tak samo
+# jak biezacy. Jedyne wyjscie to PYTAC SWIATA, nie siebie — `aktualne_modele.py`
+# robi to raz na dobe, z wyszukiwaniem, i wynik idzie do promptu.
+#
+# PYTANIE BYLO WPISANE I DOTYCZYLO WYLACZNIE MODELI JEZYKOWYCH, z nazwami
+# osmiu laboratoriow w tresci. Konto o dowolnej innej dziedzinie placilo wiec
+# codziennie za liste modeli AI i dostawalo ja do promptu jako „stan swojej
+# dziedziny". Mechanizm jest ogolny, pytanie nie bylo.
+#
+# PUSTE PYTANIE ZNACZY „ZBUDUJ Z NISZY" — patrz `pytanie_o_stan_dziedziny()`.
+STAN_DZIEDZINY_PYTAJ = True
+STAN_DZIEDZINY_PYTANIE = ""
+
+
+def pytanie_o_stan_dziedziny() -> str:
+    """O co pytamy, sprawdzajac stan dziedziny.
+
+    Wlasne pytanie z konfiguracji, a gdy go nie ma — zbudowane z `NISZA`.
+    Domyslne jest celowo szerokie: w kazdej dziedzinie sa rzeczy, ktore
+    wchodza, wychodza i zmieniaja nazwe, i to o nie chodzi.
+    """
+    wlasne = (STAN_DZIEDZINY_PYTANIE or "").strip()
+    if wlasne:
+        return wlasne
+    return ("what is CURRENT right now in %s: what has recently appeared, what "
+            "has changed name, version or price, and what has been withdrawn, "
+            "discontinued or scheduled to end" % (NISZA or "this field"))
+
+
 # --- KANALY YOUTUBE, KTORE ROBIA DOBOR TEMATOW W TEJ NISZY -------------------
 #
 # Identyfikatory kanalow (`UC...`), ktore od lat wybieraja, o czym w tej

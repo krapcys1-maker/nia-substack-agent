@@ -34,7 +34,7 @@ only hard stop.
 
 ```
 agent-v2/            the bot itself
-  prompts/           what the models are told — 24 briefs, 4034 lines
+  prompts/           what the models are told — 24 briefs, 4035 lines
   prompts/styl/      the style corpus. EMPTY in the repo, you supply it
   tests/             137 test_*.py, no pytest, each runs standalone
   tests/platne/      the 9 that cost money. Never run by CI
@@ -136,7 +136,7 @@ INJECTED, GENERATED, TEMPLATE or BY HAND.
 
 ## 5. The prompts, and which stage reads each
 
-24 briefs, 4034 lines. The long ones are long because they carry the record of
+24 briefs, 4035 lines. The long ones are long because they carry the record of
 what went wrong before.
 
 | Brief | Lines | Read by | Decides |

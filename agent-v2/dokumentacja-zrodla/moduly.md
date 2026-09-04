@@ -357,7 +357,7 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-325 wierszy, 12 funkcji na poziomie modułu, 1 klas
+346 wierszy, 13 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -365,6 +365,7 @@
 | `_data_albo_pusto(v, gdzie)` *(wewn.)* | Dzien w postaci RRRR-MM-DD albo pusty napis znaczacy „nigdy". |
 | `_liczba(v, gdzie)` *(wewn.)* | — |
 | `_prawda(v, gdzie)` *(wewn.)* | — |
+| `_napis_moze_pusty(v, gdzie)` *(wewn.)* | Napis, ktory WOLNO zostawic pusty. |
 | `_lista_napisow(v, gdzie)` *(wewn.)* | — |
 | `_lista_napisow_moze_pusta(v, gdzie)` *(wewn.)* | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. |
 | `_widelki(v, gdzie)` *(wewn.)* | Zakres [od, do]. Wolumeny sa losowane z widelek, nie stale. |
@@ -454,7 +455,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3106 wierszy, 32 funkcji na poziomie modułu, 0 klas
+3138 wierszy, 33 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -478,6 +479,7 @@
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
+| `pytanie_o_stan_dziedziny()` | O co pytamy, sprawdzajac stan dziedziny. |
 | `usluga_agenta()` | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. |
 | `zegar_agenta()` | Sciezka do jednostki zegara agenta albo None. |
 | `_naglowek_klienta()` *(wewn.)* | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. |
@@ -550,7 +552,7 @@
 
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci
 
-186 wierszy, 4 funkcji na poziomie modułu, 0 klas
+217 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

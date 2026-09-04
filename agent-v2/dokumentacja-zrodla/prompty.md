@@ -33,7 +33,7 @@
 {{"targets": [{{"index": <number>, "worth_it": true|false, "what_i_would_add": "<one concrete sentence, or empty when worth_it is false>", "why_not": "<one sentence, only when worth_it is false>"}}]}}
 ```
 
-#### `ciekawostki.md` (416 wierszy)
+#### `ciekawostki.md` (417 wierszy)
 
 **Pola wejściowe:** `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
 

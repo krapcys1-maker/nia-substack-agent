@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 25 |
-| functions and methods | 557 |
+| functions and methods | 559 |
 | functions that call a paid model | 25 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 41 |
@@ -36,7 +36,7 @@ For paid calls the verdict comes from
 
 | module | functions | paid | WWW | DB | what it is for |
 |---|---|---|---|---|---|
-| [`aktualne_modele.py`](#agent-v2aktualne-modele-py) | 4 | 1 | 0 | 0 | Jakie modele istnieja DZISIAJ — pytane na zywo, nie brane z pamieci. |
+| [`aktualne_modele.py`](#agent-v2aktualne-modele-py) | 4 | 1 | 0 | 0 | Co w tej dziedzinie jest AKTUALNE dzisiaj — pytane na zywo, nie z pamieci. |
 | [`alarm.py`](#agent-v2alarm-py) | 27 | 0 | 1 | 6 | Alarm do właściciela i kontrola zdrowia agenta. |
 | [`artykul_z_puli.py`](#agent-v2artykul-z-puli-py) | 18 | 1 | 1 | 2 | Artykul bierze temat z tej samej puli, co notki. |
 | [`audyt_researchu.py`](#agent-v2audyt-researchu-py) | 3 | 0 | 0 | 0 | Audyt segmentu researchu na ZYWYCH danych, jednym poleceniem. |
@@ -44,12 +44,12 @@ For paid calls the verdict comes from
 | [`audyt_tematow.py`](#agent-v2audyt-tematow-py) | 4 | 0 | 0 | 0 | Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem. |
 | [`bramki.py`](#agent-v2bramki-py) | 8 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
 | [`browser.py`](#agent-v2browser-py) | 97 | 0 | 44 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
-| [`config.py`](#agent-v2config-py) | 33 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
+| [`config.py`](#agent-v2config-py) | 34 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
 | [`db.py`](#agent-v2db-py) | 11 | 0 | 0 | 7 | Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK. |
 | [`gates.py`](#agent-v2gates-py) | 21 | 0 | 0 | 0 | Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu. |
 | [`jezyki.py`](#agent-v2jezyki-py) | 5 | 0 | 0 | 0 | Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma. |
 | [`kanal.py`](#agent-v2kanal-py) | 12 | 0 | 3 | 0 | Kanal czytelnika — jedyne zrodlo celow do komentowania. |
-| [`konfiguracja.py`](#agent-v2konfiguracja-py) | 12 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach. |
+| [`konfiguracja.py`](#agent-v2konfiguracja-py) | 13 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach. |
 | [`kopia_subskrybentow.py`](#agent-v2kopia-subskrybentow-py) | 4 | 0 | 1 | 0 | Kopia listy subskrybentow — jedyne aktywo, ktorego nie da sie odtworzyc. |
 | [`korpus_kanalow.py`](#agent-v2korpus-kanalow-py) | 6 | 0 | 0 | 0 | Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja. |
 | [`llm.py`](#agent-v2llm-py) | 16 | 0 | 0 | 3 | Jedyna warstwa miedzy `run.py` a dostawca. |
@@ -67,16 +67,16 @@ For paid calls the verdict comes from
 <a id="agent-v2aktualne-modele-py"></a>
 ## `agent-v2/aktualne_modele.py`
 
-Jakie modele istnieja DZISIAJ — pytane na zywo, nie brane z pamieci.
+Co w tej dziedzinie jest AKTUALNE dzisiaj — pytane na zywo, nie z pamieci.
 
 4 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 69 | `_swieze(dane)` | — | Czy zapisana odpowiedz jest jeszcze wazna. | `aktualne_modele.pobierz` |
-| 83 | `wczytaj()` | — | Ostatnia zapisana odpowiedz. | `aktualne_modele.jako_tekst`, `aktualne_modele.pobierz` |
-| 94 | `pobierz(conn, run_id, wymus)` | **$**(aktualne_modele) | Aktualny stan modeli. | `aktualne_modele (poziom modulu)`, `stages.znajdz_ciekawostki` |
-| 147 | `jako_tekst(dane)` | — | Stan modeli w postaci, ktora wchodzi do promptu. | `aktualne_modele (poziom modulu)`, `stages.znajdz_ciekawostki` |
+| 93 | `_swieze(dane)` | — | Czy zapisana odpowiedz jest jeszcze wazna. | `aktualne_modele.pobierz` |
+| 107 | `wczytaj()` | — | Ostatnia zapisana odpowiedz. | `aktualne_modele.jako_tekst`, `aktualne_modele.pobierz` |
+| 118 | `pobierz(conn, run_id, wymus)` | **$**(aktualne_modele) | Aktualny stan modeli. | `aktualne_modele (poziom modulu)`, `stages.znajdz_ciekawostki` |
+| 178 | `jako_tekst(dane)` | — | Stan modeli w postaci, ktora wchodzi do promptu. | `aktualne_modele (poziom modulu)`, `stages.znajdz_ciekawostki` |
 
 ---
 
@@ -337,7 +337,7 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 
 Jedyne miejsce ze stałymi.
 
-33 funkcji.
+34 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -361,19 +361,20 @@ Jedyne miejsce ze stałymi.
 | 1966 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
 | 2418 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._deepseek_pick_from_urls` |
 | 2477 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
-| 2541 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
-| 2564 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
-| 2573 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
-| 2602 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
-| 2657 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
-| 2672 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
-| 2693 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
-| 2721 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
-| 2756 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
-| 2876 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
-| 2884 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
-| 2989 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
-| 3046 | `co_teraz_w_reku(kiedy)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
+| 2511 | `pytanie_o_stan_dziedziny()` | — | O co pytamy, sprawdzajac stan dziedziny. | `aktualne_modele.pobierz` |
+| 2573 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
+| 2596 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
+| 2605 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
+| 2634 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
+| 2689 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
+| 2704 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
+| 2725 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
+| 2753 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
+| 2788 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
+| 2908 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
+| 2916 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
+| 3021 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
+| 3078 | `co_teraz_w_reku(kiedy)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
 
 ---
 
@@ -479,7 +480,7 @@ Kanal czytelnika — jedyne zrodlo celow do komentowania.
 
 Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach.
 
-12 funkcji.
+13 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -487,14 +488,15 @@ Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach.
 | 70 | `_data_albo_pusto(v, gdzie)` | — | Dzien w postaci RRRR-MM-DD albo pusty napis znaczacy „nigdy". | `konfiguracja (poziom modulu)` |
 | 88 | `_liczba(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
 | 94 | `_prawda(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
-| 100 | `_lista_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
-| 107 | `_lista_napisow_moze_pusta(v, gdzie)` | — | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. | `konfiguracja (poziom modulu)` |
-| 123 | `_widelki(v, gdzie)` | — | Zakres [od, do]. | `konfiguracja (poziom modulu)` |
-| 134 | `_slownik_list(v, gdzie)` | — | Tablica `klucz = [napisy]`. | `konfiguracja (poziom modulu)` |
-| 154 | `_slownik_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
-| 230 | `sciezka(agent_dir)` | DEAD? | — | — |
-| 234 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
-| 272 | `zastosuj(dane, cfg)` | DEAD? | Wklada wartosci do modulu `config`. | — |
+| 100 | `_napis_moze_pusty(v, gdzie)` | — | Napis, ktory WOLNO zostawic pusty. | `konfiguracja (poziom modulu)` |
+| 112 | `_lista_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
+| 119 | `_lista_napisow_moze_pusta(v, gdzie)` | — | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. | `konfiguracja (poziom modulu)` |
+| 135 | `_widelki(v, gdzie)` | — | Zakres [od, do]. | `konfiguracja (poziom modulu)` |
+| 146 | `_slownik_list(v, gdzie)` | — | Tablica `klucz = [napisy]`. | `konfiguracja (poziom modulu)` |
+| 166 | `_slownik_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
+| 251 | `sciezka(agent_dir)` | DEAD? | — | — |
+| 255 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
+| 293 | `zastosuj(dane, cfg)` | DEAD? | Wklada wartosci do modulu `config`. | — |
 
 ---
 

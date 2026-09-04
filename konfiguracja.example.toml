@@ -196,6 +196,34 @@ precedensy = []
 # -----------------------------------------------------------------------------
 # ZRODLA — skad biora sie tematy
 # -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# STAN DZIEDZINY — co jest AKTUALNE dzisiaj
+# -----------------------------------------------------------------------------
+#
+# Model nie ma jak zauwazyc, ze fakt sie przeterminowal: jego wiedza konczy sie
+# kilka miesiecy temu, a nieaktualny fakt czyta sie od srodka dokladnie tak samo
+# jak biezacy. Raz na dobe pytamy wiec swiata z wyszukiwaniem, co w Twojej
+# dziedzinie jest teraz aktualne, a co wycofane — i wynik idzie do promptu.
+#
+# KOSZTUJE JEDNO WYWOLANIE Z WYSZUKIWANIEM NA DOBE. Dziedzina, ktora nie
+# zmienia sie z tygodnia na tydzien (historia, jezyk, matematyka), moze to
+# wylaczyc i nie stracic niczego.
+[stan_dziedziny]
+pytaj = true
+
+# O CO dokladnie pytac. Puste znaczy „zbuduj z niszy" i tak ma zostac, dopoki
+# nie zobaczysz, ze odpowiedzi sa nie o tym.
+#
+# Wpisuj RZECZY, KTORE SIE ZMIENIAJA I DAJA DATOWAC: wersje, ceny, przepisy,
+# sklady, stawki, dopuszczenia. Nie wpisuj tu tematow — to nie jest miejsce na
+# to, o czym pisac, tylko na to, czego NIE WOLNO nazwac z pamieci.
+#
+# Przyklad dla dziedziny kulinarnej:
+#   o_co_pytac = "which food additives and labelling rules are current in the EU, what has been withdrawn or reclassified"
+o_co_pytac = ""
+
+
 [zrodla]
 # Kanaly YouTube, ktore w TWOJEJ niszy od lat wybieraja, o czym warto mowic.
 # Bot bierze z nich ZDARZENIE stojace za naglowkiem i sprawdza je sam; nie

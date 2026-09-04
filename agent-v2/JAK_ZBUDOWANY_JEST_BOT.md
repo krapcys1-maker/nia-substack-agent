@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 842 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 926 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -499,7 +499,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-325 wierszy, 12 funkcji na poziomie modułu, 1 klas
+346 wierszy, 13 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -507,6 +507,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_data_albo_pusto(v, gdzie)` *(wewn.)* | Dzien w postaci RRRR-MM-DD albo pusty napis znaczacy „nigdy". |
 | `_liczba(v, gdzie)` *(wewn.)* | — |
 | `_prawda(v, gdzie)` *(wewn.)* | — |
+| `_napis_moze_pusty(v, gdzie)` *(wewn.)* | Napis, ktory WOLNO zostawic pusty. |
 | `_lista_napisow(v, gdzie)` *(wewn.)* | — |
 | `_lista_napisow_moze_pusta(v, gdzie)` *(wewn.)* | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. |
 | `_widelki(v, gdzie)` *(wewn.)* | Zakres [od, do]. Wolumeny sa losowane z widelek, nie stale. |
@@ -596,7 +597,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3106 wierszy, 32 funkcji na poziomie modułu, 0 klas
+3138 wierszy, 33 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -620,6 +621,7 @@ wiec nie da sie go rozjechac z kodem.
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
+| `pytanie_o_stan_dziedziny()` | O co pytamy, sprawdzajac stan dziedziny. |
 | `usluga_agenta()` | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. |
 | `zegar_agenta()` | Sciezka do jednostki zegara agenta albo None. |
 | `_naglowek_klienta()` *(wewn.)* | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. |
@@ -692,7 +694,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci
 
-186 wierszy, 4 funkcji na poziomie modułu, 0 klas
+217 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -8978,7 +8980,7 @@ visible either way:
 
 #### `prompts/ciekawostki.md`
 
-**416 wierszy.** Pola wejsciowe: `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
+**417 wierszy.** Pola wejsciowe: `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
 
 ````markdown
 Find {ile} documented facts worth stopping a stranger mid-scroll.
@@ -9259,13 +9261,14 @@ source names a model you cannot find above, that source is old — treat whateve
 it says about the present as expired, and either find current confirmation or
 choose a different fact.
 
-**Never name a version you have not checked is current.** Writing about GPT-5.0
-when 5.5 has shipped makes the whole piece read as stale even if every word is
-true. If your source names a version and that source is old, either find current
-confirmation or pick a different fact.
+**Never name a version, price, rule or product you have not checked is
+current.** Naming last season's version when this season's has shipped makes the
+whole piece read as stale even if every word is true. If your source names one
+and that source is old, either find current confirmation or pick a different
+fact.
 
-**Never build on something that is being switched off.** A model scheduled for
-retirement, an API being sunset, a product being discontinued — the reader will
+**Never build on something that is being switched off.** Anything scheduled to
+end — withdrawn, sunset, discontinued, replaced — the reader will
 have to unlearn it within weeks. That is worse than teaching them nothing.
 
 ## Where attention is pointed this month
@@ -12991,6 +12994,8 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `REFUSAL_PHRASES` | `( "you have been blocked", "access denied", ` | — |
 | `FETCH_TIMEOUT_S` | `30.0` | — |
 | `FETCH_MIN_CHARS` | `1500` | ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO. Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu. Zmierzone  |
+| `STAN_DZIEDZINY_PYTAJ` | `True` | --- JEDNOSTKI SYSTEMD ------------------------------------------------------ NAZWA JEDNOSTKI NALEZY DO INSTALACJI, nie do bota: kto postawi  |
+| `STAN_DZIEDZINY_PYTANIE` | `""` | — |
 | `TYTUL_SEKCJI_ZRODEL` | `"Sources"` | --- SEKCJA ZRODEL POD ARTYKULEM -------------------------------------------- Naglowek pisze KOD (`stages.save` i sciezka ratunku), a potem r |
 | `NAGLOWEK_ZRODEL` | `"## " + TYTUL_SEKCJI_ZRODEL` | — |
 | `KATALOG_JEDNOSTEK` | `AGENT_DIR / "systemd"` | — |

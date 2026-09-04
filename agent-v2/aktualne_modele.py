@@ -1,4 +1,4 @@
-"""Jakie modele istnieja DZISIAJ — pytane na zywo, nie brane z pamieci.
+"""Co w tej dziedzinie jest AKTUALNE dzisiaj — pytane na zywo, nie z pamieci.
 
 DLACZEGO TO ISTNIEJE. Bot napisal notke o ukrytych tokenach rozumowania w
 rodzinie modeli i wystawil ja jako rzecz biezaca. Zrodlem byl
@@ -13,15 +13,27 @@ konczy sie kilka miesiecy temu, a przeterminowany fakt czyta sie od srodka
 dokladnie tak samo jak biezacy. Zadna instrukcja w prompcie tego nie naprawi,
 bo instrukcja trafia do tej samej pamieci, ktora jest nieaktualna.
 
-Jedyne wyjscie: PYTAC SWIATA, nie siebie. Ten modul raz na dobe pyta modelu z
-wlaczonym wyszukiwaniem, jakie modele sa teraz, i trzyma odpowiedz w pliku.
-Wynik idzie do promptow jako kontekst — wiec pisarz nie musi pamietac, tylko
-czyta.
+Jedyne wyjscie: PYTAC SWIATA, nie siebie. Ten modul raz na dobe pyta modelu
+z wlaczonym wyszukiwaniem, co w TEJ dziedzinie jest teraz aktualne, i trzyma
+odpowiedz w pliku. Wynik idzie do promptow jako kontekst — wiec pisarz nie musi
+pamietac, tylko czyta.
 
-Odswiezamy raz na dobe, bo tempo wydan jest liczone w tygodniach, nie godzinach:
-zmierzone na sierpniu 2026, Anthropic wydal cztery modele w niecale dwa
-miesiace. Doba jest dosc gesta, zeby nie przegapic wydania, i dosc rzadka, zeby
-nie placic za to samo pytanie przy kazdej notce.
+DZIEDZINA IDZIE Z KONFIGURACJI. Pytanie bylo wpisane i dotyczylo wylacznie
+modeli jezykowych, z nazwami osmiu laboratoriow w tresci — wiec konto o kazdej
+innej dziedzinie placilo codziennie za liste modeli AI. Mechanizm jest ogolny
+(przeterminowany fakt czyta sie tak samo w kazdej dziedzinie), pytanie nie bylo.
+Patrz `config.pytanie_o_stan_dziedziny` i wylacznik `STAN_DZIEDZINY_PYTAJ`.
+
+NAZWA PLIKU I POL ZOSTAJE. `aktualne_modele.json`, klucze `aktualne`
+i `wycofane` — przemianowanie ich kosztowaloby migracje danych i cztery
+miejsca w kodzie, a nie daje nic poza ladniejsza nazwa. Zapisane jest tu, zeby
+nastepny czytelnik nie szukal wyjasnienia.
+
+Odswiezamy raz na dobe, bo w dziedzinach, ktore sie w ogole zmieniaja, tempo
+liczy sie w tygodniach, nie w godzinach. Doba jest dosc gesta, zeby nie
+przegapic zmiany, i dosc rzadka, zeby nie placic za to samo pytanie przy kazdej
+notce. Dziedzina, ktora nie zmienia sie i tak, moze to wylaczyc
+(`stan_dziedziny.pytaj = false`).
 """
 import json
 from datetime import datetime, timedelta, timezone
@@ -36,23 +48,35 @@ PLIK = config.DATA_DIR / "aktualne_modele.json"
 # Ile godzin odpowiedz jest wazna. Doba — patrz uzasadnienie w naglowku.
 WAZNE_GODZIN = 24
 
+# PYTANIE BYLO WPISANE I DOTYCZYLO WYLACZNIE MODELI JEZYKOWYCH — z nazwami
+# osmiu laboratoriow w tresci. Uzasadnienie tego modulu (patrz naglowek) nie ma
+# jednak z AI nic wspolnego: model nie ma jak zauwazyc, ze fakt sie
+# przeterminowal, w KAZDEJ dziedzinie. Konto o dowolnej innej dziedzinie
+# placilo wiec codziennie za liste modeli AI i dostawalo ja do promptu jako
+# „stan swojej dziedziny".
+#
+# Dzis pytanie idzie z `config.pytanie_o_stan_dziedziny()`, a domyslne buduje
+# sie z `NISZA`. Slownictwo odpowiedzi zostalo ogolne („pozycja", nie „model"),
+# bo to samo pole ma pomiescic wersje oprogramowania, przepis, sklad i stawke.
 SYSTEM = (
-    "You report the current state of the AI model landscape. You search before "
+    "You report what is CURRENT in a field, right now. You search before "
     "answering and you never rely on memory: your training data is months old "
-    "and the field moves in weeks. Return only valid JSON."
+    "and things change. Return only valid JSON."
 )
 
 PYTANIE = """Today is {dzis}.
 
-Search and report which large language models are CURRENT right now, from the
-major labs: Anthropic, OpenAI, Google, Meta, Mistral, DeepSeek, xAI, Alibaba.
+Search and report what is current in this field:
 
-For each lab give the models a developer would actually reach for today, with
-the release date of each. Then list, separately, the models that have been
-retired, deprecated, or scheduled for removal — with the date they go.
+{o_co}
 
-Be exact about version numbers. "The newest" is useless six weeks from now;
-"released 2026-07-24" is not.
+Give the things somebody working in that field would reach for or refer to
+today, each with the date it appeared or was last changed. Then list,
+separately, what has been withdrawn, replaced, discontinued or scheduled to
+end — with the date it goes.
+
+Be exact about names and versions. "The newest" is useless six weeks from now;
+"changed 2026-07-24" is not.
 
 If you cannot confirm something by search, leave it out rather than guessing.
 An incomplete list is fine. An invented one is not.
@@ -60,9 +84,9 @@ An incomplete list is fine. An invented one is not.
 Return only valid JSON:
 
 {{"sprawdzone": "<today's date, YYYY-MM-DD>",
-  "aktualne": [{{"lab": "<lab>", "model": "<exact name and version>", "wydany": "<YYYY-MM-DD or YYYY-MM>", "po_co": "<one short phrase: what it is for>"}}],
+  "aktualne": [{{"lab": "<who is behind it, or empty>", "model": "<exact name and version>", "wydany": "<YYYY-MM-DD or YYYY-MM>", "po_co": "<one short phrase: what it is for>"}}],
   "wycofane": [{{"model": "<exact name>", "kiedy_znika": "<YYYY-MM-DD or empty>", "uwaga": "<one short phrase>"}}],
-  "uwagi": "<one or two sentences on anything a writer should know before naming a model today>"}}
+  "uwagi": "<one or two sentences a writer should know before naming any of these today>"}}
 """
 
 
@@ -103,6 +127,12 @@ def pobierz(conn=None, run_id: int | None = None,
     if not wymus and _swieze(zapisane):
         return zapisane
 
+    # WYLACZNIK Z KONFIGURACJI. Dziedzina, ktora nie zmienia sie z tygodnia na
+    # tydzien, nie ma po co placic za to wywolanie codziennie. Oddajemy to, co
+    # juz wiemy — zapisana odpowiedz nie znika przez samo wylaczenie pytania.
+    if not getattr(config, "STAN_DZIEDZINY_PYTAJ", True):
+        return zapisane
+
     teraz = datetime.now(timezone.utc)
     # Wlasne polaczenie, gdy nikt nie podal — koszt wywolania ma trafic do
     # bazy tak samo jak kazdy inny. Etap, ktory nie zapisuje kosztu, jest
@@ -114,7 +144,8 @@ def pobierz(conn=None, run_id: int | None = None,
     try:
         tekst = llm.call(
             "aktualne_modele", SYSTEM,
-            PYTANIE.format(dzis=teraz.strftime("%Y-%m-%d")),
+            PYTANIE.format(dzis=teraz.strftime("%Y-%m-%d"),
+                           o_co=config.pytanie_o_stan_dziedziny()),
             conn=conn, run_id=run_id,
             # WYSZUKIWANIE JEST TU CALA WARTOSCIA. Bez niego pytamy pamieci
             # modelu o to, czego pamiec z definicji nie wie — a wlasnie ta
@@ -124,7 +155,7 @@ def pobierz(conn=None, run_id: int | None = None,
         if not isinstance(dane, dict) or not dane.get("aktualne"):
             raise ValueError("odpowiedz bez listy aktualnych modeli")
     except Exception as exc:
-        print("  [modele] nie odswiezylem (%s: %s) — biore ostatnie znane"
+        print("  [stan dziedziny] nie odswiezylem (%s: %s) — biore ostatnie znane"
               % (type(exc).__name__, str(exc)[:120]), flush=True)
         return zapisane
     finally:
@@ -138,7 +169,7 @@ def pobierz(conn=None, run_id: int | None = None,
                         encoding="utf-8")
     except OSError:
         pass
-    print("  [modele] odswiezone: %d aktualnych, %d wycofanych"
+    print("  [stan dziedziny] odswiezone: %d aktualnych, %d wycofanych"
           % (len(dane.get("aktualne") or []), len(dane.get("wycofane") or [])),
           flush=True)
     return dane
@@ -183,4 +214,4 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     d = pobierz(wymus="--wymus" in sys.argv)
     print()
-    print(jako_tekst(d) or "(nic nie wiem o modelach)")
+    print(jako_tekst(d) or "(nic nie wiem o stanie dziedziny)")

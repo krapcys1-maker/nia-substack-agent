@@ -276,13 +276,14 @@ source names a model you cannot find above, that source is old — treat whateve
 it says about the present as expired, and either find current confirmation or
 choose a different fact.
 
-**Never name a version you have not checked is current.** Writing about GPT-5.0
-when 5.5 has shipped makes the whole piece read as stale even if every word is
-true. If your source names a version and that source is old, either find current
-confirmation or pick a different fact.
+**Never name a version, price, rule or product you have not checked is
+current.** Naming last season's version when this season's has shipped makes the
+whole piece read as stale even if every word is true. If your source names one
+and that source is old, either find current confirmation or pick a different
+fact.
 
-**Never build on something that is being switched off.** A model scheduled for
-retirement, an API being sunset, a product being discontinued — the reader will
+**Never build on something that is being switched off.** Anything scheduled to
+end — withdrawn, sunset, discontinued, replaced — the reader will
 have to unlearn it within weeks. That is worse than teaching them nothing.
 
 ## Where attention is pointed this month

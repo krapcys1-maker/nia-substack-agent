@@ -3,7 +3,7 @@
 Two pipelines, one process, twenty-four modules. This document is the map: what
 each directory holds, what each module does, and how a run actually proceeds.
 
-For the complete function-level inventory — 557 functions with line numbers,
+For the complete function-level inventory — 559 functions with line numbers,
 cost markers and call edges — see [FUNCTION_MAP.md](FUNCTION_MAP.md), which is
 generated from the abstract syntax tree.
 
@@ -231,7 +231,7 @@ without a denominator is not a measurement.
 
 ## What is universal and what is not
 
-Measured across the 557 functions:
+Measured across the 559 functions:
 
 | layer | functions | portable? |
 |---|---|---|
