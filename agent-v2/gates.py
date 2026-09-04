@@ -87,16 +87,36 @@ def _korpus_pobranych(card: dict[str, Any]) -> set[str]:
     ktorych nie ma w zadnym pobranym dokumencie. Kontrola liczb bez tej roznicy
     sprawdza sama siebie.
 
-    ZOSTAJE ZNANA WADA, SZERSZA OD TEJ: karta niesie w tym momencie takze
-    `ocena_ciekawosci` i `parallel_mechanisms` z banku, czyli wypowiedzi modelu
-    z cytatami. Ich liczby nadal wchodza do korpusu. To osobna sprawa niz
-    wstrzykniety fakt i osobna decyzja — tu zamykamy tylko to, co sami
-    otworzylismy.
+    ODPADAJA TAKZE DWA POLA, KTORE SA WYPOWIEDZIA MODELU, A NIE MATERIALEM:
+
+      `ocena_ciekawosci` — werdykt `warto_pisac` o tej karcie, z cytatami
+        i liczbami. Liczba, ktora bramkarz ciekawosci przepisal sobie do
+        uzasadnienia, stawala sie „obecna w materiale dowodowym";
+      `parallel_mechanisms` oznaczone `z_banku` — mechanizmy z INNEJ dziedziny,
+        dolozone przez bibliotekarza z zapasu fragmentow. Te bez znacznika
+        pochodza z syntezy pobranego korpusu i zostaja.
+
+    Bez tego bramka przestawala pytac o material i zaczynala pytac SAMA SIEBIE.
+
+    WADA BYLA ZNANA I SPISANA: `dokumentacja-zrodla/rozdzial_artykul.md` nosi
+    naglowek „WADA — «korpus» dla kontroli liczb jest szerszy, niz nazwa
+    sugeruje" i wymienia oba pola po nazwie. Opisana i niezalatana przez trzy
+    tygodnie — ten sam wzorzec, co komunikaty systemowe z wpisana nisza.
+
+    KIERUNEK JEST BEZPIECZNY: bramka moze zglosic WIECEJ liczb, nigdy mniej.
+    Cena falszywego trafienia to linijka w logu; cena przeoczenia to liczba
+    wzieta z powietrza w opublikowanym tekscie.
     """
     pobrane = dict(card)
     pobrane["confirmed_claims"] = [
         c for c in (card.get("confirmed_claims") or [])
         if not (isinstance(c, dict) and c.get("not_fetched"))]
+    pobrane.pop("ocena_ciekawosci", None)
+    rownolegle = card.get("parallel_mechanisms")
+    if isinstance(rownolegle, list):
+        pobrane["parallel_mechanisms"] = [
+            m for m in rownolegle
+            if not (isinstance(m, dict) and m.get("z_banku"))]
     return _digit_tokens(json.dumps(pobrane, ensure_ascii=False))
 
 

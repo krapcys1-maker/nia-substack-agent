@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 613 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 633 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 134 zestawów
-testów, 3579 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 135 zestawów
+testów, 3586 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -444,7 +444,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-535 wierszy, 18 funkcji na poziomie modułu, 0 klas
+555 wierszy, 18 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1911,7 +1911,7 @@ Zawsze. Uzasadnienie: *„Zablokowany artykuł to czysta strata 1,30 USD researc
 
 **WADA — nagłówek `gates.py` opisuje system, którego nie ma.** Pierwsza linia pliku brzmi „Cztery bramki, które blokują. Reszta to notatki." Bramek jest dwanaście deterministycznych plus cztery obserwacyjne, a **żadna nie blokuje** — `verdict()` zwraca `("SAVED", None)` bezwarunkowo. Ten sam nieaktualny opis siedzi też w `config.py` przy `# --- bramki jakości ---` („Te cztery są zgłaszane właścicielowi") oraz w komentarzu do kolumny `articles.blocked_by` („która z czterech bramek").
 
-**WADA — „korpus" dla kontroli liczb jest szerszy, niż nazwa sugeruje.** `numbers_outside_corpus` porównuje z `json.dumps(card)`, a `card` w tym momencie zawiera już `ocena_ciekawosci` (wypowiedź modelu z etapu 7, z cytatami) i ewentualne `parallel_mechanisms` z banku. Każda liczba, którą przypadkiem zacytował sobie bramkarz ciekawości, staje się „obecna w materiale dowodowym".
+**WADA ZAMKNIĘTA 4 września 2026 — „korpus" dla kontroli liczb był szerszy, niż nazwa sugeruje.** `numbers_outside_corpus` porównywał z całym `json.dumps(card)`, a `card` w tym momencie zawiera już `ocena_ciekawosci` (wypowiedź modelu z etapu 7, z cytatami) i ewentualne `parallel_mechanisms` z banku. Każda liczba, którą przypadkiem zacytował sobie bramkarz ciekawości, stawała się „obecna w materiale dowodowym" — czyli bramka przestawała pytać o materiał i zaczynała pytać samą siebie. `gates._korpus_pobranych` odejmuje teraz oba te pola (`parallel_mechanisms` tylko te ze znacznikiem `z_banku`; pochodzące z syntezy zostają, bo są wyciągiem z pobranego korpusu) oraz twierdzenia `not_fetched`. Kierunek jest bezpieczny: bramka może zgłosić **więcej** liczb, nigdy mniej. Mierzy to `tests/test_korpus_liczb.py`, z kontrdowodem liczącym korpus po staremu.
 
 **WADA — ta sama kontrola daje fałszywe alarmy na formatowaniu.** `DIGITS = re.compile(r"\d[\d.,]*")` traktuje `2,989,787` jako jeden token. Jeśli karta niesie `2989787`, a pisarz sformatował liczbę z przecinkami (co `config.py` chwali przy notkach jako zaletę Fable), bramka zgłosi liczbę spoza korpusu.
 

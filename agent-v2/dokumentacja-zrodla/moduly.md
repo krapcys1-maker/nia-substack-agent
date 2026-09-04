@@ -302,7 +302,7 @@
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-535 wierszy, 18 funkcji na poziomie modułu, 0 klas
+555 wierszy, 18 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

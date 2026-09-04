@@ -411,24 +411,24 @@ Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu.
 | 66 | `_digit_tokens(text)` | — | — | `gates._korpus_pobranych`, `gates.deterministic_floors`, `gates.numbers_outside_corpus` |
 | 70 | `_niepobrane(card)` | — | Twierdzenia oznaczone `not_fetched` — dolozone, nie wyciagniete. | `gates.deterministic_floors` |
 | 82 | `_korpus_pobranych(card)` | — | Liczby z materialu, ktory NAPRAWDE pobralismy. | `gates.numbers_outside_corpus` |
-| 103 | `numbers_outside_corpus(body, card)` | — | Liczby w tekście, których nie ma nigdzie w POBRANYM materiale. | `gates.deterministic_floors` |
-| 109 | `deterministic_floors(body, card, poprzednie)` | — | Podłogi bez modelu: 0 USD, milisekundy, zero wywołań. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 206 | `_akapity(body)` | — | — | `gates.niewiadome_na_koncu`, `gates.odcisk_formy`, `gates.zakazane_otwarcie` |
-| 211 | `zastrzezenia(body)` | — | Zastrzezenia w pierwszej osobie. | `gates.deterministic_floors` |
-| 216 | `zakazane_otwarcie(body)` | — | Pierwsze zdanie, jesli kaze czytelnikowi isc cos obejrzec. | `gates.deterministic_floors` |
-| 225 | `statystyki_bez_zrodla(body)` | — | Zdania, ktore niosa liczbe i udaja, ze maja na nia zrodlo. | `gates.deterministic_floors` |
-| 234 | `niewiadome_na_koncu(body)` | — | Zbiorczy akapit o niewiadomych w ostatniej trzeciej tekstu. | `gates.deterministic_floors`, `gates.odcisk_formy` |
-| 262 | `odcisk_formy(body)` | — | Zgrubny szkielet tekstu — do porownania z poprzednimi, nie do oceny. | `gates.powtorzona_forma` |
-| 279 | `odcisk_formy.kubelek(u)` | — | — | `gates.odcisk_formy` |
-| 298 | `powtorzona_forma(body, poprzednie, prog)` | — | Czy ten tekst ma ksztalt ktoregos z poprzednich. | `gates.deterministic_floors` |
-| 329 | `uwagi_z_formy(obserwacja, body)` | — | Zamienia obserwacje modelu w uwagi. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 399 | `pozycja_w_tekscie(cytat, body)` | — | Gdzie w tekście stoi ten cytat, jako ułamek długości. | `run.main` |
-| 411 | `szerokosc_podstawy(card)` | — | Na ilu ODREBNYCH serwisach stoja potwierdzone twierdzenia. | `gates.deterministic_floors` |
-| 447 | `frazy_z_instrukcji(body, dlugosc)` | — | Czy pisarz wklein do tekstu wlasne polecenie. | `gates.deterministic_floors` |
-| 459 | `frazy_z_instrukcji.slowa_z(tekst)` | — | — | `gates.frazy_z_instrukcji` |
-| 462 | `frazy_z_instrukcji.ciagi(slowa)` | — | — | `gates.frazy_z_instrukcji` |
-| 489 | `verdict(findings)` | — | Artykuł powstaje ZAWSZE. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 504 | `zapowiedziany_akapit_granic(body)` | — | Czy akapit o granicach zaczyna sie od zdania o samym sobie. | `gates.deterministic_floors` |
+| 123 | `numbers_outside_corpus(body, card)` | — | Liczby w tekście, których nie ma nigdzie w POBRANYM materiale. | `gates.deterministic_floors` |
+| 129 | `deterministic_floors(body, card, poprzednie)` | — | Podłogi bez modelu: 0 USD, milisekundy, zero wywołań. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 226 | `_akapity(body)` | — | — | `gates.niewiadome_na_koncu`, `gates.odcisk_formy`, `gates.zakazane_otwarcie` |
+| 231 | `zastrzezenia(body)` | — | Zastrzezenia w pierwszej osobie. | `gates.deterministic_floors` |
+| 236 | `zakazane_otwarcie(body)` | — | Pierwsze zdanie, jesli kaze czytelnikowi isc cos obejrzec. | `gates.deterministic_floors` |
+| 245 | `statystyki_bez_zrodla(body)` | — | Zdania, ktore niosa liczbe i udaja, ze maja na nia zrodlo. | `gates.deterministic_floors` |
+| 254 | `niewiadome_na_koncu(body)` | — | Zbiorczy akapit o niewiadomych w ostatniej trzeciej tekstu. | `gates.deterministic_floors`, `gates.odcisk_formy` |
+| 282 | `odcisk_formy(body)` | — | Zgrubny szkielet tekstu — do porownania z poprzednimi, nie do oceny. | `gates.powtorzona_forma` |
+| 299 | `odcisk_formy.kubelek(u)` | — | — | `gates.odcisk_formy` |
+| 318 | `powtorzona_forma(body, poprzednie, prog)` | — | Czy ten tekst ma ksztalt ktoregos z poprzednich. | `gates.deterministic_floors` |
+| 349 | `uwagi_z_formy(obserwacja, body)` | — | Zamienia obserwacje modelu w uwagi. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 419 | `pozycja_w_tekscie(cytat, body)` | — | Gdzie w tekście stoi ten cytat, jako ułamek długości. | `run.main` |
+| 431 | `szerokosc_podstawy(card)` | — | Na ilu ODREBNYCH serwisach stoja potwierdzone twierdzenia. | `gates.deterministic_floors` |
+| 467 | `frazy_z_instrukcji(body, dlugosc)` | — | Czy pisarz wklein do tekstu wlasne polecenie. | `gates.deterministic_floors` |
+| 479 | `frazy_z_instrukcji.slowa_z(tekst)` | — | — | `gates.frazy_z_instrukcji` |
+| 482 | `frazy_z_instrukcji.ciagi(slowa)` | — | — | `gates.frazy_z_instrukcji` |
+| 509 | `verdict(findings)` | — | Artykuł powstaje ZAWSZE. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 524 | `zapowiedziany_akapit_granic(body)` | — | Czy akapit o granicach zaczyna sie od zdania o samym sobie. | `gates.deterministic_floors` |
 
 ---
 
