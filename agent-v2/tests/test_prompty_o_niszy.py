@@ -207,6 +207,20 @@ def zrodla():
     for nazwa in sorted(config.NOTE_FORMS):
         yield "config.py:NOTE_FORMS[%s]" % nazwa, [config.NOTE_FORMS[nazwa]]
 
+    # I TRZECIE MIEJSCE TEJ SAMEJ KLASY, znalezione 4 wrzesnia 2026.
+    # `GENERATORY` i `DZIEDZINY_CIEKAWOSTEK` ida do `prompts/ciekawostki.md`
+    # przez `stages.znajdz_ciekawostki` — czyli sa promptem tak samo jak
+    # `NOTE_FORMS`, i tak samo nie byly skanowane. Dwa z czternastu wzorcow
+    # mowily wprost o poprzedniej niszy i trafialy do modelu w co czwartym
+    # przebiegu (`ILE_GENERATOROW_NA_PRZEBIEG = 4`).
+    #
+    # Docstring tego pliku opisuje te wade od dawna — „prompt w kazdym sensie
+    # oprocz rozszerzenia pliku" — a lista skanowanych miejsc byla wyliczona
+    # recznie i o jedno krotsza.
+    for nazwa in sorted(config.GENERATORY):
+        yield "config.py:GENERATORY[%s]" % nazwa, [config.GENERATORY[nazwa]]
+    yield "config.py:DZIEDZINY_CIEKAWOSTEK", list(config.DZIEDZINY_CIEKAWOSTEK)
+
 
 WSZYSTKIE = list(zrodla())
 NAZWY_ZRODEL = [n for n, _ in WSZYSTKIE]

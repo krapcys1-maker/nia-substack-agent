@@ -975,31 +975,29 @@ NOTE_CANDIDATES = 1
 #
 # Historia tej listy w dwoch krokach.
 #
-# KROK PIERWSZY: prompt mial na sztywno piec obszarow — lotniska, supermarkety,
-# subskrypcje, miasta, codzienna technika. Lista zuzytych faktow blokowala
-# powtorzenie konkretu, ale nie blokowala krazenia po tym samym terytorium, i
-# widac to w dwunastu pierwszych notkach: temat pierwszy, mleko, bankomat, banknoty,
-# winda, znak stop, dlugopis, hydrant. Amerykanska infrastruktura i przepisy
-# konsumenckie w kolko. Komentarze rotowaly osiemnascie hasel od poczatku;
-# notki nie rotowaly nic. Stad rotacja i druga os (GENERATORY).
+# KROK PIERWSZY: prompt mial na sztywno piec obszarow, wpisanych w jego tresc.
+# Lista zuzytych faktow blokowala powtorzenie konkretu, ale nie blokowala
+# krazenia po tym samym terytorium — i widac to w dwunastu pierwszych notkach,
+# ktore trzymaly sie jednego rodzaju przedmiotow i jednego kraju. Komentarze
+# rotowaly osiemnascie hasel od poczatku; notki nie rotowaly nic. Stad rotacja
+# i druga os (GENERATORY).
 #
-# KROK DRUGI, 25 sierpnia 2026: cala lista wymieniona z codziennej
-# infrastruktury na SZTUCZNA INTELIGENCJE — decyzja wlasciciela o tym, o czym
-# konto ma pisac. Rotacja i generatory zostaja bez zmian, bo problem, ktory
-# rozwiazywaly, jest ten sam: bez drugiej osi model wraca tam, gdzie mu
+# KROK DRUGI: cala lista zostala wymieniona przy zmianie tematu konta. Rotacja
+# i generatory przetrwaly bez jednej poprawki, bo problem, ktory rozwiazywaly,
+# jest ten sam w kazdej dziedzinie: bez drugiej osi model wraca tam, gdzie mu
 # najlatwiej.
 #
-# CALA DWUNASTKA GENERATOROW PRZETRWALA TE ZMIANE bez jednej poprawki i to
-# jest celowe. Sa neutralne wobec tematu i pod nowa nisza trafiaja rownie
-# dobrze, co pod poprzednia: MEASUREMENT („liczba, ktora wyglada na pomiar, a jest pasmem") to
-# dokladnie pomiar, MIRROR („dwie jurysdykcje, przeciwne zasady") to regulacja
-# obok Waszyngtonu, DECIDER („ktos to wybral, ma nazwisko i date") to czlowiek,
-# ktory ustawil prog odmowy.
+# TO, ZE GENERATORY PRZEZYLY ZMIANE NISZY, JEST ICH TESTEM. Sa neutralne wobec
+# tematu z konstrukcji: MEASUREMENT pyta o liczbe, MIRROR o dwie jurysdykcje
+# z przeciwnymi zasadami, DECIDER o czlowieka, ktory cos wybral i ma date.
+# Kazde z tych pytan ma odpowiedz w dowolnej dziedzinie.
 #
-# TEGO SAMEGO DNIA, PO ZMIERZENIU PIERWSZEGO PRZEBIEGU, doszly do nich dwa
-# nowe: SEEMING i UNBIDDEN. Powod stoi przy nich samych — dwanascie starych
-# pyta o liczbe, jurysdykcje, decydenta i awarie, a zadne o zachowanie samego
-# systemu, wiec zaden fakt z przebiegu nie stanal pod wielkim pytaniem.
+# DWA OSTATNIE — SEEMING i UNBIDDEN — dopisano pozniej i przez chwile NIE BYLY
+# neutralne: mowily o „zachowaniu, ktore wyglada na myslenie" i o „systemie,
+# ktory robi cos niezaprojektowanego", czyli o jednej konkretnej dziedzinie.
+# Ksztalt pytania byl dobry, przyklady nie — dzis pytaja o to samo bez nazywania
+# dziedziny. Powod ich istnienia zostaje: dwanascie starych pyta o liczbe,
+# jurysdykcje, decydenta i awarie, a zadne o to, jak rzecz sie ZACHOWUJE.
 DZIEDZINY_CIEKAWOSTEK = (
     # ====================================================================
     # PRZYKLAD. Siatka dziedzin razem z `GENERATORY` wyznacza przestrzen,
@@ -1069,7 +1067,7 @@ CURIOSITY_MEMORY = 60
 #
 # Rozne od `CURIOSITY_MEMORY`, ktore pamieta zuzyte FAKTY po dokladnym odcisku.
 # Ten sam fakt powiedziany innymi slowami daje inny odcisk i przechodzil — tak
-# poszly dwie notki o symbolu otwartego sloika, 23 i 24 sierpnia.
+# poszly dwie notki o TYM SAMYM, 23 i 24 sierpnia.
 #
 # BYLO 12, czyli okolo czterech dni. Wlasciciel chce zera powtorzen NIGDY, wiec
 # okno znika. Bez tego powtorka sprzed pieciu dni przechodzila z automatu:
@@ -1103,10 +1101,10 @@ PAMIEC_NOTEK = None
 # Stad 90 dni, a nie 180, ktore wpisalem najpierw. To jest decyzja wlasciciela
 # o tym, jak swieze ma byc konto, nie wynik pomiaru — i tak jest zapisana.
 #
-# Zlapane na zywym tekscie: notka o szczegole technicznym wycofywanej
-# rodziny modeli, napisana
-# 25 sierpnia 2026 na podstawie artykulu o ich premierze z konca 2024. Okolo
-# 700 dni. Sprawdzanie faktow ja przepuscilo, bo fakt byl PRAWDZIWY.
+# Zlapane na zywym tekscie: notka o szczegole technicznym produktu, ktory
+# w miedzyczasie wycofano, napisana 25 sierpnia 2026 na podstawie artykulu
+# o jego premierze sprzed dwoch lat. Okolo 700 dni. Sprawdzanie faktow ja
+# przepuscilo, bo fakt byl PRAWDZIWY — tylko juz nieaktualny.
 MAKS_WIEK_ZRODLA_DNI = 90
 
 # Slowa, po ktorych poznajemy, ze zdanie twierdzi cos o STANIE SWIATA TERAZ,
@@ -2823,15 +2821,14 @@ GENERATORY = {
     # Brak testu jest dobrym znaleziskiem, ale musi byc UDOKUMENTOWANY brakiem
     # w dokumencie — pusta rubryka w karcie systemowej, zestaw ewaluacji, ktory
     # tego nie mierzy — a nie czyjas opinia, ze testu nie ma.
-    "SEEMING": "A behaviour that reads as thinking, and the measurement that "
-               "says what it is. Probe: what here looks like a mind at work, "
-               "and which published test tells the appearance from the thing — "
-               "or which evaluation suite, system card or audit visibly leaves "
-               "that box empty?",
-    "UNBIDDEN": "The system does something nobody specified, and its builders "
-                "found out afterwards. Probe: what behaviour appeared that was "
-                "not designed, who noticed it first, and what did they change "
-                "once they had?",
+    "SEEMING": "Something that reads as one thing and measures as another. "
+               "Probe: what here looks like the impressive explanation, which "
+               "published test separates the appearance from the thing, and "
+               "where does the paperwork visibly leave that box empty?",
+    "UNBIDDEN": "The thing does something nobody specified, and the people who "
+                "built it found out afterwards. Probe: what behaviour appeared "
+                "that was not designed, who noticed it first, and what did "
+                "they change once they had?",
 }
 
 ILE_GENERATOROW_NA_PRZEBIEG = 4
