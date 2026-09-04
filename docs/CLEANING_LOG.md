@@ -165,6 +165,7 @@ each still had a new one.
 | 15 | the `systemd/` directory, read as if it were code | six units carrying **another machine's install path** twice each, another machine's user, and a placeholder brand in `Description=`. The audit reads these files, but it hunts identity patterns, and `/home/ubuntu/...` is not a name — it is a path |
 | 16 | references to constants that **do not exist** | `config.NOTEK_DZIENNIE` in a live branch of `alarm.py` — the branch could never run, and `getattr` with a default meant nothing ever protested. Now checked by the audit on every run |
 | 17 | assertions matching the **text of a `.py` source** | 138 of them; 9 find their needle only in a comment. Two were real — a pair guarding separate budgets that had been passing on a comment quoting the code as it used to be |
+| 18 | **running our own configurator as a stranger**, then reading every failure as "is this a fault, or is this our number stated as a law?" | six failing assertions on a correct install, a field the configurator asks for that no module reads, and three article-length constants wired to nothing — see section 11 |
 
 **What only reading found.** Three system messages — `CURIOSITY_SYSTEM`,
 `BANK_SYSTEM`, `FEDREG_SYSTEM` — had the niche written into them literally. This
@@ -330,3 +331,75 @@ Scans the working tree and every commit for identity patterns, secrets, keys,
 session files, subscriber lists and databases. Section 9 is a counterproof: it
 builds files that *should* trip the audit and fails if they do not, because an
 audit that catches nothing looks exactly like a clean repository.
+
+---
+
+## 11. The sweep that reading could not replace: **being a stranger**
+
+Everything above was found by reading the code or by sweeping it for shapes.
+Both share a blind spot, and it is a large one: **they are performed from
+inside this installation**, where every value is our value and therefore every
+check passes.
+
+The last sweep was different. We ran the repository's own configurator from
+scratch, as a person who has never seen this account — an invented English
+publication about how bread is made and regulated — and then took the result
+seriously. Two commands:
+
+```
+python narzedzia/kreator.py            # answer as a stranger
+python narzedzia/audyt.py
+```
+
+The audit dropped from **236 passing / 0 failing** to **234 / 2**, and
+`test_szukanie_celow.py` failed **six times**, on an installation that was
+entirely correct. Every one of those failures was one of our own values stated
+as if it were a law:
+
+| what failed | what it really was |
+|---|---|
+| `hasel szukania jest >= 19` | 19 is **our** phrase count. The rule that holds for anyone is structural: the pool must be wider than one run draws (`3 × ILE_HASEL_NA_PRZEBIEG`), or every run takes the whole pool and returns the same handful of accounts |
+| `rewir obejmuje: ludzie i prawo` (×2) | `OBSZARY_REWIRU` is **our** map of the beat, with Polish names — and it is **not in the configurator at all**, so an operator cannot change it. Demanding that an English publication about bread cover "pieniądze i władza" is impossible by construction |
+| `kazde haslo miesci sie w niszy` | a mismatch between two of the operator's **own** fields — a hint, not a failed install. The audit had no way to say that: it could only say OK or BŁĄD |
+
+**And the finding under those findings.** Chasing the niche-marker check
+revealed that `ZNAKI_NISZY` — the field the configurator asks for, the field
+`config.py` described as "the words the **code** matches on", the field two of
+the English documents we wrote describe the same way — **is read by no module
+of the agent at all**. Its complete set of readers is the loader, the audit,
+the configurator, one test, and the documentation. What decides whether a post
+is on topic is the model, from `prompts/cele.md`. An operator retuning that
+list to change the bot's beat would change nothing except whether the audit
+passes.
+
+The file whose entire job is finding constants no code reads —
+`test_martwe_sygnaly.py` — could not see it, for two reasons that are worth
+copying down:
+
+- its evidence of "something uses this" included `konfiguracja.py`, which holds
+  the table mapping every TOML field to its constant name. **The mere fact that
+  a field can be set counted as proof that something reads it.**
+- its exemption for "used inside the config itself" counted occurrences in the
+  **raw** text, and nearly every constant in that file has a paragraph above it
+  naming it. **One sentence of prose exempted a constant from the question.**
+
+Both are now closed, and the counterproof is run: with an empty registry the
+scan now prints `ZNAKI_NISZY`, which it never did before.
+
+**The proof that a stranger's install now works** is a command anyone can run:
+
+```
+cp konfiguracja.example.toml agent-v2/konfiguracja.toml
+python narzedzia/audyt.py
+```
+
+The full test suite under that configuration gives **138 passing / 2 failing**
+— the same two environmental failures as our own installation
+(`test_czas.py` needs POSIX signal semantics, `test_zapora_platnych_wywolan.py`
+needs a real API key). A new test, `test_przyklad_przechodzi_reguly.py`, keeps
+it that way: it asks whether **our own example** survives the rules we impose
+on everyone, because a failure there means either the example is broken or the
+rule was ours all along.
+
+**If you take one thing from this section:** reading thirty thousand lines did
+not find any of it. Standing outside your own installation for ten minutes did.
