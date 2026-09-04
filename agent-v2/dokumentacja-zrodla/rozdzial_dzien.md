@@ -1547,7 +1547,7 @@ Trzy rzeczy naraz:
 2. **`-1` zamiast `None`**, gdy komentarz jest, ale odpowiedź nie podaje numeru: `None` znaczyłoby „nie ma" i agent dopisałby kolejny komentarz.
 3. **Numer jest potrzebny do dziennika** — kanał aktywności mówi o polubieniach i odpowiedziach właśnie numerami komentarzy, więc bez niego wiemy tylko, że coś napisaliśmy, a nie czy ktokolwiek to zauważył.
 
-**Artykuł** — `potwierdz_artykul` (browser.py:1485) plus `potwierdz_adres_artykulu` (browser.py:1916). Ten drugi jest osobną lekcją: adres był składany z tytułu przez zamianę na slug, a Substack slugi SKRACA — „The Hole in Your Example Article Nine Is Doing Exactly What It Should" dostało `/p/the-hole-in-your-airplane-window`. Zgadnięty adres odpowiadał 302, więc notka promująca działała tylko dzięki przekierowaniu, którego nikt nam nie obiecał.
+**Artykuł** — `potwierdz_artykul` (browser.py:1485) plus `potwierdz_adres_artykulu` (browser.py:1916). Ten drugi jest osobną lekcją: adres był składany z tytułu przez zamianę na slug, a Substack slugi SKRACA — długi tytuł dostał slug ucięty po czterech pierwszych słowach. Zgadnięty adres odpowiadał 302, więc notka promująca działała tylko dzięki przekierowaniu, którego nikt nam nie obiecał.
 
 #### 13.3 Ochrona przed drugim głosem — `juz_sie_odezwalismy` (browser.py:1868)
 

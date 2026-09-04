@@ -371,7 +371,7 @@ def frazy_z_instrukcji(body: str, dlugosc: int = 6) -> list[str]:
     return trafienia
 ```
 
-Powód istnienia: w artykule 0020 wyszło `"in the simplest sentence that is still true"` — dokładnie tak, jak stało w `pisarz.md`. Sklejanie zachodzących ciągów jest po to, żeby jedna wklejka dała jedną uwagę, nie pięć.
+Powód istnienia: w jednym z artykułów wyszło `"in the simplest sentence that is still true"` — dokładnie tak, jak stało w `pisarz.md`. Sklejanie zachodzących ciągów jest po to, żeby jedna wklejka dała jedną uwagę, nie pięć.
 
 Prawdziwe wpadki z produkcji, na których test to weryfikuje (0016, 0017, 0019):
 
@@ -434,7 +434,7 @@ def szerokosc_podstawy(card: dict[str, Any]) -> tuple[int, list[str]]:
     return len(hosty), hosty
 ```
 
-Próg: `if ile < 2`. Artykuł 0020 („The Fossil of a Vote") był najlepszy z serii i stał na **jednym** odnośniku — nekrologu z Columbii. Docstring stawia zastrzeżenie: *„czasem jedno zrodlo to cala dokumentacja, jaka w ogole istnieje"*.
+Próg: `if ile < 2`. Jeden z artykułów był najlepszy z serii i stał na **jednym** odnośniku — nekrologu z Columbii. Docstring stawia zastrzeżenie: *„czasem jedno zrodlo to cala dokumentacja, jaka w ogole istnieje"*.
 
 Normalizacja `www.` jest testowana: `https://www.tc.columbia.edu/a` + `https://tc.columbia.edu/b` = `(1, ["tc.columbia.edu"])`.
 
@@ -1158,7 +1158,7 @@ ARTYKUL = KANDYDACI[0].read_text(encoding="utf-8") if KANDYDACI else ""
 
 Docstring stawia warunek falsyfikacji: *„kazda nowa podloga MUSI sie na nim zapalic. Jesli ktoras milczy, to znaczy, ze mierzy cos innego, niz mysle."* Sekcja 7 sprawdza to zbiorczo — sześć nazw bramek musi wystąpić w wyniku `deterministic_floors` na tamtym artykule.
 
-`test_bramki_jakosci` używa dosłownych zdań z 0016, 0017, 0019 i 0020; `test_indeks_kandydatow` — czterech prawdziwych kandydatów z Federal Register, którzy **muszą** odpaść.
+`test_bramki_jakosci` używa dosłownych zdań z czterech prawdziwych tekstow; `test_indeks_kandydatow` — czterech prawdziwych kandydatów z Federal Register, którzy **muszą** odpaść.
 
 #### Braki
 

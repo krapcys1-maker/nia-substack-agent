@@ -1,7 +1,7 @@
 """Dwie nowe bramki: echo instrukcji w tekscie i artykul na jednym zrodle.
 
 Kontrdowod: kazdy test musi wykryc TAKZE stan sprzed naprawy. Frazy uzyte
-ponizej to prawdziwe zdania z artykulow 0016, 0017, 0019 i 0020 — jesli
+ponizej to prawdziwe zdania z artykulow czterech prawdziwych tekstow — jesli
 bramka ich nie widzi, nie dziala.
 """
 import hashlib

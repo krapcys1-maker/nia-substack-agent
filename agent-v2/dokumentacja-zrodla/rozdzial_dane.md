@@ -772,7 +772,7 @@ Sześć przebiegów, które wyprodukowały artykuł:
 | 16 | The Clock You Start Yourself | 15 | **$0,9622** |
 | 17 | The Gas You Didn't Buy | 9 | $0,7397 |
 | 19 | Example Article Eleven Is a Local Calculation… | 13 | $0,6667 |
-| 20 | The Fossil of a Vote | 10 | $0,7796 |
+| 20 | Example Article Twenty-One | 10 | $0,7796 |
 | 25 | The Number on the Bottom of the Bottle… | 15 | $0,8264 |
 
 **Średnia $0,7318, min $0,4164, max $0,9622.** Sufit `RUN_LIMIT_USD = 1,60` daje więc ~2× zapasu nad najdroższym realnym artykułem.

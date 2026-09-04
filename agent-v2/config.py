@@ -2597,8 +2597,8 @@ NAPRAW_NA_PRZEBIEG = 4
 
 
 # --- ruch koncowy i szerokosc drugiego aktu --------------------------------
-# Dwa artykuly napisane PO naprawie szamponu (0017 "Example Article Ten",
-# 0019 "Example Article Eleven...") wyszly z identycznym szkieletem: ten sam
+# Dwa artykuly napisane PO naprawie szamponu (jeden "Example Article Ten",
+# drugi "Example Article Eleven...") wyszly z identycznym szkieletem: ten sam
 # drogowskaz przed paralelami ("once you see this shape, it turns up
 # everywhere"), dokladnie trzy paralele, akapit o granicach zapowiedziany
 # meta-zdaniem, zamkniecie "sprawdz to u siebie". Zaden z tych ruchow nie jest

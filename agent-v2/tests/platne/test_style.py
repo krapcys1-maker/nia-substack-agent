@@ -1,7 +1,7 @@
 """Trzy style okladki na TYM SAMYM przedmiocie. Rozni sie wylacznie traktowanie.
 
 Przedmiot: tylna sciana szkolnego autobusu w zoltym lakierze — z 0020
-„The Fossil of a Vote", najlepszego tekstu serii, ktory grafiki jeszcze nie ma.
+„Example Article Twenty-One", najlepszego tekstu serii, ktory grafiki jeszcze nie ma.
 """
 import sys, pathlib
 sys.path.insert(0, "agent-v2")

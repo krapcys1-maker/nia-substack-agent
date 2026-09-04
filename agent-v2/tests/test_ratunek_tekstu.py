@@ -963,15 +963,15 @@ sprawdz("(e) uwaga niesie nazwe wyjatku, wiec alarm wie, na co patrzy",
         zam and "BudgetExceeded" in str(zam[0]["uwaga"]), zam)
 sprawdz("(e) i wyjatek leci dalej, wiec kod wyjscia procesu nie jest zerem",
         isinstance(wyszlo, llm.BudgetExceeded), type(wyszlo).__name__)
-zam2, _ = przez_main([KAT / "0091-the-meter-that-reads-itself.md"])
+zam2, _ = przez_main([KAT / "0091-example-article-slug.md"])
 UW2 = str(pierwszy(zam2, {}).get("uwaga") or "")
 sprawdz("gdy tekst uratowano, `runs.note` niesie NAZWE PLIKU — jedyny slad"
-        " w bazie", "0091-the-meter-that-reads-itself.md" in UW2, UW2)
+        " w bazie", "0091-example-article-slug.md" in UW2, UW2)
 # `alarm.sprawdz_przebiegi_i_ostrzez` (alarm.py:158) wkleja note do maila
 # przycieta do 120 znakow. Nazwa pliku ma sie w tym zmiescic RAZEM z nazwa
 # wyjatku — inaczej wlasciciel dostaje mail, ktory o uratowanym tekscie milczy.
 sprawdz("i miesci sie w 120 znakach, ktore alarm wklei do maila",
-        "0091-the-meter-that-reads-itself.md" in UW2[:120]
+        "0091-example-article-slug.md" in UW2[:120]
         and "BudgetExceeded" in UW2[:120], UW2[:120])
 sprawdz("cala uwaga nadal miesci sie w 200 znakach", len(UW2) <= 200, len(UW2))
 

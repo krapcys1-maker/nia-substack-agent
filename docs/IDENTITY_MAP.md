@@ -30,7 +30,7 @@ Constant `config.NAZWA_MARKI`, set by `konto.nazwa_marki`
 |---|---|---|---|
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 1 | GENERATED — rebuilds itself | `# Your Publication — dokumentacja odtworzeniowa agenta` |
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 46 | GENERATED — rebuilds itself | `Agent prowadzi anglojęzycznego Substacka **„Your Publication"**, który` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12747 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12765 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
 | `agent-v2/config.py` | 116 | **FIELD** | `NAZWA_MARKI = "Your Publication"` |
 | `agent-v2/run.py` | 564 | comment — harmless, but stale | `# „Your Publication", czyli nas — Substack melduje w tym` |
 | `agent-v2/systemd/nia-agent.service` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — agent` |
@@ -51,7 +51,7 @@ Constant `config.NISZA`, set by `temat.nisza`
 
 | file | line | how | context |
 |---|---|---|---|
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12886 | GENERATED — rebuilds itself | `\| `NISZA` \| `"how everyday things are made and regulated"` \| HASLA, KTORYMI AGENT SZUKA ` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12904 | GENERATED — rebuilds itself | `\| `NISZA` \| `"how everyday things are made and regulated"` \| HASLA, KTORYMI AGENT SZUKA ` |
 | `agent-v2/config.py` | 2165 | **FIELD** | `NISZA = "how everyday things are made and regulated"` |
 | `agent-v2/stages.py` | 1271 | **INJECTED** — follows the field | `"You find documented facts about how everyday things are made and regulated for an anony` |
 | `agent-v2/stages.py` | 6934 | **INJECTED** — follows the field | `"You rank candidate facts for a publication about how everyday things are made and regul` |
@@ -66,7 +66,7 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 | file | line | how | context |
 |---|---|---|---|
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2084 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12748 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12766 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
 | `agent-v2/browser.py` | 507 | comment — harmless, but stale | `# (your-handle.substack.com), a /api/v1/reader/* i /api/v1/user/*` |
 | `agent-v2/browser.py` | 1246 | comment — harmless, but stale | `# `substack.com/@your-handle/following` oddaje 26 uchwytow, a` |
 | `agent-v2/config.py` | 118 | **FIELD** | `SUBSTACK_HANDLE = "your-handle"` |
@@ -79,7 +79,7 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 | `agent-v2/tests/test_pula_obserwacji.py` | 20 | test fixture | `Odczyt, nic nie klikniete, konto `your-handle`:` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 22 | test fixture | `substack.com/@your-handle/following  -> 26 uchwytow` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 23 | test fixture | `/api/v1/user/your-handle/public_profile` |
-| `agent-v2/tests/test_wstrzykniecie.py` | 133 | test fixture | `LINK = "https://your-handle.substack.com/p/the-hole-in-your-airplane-window"` |
+| `agent-v2/tests/test_wstrzykniecie.py` | 133 | test fixture | `LINK = "https://your-handle.substack.com/p/example-article-slug"` |
 | `agent-v2/tests/test_wzrost_konta.py` | 54 | test fixture | `"handle": "your-handle",` |
 | `konfiguracja.example.toml` | 36 | TEMPLATE — this is the file you copy | `uchwyt = "your-handle"` |
 

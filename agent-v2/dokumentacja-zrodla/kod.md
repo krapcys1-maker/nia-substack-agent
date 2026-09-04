@@ -1648,7 +1648,7 @@ def zapowiedziany_akapit_granic(body: str) -> str:
 def frazy_z_instrukcji(body: str, dlugosc: int = 6) -> list[str]:
     """Czy pisarz wklein do tekstu wlasne polecenie.
 
-    W 0020 wyszlo „in the simplest sentence that is still true" — dokladnie
+    W jednym z tekstow wyszlo „in the simplest sentence that is still true" — dokladnie
     tak, jak stoi w `pisarz.md`. Czytelnik tego nie rozpozna, ale to nie jest
     zdanie z myslenia, tylko echo instrukcji, i wracajac w kolejnych tekstach
     staje sie podpisem maszyny.

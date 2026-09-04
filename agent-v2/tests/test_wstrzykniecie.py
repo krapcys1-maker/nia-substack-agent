@@ -130,7 +130,7 @@ sprawdz("petla weryfikacji korzysta z gotowej oceny, nie liczy jej po doklejeniu
 
 TEKST = ("A vent pierced on purpose. The pane you touch is not the one "
          "holding the sky out.")
-LINK = "https://your-handle.substack.com/p/the-hole-in-your-airplane-window"
+LINK = "https://your-handle.substack.com/p/example-article-slug"
 sprawdz("tekst modelu przechodzi zapore", stages.bez_wstrzykniecia(TEKST)[0])
 sprawdz("ten sam tekst Z NASZYM linkiem by odpadl (to byla przyczyna)",
         not stages.bez_wstrzykniecia(TEKST + chr(10) * 2 + LINK)[0])

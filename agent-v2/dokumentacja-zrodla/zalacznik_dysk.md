@@ -27,9 +27,9 @@ drwxrwxr-x  2 ubuntu ubuntu   4096 2026-08-18 cache
 ===
 8.0M	.
 ===
-0014-the-hole-in-your-airplane-window-is-doing-exactly-what-it-sh.md
-0014-the-hole-in-your-airplane-window-is-doing-exactly-what-it-sh.png
-0014-the-hole-in-your-airplane-window-is-doing-exactly-what-it-sh.uwagi.md
+0014-example-article-slug.md
+0014-example-article-slug.png
+0014-example-article-slug.uwagi.md
 0016-the-clock-you-start-yourself.md
 0016-the-clock-you-start-yourself.png
 0016-the-clock-you-start-yourself.uwagi.md

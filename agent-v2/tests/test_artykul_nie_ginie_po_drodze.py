@@ -703,7 +703,7 @@ sprawdz("i nie niesie juz pol, ktorych nikt nie czytal",
 
 print()
 print("--- 5a. bramka WASKA_PODSTAWA znowu widzi jedno zrodlo ---")
-# Artykul 0020 („The Fossil of a Vote") mial pod soba JEDEN odnosnik i to on
+# Jeden z artykulow mial pod soba JEDEN odnosnik i to on
 # jest powodem istnienia tej uwagi. Dolozony host robil z jednego dwa.
 ile, hosty = _gates.szerokosc_podstawy(karta)
 sprawdz("host, ktorego nikt nie pobral, nie liczy sie do szerokosci",

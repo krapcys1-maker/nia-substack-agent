@@ -98,7 +98,7 @@ print()
 print("=== 3. NASZE ARTYKULY MAPUJA SIE NA WZORCE (sprawdzian przydatnosci) ===")
 NASZE = {"0014 okno w samolocie": "MARGIN", "0016 symbol kosmetyczny": "BOUNDARY",
          "0017 blokada karty": "BOUNDARY", "0019 zolte swiatlo": "CONFESSION",
-         "0020 kolor autobusu": "DECIDER", "0024 SPF": "MEASUREMENT"}
+         "przyklad kolor autobusu": "DECIDER", "przyklad wskaznik": "MEASUREMENT"}
 for tytul, gen in NASZE.items():
     sprawdz("%-26s -> %s" % (tytul, gen), gen in config.GENERATORY)
 sprawdz("szesc artykulow trafia w piec roznych wzorcow",

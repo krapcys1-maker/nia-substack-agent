@@ -3716,7 +3716,7 @@ Trzy rzeczy naraz:
 2. **`-1` zamiast `None`**, gdy komentarz jest, ale odpowiedź nie podaje numeru: `None` znaczyłoby „nie ma" i agent dopisałby kolejny komentarz.
 3. **Numer jest potrzebny do dziennika** — kanał aktywności mówi o polubieniach i odpowiedziach właśnie numerami komentarzy, więc bez niego wiemy tylko, że coś napisaliśmy, a nie czy ktokolwiek to zauważył.
 
-**Artykuł** — `potwierdz_artykul` (browser.py:1485) plus `potwierdz_adres_artykulu` (browser.py:1916). Ten drugi jest osobną lekcją: adres był składany z tytułu przez zamianę na slug, a Substack slugi SKRACA — „The Hole in Your Example Article Nine Is Doing Exactly What It Should" dostało `/p/the-hole-in-your-airplane-window`. Zgadnięty adres odpowiadał 302, więc notka promująca działała tylko dzięki przekierowaniu, którego nikt nam nie obiecał.
+**Artykuł** — `potwierdz_artykul` (browser.py:1485) plus `potwierdz_adres_artykulu` (browser.py:1916). Ten drugi jest osobną lekcją: adres był składany z tytułu przez zamianę na slug, a Substack slugi SKRACA — długi tytuł dostał slug ucięty po czterech pierwszych słowach. Zgadnięty adres odpowiadał 302, więc notka promująca działała tylko dzięki przekierowaniu, którego nikt nam nie obiecał.
 
 #### 13.3 Ochrona przed drugim głosem — `juz_sie_odezwalismy` (browser.py:1868)
 
@@ -4384,7 +4384,7 @@ def frazy_z_instrukcji(body: str, dlugosc: int = 6) -> list[str]:
     return trafienia
 ```
 
-Powód istnienia: w artykule 0020 wyszło `"in the simplest sentence that is still true"` — dokładnie tak, jak stało w `pisarz.md`. Sklejanie zachodzących ciągów jest po to, żeby jedna wklejka dała jedną uwagę, nie pięć.
+Powód istnienia: w jednym z artykułów wyszło `"in the simplest sentence that is still true"` — dokładnie tak, jak stało w `pisarz.md`. Sklejanie zachodzących ciągów jest po to, żeby jedna wklejka dała jedną uwagę, nie pięć.
 
 Prawdziwe wpadki z produkcji, na których test to weryfikuje (0016, 0017, 0019):
 
@@ -4447,7 +4447,7 @@ def szerokosc_podstawy(card: dict[str, Any]) -> tuple[int, list[str]]:
     return len(hosty), hosty
 ```
 
-Próg: `if ile < 2`. Artykuł 0020 („The Fossil of a Vote") był najlepszy z serii i stał na **jednym** odnośniku — nekrologu z Columbii. Docstring stawia zastrzeżenie: *„czasem jedno zrodlo to cala dokumentacja, jaka w ogole istnieje"*.
+Próg: `if ile < 2`. Jeden z artykułów był najlepszy z serii i stał na **jednym** odnośniku — nekrologu z Columbii. Docstring stawia zastrzeżenie: *„czasem jedno zrodlo to cala dokumentacja, jaka w ogole istnieje"*.
 
 Normalizacja `www.` jest testowana: `https://www.tc.columbia.edu/a` + `https://tc.columbia.edu/b` = `(1, ["tc.columbia.edu"])`.
 
@@ -5171,7 +5171,7 @@ ARTYKUL = KANDYDACI[0].read_text(encoding="utf-8") if KANDYDACI else ""
 
 Docstring stawia warunek falsyfikacji: *„kazda nowa podloga MUSI sie na nim zapalic. Jesli ktoras milczy, to znaczy, ze mierzy cos innego, niz mysle."* Sekcja 7 sprawdza to zbiorczo — sześć nazw bramek musi wystąpić w wyniku `deterministic_floors` na tamtym artykule.
 
-`test_bramki_jakosci` używa dosłownych zdań z 0016, 0017, 0019 i 0020; `test_indeks_kandydatow` — czterech prawdziwych kandydatów z Federal Register, którzy **muszą** odpaść.
+`test_bramki_jakosci` używa dosłownych zdań z czterech prawdziwych tekstow; `test_indeks_kandydatow` — czterech prawdziwych kandydatów z Federal Register, którzy **muszą** odpaść.
 
 #### Braki
 
@@ -5956,7 +5956,7 @@ Sześć przebiegów, które wyprodukowały artykuł:
 | 16 | The Clock You Start Yourself | 15 | **$0,9622** |
 | 17 | The Gas You Didn't Buy | 9 | $0,7397 |
 | 19 | Example Article Eleven Is a Local Calculation… | 13 | $0,6667 |
-| 20 | The Fossil of a Vote | 10 | $0,7796 |
+| 20 | Example Article Twenty-One | 10 | $0,7796 |
 | 25 | The Number on the Bottom of the Bottle… | 15 | $0,8264 |
 
 **Średnia $0,7318, min $0,4164, max $0,9622.** Sufit `RUN_LIMIT_USD = 1,60` daje więc ~2× zapasu nad najdroższym realnym artykułem.
@@ -7948,7 +7948,7 @@ def zapowiedziany_akapit_granic(body: str) -> str:
 def frazy_z_instrukcji(body: str, dlugosc: int = 6) -> list[str]:
     """Czy pisarz wklein do tekstu wlasne polecenie.
 
-    W 0020 wyszlo „in the simplest sentence that is still true" — dokladnie
+    W jednym z tekstow wyszlo „in the simplest sentence that is still true" — dokladnie
     tak, jak stoi w `pisarz.md`. Czytelnik tego nie rozpozna, ale to nie jest
     zdanie z myslenia, tylko echo instrukcji, i wracajac w kolejnych tekstach
     staje sie podpisem maszyny.
@@ -12926,7 +12926,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `WOLNO_TKNAC_PRODUKCYJNA_BAZE` | `not W_TESCIE` | Trzecia zapora tej samej rodziny: darmowy test nie ma prawa OTWORZYC produkcyjnej bazy. Patrz `uzyj_katalogu_danych` i `db.connect`. |
 | `NAPRAWA_OBALONYCH` | `True` | --- naprawa zamiast blokady i zamiast ciecia -------------------------------- 1 wrzesnia 2026 o 19:46 poszla notka z liczba, ktora nasze wla |
 | `NAPRAW_NA_PRZEBIEG` | `4` | Ile napraw najwyzej w jednym przebiegu. Kazda to dwa platne wywolania (przepisanie plus PONOWNE sprawdzenie), wiec bez sufitu zly dzien potr |
-| `RUCHY_KONCOWE` | `{ "DO_SPRAWDZENIA": ( "Close by handing the ` | --- ruch koncowy i szerokosc drugiego aktu -------------------------------- Dwa artykuly napisane PO naprawie szamponu (0017 "Example Articl |
+| `RUCHY_KONCOWE` | `{ "DO_SPRAWDZENIA": ( "Close by handing the ` | --- ruch koncowy i szerokosc drugiego aktu -------------------------------- Dwa artykuly napisane PO naprawie szamponu (jeden "Example Artic |
 | `RUCH_KONCOWY_MIX` | `("DO_SPRAWDZENIA", "KTO_NA_TYM_STOI", "POWRO` | — |
 | `ILE_PARALELI_WAGI` | `{1: 4, 2: 4, 3: 3}` | Ile paraleli w drugim akcie. Trzy wyliczone po kolei czytaja sie jak lista; jedna rozwinieta na dwa akapity czyta sie jak mysl. Chcemy obu,  |
 | `OPIS_LICZBY_PARALELI` | `{ 1: ("ONE parallel, developed properly — tw` | — |
@@ -12967,9 +12967,9 @@ drwxrwxr-x  2 ubuntu ubuntu   4096 2026-08-18 cache
 ===
 8.0M	.
 ===
-0014-the-hole-in-your-airplane-window-is-doing-exactly-what-it-sh.md
-0014-the-hole-in-your-airplane-window-is-doing-exactly-what-it-sh.png
-0014-the-hole-in-your-airplane-window-is-doing-exactly-what-it-sh.uwagi.md
+0014-example-article-slug.md
+0014-example-article-slug.png
+0014-example-article-slug.uwagi.md
 0016-the-clock-you-start-yourself.md
 0016-the-clock-you-start-yourself.png
 0016-the-clock-you-start-yourself.uwagi.md

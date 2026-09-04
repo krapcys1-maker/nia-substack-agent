@@ -411,8 +411,8 @@ def pozycja_w_tekscie(cytat: str, body: str) -> float | None:
 def szerokosc_podstawy(card: dict[str, Any]) -> tuple[int, list[str]]:
     """Na ilu ODREBNYCH serwisach stoja potwierdzone twierdzenia.
 
-    Artykul 0020 („The Fossil of a Vote") byl najlepszy z serii i mial pod
-    soba JEDEN odnosnik — nekrolog z Columbii. Tekst byl skrupulatny wobec
+    Jeden z artykulow byl najlepszy z serii i mial pod
+    soba JEDEN odnosnik — jeden nekrolog. Tekst byl skrupulatny wobec
     tego, co zapis mowi, ale post z jednym zrodlem wyglada cienko niezaleznie
     od tego, jak dobrze jest napisany. To uwaga, nie blokada: czasem jedno
     zrodlo to cala dokumentacja, jaka w ogole istnieje.
@@ -447,7 +447,7 @@ def szerokosc_podstawy(card: dict[str, Any]) -> tuple[int, list[str]]:
 def frazy_z_instrukcji(body: str, dlugosc: int = 6) -> list[str]:
     """Czy pisarz wklein do tekstu wlasne polecenie.
 
-    W 0020 wyszlo „in the simplest sentence that is still true" — dokladnie
+    W jednym z tekstow wyszlo „in the simplest sentence that is still true" — dokladnie
     tak, jak stoi w `pisarz.md`. Czytelnik tego nie rozpozna, ale to nie jest
     zdanie z myslenia, tylko echo instrukcji, i wracajac w kolejnych tekstach
     staje sie podpisem maszyny.
