@@ -1875,7 +1875,7 @@ PROG_ALARMU_WOLUMENU = 60
 # zdaniem trafia do kanalu NASZYCH obserwujacych, powiadamia autora oryginalu
 # i stawia nasze zdanie obok jego — za cene jednego zdania, nie calej notki.
 #
-# Wask0 celowo. Restack jest publicznym aktem na cudzej tresci: przy dziesieciu
+# Wasko celowo. Restack jest publicznym aktem na cudzej tresci: przy dziesieciu
 # dziennie konto wyglada jak wzmacniacz, a nie jak ktos, kto czyta. Jeden-dwa
 # to tyle, ile czlowiek naprawde uzna za warte podania dalej.
 # --- ciche dni ---------------------------------------------------------------
@@ -2019,9 +2019,10 @@ ZAPAS_CZASU_S = 900
 # artykulowych bylo pozwem, nakazem regulatora albo ugoda, ani jeden nie mowil o
 # tym, co maszyna robi.
 #
-# Kanaly sa jedynym zrodlem, ktore mowi o RZECZY SAMEJ: modelach, ukladach,
-# oknach kontekstu, benchmarkach, cenach. Kwota naprawia wiec dwie rzeczy naraz
-# — aktualnosc i to, ze konto przestalo pisac o wlasnej niszy.
+# Kanaly sa jedynym zrodlem, ktore mowi o RZECZY SAMEJ — o tym, co w tej
+# dziedzinie sie buduje, mierzy i wycenia — a nie o sporach wokol niej. Kwota
+# naprawia wiec dwie rzeczy naraz: aktualnosc i to, ze konto przestalo pisac
+# o wlasnej niszy.
 #
 # PROG, NIE OBCIECIE. Ponizej progu mowimy glosno w logu i ustawiamy zakotwiczone
 # na czele kolejki, ale nie kasujemy reszty: tydzien, w ktorym kanaly mowia samymi
@@ -2234,10 +2235,11 @@ OBSZARY_REWIRU = {
 # Slowa funkcyjne angielszczyzny („that", „from", „with") zostaly w kodzie:
 # sa te same w kazdej niszy i nie ma o czym decydowac.
 #
-# PUSTA LISTA JEST POPRAWNA. Wykrywacz dziala bez niej, tylko ostrozniej —
-# lepiej zaczac od pustej i dopisac slowo, gdy zobaczysz je w trzecim
-# falszywym alarmie z rzedu, niz zgadywac z gory.
-# MYLI SIE W OBIE STRONY I ZADNA NIE JEST GLOSNA.
+# PUSTA LISTA JEST POPRAWNA ODPOWIEDZIA i tak zaczyna kazda instalacja: lepiej
+# dopisac slowo, gdy sie zobaczylo, ze wywoluje trzeci falszywy alarm, niz
+# zgadywac z gory.
+#
+# MYLI SIE PRZY TYM W OBIE STRONY I ZADNA NIE JEST GLOSNA.
 #
 # Za duzo slow: rdzenie odrozniajace tematy znikaja, wiec powtorka przechodzi
 # jako nowy temat. Konto o polityce miejskiej, ktore wpisze tu „state"
@@ -2437,7 +2439,32 @@ FETCH_TIMEOUT_S = 30.0
 # realne zrodlo z tego przebiegu (3275). Nie stawiam go wyzej, bo krotkie
 # dokumenty urzedowe — zawiadomienie, postanowienie, nota — bywaja prawdziwe.
 FETCH_MIN_CHARS = 1500
-FETCH_USER_AGENT = "Mozilla/5.0 (compatible; YourPublication/1.0; +editorial research)"
+# NAGLOWEK, KTORY WIDZI KAZDA ODWIEDZONA STRONA — i jedyne miejsce, w ktorym
+# bot przedstawia sie z nazwy. Skladany z `NAZWA_MARKI`, nie wpisany: stala
+# z wpisana nazwa marki jest dokladnie tym, co przy zmianie konta zostaje
+# w kodzie i przedstawia nowa publikacje nazwiskiem poprzedniej.
+#
+# Zbijamy spacje i znaki spoza ASCII, bo naglowek HTTP musi byc jednym
+# tokenem — nazwa marki bywa wielowyrazowa i z polskimi znakami.
+def _znacznik_klienta(marka: str) -> str:
+    import re as _re
+    czyste = _re.sub(r"[^A-Za-z0-9]+", "", (marka or "").strip())
+    return czyste or "EditorialBot"
+
+
+def _naglowek_klienta() -> str:
+    """Naglowek User-Agent zlozony z BIEZACEJ nazwy marki.
+
+    Wolany PO wczytaniu konfiguracji — patrz koniec tego pliku. Stala
+    policzona tutaj trzymalaby nazwe domyslna, bo `konfiguracja.toml`
+    wchodzi piecset linii nizej.
+    """
+    return ("Mozilla/5.0 (compatible; %s/1.0; +editorial research)"
+            % _znacznik_klienta(NAZWA_MARKI))
+
+
+# Wartosc domyslna; przeliczana po wczytaniu konfiguracji.
+FETCH_USER_AGENT = _naglowek_klienta()
 
 # --- zapora przed platnym wywolaniem z testu ---------------------------------
 # `tests/conftest.py` chroni przed platnymi testami TYLKO POD PYTESTEM. A nasze
@@ -2937,6 +2964,22 @@ KONFIGURACJA_PLIK = _konf.sciezka(AGENT_DIR)
 _BEZ_KONFIGURACJI = _env("NIA_BEZ_KONFIGURACJI", "0").lower() in {"1", "true", "yes"}
 _dane_konfiguracji = {} if _BEZ_KONFIGURACJI else _konf.wczytaj(KONFIGURACJA_PLIK)
 KONFIGURACJA_ZMIENILA = _konf.zastosuj(_dane_konfiguracji, sys.modules[__name__])
+
+# --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI -------------------
+#
+# Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RAZ, przy
+# imporcie, nie zmienia sie, gdy zrodlo pod nia sie zmieni. Konfiguracja
+# wchodzi na samym koncu pliku, wiec KAZDA stala wyliczona wyzej z pola
+# konfiguracji trzyma wartosc domyslna.
+#
+# Pierwszy taki przypadek: `FETCH_USER_AGENT`. Naglowek widzi KAZDA odwiedzona
+# strona i jest jedynym miejscem, w ktorym bot przedstawia sie z nazwy —
+# konto z wlasna nazwa przedstawialoby sie nazwa domyslna.
+#
+# BLOK MA ZOSTAC KROTKI. Kazda nowa stala wyprowadzona z pola konfiguracji
+# dopisuje sie TUTAJ, a nie liczy sie drugi raz gdzie indziej. Pilnuje tego
+# `tests/test_pochodne_po_konfiguracji.py`.
+FETCH_USER_AGENT = _naglowek_klienta()
 
 if KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():
     print("  [konfiguracja] %s: przestawiono %d pozycji"

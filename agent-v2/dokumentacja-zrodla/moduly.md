@@ -450,7 +450,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-2943 wierszy, 27 funkcji na poziomie modułu, 0 klas
+2986 wierszy, 29 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -472,6 +472,8 @@
 | `_cisza_z_hasza(dzien)` *(wewn.)* | — |
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
+| `_znacznik_klienta(marka)` *(wewn.)* | — |
+| `_naglowek_klienta()` *(wewn.)* | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. |
 | `_w_darmowym_tescie()` *(wewn.)* | Czy uruchomiony program to test, ktory NIE MA prawa placic. |
 | `pod_produkcyjnymi_danymi(sciezka)` | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). |
 | `_moduly_projektu()` *(wewn.)* | Zaimportowane moduly z `agent-v2/`, bez samych testow. |

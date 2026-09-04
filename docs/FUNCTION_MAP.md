@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 25 |
-| functions and methods | 546 |
+| functions and methods | 548 |
 | functions that call a paid model | 25 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 41 |
@@ -44,7 +44,7 @@ For paid calls the verdict comes from
 | [`audyt_tematow.py`](#agent-v2audyt-tematow-py) | 4 | 0 | 0 | 0 | Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem. |
 | [`bramki.py`](#agent-v2bramki-py) | 7 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
 | [`browser.py`](#agent-v2browser-py) | 97 | 0 | 44 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
-| [`config.py`](#agent-v2config-py) | 28 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
+| [`config.py`](#agent-v2config-py) | 30 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
 | [`db.py`](#agent-v2db-py) | 11 | 0 | 0 | 7 | Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK. |
 | [`gates.py`](#agent-v2gates-py) | 21 | 0 | 0 | 0 | Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu. |
 | [`jezyki.py`](#agent-v2jezyki-py) | 5 | 0 | 0 | 0 | Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma. |
@@ -334,7 +334,7 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 
 Jedyne miejsce ze stałymi.
 
-28 funkcji.
+30 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -355,17 +355,19 @@ Jedyne miejsce ze stałymi.
 | 1843 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `audyt_systemu.main`, `norma.main`, `stages.podsumowanie_dzialan` |
 | 1931 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
 | 1938 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
-| 2388 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._deepseek_pick_from_urls` |
-| 2457 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
-| 2512 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
-| 2527 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
-| 2548 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
-| 2576 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
-| 2611 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
-| 2731 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
-| 2739 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
-| 2844 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
-| 2902 | `co_teraz_w_reku(kiedy)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
+| 2390 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._deepseek_pick_from_urls` |
+| 2449 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
+| 2455 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
+| 2484 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
+| 2539 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
+| 2554 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
+| 2575 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
+| 2603 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
+| 2638 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
+| 2758 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
+| 2766 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
+| 2871 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
+| 2929 | `co_teraz_w_reku(kiedy)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
 
 ---
 

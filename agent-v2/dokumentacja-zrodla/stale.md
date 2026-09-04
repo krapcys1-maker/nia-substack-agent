@@ -180,7 +180,7 @@
 | `REFUSAL_PHRASES` | `( "you have been blocked", "access denied", ` | — |
 | `FETCH_TIMEOUT_S` | `30.0` | — |
 | `FETCH_MIN_CHARS` | `1500` | ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO. Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu. Zmierzone  |
-| `FETCH_USER_AGENT` | `"Mozilla/5.0 (compatible; YourPublication/1.` | — |
+| `FETCH_USER_AGENT` | `_naglowek_klienta()` | Wartosc domyslna; przeliczana po wczytaniu konfiguracji. |
 | `W_TESCIE` | `_w_darmowym_tescie()` | Jedna nazwa, dwie zapory. Wykrywanie sluzy juz nie tylko pieniadzom: darmowy test nie ma tez prawa DOPISYWAC DO PRODUKCYJNYCH DANYCH. Zmierz |
 | `WOLNO_WOLAC_MODEL` | `not W_TESCIE` | Test platny albo swiadomy skrypt moze to podniesc: `config.WOLNO_WOLAC_MODEL = True`. |
 | `WOLNO_TKNAC_PRODUKCYJNA_BAZE` | `not W_TESCIE` | Trzecia zapora tej samej rodziny: darmowy test nie ma prawa OTWORZYC produkcyjnej bazy. Patrz `uzyj_katalogu_danych` i `db.connect`. |
@@ -197,3 +197,4 @@
 | `KONFIGURACJA_PLIK` | `_konf.sciezka(AGENT_DIR)` | — |
 | `_BEZ_KONFIGURACJI` | `_env("NIA_BEZ_KONFIGURACJI", "0").lower() in` | `NIA_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi |
 | `KONFIGURACJA_ZMIENILA` | `_konf.zastosuj(_dane_konfiguracji, sys.modul` | — |
+| `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
