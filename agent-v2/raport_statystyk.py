@@ -95,9 +95,14 @@ def dwie_epoki(najnowsze: dict) -> None:
 
     if not epoki["PO"] and not epoki["PRZED"]:
         print()
+        # WARUNEK, NIE DATA JEDNEJ INSTALACJI. Stalo tu „Pole `wystawione`
+        # dopisano 31.08.2026" — dzien, w ktorym dopisano je W TAMTYM
+        # repozytorium. U konta postawionego pozniej to zdanie jest po prostu
+        # nieprawdziwe, a przy pierwszym uruchomieniu brzmi jak wyjasnienie
+        # czegos, co juz sie stalo.
         print("PODZIAL NA EPOKI: zaden pomiar nie ma jeszcze daty wystawienia.")
-        print("   Pole `wystawione` dopisano 31.08.2026 — pojawi sie przy")
-        print("   nastepnym pomiarze kazdej pozycji.")
+        print("   Date wystawienia zapisuje sam pomiar pozycji — pojawi sie")
+        print("   przy nastepnym pomiarze kazdej z nich.")
         return
 
     print()
@@ -222,7 +227,9 @@ def main() -> int:
         print("Statystyki zbieraja sie w cyklu dnia, razem z odpowiadaniem na")
         print("komentarze. Jesli plik jest pusty, a bot chodzi — sprawdz, czy")
         print("wystawione pozycje maja zapisane numery: bez numeru nie ma czego")
-        print("pytac. Zmierzone 25 sierpnia: z 29 notek numer mialo szesc.")
+        print("pytac. Na koncie, na ktorym to zmierzono, numer mialo szesc")
+        print("notek z dwudziestu dziewieciu — wiec pusty plik przy dzialajacym")
+        print("bocie jest sytuacja spodziewana, a nie awaria pomiaru.")
         return 0
 
     # Sortujemy po tym, co wlasciciela interesuje najbardziej: ile osob z tego

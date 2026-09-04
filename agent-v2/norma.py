@@ -28,8 +28,11 @@ wiersz i podpis; nie znika z tabeli, bo dzien calkowitej awarii jest jedyna
 rzecza, ktorej ten licznik ma NIE przegapic.
 
 DZIEN BIEZACY jest rozliczany z tej czesci planu, ktora POWINNA byla juz wyjsc
-o tej porze — z harmonogramu w `systemd/nia-agent.timer`, nie z tego, ile
-przebiegow sie odbylo. Inaczej licznik nagradzalby bezczynnosc: doba, w ktorej
+o tej porze — z harmonogramu w jednostce zegara (szukanej po tym, CO URUCHAMIA,
+a nie po nazwie pliku), nie z tego, ile przebiegow sie odbylo. Gdy jednostki
+nie da sie odczytac, rozklad doby jest OSZACOWANY i raport mowi o tym wprost:
+to druga — po tyldzie przy planie — liczba w tym module, ktora nie jest
+pomiarem. Inaczej licznik nagradzalby bezczynnosc: doba, w ktorej
 nie wyszlo NIC, meldowala do polnocy `% PLANU 100%`, a doba z jedna udana
 notka o poranku — 84%.
 
@@ -293,7 +296,6 @@ def budzety_dzienne() -> dict:
     60% wlasnego planu — a licznik pokazywal 32%, bo widelki zmienily sie tego
     samego dnia z (8,12) na (15,23).
     """
-    import json
     plik = config.DATA_DIR / "budzety.json"
     try:
         stan = json.loads(plik.read_text(encoding="utf-8"))
@@ -643,7 +645,12 @@ def slad(dni: int) -> int:
 
     if not wpisy:
         print("Brak wpisow ze sladem przebiegu.")
-        print("Slad zapisywany jest od 30 sierpnia 2026 — poczekaj na przebieg.")
+        # WARUNEK, NIE DATA. Stalo tu „Slad zapisywany jest od 30 sierpnia
+        # 2026" — dzien jednej instalacji, ktory u kazdego innego konta jest
+        # zdaniem bez znaczenia, a przy pierwszym uruchomieniu brzmi jak
+        # informacja o czyms, co juz sie stalo.
+        print("Pola `nr_w_serii` i `od_poprzedniej_s` zapisuje sam przebieg —")
+        print("dopoki nie bylo ani jednego, nie ma czego grupowac.")
         return 0
 
     print("SLAD PRZEBIEGU — %d dzialan z ostatnich %d dni" % (len(wpisy), dni))
@@ -726,16 +733,22 @@ def main() -> int:
 
     if args.dzis:
         zrobione_przebiegi = przebiegow_dzis()
+        # MIANOWNIK Z JEDNEGO MIEJSCA. Stalo tu `config.PRZEBIEGOW_DZIENNIE`,
+        # a dwie linie wyzej `przebiegow_naleznych()` liczy to samo z DLUGOSCI
+        # listy godzin odczytanej z zegara. Dwa mianowniki tej samej wielkosci
+        # w jednym raporcie rozjezdzaja sie w chwili, gdy ktos dolozy godzine
+        # w jednostce i nie ruszy konfiguracji — a wtedy jedna liczba mowi
+        # „po 5 z 5", druga liczy naleznosc z szesciu.
         print("STAN NA DZIS (%s, UTC) — po %d z %d przebiegow"
-              % (dzis, zrobione_przebiegi, config.PRZEBIEGOW_DZIENNIE))
-        if zrobione_przebiegi < config.PRZEBIEGOW_DZIENNIE:
+              % (dzis, zrobione_przebiegi, przebiegow))
+        if zrobione_przebiegi < przebiegow:
             # BEZ TEGO LICZNIK KLAMIE O CZWARTEJ RANO. Doba UTC zaczyna sie w
             # nocy, pierwszy przebieg idzie po 11:00 — wiec do poludnia kazda
             # pozycja pokazuje "0%!!" i wyglada jak awaria. Licznik, ktory
             # codziennie rano krzyczy bez powodu, uczy ignorowania siebie, a
             # wtedy nie zauwazy sie dnia, w ktorym naprawde cos padlo.
             print("   (norma rozklada sie na caly dzien — do konca zostalo %d)"
-                  % (config.PRZEBIEGOW_DZIENNIE - zrobione_przebiegi))
+                  % (przebiegow - zrobione_przebiegi))
         cicho = config.cichy_dzien()
         if cicho:
             print("   >> DZIS JEST CICHY DZIEN — %s wyciszone celowo, zero nie"

@@ -87,6 +87,36 @@ if m:
             "najdluzsza przerwa %d s" % najdluzszy)
 
 print()
+print("=== 2b. LICZBA PRZEBIEGOW: TAKZE JEDNA LICZBA W JEDNYM MIEJSCU ===")
+# TEN SAM KSZTALT, CO SEKCJA 2, i przez dlugi czas niepilnowany. Ile razy na
+# dobe agent wstaje, mowi ZEGAR (`OnCalendar=`), a `config.PRZEBIEGOW_DZIENNIE`
+# mowi to samo drugi raz. Rozjazd nie daje bledu — daje agenta, ktory dzieli
+# dzien na inna liczbe czesci, niz ma przebiegow:
+#
+#   * konfiguracja 3 przy zegarze 5 — dwa ostatnie przebiegi produkuja ponad
+#     plan, bo kazdy dostal trzecia czesc dnia (`run.py`, reszta dnia dzielona
+#     przez `PRZEBIEGOW_DZIENNIE - zamkniete`);
+#   * konfiguracja 8 przy zegarze 5 — norma nigdy nie zostaje wykonana
+#     i licznik krzyczy codziennie o niczym.
+_zegary_agenta = [u for u in uslugi
+                  if any(l.startswith("ExecStart=") and "run.py" in l
+                         for l in u.read_text(encoding="utf-8").splitlines())]
+sprawdz("jest usluga wolajaca run.py", len(_zegary_agenta) == 1,
+        [u.name for u in _zegary_agenta])
+for _u in _zegary_agenta:
+    _t = KAT / (_u.stem + ".timer")
+    sprawdz("%s ma swoj zegar" % _u.name, _t.exists(), _t.name)
+    if _t.exists():
+        _ile = sum(1 for l in _t.read_text(encoding="utf-8").splitlines()
+                   if l.startswith("OnCalendar="))
+        sprawdz("liczba OnCalendar rowna PRZEBIEGOW_DZIENNIE",
+                _ile == config.PRZEBIEGOW_DZIENNIE,
+                "zegar=%d config=%d" % (_ile, config.PRZEBIEGOW_DZIENNIE))
+        # KONTRDOWOD: sprawdzenie musi umiec zobaczyc rozjazd.
+        sprawdz("i porownanie NIE przechodzi dla innej liczby",
+                not (_ile == config.PRZEBIEGOW_DZIENNIE + 1))
+
+print()
 print("=== 3. BEZ AUTOMATYCZNEGO PONAWIANIA PLATNYCH PRZEBIEGOW ===")
 # Restart= po bledzie oznacza ponawianie oplaconych wywolan bez nadzoru.
 for u in uslugi:

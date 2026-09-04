@@ -576,23 +576,23 @@ Ile agent naprawde zrobil, dzien po dniu, wobec normy.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 244 | `_zegar_agenta()` | — | Plik `.timer` agenta — znaleziony po TRESCI, nie po nazwie. | `norma (poziom modulu)` |
-| 283 | `budzety_dzienne()` | — | Ile agent SOBIE ZALOZYL kazdego dnia — z pliku, nie z dzisiejszej konfiguracji. | `norma.main` |
-| 332 | `_data(dzien)` | — | „2026-08-30" -> datetime w UTC. | `norma._poprawna_data`, `norma.dni_okna`, `norma.main` |
-| 337 | `_poprawna_data(dzien)` | — | Czy da sie z tego zrobic date. | `norma.budzety_dzienne`, `norma.slad_dziennika`, `norma.wczytaj` |
-| 354 | `wczytaj(dni)` | — | (zrobione, nieudane) — liczniki per dzien i rodzaj. | `norma.main` |
-| 379 | `slad_dziennika(zalozone)` | — | (najstarszy znany dzien, zbior dni z JAKIMKOLWIEK wpisem w dzienniku). | `norma.main` |
-| 425 | `_znak(ile, norma)` | — | Jak daleko od planu NA TEN DZIEN. | `norma._komorka`, `norma.main` |
-| 464 | `dni_okna(dni, z_wpisami, zalozone, najstarszy)` | — | Wszystkie dni okna — TAKZE te, w ktorych nie wyszlo NIC. | `norma.main` |
-| 509 | `_komorka(ile, cel, wyciszony, ma_wpisy, w_toku, szacowany)` | — | Jedna kratka tabeli. | `norma.main` |
-| 534 | `przebiegow_dzis()` | DB | Ile przebiegow agenta domknelo sie dzis. | `norma.main` |
-| 549 | `godziny_przebiegow()` | — | Minuty od polnocy UTC, o ktorych systemd odpala agenta. | `norma.przebiegow_naleznych` |
-| 583 | `przebiegow_naleznych(teraz)` | — | (ile przebiegow POWINNO juz oddac swoja czesc, ile ich jest na dobe). | `norma.main` |
-| 613 | `slad(dni)` | — | Gdzie dokladnie psuja sie publikacje — wg pozycji w serii i odstepu. | `norma.main` |
-| 702 | `main()` | — | — | `norma (poziom modulu)` |
-| 1006 | `main._srednia(r)` | — | None, gdy tej pozycji nie zmierzylismy ANI RAZU. | `norma.main`, `norma.main._procent_normy` |
-| 1017 | `main._wykonanie(r)` | — | Ile z tego, co agent SOBIE ZALOZYL, naprawde zrobil. | `norma.main` |
-| 1021 | `main._procent_normy(r)` | — | — | `norma.main` |
+| 247 | `_zegar_agenta()` | — | Plik `.timer` agenta — znaleziony po TRESCI, nie po nazwie. | `norma (poziom modulu)` |
+| 286 | `budzety_dzienne()` | — | Ile agent SOBIE ZALOZYL kazdego dnia — z pliku, nie z dzisiejszej konfiguracji. | `norma.main` |
+| 334 | `_data(dzien)` | — | „2026-08-30" -> datetime w UTC. | `norma._poprawna_data`, `norma.dni_okna`, `norma.main` |
+| 339 | `_poprawna_data(dzien)` | — | Czy da sie z tego zrobic date. | `norma.budzety_dzienne`, `norma.slad_dziennika`, `norma.wczytaj` |
+| 356 | `wczytaj(dni)` | — | (zrobione, nieudane) — liczniki per dzien i rodzaj. | `norma.main` |
+| 381 | `slad_dziennika(zalozone)` | — | (najstarszy znany dzien, zbior dni z JAKIMKOLWIEK wpisem w dzienniku). | `norma.main` |
+| 427 | `_znak(ile, norma)` | — | Jak daleko od planu NA TEN DZIEN. | `norma._komorka`, `norma.main` |
+| 466 | `dni_okna(dni, z_wpisami, zalozone, najstarszy)` | — | Wszystkie dni okna — TAKZE te, w ktorych nie wyszlo NIC. | `norma.main` |
+| 511 | `_komorka(ile, cel, wyciszony, ma_wpisy, w_toku, szacowany)` | — | Jedna kratka tabeli. | `norma.main` |
+| 536 | `przebiegow_dzis()` | DB | Ile przebiegow agenta domknelo sie dzis. | `norma.main` |
+| 551 | `godziny_przebiegow()` | — | Minuty od polnocy UTC, o ktorych systemd odpala agenta. | `norma.przebiegow_naleznych` |
+| 585 | `przebiegow_naleznych(teraz)` | — | (ile przebiegow POWINNO juz oddac swoja czesc, ile ich jest na dobe). | `norma.main` |
+| 615 | `slad(dni)` | — | Gdzie dokladnie psuja sie publikacje — wg pozycji w serii i odstepu. | `norma.main` |
+| 709 | `main()` | — | — | `norma (poziom modulu)` |
+| 1019 | `main._srednia(r)` | — | None, gdy tej pozycji nie zmierzylismy ANI RAZU. | `norma.main`, `norma.main._procent_normy` |
+| 1030 | `main._wykonanie(r)` | — | Ile z tego, co agent SOBIE ZALOZYL, naprawde zrobil. | `norma.main` |
+| 1034 | `main._procent_normy(r)` | — | — | `norma.main` |
 
 ---
 
@@ -608,8 +608,8 @@ Co przyniosla kazda notka, restack i artykul — do czytania przez czlowieka.
 | 28 | `_skrot(tekst, ile)` | — | — | `raport_statystyk.main` |
 | 54 | `_mediana(liczby)` | — | — | `raport_statystyk.dwie_epoki` |
 | 62 | `dwie_epoki(najnowsze)` | — | Epoka SPRZED zmiany tematu osobno, epoka PO niej osobno. | `raport_statystyk.main` |
-| 157 | `wzrost_konta()` | — | Ilu nas czyta i czy tego przybywa. | `raport_statystyk.main` |
-| 215 | `main()` | — | — | `raport_statystyk (poziom modulu)` |
+| 162 | `wzrost_konta()` | — | Ilu nas czyta i czy tego przybywa. | `raport_statystyk.main` |
+| 220 | `main()` | — | — | `raport_statystyk (poziom modulu)` |
 
 ---
 

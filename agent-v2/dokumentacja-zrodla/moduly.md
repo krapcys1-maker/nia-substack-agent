@@ -518,7 +518,7 @@
 
 ### `raport_statystyk.py` — te same dane w tabeli dla człowieka
 
-304 wierszy, 5 funkcji na poziomie modułu, 0 klas
+311 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -575,7 +575,7 @@
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1165 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1178 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
