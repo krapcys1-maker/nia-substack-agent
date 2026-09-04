@@ -410,14 +410,19 @@ def stawka_deepseek(model: str, kiedy=None) -> dict[str, float]:
         stare = STAWKI_PRZED_PODWYZKA[model]
         return {"in": stare["in"], "out": stare["out"], "cache": stare["cache"],
                 "szczyt": None}
-    m = (MNOZNIK_SZCZYT if kiedy.hour in GODZINY_SZCZYTU_UTC
-         else MNOZNIK_POZA_SZCZYTEM)
+    # PYTAMY `w_szczycie`, NIE POWTARZAMY WARUNKU. Ta sama regula stala tu
+    # wpisana drugi raz (`kiedy.hour in GODZINY_SZCZYTU_UTC`, dwa razy
+    # w tej funkcji), a `w_szczycie` — wersja wyciagnieta — nie miala ANI
+    # JEDNEGO wolajacego. Dwie kopie jednej reguly, z ktorych ta uzywana
+    # nie byla tą testowaną.
+    szczyt = w_szczycie(kiedy)
+    m = MNOZNIK_SZCZYT if szczyt else MNOZNIK_POZA_SZCZYTEM
     # CACHE TEZ. Brak tego klucza sprawial, ze `_cost` siegalo po stawke
     # wejsciowa i liczylo trafienia w cache 45 razy drozej, niz sa — a to
     # najliczniejszy rodzaj tokenow, jaki mamy.
     return {"in": round(baza["in"] * m, 6), "out": round(baza["out"] * m, 6),
             "cache": round(baza["cache"] * m, 6),
-            "szczyt": kiedy.hour in GODZINY_SZCZYTU_UTC}
+            "szczyt": szczyt}
 
 
 def pora_na_publikacje(kiedy=None) -> tuple[bool, str]:

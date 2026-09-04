@@ -1943,6 +1943,12 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
     page = context.new_page()
     wynik: dict[str, Any] = {"handle": handle, "zrobione": False, "blad": None}
     try:
+        # NIE TO KONTO = NIE KLIKAMY. `zasubskrybuj` idzie ta droga
+        # i jako jedyne wejscie wystawiajace nie mialo straznika —
+        # zlapal to `test_straznik_konta.py`, ktory liste wejsc
+        # WYPROWADZA z `bramki.WYSTAWIENIA` zamiast ja wypisywac.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 4000)
@@ -2012,6 +2018,16 @@ def restackuj_w_kanale(
     wynik: dict[str, Any] = {"znalezione": 0, "rozwazone": 0, "restackowane": 0,
                              "odmowy": [], "blad": None}
     try:
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto("https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)

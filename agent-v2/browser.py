@@ -56,6 +56,65 @@ def wlasciwe_konto(page) -> bool:
     return ok
 
 
+# CZY SPRAWDZILISMY JUZ KONTO W TYM PROCESIE. Odpowiedz nie zmienia sie
+# w trakcie przebiegu, a osiem dodatkowych zapytan na dobe to osiem okazji do
+# padniecia czegos, co ma chronic.
+_KONTO_SPRAWDZONE = False
+
+
+class NieToKonto(RuntimeError):
+    """Sesja nalezy do innego konta niz skonfigurowane."""
+
+
+def wymagaj_wlasciwego_konta(page) -> None:
+    """Zatrzymuje przebieg, gdy sesja nalezy do INNEGO konta.
+
+    `wlasciwe_konto` istnialo od poczatku z docstringiem „tuz przed
+    publikacja" i NIE BYLO WOLANE ANI RAZU — sprawdzone skanem po calym
+    drzewie. Straznik opisany, policzony w mapie funkcji i niechroniacy
+    niczego; to jest ta klasa wady, ktora ten projekt sciga.
+
+    Pytamy RAZ NA PROCES. Wyjatek, nie `return False`: ciche pominiecie
+    kontroli kosztowalo juz ten projekt dziewiec dni, a tutaj cena pomylki to
+    tekst wystawiony z cudzego konta — bledu, ktorego nie da sie cofnac
+    w oczach tych, ktorzy go zobaczyli.
+    """
+    global _KONTO_SPRAWDZONE
+    if _KONTO_SPRAWDZONE:
+        return
+
+    # TRZY STANY, NIE DWA. `wlasciwe_konto` oddaje falsz takze wtedy, gdy
+    # zapytanie w ogole sie nie udalo — a „nie wiem" to nie jest „to cudze
+    # konto". Pierwsza wersja tego straznika nie robila tej roznicy i oblala
+    # jedenascie testow z wlasnymi atrapami strony: atrapa milczaca w tej
+    # sprawie mowila „NieToKonto".
+    #
+    # Zasada stoi w tym projekcie od dawna, przy sprawdzaniu faktow: „zepsuta
+    # weryfikacja nie jest dowodem falszu". Roznica jest taka, ze tu brak
+    # odpowiedzi MOWI GLOSNO, zamiast przechodzic po cichu — i nie zapamietuje
+    # sie jako sprawdzenie, wiec przy nastepnej akcji pytamy jeszcze raz.
+    try:
+        kto = api_json(page, f"/api/v1/user/{PROFIL_HANDLE}/public_profile")
+    except Exception as exc:                              # noqa: BLE001
+        print("  ! NIE SPRAWDZILEM KONTA (%s) — ide dalej, ale to nie jest"
+              " potwierdzenie" % type(exc).__name__, flush=True)
+        return
+
+    uchwyt = kto.get("handle") if isinstance(kto, dict) else None
+    if not uchwyt:
+        print("  ! NIE SPRAWDZILEM KONTA (profil nie odpowiedzial) — ide dalej,"
+              " ale to nie jest potwierdzenie", flush=True)
+        return
+
+    if uchwyt != PROFIL_HANDLE:
+        raise NieToKonto(
+            "sesja nalezy do konta %r, a skonfigurowane jest %r — nie"
+            " wystawiam niczego.\n"
+            "Sprawdz `konto.uchwyt` w konfiguracji i plik sesji:\n"
+            "  %s" % (uchwyt, PROFIL_HANDLE, SESSION_FILE))
+    _KONTO_SPRAWDZONE = True
+
+
 DZIENNIK = config.DATA_DIR / "dziennik.jsonl"
 
 
@@ -2713,6 +2772,16 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
     page = context.new_page()
     wynik: dict[str, Any] = {"znalezione": 0, "polubione": 0, "blad": None}
     try:
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto("https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
@@ -2843,6 +2912,12 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
     page = context.new_page()
     wynik: dict[str, Any] = {"handle": handle, "zrobione": False, "blad": None}
     try:
+        # NIE TO KONTO = NIE KLIKAMY. `zasubskrybuj` idzie ta droga
+        # i jako jedyne wejscie wystawiajace nie mialo straznika —
+        # zlapal to `test_straznik_konta.py`, ktory liste wejsc
+        # WYPROWADZA z `bramki.WYSTAWIENIA` zamiast ja wypisywac.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 4000)
@@ -3194,6 +3269,16 @@ def obserwuj_profil(handle: str, wyslij: bool = False) -> dict[str, Any]:
                              "juz_obserwowany": False, "potwierdzone": None,
                              "pozycje": [], "blad": None, "powod": None}
     try:
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 4000)
@@ -3747,6 +3832,16 @@ def wystaw_odpowiedz_pod_artykulem(
     page = context.new_page()
     wynik: dict[str, Any] = {"wpisane": False, "wyslane": False, "blad": None}
     try:
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto(url_artykulu.rstrip("/") + "/comments",
                   timeout=READ_TIMEOUT_MS * 2, wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
@@ -3872,6 +3967,16 @@ def wystaw_artykul(
     wynik: dict[str, Any] = {"wypelnione": False, "wyslane": False, "blad": None,
                              "tytul": artykul["tytul"]}
     try:
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         if wyslij and potwierdz_artykul(page, artykul["tytul"]):
             print("  artykul o tym tytule juz jest opublikowany — przerywam",
                   flush=True)
@@ -4054,6 +4159,16 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
         # falszywe dla numeru 0 — ktorego Substack nie uzywa, ale opieranie
         # poprawnosci na tym, ze cudzy serwis nie zacznie numerowac od zera,
         # jest zakladem bez potrzeby.
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         if wyslij and potwierdz_odpowiedz(page, note_id, tekst) is not None:
             print("  ta odpowiedz juz jest w watku — nie wystawiam drugi raz",
                   flush=True)
@@ -4211,6 +4326,16 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
         # wlasnej ksiegowosci: proces przerwany po klknieciu, a przed zapisem,
         # zostawilby ksiegowosc niezgodna ze stanem faktycznym. Substack wie
         # lepiej niz my, co u nas wisi.
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         if wyslij and potwierdz_notke(page, tekst):
             print("  ta notka juz jest na profilu — nie wystawiam drugi raz",
                   flush=True)
@@ -4781,6 +4906,16 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
     page = context.new_page()
     wynik: dict[str, Any] = {"wpisane": False, "wyslane": False, "blad": None}
     try:
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         if wyslij and juz_sie_odezwalismy(page, url):
             print("  JUZ SIE TAM ODEZWALISMY — drugi komentarz pod tym samym"
                   " tekstem to podpis bota, odpuszczam", flush=True)
@@ -4940,6 +5075,15 @@ if __name__ == "__main__":
         "zaloguj": zaloguj,          # stara droga, zapetla CAPTCHE — nie uzywac
         "rozpoznanie": rozpoznanie,
         "serwer": sprawdz_serwer,    # jedyne pytanie: czy sesja zyje z tego adresu
+        # OSWIADCZENIE O AUTORSTWIE — jedno ustawienie konta, robione raz.
+        #
+        # Funkcja istniala od dawna i BYLA NIEOSIAGALNA: nie ma jej zaden
+        # modul, a tablica polecen miala cztery wpisy. Konfigurator mowil przy
+        # tym operatorowi „nothing in the code sets it" — zdanie nieprawdziwe
+        # obok gotowego kodu, ktory to ustawia.
+        #
+        # Bez `--wyslij` pokazuje, co by wpisal, i nie dotyka konta.
+        "oswiadczenie": lambda: ustaw_oswiadczenie_ai("--wyslij" in sys.argv),
     }
 
     polecenie = sys.argv[1] if len(sys.argv) > 1 else "sesja"
@@ -5044,6 +5188,16 @@ def restackuj_w_kanale(
     wynik: dict[str, Any] = {"znalezione": 0, "rozwazone": 0, "restackowane": 0,
                              "odmowy": [], "blad": None}
     try:
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto("https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)

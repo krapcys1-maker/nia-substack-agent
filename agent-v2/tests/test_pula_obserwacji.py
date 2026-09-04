@@ -180,8 +180,19 @@ class Strona:
         self.keyboard = Klawiatura(self)
 
     def goto(self, url, **k):
-        self.handle = str(url).split("/@", 1)[-1].split("/")[0]
+        # TYLKO ADRESY PROFILU LICZA SIE JAKO WEJSCIE NA PROFIL.
+        #
+        # Atrapa robila `url.split("/@")[-1].split("/")[0]` na KAZDYM adresie,
+        # wiec zapytanie do API (`/api/v1/user/<uchwyt>/public_profile`, bez
+        # „/@") zapisywalo sie jako wizyta u kogos o uchwycie „https:".
+        # Sekcja o odsiewie liczy WLASNIE te liste, wiec doliczenie zapytania
+        # niebedacego wejsciem na profil oblewalo pomiar, ktory jest tu cala
+        # tresc: „weszlismy na JEDEN profil i to ten wolny".
+        adres = str(url)
         self.menu_otwarte = False
+        if "/@" not in adres:
+            return
+        self.handle = adres.split("/@", 1)[-1].split("/")[0]
         self.konta.odwiedzone.append(self.handle)
 
     def wait_for_timeout(self, *a):

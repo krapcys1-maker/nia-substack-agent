@@ -60,9 +60,38 @@ PLIKI = _moduly_agenta()
 
 # Funkcje, ktorych wywolanie ZNACZY „tresc idzie w swiat". Wszystko, co stoi
 # miedzy decyzja a nimi, jest potencjalna bramka.
+#
+# CZTERY Z DZIEWIECIU NAZW TU NIE ISTNIALY. Stalo `polub`, `restack`,
+# `obserwuj_autora`, `subskrybuj_autora` — a funkcje nazywaja sie
+# `polub_w_kanale`, `restackuj_w_kanale`, `obserwuj_profil` i `zasubskrybuj`.
+# Sekcja 3 tego przyrzadu, czyli odpowiedz na pytanie „co moze zatrzymac
+# tresc", raportowala wiec o PIECIU sciezkach z osmiu i wygladala na kompletna.
+# Polubienia, restacki, obserwacje i subskrypcje nie pojawialy sie w niej ani
+# razu. Ta sama klasa, co `config.NOTEK_DZIENNIE`: nazwa, ktorej nie ma,
+# w liscie, cicho nietrafiajaca w nic.
 WYSTAWIENIA = ("wystaw_notke", "wystaw_komentarz", "wystaw_odpowiedz",
                "wystaw_artykul", "wystaw_odpowiedz_pod_artykulem",
-               "polub", "restack", "obserwuj_autora", "subskrybuj_autora")
+               "polub_w_kanale", "restackuj_w_kanale", "obserwuj_profil",
+               "zasubskrybuj")
+
+
+def wystawienia_bez_pokrycia() -> list[str]:
+    """Nazwy z `WYSTAWIENIA`, ktorych nie ma w zadnym module agenta.
+
+    SAMA POPRAWKA NAZW ZALATALABY DZISIAJ. To sprawdzenie nie da tej wadzie
+    wrocic — a wrocic moze przy kazdym przemianowaniu funkcji, i wrocilaby po
+    cichu: lista nazw nie protestuje, gdy nie trafia w nic.
+    """
+    istnieje: set[str] = set()
+    for p in sorted(KORZEN.glob("*.py")):
+        try:
+            drzewo = ast.parse(p.read_text(encoding="utf-8"))
+        except (SyntaxError, OSError):
+            continue
+        for w in ast.walk(drzewo):
+            if isinstance(w, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                istnieje.add(w.name)
+    return [n for n in WYSTAWIENIA if n not in istnieje]
 
 
 def _zrodlo(nazwa: str) -> tuple[str, ast.Module] | None:
@@ -231,6 +260,15 @@ def raport(pelne: bool = False) -> str:
     d("CO MOZE ZATRZYMAC TRESC — wyliczone z drzewa skladni, %d plikow"
       % len(PLIKI))
     d("=" * 78)
+    # NAZWA, KTOREJ NIE MA, NIE TRAFIA W NIC I NIE PROTESTUJE. Cztery
+    # z dziewieciu nazw w `WYSTAWIENIA` przez dlugi czas nie istnialy, wiec
+    # sekcja 3 nie widziala polubien, restackow, obserwacji ani subskrypcji —
+    # i wygladala na kompletna.
+    _bez = wystawienia_bez_pokrycia()
+    if _bez:
+        d("")
+        d("!! NAZWY BEZ POKRYCIA W KODZIE: %s" % ", ".join(_bez))
+        d("   Sekcja 3 ponizej NIE WIDZI tych sciezek. Popraw `WYSTAWIENIA`.")
 
     w = wstrzymania_publikacji()
     d("")

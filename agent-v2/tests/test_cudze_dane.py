@@ -17,6 +17,7 @@ Test jest dwuczesciowy, bo Windows nie ma praw POSIX: statyczna czesc chodzi
 wszedzie, funkcjonalna tylko tam, gdzie te prawa cokolwiek znacza.
 """
 import os
+import ast
 import pathlib
 import sys
 import tempfile
@@ -39,13 +40,32 @@ def sprawdz(nazwa, warunek, szczegol=""):
 kopia_src = pathlib.Path("agent-v2/kopia_subskrybentow.py").read_text(encoding="utf-8")
 
 print("=== 1. KOPIA LISTY ZAMYKA SIE SAMA ===")
-sprawdz("skrypt ustawia prawa po zapisie", "chmod(0o600)" in kopia_src)
-sprawdz("i robi to przy kazdym zapisie, nie raz",
-        kopia_src.find("chmod(0o600)") > kopia_src.find("cel.write_text"),
-        "chmod musi stac PO zapisie pliku")
+# TA SEKCJA SPRAWDZALA NIEISTNIEJACY JUZ KSZTALT — I PRZECHODZILA NA KOMENTARZU.
+#
+# Pytala o `"chmod(0o600)" in kopia_src` i o to, czy stoi PO `cel.write_text`.
+# Oba napisy siedza dzis w KOMENTARZU opisujacym stara wade, wiec dwie asercje
+# przechodzily, nie dotykajac kodu. Trzecia (`except OSError`) oblala, bo
+# obsluga przeniosla sie do `config`.
+#
+# Poprawka usunela to, czego ta sekcja pilnowala: `write_text` + `chmod`
+# zostawialy OKNO, w ktorym plik z cudzymi adresami mial prawa domyslne.
+# Dzis plik powstaje od razu z 0600 (`config.otworz_tylko_dla_wlasciciela`),
+# wiec okna nie ma z konstrukcji. Pytamy o to PO DRZEWIE SKLADNI.
+_wolania_kopii = {getattr(w.func, "attr", None) or getattr(w.func, "id", None)
+                  for w in ast.walk(ast.parse(kopia_src))
+                  if isinstance(w, ast.Call)}
+sprawdz("kopia powstaje od razu z prawami wlasciciela",
+        "otworz_tylko_dla_wlasciciela" in _wolania_kopii,
+        sorted(x for x in _wolania_kopii if x))
+sprawdz("i zaden zapis nie idzie przez `write_text`",
+        "write_text" not in _wolania_kopii)
 # KONTRDOWOD: brak praw POSIX nie moze kosztowac nas kopii. Windows ma to
 # przemilczec, a nie wywalic sie i zostawic liste bez archiwum.
-sprawdz("brak praw POSIX nie przerywa archiwizacji", "except OSError" in kopia_src)
+_pom = pathlib.Path("agent-v2/config.py").read_text(encoding="utf-8")
+_fn = next(f for f in ast.parse(_pom).body
+           if isinstance(f, ast.FunctionDef) and f.name == "tylko_dla_wlasciciela")
+sprawdz("brak praw POSIX nie przerywa archiwizacji",
+        any(isinstance(w, ast.ExceptHandler) for w in ast.walk(_fn)))
 sprawdz("i katalog jest poza gitem",
         "agent-v2/data/" in pathlib.Path(".gitignore").read_text(encoding="utf-8"))
 sprawdz("skrypt sam o tym przypomina",

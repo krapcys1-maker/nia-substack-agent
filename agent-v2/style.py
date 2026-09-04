@@ -188,11 +188,21 @@ def _z_marka(tekst: str) -> str:
     return tekst.replace("{marka}", config.NAZWA_MARKI)
 
 
-def corpus_words() -> set[str]:
-    """Wszystkie słowa korpusu — podłoga porównuje tekst z korpusem, nie z alfabetem.
-
-    Kontrola typu „czy jest tu cyfra" daje fałszywe alarmy na zdaniach, które
-    cytują materiał. Właściwe pytanie brzmi: czy ta liczba występuje w korpusie.
-    """
-    raw = config.STYLE_CORPUS.read_bytes().decode("utf-8", "replace")
-    return {w.lower() for w in raw.split()}
+# USUNIETE: `corpus_words()`.
+#
+# Funkcja bez ANI JEDNEGO wolajacego — sprawdzone skanem po calym drzewie
+# (kod, testy, narzedzia). Zwracala wszystkie slowa korpusu stylu, a jej
+# docstring opisywal zasade „podloga porownuje tekst z KORPUSEM, nie
+# z alfabetem".
+#
+# Zasada zyje i jest wykonywana — tyle ze gdzie indziej i przeciwko innemu
+# korpusowi: `gates.numbers_outside_corpus` porownuje liczby z MATERIALEM
+# DOWODOWYM artykulu, a nie z probkami stylu. Do tamtego pytania korpus stylu
+# jest zlym zbiorem: to piec akapitow cudzej prozy, a nie zrodla tego tekstu.
+#
+# Do tego funkcja wywracalaby sie na swiezej instalacji: `STYLE_CORPUS`
+# czesto jeszcze nie istnieje, a `read_bytes()` nie pyta o to.
+#
+# Zostawiona jako komentarz, a nie skasowana bez sladu, bo nastepny czytelnik
+# ma wiedziec, ze pytanie „czy ta liczba jest w korpusie" JEST zadawane —
+# w `gates`, i o wlasciwy korpus.

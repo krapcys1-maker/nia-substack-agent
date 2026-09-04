@@ -177,11 +177,12 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5212 wierszy, 96 funkcji na poziomie modułu, 0 klas
+5366 wierszy, 97 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
 | `wlasciwe_konto(page)` | Czy jestesmy na WLASCIWYM koncie tuz przed publikacja. |
+| `wymagaj_wlasciwego_konta(page)` | Zatrzymuje przebieg, gdy sesja nalezy do INNEGO konta. |
 | `pod_rzad_nieudanych(rodzaj)` | Ile porazek tego rodzaju poszlo BEZPOSREDNIO po sobie w tym przebiegu. |
 | `slad_przebiegu()` | Podsumowanie tego, co ten proces zrobil — do wypisania na koncu. |
 | `dopisz_wynik(rodzaj, wynik, **szczegoly)` | Jeden wpis na dzialanie — takze wtedy, gdy sie NIE UDALO, i z powodem. |
@@ -428,7 +429,7 @@
 
 ### `style.py` — korpus stylu dla pisarza
 
-198 wierszy, 9 funkcji na poziomie modułu, 1 klas
+208 wierszy, 8 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -440,7 +441,6 @@
 | `load_examples()` | Zwraca zatwierdzone fragmenty stylu albo rzuca, jeśli korpus się nie zgadza. |
 | `load_profiles()` | Profil pozytywny i negatywny stylu artykułu. |
 | `_z_marka(tekst)` *(wewn.)* | Podstawia `{marka}` w profilu stylu. Profil bez pola zostaje bez zmian. |
-| `corpus_words()` | Wszystkie słowa korpusu — podłoga porównuje tekst z korpusem, nie z alfabetem. |
 
 ### `kopia_subskrybentow.py` — kopia jedynego aktywa, którego nie da się odtworzyć
 
@@ -455,7 +455,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3179 wierszy, 35 funkcji na poziomie modułu, 0 klas
+3184 wierszy, 35 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -514,11 +514,12 @@
 
 ### `bramki.py` — co może zatrzymać treść — wyliczone z drzewa składni, nie spisane z pamięci
 
-278 wierszy, 8 funkcji na poziomie modułu, 0 klas
+316 wierszy, 9 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_moduly_agenta()` *(wewn.)* | Wszystkie moduly agenta, alfabetycznie. Bez testow i bez tego pliku. |
+| `wystawienia_bez_pokrycia()` | Nazwy z `WYSTAWIENIA`, ktorych nie ma w zadnym module agenta. |
 | `_zrodlo(nazwa)` *(wewn.)* | — |
 | `_komentarz_nad(linie, nr, ile)` *(wewn.)* | Ostatnia linia komentarza nad wskazanym wierszem — zwykle uzasadnienie. |
 | `_rodzic_funkcji(drzewo)` *(wewn.)* | Mapa: numer wiersza -> nazwa funkcji, w ktorej ten wiersz lezy. |

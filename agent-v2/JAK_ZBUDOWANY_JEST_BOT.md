@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 981 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 30 188 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -57,7 +57,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
 **WADA — 25 plików zamiast dziesięciu.** Najbliższe usunięciu:
-`style.py` (198 wierszy, wołany tylko z `stages.py`) i
+`style.py` (208 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
 
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 138 zestawów
-testów, 3627 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 139 zestawów
+testów, 3640 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -319,11 +319,12 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5212 wierszy, 96 funkcji na poziomie modułu, 0 klas
+5366 wierszy, 97 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
 | `wlasciwe_konto(page)` | Czy jestesmy na WLASCIWYM koncie tuz przed publikacja. |
+| `wymagaj_wlasciwego_konta(page)` | Zatrzymuje przebieg, gdy sesja nalezy do INNEGO konta. |
 | `pod_rzad_nieudanych(rodzaj)` | Ile porazek tego rodzaju poszlo BEZPOSREDNIO po sobie w tym przebiegu. |
 | `slad_przebiegu()` | Podsumowanie tego, co ten proces zrobil — do wypisania na koncu. |
 | `dopisz_wynik(rodzaj, wynik, **szczegoly)` | Jeden wpis na dzialanie — takze wtedy, gdy sie NIE UDALO, i z powodem. |
@@ -570,7 +571,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `style.py` — korpus stylu dla pisarza
 
-198 wierszy, 9 funkcji na poziomie modułu, 1 klas
+208 wierszy, 8 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -582,7 +583,6 @@ wiec nie da sie go rozjechac z kodem.
 | `load_examples()` | Zwraca zatwierdzone fragmenty stylu albo rzuca, jeśli korpus się nie zgadza. |
 | `load_profiles()` | Profil pozytywny i negatywny stylu artykułu. |
 | `_z_marka(tekst)` *(wewn.)* | Podstawia `{marka}` w profilu stylu. Profil bez pola zostaje bez zmian. |
-| `corpus_words()` | Wszystkie słowa korpusu — podłoga porównuje tekst z korpusem, nie z alfabetem. |
 
 ### `kopia_subskrybentow.py` — kopia jedynego aktywa, którego nie da się odtworzyć
 
@@ -597,7 +597,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3179 wierszy, 35 funkcji na poziomie modułu, 0 klas
+3184 wierszy, 35 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -656,11 +656,12 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `bramki.py` — co może zatrzymać treść — wyliczone z drzewa składni, nie spisane z pamięci
 
-278 wierszy, 8 funkcji na poziomie modułu, 0 klas
+316 wierszy, 9 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_moduly_agenta()` *(wewn.)* | Wszystkie moduly agenta, alfabetycznie. Bez testow i bez tego pliku. |
+| `wystawienia_bez_pokrycia()` | Nazwy z `WYSTAWIENIA`, ktorych nie ma w zadnym module agenta. |
 | `_zrodlo(nazwa)` *(wewn.)* | — |
 | `_komentarz_nad(linie, nr, ile)` *(wewn.)* | Ostatnia linia komentarza nad wskazanym wierszem — zwykle uzasadnienie. |
 | `_rodzic_funkcji(drzewo)` *(wewn.)* | Mapa: numer wiersza -> nazwa funkcji, w ktorej ten wiersz lezy. |
@@ -8263,6 +8264,12 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
     page = context.new_page()
     wynik: dict[str, Any] = {"handle": handle, "zrobione": False, "blad": None}
     try:
+        # NIE TO KONTO = NIE KLIKAMY. `zasubskrybuj` idzie ta droga
+        # i jako jedyne wejscie wystawiajace nie mialo straznika —
+        # zlapal to `test_straznik_konta.py`, ktory liste wejsc
+        # WYPROWADZA z `bramki.WYSTAWIENIA` zamiast ja wypisywac.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 4000)
@@ -8332,6 +8339,16 @@ def restackuj_w_kanale(
     wynik: dict[str, Any] = {"znalezione": 0, "rozwazone": 0, "restackowane": 0,
                              "odmowy": [], "blad": None}
     try:
+        # NIE TO KONTO = NIE WYSTAWIAMY. Straznik `wlasciwe_konto`
+        # istnial od poczatku, opisany jako kontrola tuz przed
+        # publikacja, i NIE BYL WOLANY ANI RAZU — sprawdzone skanem
+        # po calym drzewie. Raz na proces, tylko przy wysylce.
+        #
+        # WEWNATRZ `try`, nie nad nim: `finally` zamyka strone,
+        # przegladarke i Playwrighta, a wyjatek rzucony wyzej
+        # zostawilby proces Chromium przy zyciu.
+        if wyslij:
+            wymagaj_wlasciwego_konta(page)
         page.goto("https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
