@@ -241,7 +241,7 @@ i kanały z AI na kolej. Skutek:
 | zakazane otwarcia, zastrzeżenia, niby-źródła | `gates.py:53-95`, wyrażenia regularne po angielsku | KOD |
 
 **Dobra wiadomość, której się nie spodziewałem: korpus stylu NIE jest o AI.**
-To proza w rodzaju Tima Harforda — o szpiegostwie przemysłowym, przędzeniu
+To proza w rodzaju felietonu ekonomicznego — o szpiegostwie przemysłowym, przędzeniu
 jedwabiu, tajemnicach handlowych. Uczy **ruchu retorycznego**, nie tematu.
 Przy zmianie niszy można go zostawić w całości.
 

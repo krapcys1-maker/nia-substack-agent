@@ -189,7 +189,7 @@ failed six tests for reasons unrelated to the code. They now read `config`.
 | two style profiles | `style-profiles/` | TEXT |
 | banned vocabulary, 18 words | four prompt files | TEXT — topic-neutral, keep |
 
-**The style corpus is not about the old subject.** It is Harford-style prose
+**The style corpus is not about the old subject.** It is Essayistic prose in a broadsheet-column register
 about trade secrets, silk-spinning and patents. It teaches a rhetorical *move*,
 not a topic, and survives a change of niche intact.
 

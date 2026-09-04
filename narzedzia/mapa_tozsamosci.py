@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import ast
 import pathlib
+import os
 import re
 import subprocess
 import sys
@@ -40,6 +41,18 @@ import sys
 KORZEN = pathlib.Path(__file__).resolve().parent.parent
 WYNIK = KORZEN / "docs" / "IDENTITY_MAP.md"
 sys.path.insert(0, str(KORZEN / "agent-v2"))
+
+# MAPA OPISUJE DOSTARCZONE WARTOSCI, NIGDY TWOJEGO KONTA.
+#
+# `config.py` na koncu wczytuje `konfiguracja.toml`, jesli istnieje — wiec
+# generator uruchomiony u operatora wypisywal do `docs/IDENTITY_MAP.md` JEGO
+# uchwyt, JEGO marke i JEGO nisze. Zlapane na goracym uczynku: mapa
+# w repozytorium zaczela opisywac konto testowe, ktorym sprawdzalem kreator,
+# i poszlaby tak do commita.
+#
+# To jest dokladnie ta wada, ktora ten plik ma tropic — tozsamosc konta
+# wchodzaca tam, gdzie nie powinna — tylko popelniona przez narzedzie.
+os.environ["NIA_BEZ_KONFIGURACJI"] = "1"
 
 import config          # noqa: E402
 import konfiguracja    # noqa: E402

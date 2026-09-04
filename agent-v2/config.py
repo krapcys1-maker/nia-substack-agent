@@ -2852,7 +2852,20 @@ def co_teraz_w_reku(kiedy=None) -> str:
 import konfiguracja as _konf   # noqa: E402
 
 KONFIGURACJA_PLIK = _konf.sciezka(AGENT_DIR)
-_dane_konfiguracji = _konf.wczytaj(KONFIGURACJA_PLIK)
+
+# `NIA_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA.
+#
+# `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi
+# tozsamosc konta. Uruchomiony u operatora czytal jego `konfiguracja.toml`
+# i wpisywal do `docs/IDENTITY_MAP.md` JEGO uchwyt, JEGO marke i JEGO nisze —
+# czyli narzedzie tropiace tozsamosc samo ja publikowalo. Zlapane, gdy mapa
+# w repozytorium zaczela opisywac konto testowe, ktorym sprawdzalem kreator.
+#
+# Furtka jest zmienna srodowiskowa, nie polem konfiguracji, i to jest celowe:
+# ma byc widoczna w wywolaniu i niemozliwa do wlaczenia przez przypadek
+# w pliku, ktory sama wylacza.
+_BEZ_KONFIGURACJI = _env("NIA_BEZ_KONFIGURACJI", "0").lower() in {"1", "true", "yes"}
+_dane_konfiguracji = {} if _BEZ_KONFIGURACJI else _konf.wczytaj(KONFIGURACJA_PLIK)
 KONFIGURACJA_ZMIENILA = _konf.zastosuj(_dane_konfiguracji, sys.modules[__name__])
 
 if KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():

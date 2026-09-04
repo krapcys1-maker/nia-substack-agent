@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 28 915 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 28 928 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -587,7 +587,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-2860 wierszy, 27 funkcji na poziomie modułu, 0 klas
+2873 wierszy, 27 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -8596,14 +8596,14 @@ Zostawione świadomie, żeby nie wracać do tematu przy każdym artykule:
   fakt o twierdzeniach") — bliższy głosowi pisma, ale brzmi jak wykład wobec
   kogoś, kto właśnie nas podejrzewa.
 - **Wariant C** (dwa zdania, sucho) — poprawny, ale nie zaprasza do niczego.
-- **Ton „Limited Edition Jonathana"** (zawstydzanie skanującego) — działa u
+- **Ton zawstydzajacy skanujacego** (zawstydzanie skanującego) — działa u
   autora z twarzą i nazwiskiem. Anonimowa marka, która obraża pytającego,
   wygląda jak marka, która ma coś do ukrycia.
 
 ## Ustawienie „Wyłącz wykrywanie AI"
 
 Decyzja właściciela, nie kodu. Uwaga z obserwacji cudzego konta: oświadczenie
-pokazuje się **niezależnie** od tego ustawienia — u Jonathana widać naraz
+pokazuje się **niezależnie** od tego ustawienia — u takiego konta widać naraz
 „nie kwalifikuje się do wykrywania" i jego tekst.
 ````
 
@@ -12155,10 +12155,10 @@ units, do not round, do not average, do not compute a figure from two others.
 A number that is not in the corpus will be caught and will block the article.
 
 **And say WHOSE number it is, in `means`, whenever the excerpt attributes it.**
-"The UK AI Safety Institute measured X" is a different object from "a review
+"<named institute> measured X" is a different object from "a review
 said the Institute measured X". The second one is a copy, and copies drift: a
 real card carried "about seven times more likely" from two secondary reviews,
-when the Institute's own report said 7% against 3% — a percentage rewritten as
+when the institute's own report said 7% against 3% — a percentage rewritten as
 a multiple. If the excerpt you are copying from is not the body that produced
 the figure, put that in `means` explicitly, so the check downstream knows to go
 and find the original.
@@ -12917,6 +12917,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `KANDYDATOW_NA_PRZEBIEG` | `25` | Ile kandydatow-jednolinijkowcow zamawiamy, zanim cokolwiek napiszemy. Nadprodukcja jest obowiazkowa: piec notek z piatki pomyslow to mediana |
 | `W_TYM_MIESIACU` | `{ # PRZYKLAD. Kazde haslo mowi, GDZIE w dany` | --- co czytelnik trzyma w reku W TYM MIESIACU ------------------------------- Najtansza dzwignia, jaka mamy, i nie mielismy jej wcale. Zwykl |
 | `KONFIGURACJA_PLIK` | `_konf.sciezka(AGENT_DIR)` | — |
+| `_BEZ_KONFIGURACJI` | `_env("NIA_BEZ_KONFIGURACJI", "0").lower() in` | `NIA_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi |
 | `KONFIGURACJA_ZMIENILA` | `_konf.zastosuj(_dane_konfiguracji, sys.modul` | — |
 
 

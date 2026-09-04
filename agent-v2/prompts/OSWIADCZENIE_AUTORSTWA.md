@@ -45,12 +45,12 @@ Zostawione świadomie, żeby nie wracać do tematu przy każdym artykule:
   fakt o twierdzeniach") — bliższy głosowi pisma, ale brzmi jak wykład wobec
   kogoś, kto właśnie nas podejrzewa.
 - **Wariant C** (dwa zdania, sucho) — poprawny, ale nie zaprasza do niczego.
-- **Ton „Limited Edition Jonathana"** (zawstydzanie skanującego) — działa u
+- **Ton zawstydzajacy skanujacego** (zawstydzanie skanującego) — działa u
   autora z twarzą i nazwiskiem. Anonimowa marka, która obraża pytającego,
   wygląda jak marka, która ma coś do ukrycia.
 
 ## Ustawienie „Wyłącz wykrywanie AI"
 
 Decyzja właściciela, nie kodu. Uwaga z obserwacji cudzego konta: oświadczenie
-pokazuje się **niezależnie** od tego ustawienia — u Jonathana widać naraz
+pokazuje się **niezależnie** od tego ustawienia — u takiego konta widać naraz
 „nie kwalifikuje się do wykrywania" i jego tekst.
