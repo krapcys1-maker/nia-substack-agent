@@ -3701,10 +3701,11 @@ def sprawdz_fakty(
     """Szuka faktów do komentarza, zamiast pozwolić modelowi pisać z pamięci.
 
     Bez tego komentarze były erudycją z pamięci. Sprawdzone na żywym przykładzie:
-    model twierdził, że Osborne Executive nie był kompatybilny z IBM, a zapis
-    mówi coś innego i ostrzejszego — firma REKLAMOWAŁA kompatybilność, której
-    nigdy nie dostarczyła. Publicznego komentarza z błędnym faktem nie da się
-    cofnąć, więc te ~4 centy to najtańsze ubezpieczenie w całym potoku.
+    model napisał, że pewien produkt nie miał deklarowanej właściwości — a zapis
+    mówił coś innego i ostrzejszego: producent tę właściwość REKLAMOWAŁ i nigdy
+    jej nie dostarczył. Wersja z pamięci była nie tylko błędna, ale słabsza od
+    prawdy. Publicznego komentarza z błędnym faktem nie da się cofnąć, więc te
+    ~4 centy to najtańsze ubezpieczenie w całym potoku.
     """
     prompt = (
         "Search the web for verifiable facts about the subject of the post below.\n\n"
@@ -3829,10 +3830,10 @@ def zweryfikuj(
     """Sprawdza to, co model NAPISAŁ — nie to, czego szukał przed pisaniem.
 
     Sprawdzanie faktów przed pisaniem nie przewidzi, jakiego faktu model użyje.
-    Dowód z życia: wszystkie trzy kandydatury oparły się na tym, że Butlin i wsp.
-    wykluczyli IIT — twierdzeniu prawdziwym, ale nieobecnym na liście wcześniej
-    zweryfikowanych faktów. Tym razem pamięć modelu trafiła. Nie ma powodu zakładać,
-    że trafi zawsze.
+    Dowód z życia: wszystkie trzy kandydatury oparły się na jednym twierdzeniu
+    o tym, co pewna praca naukowa rozstrzygnęła — twierdzeniu PRAWDZIWYM, ale
+    nieobecnym na liście wcześniej zweryfikowanych faktów. Model wziął je
+    z pamięci i tym razem trafił. Nie ma powodu zakładać, że trafi zawsze.
     """
     # DZIEN Z ZEGARA, nie z pamieci modelu. Bez tego weryfikacja nie ma
     # jak zauwazyc, ze zrodlo sprzed dwoch lat opisuje inny swiat.
@@ -3884,12 +3885,12 @@ def zweryfikuj(
     # STANOWISKIEM i ma prawo byc glosne i sporne.
     #
     # DOCHODZI ROZROZNIENIE, bo bez niego wyszla nieprawda. 24 sierpnia o 20:53
-    # poszla notka z data „standardized 1946" — klauzula niepodwazalnosci to
-    # Nowy Jork 1906 i Standard Policy Law 1907. Przeszla przez PLATNE
-    # sprawdzanie faktow z dwunastoma wyszukiwaniami, bo status byl
-    # `unverified`, a `unverified` przechodzilo.
+    # poszla notka, ktora podawala rok ustanowienia pewnej reguly — o czterdziesci
+    # lat pozniejszy niz prawdziwy. Przeszla przez PLATNE sprawdzanie faktow
+    # z dwunastoma wyszukiwaniami, bo status byl `unverified`, a `unverified`
+    # przechodzilo.
     #
-    # „Standardized 1946" NIE JEST TEZA. To data. Rozdzielamy wiec:
+    # ROK NIE JEST TEZA. To liczba. Rozdzielamy wiec:
     #   - twierdzenie NIESPRAWDZALNE (mechanizm, motyw, skutek) — przechodzi,
     #   - twierdzenie SPRAWDZALNE, ktorego nie potwierdzono — nie przechodzi.
     # Rozroznikiem jest LICZBA: data, kwota, odsetek, rok sa albo w rekordzie,
@@ -3982,7 +3983,7 @@ def _liczby_zarzutu(c: dict[str, Any]) -> frozenset[str]:
 
 
 def _slowa_zarzutu(c: dict[str, Any]) -> frozenset[str]:
-    """Slowa trescioweko z samego twierdzenia — drugi sygnal tozsamosci.
+    """Slowa tresciowe z samego twierdzenia — drugi sygnal tozsamosci.
 
     Z `claim`, nie z `what_the_source_says`: uzasadnienie bramki jest
     rozwlekle i dwa rozne zarzuty potrafia dzielic pol slownika, bo oba
@@ -4058,8 +4059,10 @@ def napraw_obalone(
     TRZECIA DROGA. Do 1 wrzesnia 2026 sprawdzenie faktow mialo tylko dwa
     zakonczenia i oba byly zle: bramka (tekst nie wychodzi, czyli cisza zamiast
     publikacji) albo log (tekst wychodzi z falszem, ktory sami wykrylismy).
-    Tego dnia o 19:46 poszla druga wersja — notka twierdzaca „thirty times the
-    takeovers", podczas gdy jej wlasne liczby, 646 i 60 682 mile, daja 93,9.
+    Tego dnia o 19:46 poszla druga wersja — notka, ktora podawala krotnosc
+    „trzydziesci razy", podczas gdy jej WLASNE dwie liczby, stojace w tym samym
+    zdaniu, dawaly po podzieleniu blisko dziewiecdziesiat cztery. Falsz nie
+    wymagal zadnego zrodla, zeby go zauwazyc — wystarczylo podzielic.
 
     NAPRAWIAMY WYLACZNIE `refuted` I `outdated`. To nie jest ostroznosc, tylko
     warunek sensu: naprawa pracuje materialem dowodowym z pola
@@ -4075,8 +4078,8 @@ def napraw_obalone(
     ILE WARTA JEST TA PONOWNA OCENA — ZMIERZONE 2 wrzesnia 2026 na zywo, osiem
     wywolan bramki na dwoch wersjach tego samego zdania:
 
-        „thirty times the takeovers"       (falsz)  -> OBALONE 4/4
-        „ninety-four times the takeovers"  (prawda) -> POTWIERDZONE 4/4
+        wersja z bledna krotnoscia    (falsz)  -> OBALONE      4/4
+        wersja z krotnoscia z liczb   (prawda) -> POTWIERDZONE 4/4
 
     Bramka jest wiec na tym przypadku powtarzalna w obie strony, i regula
     monotoniczna ponizej stoi na czyms, co naprawde mierzy. To NIE znaczy, ze
@@ -4285,11 +4288,11 @@ def comment_on(
     # trafne uwagi tylko dlatego, że wyszukiwarka nie trafiła w temat.
     #
     # Zostaje jedno: `zweryfikuj()` na gotowym tekście, blokujące wyłącznie fakt
-    # OBALONY przez źródło. Powód, dla którego nie zdejmujemy i tego: model
-    # z pamięci twierdził, że Osborne Executive nie był kompatybilny z IBM (zapis
-    # mówi, że firma REKLAMOWAŁA kompatybilność, której nie dostarczyła) — i ten
-    # sam model z pamięci trafnie stwierdził, że Butlin wykluczył IIT. Wiedza jest
-    # ogromna i najczęściej trafna, ale OD ŚRODKA nie da się odróżnić tych dwóch
+    # OBALONY przez źródło. Powód, dla którego nie zdejmujemy i tego, to dwa
+    # zderzone przypadki z życia. Raz model z pamięci opisał właściwość pewnego
+    # produktu odwrotnie, niż mówi zapis. Drugi raz ten sam model z pamięci
+    # TRAFNIE streścił, co rozstrzygnęła pewna praca naukowa. Wiedza jest ogromna
+    # i najczęściej trafna, ale OD ŚRODKA nie da się odróżnić tych dwóch
     # przypadków. Sprawdzenie po fakcie rozstrzyga to za grosze.
     if fakty:
         post = dict(post)

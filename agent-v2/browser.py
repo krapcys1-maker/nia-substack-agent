@@ -3953,7 +3953,7 @@ def _watek_z_paginacja(page, nid, stron: int = 6) -> list[dict]:
     konta i znacznikiem czasu 20-60 sekund PRZED wpisem o porazce. Czyli tresc
     wychodzila, a potwierdzanie jej nie znajdowalo.
 
-    Dwa z nich — `note/c-246390011` i `note/c-252967738` — lezaly na DRUGIEJ
+    Dwa z nich — `note/c-900000018` i `note/c-900000019` — lezaly na DRUGIEJ
     stronie watku. `/replies` oddaje osiem galezi naraz i dokleja `nextCursor`,
     a kod czterokrotnie czytal TE SAMA pierwsza strone. Petla czekala 24 sekundy
     na cos, co lezalo jeden `cursor` dalej — i zadna liczba prob tam nie siega.

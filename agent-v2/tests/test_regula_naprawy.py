@@ -61,17 +61,17 @@ PRAWDZIWE = llm.call
 CONN = sqlite3.connect(":memory:")
 
 ORYGINAL = (
-    "646 miles. That is how far FirmaA averaged between human takeovers in "
-    "California last year. FirmaB went 60,682 under the same DMV programme. "
-    "FirmaA's own figure was 2,044 miles the year before, so it got worse "
-    "while the state kept counting. Thirty times the takeovers, same year."
+    "512 hours. That is how long FirmaA averaged between manual interventions "
+    "under the inspectorate last year. FirmaB went 48,128 in the same programme. "
+    "FirmaA's own figure was 1,590 hours the year before, so it got worse "
+    "while the office kept counting. Thirty times the interventions, same year."
 )
 POPRAWIONY = ORYGINAL.replace("Thirty times", "Ninety-four times")
 
-CEL = {"claim": "FirmaA logged thirty times the takeovers of FirmaB.",
+CEL = {"claim": "FirmaA logged thirty times the interventions of FirmaB.",
        "status": "refuted",
-       "what_the_source_says": "60,682 / 646 = 93.9, the multiple is about 94.",
-       "url": "https://dmv.ca.gov/"}
+       "what_the_source_says": "48,128 / 512 = 94.0, the multiple is about 94.",
+       "url": "https://example.org/inspectorate/report"}
 NOWY_ZARZUT = {"claim": "FirmaA is not Uber's robotaxi partner at all.",
                "status": "refuted",
                "what_the_source_says": "Uber committed close to 500M to FirmaA.",
@@ -220,7 +220,7 @@ for etykieta, status, czy_blokuje in (
 print()
 print("=== 7. SPOJNOSC WEWNETRZNA WYNIKU BRAMKI ===")
 llm.call = lambda *a, **kw: json.dumps({"claims": [
-    {"claim": "FirmaB went 60,682 miles.", "status": "confirmed"},
+    {"claim": "FirmaB went 48,128 hours.", "status": "confirmed"},
     {"claim": "FirmaA logged thirty times as many.", "status": "refuted",
      "what_the_source_says": "about 94"},
     {"claim": "Regulators care about this.", "status": "unverified"}]})
@@ -241,10 +241,12 @@ print("=== 8. TOZSAMOSC ZARZUTU: ZACHOWAWCZO W JEDNA STRONE ===")
 # musi byc mocna.
 for opis, a, b, oczekiwane in (
     ("ten sam fakt, inne slowa laczace",
-     {"claim": "FirmaA logged thirty times the takeovers of FirmaB",
-      "what_the_source_says": "60,682 / 646 = 93.9"},
-     {"claim": "FirmaA had thirty times the takeovers as FirmaB",
-      "what_the_source_says": "60682 646 93.9"}, True),
+     {"claim": "FirmaA logged thirty times the interventions of FirmaB",
+      "what_the_source_says": "48,128 / 512 = 94.0"},
+     {"claim": "FirmaA had thirty times the interventions as FirmaB",
+      # Bez separatorow i bez znaku dzielenia — to jest CALY sens tej pozycji:
+      # ten sam fakt zapisany inaczej ma dawac ten sam zbior liczb.
+      "what_the_source_says": "48128 512 94.0"}, True),
     ("ta sama liczba, INNY fakt",
      {"claim": "The policy was standardised in 1946", "url": "https://x/"},
      {"claim": "The print run reached 1946 copies", "url": "https://x/"}, False),

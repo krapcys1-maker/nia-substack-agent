@@ -34,7 +34,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7361 wierszy, 134 funkcji na poziomie modułu, 0 klas
+7364 wierszy, 134 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -121,7 +121,7 @@
 | `_zapora_notki(tekst)` *(wewn.)* | Pusty napis, gdy tekst notki przechodzi zapory. Inaczej powod. |
 | `_zapora_komentarza(tekst)` *(wewn.)* | To samo dla komentarza — ale komentarz ma zapore o jedna wiecej. |
 | `_liczby_zarzutu(c)` *(wewn.)* | Liczby z zarzutu, znormalizowane — po nich rozpoznajemy TEN SAM fakt. |
-| `_slowa_zarzutu(c)` *(wewn.)* | Slowa trescioweko z samego twierdzenia — drugi sygnal tozsamosci. |
+| `_slowa_zarzutu(c)` *(wewn.)* | Slowa tresciowe z samego twierdzenia — drugi sygnal tozsamosci. |
 | `_adres_zarzutu(c)` *(wewn.)* | — |
 | `_ten_sam_zarzut(a, b)` *(wewn.)* | Czy dwa zarzuty mowia o tym samym fakcie. ZACHOWAWCZO, i to celowo. |
 | `napraw_obalone(conn, run_id, tekst, audyt)` | Poprawia zdanie, ktoremu zapis przeczy. Nie wycina go i nie blokuje tekstu. |

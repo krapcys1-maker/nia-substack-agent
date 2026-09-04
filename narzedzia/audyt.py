@@ -315,6 +315,28 @@ def main() -> int:
     sprawdz("zadne obce pismo w drzewie", not twarde, twarde[:4])
 
     print()
+    print("=== 2c. IDENTYFIKATORY SUBSTACKA (adres, nie liczba) ===")
+    # `note/c-322783482` wyglada w tescie jak liczba, a otwiera jedna konkretna
+    # notke jednego konkretnego konta. Szukanie po DLUGOSCI liczby tonie
+    # w sufitach tokenow i rozmiarach plikow; szukanie po KSZTALCIE adresu ma
+    # zero falszywych trafien — i wlasnie dlatego znalazlo cztery sztuki, ktore
+    # przeczesywka po liczbach przeoczyla.
+    #
+    # Atrapy zaczynaja sie od 900000000, bo Substack takich numerow nie wydaje:
+    # atrapa ma byc rozpoznawalna jako atrapa bez zagladania do listy.
+    ATRAPA_OD = 900000000
+    KSZTALT_ID = re.compile(r"\b(?:note|comment|post)/c-(\d{6,})")
+    prawdziwe = []
+    for p, tekst in pliki:
+        if p.resolve() in SZUKAJACE:
+            continue
+        for m in KSZTALT_ID.finditer(tekst):
+            if int(m.group(1)) < ATRAPA_OD:
+                prawdziwe.append("%s: %s" % (wzgledna(p), m.group(0)))
+    sprawdz("zaden identyfikator notki nie jest prawdziwy",
+            not prawdziwe, sorted(set(prawdziwe))[:4])
+
+    print()
     print("=== 3. PLIKI, KTORYCH NIE MOZE BYC ===")
     nazwy = [wzgledna(p) for p in sledzone()]
     for wzorzec, opis in ZAKAZANE_PLIKI:
@@ -440,6 +462,19 @@ def main() -> int:
             "prerejestrowany" not in podszyte, podszyte)
     sprawdz("  D: i widoczny po kodzie znaku",
             any(0x0400 <= ord(z) <= 0x04FF for z in podszyte), podszyte)
+
+    # E. IDENTYFIKATOR SUBSTACKA. Sekcja 2c istnieje przez cztery numery, ktore
+    # przezyly przeczesywke po dlugosci liczby. Kontrdowod musi pokazac, ze
+    # wzorzec rozroznia trzy rzeczy: prawdziwy identyfikator, atrape i zwykla
+    # liczbe o tej samej dlugosci stojaca bez adresu.
+    for opis, probka, ma_zlapac in (
+            ("prawdziwy", "note/c-322783482", True),
+            ("atrapa", "note/c-900000021", False),
+            ("liczba bez adresu", "sufit 322783482 tokenow", False)):
+        m = KSZTALT_ID.search(probka)
+        zlapane = bool(m) and int(m.group(1)) < ATRAPA_OD
+        sprawdz("  E: %-18s %s" % (opis, "lapie" if ma_zlapac else "NIE lapie"),
+                zlapane == ma_zlapac, probka)
 
     if "--historia" in sys.argv:
         print()

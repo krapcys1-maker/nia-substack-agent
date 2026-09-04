@@ -140,9 +140,9 @@ try:
     # Pod notkami komentuje kazdy i nie ma tam hosta w tym sensie. Wpis notki
     # ma w `gdzie` cos w rodzaju "note/c-123", nie adres.
     zapisz({"kiedy": kiedy(1), "rodzaj": "komentarz", "udane": False,
-            "o_hoscie": True, "gdzie": "note/c-322783482"},
+            "o_hoscie": True, "gdzie": "note/c-900000021"},
            {"kiedy": kiedy(1), "rodzaj": "komentarz", "udane": False,
-            "o_hoscie": True, "gdzie": "note/c-322783483"})
+            "o_hoscie": True, "gdzie": "note/c-900000022"})
     sprawdz("wpisy notek nie tworza martwego hosta",
             browser.hosty_gdzie_komentarz_nie_wchodzi() == set(),
             browser.hosty_gdzie_komentarz_nie_wchodzi())

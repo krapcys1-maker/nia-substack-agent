@@ -540,7 +540,7 @@ Koniunkcja jest celowa. Zmierzone:
 | `"In one survey, 68% of Americans thought so."` | zgłoszone |
 | `"In one survey, opinions were mixed."` | przechodzi (brak liczby) |
 | `"Reportedly the fee is 30 dollars."` | zgłoszone |
-| `"Scientific American counted 39 states with the mandate."` | przechodzi (nazwane źródło) |
+| `"The Gazette counted 39 states with the mandate."` | przechodzi (nazwane źródło) |
 
 #### 4.11 `NIEWIADOME_NA_KONCU`
 
@@ -830,7 +830,7 @@ i wprost broni tezy: *„a claim about incentives, motives or consequences is a 
 
 Powód: *„Przy pieciu notkach dziennie po trzech kandydatow to roznica miedzy pietnastoma sprawdzeniami a szescioma."* Dla komentarzy (`COMMENT_CANDIDATES = 3`, 17 komentarzy dziennie) — różnica między 51 a 18 sprawdzeniami.
 
-Uzasadnienie istnienia całej bramki to dwa zderzone przypadki z życia: model z pamięci twierdził, że Osborne Executive nie był kompatybilny z IBM (zapis mówi ostrzej — firma **reklamowała** kompatybilność, której nie dostarczyła), i ten sam model z pamięci **trafnie** stwierdził, że Butlin wykluczył IIT. *„OD ŚRODKA nie da się odróżnić tych dwóch przypadków."*
+Uzasadnienie istnienia całej bramki to dwa zderzone przypadki z życia: model z pamięci opisał właściwość pewnego produktu odwrotnie, niż mówi zapis (a zapis mówił ostrzej — producent tę właściwość **reklamował** i nigdy jej nie dostarczył), i ten sam model z pamięci **trafnie** streścił, co rozstrzygnęła pewna praca naukowa. *„OD ŚRODKA nie da się odróżnić tych dwóch przypadków."*
 
 **WADA — awaria = przepustka.** `except Exception: ... "safe_to_post": True`. Komentarz tłumaczy to „pierwszą siatką", czyli faktami zebranymi przed pisaniem. Ta siatka **już nie istnieje**: `comment_on` jest wywoływane bez `fakty`, a funkcja `sprawdz_fakty` nie ma w całym repozytorium ani jednego wywołania (zweryfikowane `grep`em). Uzasadnienie fail-open odwołuje się więc do zabezpieczenia, które zostało zdjęte.
 
@@ -1121,7 +1121,7 @@ sprawdz("bez liczby nie zgłasza",
 # KONTRDOWOD 2: liczba Z nazwanym zrodlem ma przechodzic.
 sprawdz("liczba z przypisem przechodzi",
         gates.statystyki_bez_zrodla(
-            "Scientific American counted 39 states with the mandate.") == [])
+            "The Gazette counted 39 states with the mandate.") == [])
 ```
 
 ```python

@@ -197,7 +197,7 @@ sprawdz("bez liczby nie zgłasza",
 # KONTRDOWOD 2: liczba Z nazwanym zrodlem ma przechodzic.
 sprawdz("liczba z przypisem przechodzi",
         gates.statystyki_bez_zrodla(
-            "Scientific American counted 39 states with the mandate.") == [])
+            "The Gazette counted 39 states with the mandate.") == [])
 
 print()
 print("=== 5. NIEWIADOME NA KONCU ===")

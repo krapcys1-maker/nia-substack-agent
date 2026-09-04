@@ -154,7 +154,9 @@ each still had a new one.
 | 4 | English prose inside Polish comments | a named researcher and their university, quoted as an example of a good mechanism description |
 | 5 | four-digit article numbers | the number was a **filename prefix**, and the filename carried the title — two full directory listings |
 | 6 | eight-to-ten-digit ids | **17 real Substack note ids.** A number does not look like identity until you paste it: `.../note/c-<id>` opens one specific note on one specific account |
-| 7 | reading, line by line | everything below |
+| 7 | reading, line by line | three system messages with the subject written into them; the owner's own words quoted verbatim, twice, with the swearing left in; seven topics of *other people's* posts the bot had commented under |
+| 8 | letters that are neither ASCII nor Polish | a word in which one letter was **Cyrillic** where its Latin twin belongs. The character itself cannot be written here — the audit refuses the file, which is the check working. It reads as an ordinary word and no search for its Latin spelling can find it. The same sweep surfaced two real people's names — one with hangul in brackets, one pasted into a domain |
+| 9 | the shape `note/c-<digits>` | **four more real note ids.** Sweep 6 looked for eight-to-ten-digit numbers and replaced seventeen; searching by the shape of the URL instead of the length of the number has no false positives, and found the four that sweep had walked past |
 
 **What only reading found.** Three system messages — `CURIOSITY_SYSTEM`,
 `BANK_SYSTEM`, `FEDREG_SYSTEM` — had the niche written into them literally. This
@@ -175,6 +177,25 @@ and names the line it is on.
 
 That is the same class of fault this project hunts everywhere else — a check
 that looks alive and does nothing — committed inside the tool that hunts it.
+
+**And the same class again, one layer down.** The Cyrillic letter found by
+sweep 8 is the backspace problem without the backspace: a string that reads
+normally and cannot be matched. The audit now refuses source carrying Greek,
+Cyrillic, Hebrew, Arabic, Devanagari, Thai, kana, hanzi or hangul, and prints
+extended-Latin letters for a person to look at — because that range holds both
+`Veröffentlichen` from Substack's German interface and surnames.
+
+**And a lesson about how to search.** Sweep 6 hunted eight-to-ten-digit numbers
+and drowned in token ceilings and file sizes, so it was skimmed. Sweep 9 hunts
+`note/c-<digits>` and has no false positives at all. Four ids had survived the
+first. Searching by the *shape of the thing* beats searching by a property the
+thing happens to have.
+
+**Documentation has twins.** `agent-v2/dokumentacja-zrodla/` holds both
+generated parts and 5,700 lines of hand-written chapters, and the hand-written
+ones restate what the code comments say. Fixing a comment does not fix its twin,
+and nothing notices: three chapters described code that had been changed hours
+earlier. Anything corrected in a comment has to be grepped for there too.
 
 ## 9. What this cost
 

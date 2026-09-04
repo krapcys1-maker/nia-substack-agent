@@ -23,7 +23,7 @@ statystyk brak. Czytalismy ja wylacznie po date wystawienia. Dziesiaty raz ten
 sam ksztalt w jednej sesji: sygnal jest w odpowiedzi, ktora juz pobieramy,
 i konczy w koszu.
 
-Dowod, ze to nie teoria — komentarz c-316706799 mial `like 1, restack 1,
+Dowod, ze to nie teoria — komentarz c-900000020 mial `like 1, restack 1,
 reply 1` w karcie `note`.
 
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo.
