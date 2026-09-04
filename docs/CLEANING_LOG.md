@@ -163,6 +163,8 @@ each still had a new one.
 | 13 | the niche's name as a **two-letter token** | it was in the *name* of a constant (`PRZESTAWIENIE_KONTA_NA_AI`), in a dictionary **key**, and in a header printed to the owner: *"EPOKA AI … OSOBNO OD EPOKI UKRYTYCH SYSTEMOW"* — both the current subject and the previous one, in one line. Unsearchable: two capitals, and the same letters appear legitimately in the same repo (Substack's own "Scan for AI text" feature) |
 | 14 | module-level constants holding a **date literal** | the **fifth** copy of the account's pivot date, in a constant with the same name as the second one — it survived the fix to that one because the test's list of places was hand-written |
 | 15 | the `systemd/` directory, read as if it were code | six units carrying **another machine's install path** twice each, another machine's user, and a placeholder brand in `Description=`. The audit reads these files, but it hunts identity patterns, and `/home/ubuntu/...` is not a name — it is a path |
+| 16 | references to constants that **do not exist** | `config.NOTEK_DZIENNIE` in a live branch of `alarm.py` — the branch could never run, and `getattr` with a default meant nothing ever protested. Now checked by the audit on every run |
+| 17 | assertions matching the **text of a `.py` source** | 138 of them; 9 find their needle only in a comment. Two were real — a pair guarding separate budgets that had been passing on a comment quoting the code as it used to be |
 
 **What only reading found.** Three system messages — `CURIOSITY_SYSTEM`,
 `BANK_SYSTEM`, `FEDREG_SYSTEM` — had the niche written into them literally. This
@@ -281,10 +283,26 @@ rather than a percentage, because a percentage hides which half you got.
 | `audyt_systemu.py`, `audyt_tematow.py` | 1,030 | **all of them** |
 | `raport_statystyk.py`, `korpus_kanalow.py` | 690 | **all of them** |
 | `migracja_okno_promocji.py` | 97 | **all of it** |
-| the 143 test files | 39,086 | roughly 35 of them, in the parts touched |
+| the test files | 39,000+ | ~40 read; **all of them** swept by shape (below) |
 
 That is all 30,294 lines in the agent's 25 modules — every module, in full,
 from `stages.py` at 7,401 lines down to `migracja_okno_promocji.py` at 97.
+
+**And how the tests were checked.** Reading 39,000 lines of tests would have
+cost as much again as reading the bot. Four shape-based sweeps over **all**
+test files were cheaper and answered definitively:
+
+| sweep | result |
+|---|---|
+| assertions matching the **text of a `.py` source** | 138 of them; 9 find their needle only in a comment, and **2 of those were real**: `budzet["follow"]` survived only in a comment about a fix from three weeks earlier. Now permanently guarded by `test_asercje_po_zrodle.py` |
+| `sprawdz(..., True)` — assertions that cannot fail | 26, and **all 26 legitimate**: each sits in a `try`/`except` where reaching the line *is* the measurement |
+| assertions pinning the **size of a configuration constant** | 6, and all 6 correct: the two that pin an operator's own choice use `sprawdz_nasze`, which skips itself when a `konfiguracja.toml` exists |
+| references to constants that do not exist | zero in tests (one in the bot — see sweep 16) |
+
+The first of those sweeps produced a wrong number first — 95 instead of 9,
+because the comment-stripper joined tokens and destroyed the layout, so no
+multi-token needle could match. That is written into the file that made the
+mistake.
 
 **What the reading found that no sweep did.** Every defect listed in the sweeps
 table above was found by a pattern. These were not: a guard written for
