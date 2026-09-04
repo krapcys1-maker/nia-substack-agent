@@ -100,6 +100,9 @@ PROMPTY = sorted((AGENT / "prompts").glob("*.md"))
 # ta wada, ktora ten plik sciga.
 import mapa_funkcji  # noqa: E402
 
+sys.path.insert(0, str(KORZEN / "agent-v2"))
+import config as _config  # noqa: E402
+
 _zebrane = mapa_funkcji.zbierz()
 ILE_FUNKCJI = sum(len(z.funkcje) for z, _, _ in _zebrane.values())
 
@@ -154,6 +157,11 @@ POMIARY = {
     "prompty": (len(PROMPTY), "pliki agent-v2/prompts/*.md"),
     "wiersze_promptow": (_wierszy(PROMPTY), "wiersze tych plikow"),
     "wiersze_modulow": (_wierszy(MODULY), "wiersze tych modulow"),
+    # ROLE MODELI. „26 model roles" stalo na pierwszej stronie repozytorium
+    # i w opisie na GitHubie, a nikt tego nie liczyl — tak samo jak „16 gates".
+    # Zrodlem prawdy jest `config.MODEL_FOR`.
+    "role_modeli": (len(_config.MODEL_FOR),
+                    "pozycje w config.MODEL_FOR — po jednej na role modelu"),
     "bramki": (_ile_bramek(),
                "funkcje z gates.py, ktore NAPRAWDE chodza na gotowym tekscie "
                "— wywiedzione z grafu wywolan, bez agregatorow"),
@@ -167,6 +175,7 @@ MIEJSCA = [
     # „16 gates" stalo w dwoch miejscach README i nikt tego nie
     # przeliczal. Prawdziwa liczba, z grafu wywolan, to 12.
     ("README.md", r"(\d+) gates on every finished text", ("bramki",)),
+    ("README.md", r"(\d+) model roles", ("role_modeli",)),
     ("README.md", r"(\d+) deterministic gates", ("bramki",)),
     # Akapit „Honest notes". Stala tam tabela z liczbami przejsc
     # (102/103/104), ktorej nikt nie przeliczal — zdryfowala do 102
