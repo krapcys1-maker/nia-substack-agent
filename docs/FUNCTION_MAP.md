@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 25 |
-| functions and methods | 548 |
+| functions and methods | 549 |
 | functions that call a paid model | 25 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 41 |
@@ -60,7 +60,7 @@ For paid calls the verdict comes from
 | [`stages.py`](#agent-v2stages-py) | 159 | 23 | 1 | 18 | Etapy lancucha, po kolei, w pamieci. |
 | [`statystyki.py`](#agent-v2statystyki-py) | 11 | 0 | 0 | 0 | Statystyki wystawionych pozycji: kto to zobaczyl i co z tego wyniklo. |
 | [`style.py`](#agent-v2style-py) | 9 | 0 | 0 | 0 | Głos redakcyjny: korpus próbek i dwa profile stylu. |
-| [`wzajemnosc.py`](#agent-v2wzajemnosc-py) | 26 | 0 | 0 | 0 | Czy zaczepieni odwzajemniaja sie, i skad naprawde biora sie czytelnicy. |
+| [`wzajemnosc.py`](#agent-v2wzajemnosc-py) | 27 | 0 | 0 | 0 | Czy zaczepieni odwzajemniaja sie, i skad naprawde biora sie czytelnicy. |
 
 ---
 
@@ -885,34 +885,35 @@ Głos redakcyjny: korpus próbek i dwa profile stylu.
 
 Czy zaczepieni odwzajemniaja sie, i skad naprawde biora sie czytelnicy.
 
-26 funkcji.
+27 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 156 | `wczytaj(nazwa)` | — | Wiersze pliku JSONL z katalogu danych. | `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.okno_pomiaru` *(+5)* |
-| 184 | `_chwila(tekst)` | — | ISO-8601 na moment w UTC, bez strefy. | `wzajemnosc._licznik_z_chwili`, `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly` *(+7)* |
-| 201 | `_nazwa(tekst)` | — | Nazwa wyswietlana do porownywania: male litery, jedna spacja. | `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.skad_przyszli` |
-| 206 | `_uchwyt(tekst)` | — | Uchwyt do porownywania: male litery, same znaki alfanumeryczne. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie` |
-| 231 | `_licznik_z_chwili(kiedy, liczniki)` | — | Zapis `wzrost.jsonl` z tego samego momentu, co zrzut imienny — albo nic. | `wzajemnosc.pokrycie`, `wzajemnosc.zrzuty_czytelnikow` |
-| 241 | `zrzuty_czytelnikow()` | — | Zrzuty po kolei, KAZDY Z OCENA, CZY NIE JEST OKROJONY. | `wzajemnosc.czytelnicy`, `wzajemnosc.naglowek`, `wzajemnosc.pomiar_oslepl`, `wzajemnosc.raport` |
-| 300 | `czytelnicy()` | — | Uchwyt czytelnika -> co o nim wiemy ze zrzutow. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.opoznienia`, `wzajemnosc.skad_przyszli` |
-| 363 | `kolejnosc(wpis, akcja)` | — | Czy czytelnik pojawil sie PO naszym dzialaniu, PRZED nim, czy nie wiadomo. | `wzajemnosc.odwzajemnienie` |
-| 394 | `okno_pomiaru()` | — | Od kiedy do kiedy w ogole widzimy, kto nas czyta. | `wzajemnosc.naglowek`, `wzajemnosc.raport`, `wzajemnosc.slepe_okno` |
-| 411 | `pokrycie()` | — | Ilu czytelnikow LICZY Substack, a ilu umiemy nazwac po imieniu. | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
-| 458 | `_pusty_kubel()` | — | Swiezy komplet licznikow. | `wzajemnosc.zaczepienia` |
-| 467 | `zaczepienia()` | — | Kogo zaczepilismy — osobno udane, nieudane i POMINIETE. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.slepe_okno` |
-| 513 | `odwzajemnienie()` | — | Ilu z zaczepionych pojawilo sie POTEM na naszej liscie czytelnikow. | `wzajemnosc.naglowek`, `wzajemnosc.opoznienia`, `wzajemnosc.raport` |
-| 589 | `odwzajemnienie._od_kotwicy(lista)` | — | — | `wzajemnosc.odwzajemnienie` |
-| 623 | `slepe_okno()` | — | O ile nasze najstarsze zaczepienie wyprzedza pierwszy zrzut czytelnikow. | `wzajemnosc.raport` |
-| 651 | `_reakcje()` | — | Zdarzenia `skutek` rozdzielone na kubelki plus licznik typow nieznanych. | `wzajemnosc.kanaly`, `wzajemnosc.opoznienia`, `wzajemnosc.skad_przyszli` |
-| 674 | `skad_przyszli()` | — | Ilu naszych czytelnikow zetknelo sie wczesniej z nasza trescia. | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
-| 734 | `_nasze_pozycje()` | — | Identyfikator wystawionej tresci -> rodzaj i chwila wystawienia. | `wzajemnosc.kanaly`, `wzajemnosc.opoznienia` |
-| 762 | `kanal_reakcji(reakcja, pozycje)` | — | Ktorego NASZEGO kanalu dotknal czlowiek — z CELU reakcji, nie z jej typu. | `wzajemnosc.kanaly` |
-| 789 | `opoznienia()` | — | Dwa rozne czasy, celowo NIE zsumowane w jeden. | `wzajemnosc.raport` |
-| 883 | `kanaly()` | — | Co poprzedzilo pojawienie sie czytelnika — osobowo i pozycyjnie. | `wzajemnosc.raport` |
-| 996 | `pomiar_oslepl()` | — | Czy w ogole mamy z czego liczyc wzajemnosc. | `alarm.pomiar_wzajemnosci`, `wzajemnosc.main` |
-| 1075 | `_procent(licznik, mianownik)` | — | — | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
-| 1079 | `naglowek()` | — | Jeden wiersz bez zrzutow albo cztery do szesciu. | `alarm.sprawdz_wszystko` |
-| 1137 | `raport()` | — | Pelna odpowiedz na cztery pytania. | `alarm.przeglad`, `wzajemnosc.main` |
-| 1409 | `main()` | — | — | `wzajemnosc (poziom modulu)` |
+| 118 | `po_zmianie_tematu(kiedy)` | — | Czy ten wpis jest z obecnej epoki konta. | `wzajemnosc.odwzajemnienie`, `wzajemnosc.odwzajemnienie._od_kotwicy`, `wzajemnosc.zaczepienia` |
+| 173 | `wczytaj(nazwa)` | — | Wiersze pliku JSONL z katalogu danych. | `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.okno_pomiaru` *(+5)* |
+| 201 | `_chwila(tekst)` | — | ISO-8601 na moment w UTC, bez strefy. | `wzajemnosc._licznik_z_chwili`, `wzajemnosc._nasze_pozycje`, `wzajemnosc._reakcje`, `wzajemnosc.kanaly` *(+7)* |
+| 218 | `_nazwa(tekst)` | — | Nazwa wyswietlana do porownywania: male litery, jedna spacja. | `wzajemnosc._reakcje`, `wzajemnosc.kanaly`, `wzajemnosc.skad_przyszli` |
+| 223 | `_uchwyt(tekst)` | — | Uchwyt do porownywania: male litery, same znaki alfanumeryczne. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie` |
+| 248 | `_licznik_z_chwili(kiedy, liczniki)` | — | Zapis `wzrost.jsonl` z tego samego momentu, co zrzut imienny — albo nic. | `wzajemnosc.pokrycie`, `wzajemnosc.zrzuty_czytelnikow` |
+| 258 | `zrzuty_czytelnikow()` | — | Zrzuty po kolei, KAZDY Z OCENA, CZY NIE JEST OKROJONY. | `wzajemnosc.czytelnicy`, `wzajemnosc.naglowek`, `wzajemnosc.pomiar_oslepl`, `wzajemnosc.raport` |
+| 317 | `czytelnicy()` | — | Uchwyt czytelnika -> co o nim wiemy ze zrzutow. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.opoznienia`, `wzajemnosc.skad_przyszli` |
+| 380 | `kolejnosc(wpis, akcja)` | — | Czy czytelnik pojawil sie PO naszym dzialaniu, PRZED nim, czy nie wiadomo. | `wzajemnosc.odwzajemnienie` |
+| 411 | `okno_pomiaru()` | — | Od kiedy do kiedy w ogole widzimy, kto nas czyta. | `wzajemnosc.naglowek`, `wzajemnosc.raport`, `wzajemnosc.slepe_okno` |
+| 428 | `pokrycie()` | — | Ilu czytelnikow LICZY Substack, a ilu umiemy nazwac po imieniu. | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
+| 475 | `_pusty_kubel()` | — | Swiezy komplet licznikow. | `wzajemnosc.zaczepienia` |
+| 484 | `zaczepienia()` | — | Kogo zaczepilismy — osobno udane, nieudane i POMINIETE. | `wzajemnosc.kanaly`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.slepe_okno` |
+| 530 | `odwzajemnienie()` | — | Ilu z zaczepionych pojawilo sie POTEM na naszej liscie czytelnikow. | `wzajemnosc.naglowek`, `wzajemnosc.opoznienia`, `wzajemnosc.raport` |
+| 606 | `odwzajemnienie._od_kotwicy(lista)` | — | — | `wzajemnosc.odwzajemnienie` |
+| 640 | `slepe_okno()` | — | O ile nasze najstarsze zaczepienie wyprzedza pierwszy zrzut czytelnikow. | `wzajemnosc.raport` |
+| 668 | `_reakcje()` | — | Zdarzenia `skutek` rozdzielone na kubelki plus licznik typow nieznanych. | `wzajemnosc.kanaly`, `wzajemnosc.opoznienia`, `wzajemnosc.skad_przyszli` |
+| 691 | `skad_przyszli()` | — | Ilu naszych czytelnikow zetknelo sie wczesniej z nasza trescia. | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
+| 751 | `_nasze_pozycje()` | — | Identyfikator wystawionej tresci -> rodzaj i chwila wystawienia. | `wzajemnosc.kanaly`, `wzajemnosc.opoznienia` |
+| 779 | `kanal_reakcji(reakcja, pozycje)` | — | Ktorego NASZEGO kanalu dotknal czlowiek — z CELU reakcji, nie z jej typu. | `wzajemnosc.kanaly` |
+| 806 | `opoznienia()` | — | Dwa rozne czasy, celowo NIE zsumowane w jeden. | `wzajemnosc.raport` |
+| 900 | `kanaly()` | — | Co poprzedzilo pojawienie sie czytelnika — osobowo i pozycyjnie. | `wzajemnosc.raport` |
+| 1013 | `pomiar_oslepl()` | — | Czy w ogole mamy z czego liczyc wzajemnosc. | `alarm.pomiar_wzajemnosci`, `wzajemnosc.main` |
+| 1092 | `_procent(licznik, mianownik)` | — | — | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
+| 1096 | `naglowek()` | — | Jeden wiersz bez zrzutow albo cztery do szesciu. | `alarm.sprawdz_wszystko` |
+| 1154 | `raport()` | — | Pelna odpowiedz na cztery pytania. | `alarm.przeglad`, `wzajemnosc.main` |
+| 1428 | `main()` | — | — | `wzajemnosc (poziom modulu)` |
 

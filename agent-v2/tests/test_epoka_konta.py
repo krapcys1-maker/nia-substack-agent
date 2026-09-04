@@ -3,11 +3,12 @@
 
 ## Po co ten plik istnieje
 
-Ten sam dzien byl do 4 wrzesnia 2026 wpisany na sztywno w TRZECH miejscach:
+Ten sam dzien byl do 4 wrzesnia 2026 wpisany na sztywno w CZTERECH miejscach:
 
     config.DATA_PRZESTAWIENIA        = "2026-08-25"
     audyt_systemu.PIVOT              = "2026-08-25"
     run.PRZESTAWIENIE_KONTA_NA_AI    = "2026-08-25"
+    wzajemnosc.KOTWICA_NISZY         = "2026-08-25"
 
 Trzy kopie jednej wartosci rozjezdzaja sie zawsze — a tu bylo gorzej niz
 zwykle, bo NAZWA trzeciej niosla nazwe niszy, wiec przy zmianie tematu trzeba
@@ -42,6 +43,7 @@ sys.path.insert(0, "agent-v2")
 import config          # noqa: E402
 import run             # noqa: E402
 import stages          # noqa: E402
+import wzajemnosc      # noqa: E402
 
 zdane = oblane = 0
 
@@ -63,12 +65,15 @@ def z_data(dzien: str):
     samo przestawienie `config` jej nie rusza — i to jest wlasnie ta wlasnosc,
     ktora ten plik ma trzymac pod kontrola.
     """
-    stare = (config.DATA_PRZESTAWIENIA, run.PRZESTAWIENIE_KONTA_NA_AI)
+    stare = (config.DATA_PRZESTAWIENIA, run.PRZESTAWIENIE_KONTA_NA_AI,
+             wzajemnosc.KOTWICA_NISZY)
     config.DATA_PRZESTAWIENIA = dzien
     run.PRZESTAWIENIE_KONTA_NA_AI = dzien
+    wzajemnosc.KOTWICA_NISZY = dzien
 
     def cofnij():
-        config.DATA_PRZESTAWIENIA, run.PRZESTAWIENIE_KONTA_NA_AI = stare
+        (config.DATA_PRZESTAWIENIA, run.PRZESTAWIENIE_KONTA_NA_AI,
+         wzajemnosc.KOTWICA_NISZY) = stare
     return cofnij
 
 
@@ -83,6 +88,8 @@ try:
             run._po_zmianie_tematu("2019-01-01T00:00:00+00:00"))
     sprawdz("run: pusta wartosc tez przechodzi",
             run._po_zmianie_tematu(""))
+    sprawdz("wzajemnosc: wpis sprzed lat przechodzi",
+            wzajemnosc.po_zmianie_tematu("2019-01-01T00:00:00+00:00"))
 finally:
     cofnij()
 
@@ -99,6 +106,8 @@ try:
                 stages._z_obecnej_epoki({"kiedy": dzien}) is ma_przejsc, dzien)
         sprawdz("run:    %-20s -> %s" % (opis, ma_przejsc),
                 run._po_zmianie_tematu(dzien) is ma_przejsc, dzien)
+        sprawdz("wzaj:   %-20s -> %s" % (opis, ma_przejsc),
+                wzajemnosc.po_zmianie_tematu(dzien) is ma_przejsc, dzien)
 
     # WPIS BEZ DATY NIE PRZECHODZI, gdy granica jest ustawiona. Cena pomylki
     # jest niesymetryczna: przepuszczony wpis z poprzedniej epoki to notka
@@ -118,6 +127,9 @@ try:
 
     import audyt_systemu
     importlib.reload(audyt_systemu)
+    sprawdz("wzajemnosc.KOTWICA_NISZY bierze date z konfiguracji",
+            wzajemnosc.KOTWICA_NISZY == config.DATA_PRZESTAWIENIA,
+            (wzajemnosc.KOTWICA_NISZY, config.DATA_PRZESTAWIENIA))
     sprawdz("audyt_systemu.PIVOT bierze date z konfiguracji",
             audyt_systemu.PIVOT == config.DATA_PRZESTAWIENIA,
             (audyt_systemu.PIVOT, config.DATA_PRZESTAWIENIA))

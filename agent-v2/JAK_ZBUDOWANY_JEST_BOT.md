@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 248 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 267 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 129 zestawów
-testów, 3501 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 3505 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -771,10 +771,11 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `wzajemnosc.py` — czy zaczepieni sie odwzajemniaja: liczy PO naszej akcji, osobno stan nieorzekalny
 
-1418 wierszy, 25 funkcji na poziomie modułu, 0 klas
+1437 wierszy, 26 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
+| `po_zmianie_tematu(kiedy)` | Czy ten wpis jest z obecnej epoki konta. |
 | `wczytaj(nazwa)` | Wiersze pliku JSONL z katalogu danych. Uszkodzona linia nie kasuje reszty. |
 | `_chwila(tekst)` *(wewn.)* | ISO-8601 na moment w UTC, bez strefy. Zwraca None zamiast rzucac. |
 | `_nazwa(tekst)` *(wewn.)* | Nazwa wyswietlana do porownywania: male litery, jedna spacja. |

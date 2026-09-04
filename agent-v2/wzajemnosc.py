@@ -103,11 +103,28 @@ WZROST = "wzrost.jsonl"
 # publicznosci — zmierzone: 53 z 92 hostow w historii komentarzy pochodzi
 # sprzed tej daty.
 #
-# PRZESTAW TO RAZEM Z NISZA. Data jest wpisana, bo dotyczy JEDNEJ instalacji:
-# na swiezym koncie nie ma czego odcinac i wartosc moze zostac dowolnie
-# wczesna. Nie jest polem konfiguracji, bo pole, ktore ma sens tylko po
-# przestawieniu tematu, kusiloby do ustawiania go „na wszelki wypadek".
-KOTWICA_NISZY = "2026-08-25"
+# CZWARTA KOPIA TEJ SAMEJ DATY — i uzasadnienie, ktore sie zdezaktualizowalo.
+# Stalo tu: „Nie jest polem konfiguracji, bo pole, ktore ma sens tylko po
+# przestawieniu tematu, kusiloby do ustawiania go «na wszelki wypadek»".
+# Argument byl dobry dopoki pola nie bylo. Pole jest (`konto.data_przestawienia`)
+# i domyslnie PUSTE, co znaczy „to konto nie zmienialo tematu" — czyli dokladnie
+# ten stan, przed ktorym uzasadnienie chronilo.
+#
+# PUSTA DATA PRZEPUSZCZA WSZYSTKO: bez zmiany tematu cala historia jest
+# biezaca i nie ma czego odcinac.
+KOTWICA_NISZY = config.DATA_PRZESTAWIENIA
+
+
+def po_zmianie_tematu(kiedy) -> bool:
+    """Czy ten wpis jest z obecnej epoki konta.
+
+    Jedno miejsce dla trzech pytajacych w tym pliku — ta sama poprawka, co
+    `stages._z_obecnej_epoki` i `run._po_zmianie_tematu`. Pusta kotwica znaczy
+    „nie bylo zmiany tematu", wiec wszystko jest biezace.
+    """
+    if not KOTWICA_NISZY:
+        return True
+    return str(kiedy or "")[:10] >= KOTWICA_NISZY
 
 # Ponizej tylu obserwacji nie wyciagamy wniosku o czasie odzewu, tylko mowimy,
 # ze probka jest za mala. Prog nie jest okragly dla ozdoby: przy n < 10 mediana
@@ -497,7 +514,7 @@ def zaczepienia() -> dict[str, dict]:
         # dostawalo sie „0 przed, 0 po", czyli obraz bloku, ktory nigdy nie
         # wstal. Prawda jest inna i wazniejsza: probowal, ale ANI RAZU po
         # przestawieniu konta na AI, wiec jego cisza jest z innego powodu.
-        po_kotwicy = kiedy[:10] >= KOTWICA_NISZY
+        po_kotwicy = po_zmianie_tematu(kiedy)
         kubel["prob_od_kotwicy" if po_kotwicy else "prob_przed_kotwica"] += 1
         if w.get("udane"):
             kubel["udane"].append(pozycja)
@@ -587,7 +604,7 @@ def odwzajemnienie() -> dict[str, dict]:
         # wrzucenie ich do jednego mianownika rozcienczaloby dzisiejsze
         # pytanie o publicznosc AI danymi o blogach kulinarnych.
         def _od_kotwicy(lista):
-            return [t for t in lista if str(t["kiedy"])[:10] >= KOTWICA_NISZY]
+            return [t for t in lista if po_zmianie_tematu(t["kiedy"])]
 
         orzekalnych_od_kotwicy = (kubel["udane_od_kotwicy"]
                                   - len(_od_kotwicy(nieorzekalne)))
@@ -1241,7 +1258,9 @@ def raport() -> list[str]:
                      " sama osoba moze miec oba rozne.")
         L.append("    proby wg ery konta: %d przed przestawieniem na AI (%s),"
                  " %d po"
-                 % (d["prob_przed_kotwica"], KOTWICA_NISZY, d["prob_od_kotwicy"]))
+                 % (d["prob_przed_kotwica"],
+                    KOTWICA_NISZY or "(konto nie zmienialo tematu)",
+                    d["prob_od_kotwicy"]))
         if d["udane_od_kotwicy"] and d["orzekalnych_od_kotwicy"] > 0:
             L.append("    z samej ery AI: odwzajemnilo sie %d z %d orzekalnych"
                      " (%s), przy %d udanych probach"

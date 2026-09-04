@@ -345,6 +345,14 @@ try:
 
     print()
     print("=== 5. ERY KONTA SA ROZDZIELONE ===")
+    # KOTWICE USTAWIA TEST, NIE KONFIGURACJA. `wzajemnosc.KOTWICA_NISZY`
+    # pochodzi od 4 wrzesnia 2026 z `config.DATA_PRZESTAWIENIA` i jest
+    # domyslnie PUSTA — bo nowe konto nie zmienialo tematu. Blok, ktory bada
+    # ROZDZIELENIE ER, musi wiec te granice sam wlaczyc; inaczej sprawdza
+    # filtr, ktorego nie ustawil. Ta sama poprawka, co w
+    # `test_indeks_kandydatow.py`.
+    _kotwica_wlasciwa = wzajemnosc.KOTWICA_NISZY
+    wzajemnosc.KOTWICA_NISZY = "2026-08-25"
     zapisz(dziennik_produkcyjny())
     sub5 = wzajemnosc.odwzajemnienie()["subskrypcja"]
     obs5 = wzajemnosc.odwzajemnienie()["obserwacja"]
@@ -357,9 +365,21 @@ try:
     sprawdz("subskrypcje: 4 udane sprzed, 8 po",
             (sub5["udane_przed_kotwica"], sub5["udane_od_kotwicy"]) == (4, 8),
             (sub5["udane_przed_kotwica"], sub5["udane_od_kotwicy"]))
-    sprawdz("obserwacje: obie proby sprzed przestawienia na AI, ZERO po",
+    sprawdz("obserwacje: obie proby sprzed zmiany tematu, ZERO po",
             (obs5["prob_przed_kotwica"], obs5["prob_od_kotwicy"]) == (2, 0),
             (obs5["prob_przed_kotwica"], obs5["prob_od_kotwicy"]))
+
+    # PUSTA KOTWICA ZNACZY „KONTO NIE ZMIENIALO TEMATU" i wtedy CALA historia
+    # jest biezaca. To jest stan DOMYSLNY nowej instalacji, wiec musi byc
+    # zmierzony — gole porownanie napisow dziala tu przypadkiem (kazdy napis
+    # jest >= ""), wiec bledna wersja tez by przeszla, dopoki ktos nie ustawi
+    # daty.
+    wzajemnosc.KOTWICA_NISZY = ""
+    sub_bez = wzajemnosc.odwzajemnienie()["subskrypcja"]
+    sprawdz("pusta kotwica: wszystko liczy sie jako biezace",
+            (sub_bez["prob_przed_kotwica"], sub_bez["prob_od_kotwicy"]) == (0, 18),
+            (sub_bez["prob_przed_kotwica"], sub_bez["prob_od_kotwicy"]))
+    wzajemnosc.KOTWICA_NISZY = _kotwica_wlasciwa
 
     print()
     print("=== 6. TRZY KUPKI CZYTELNIKOW, NIE DWIE (KONTRDOWOD ODTWORZONY) ===")

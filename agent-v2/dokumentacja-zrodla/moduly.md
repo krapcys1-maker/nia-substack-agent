@@ -629,10 +629,11 @@
 
 ### `wzajemnosc.py` — czy zaczepieni sie odwzajemniaja: liczy PO naszej akcji, osobno stan nieorzekalny
 
-1418 wierszy, 25 funkcji na poziomie modułu, 0 klas
+1437 wierszy, 26 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
+| `po_zmianie_tematu(kiedy)` | Czy ten wpis jest z obecnej epoki konta. |
 | `wczytaj(nazwa)` | Wiersze pliku JSONL z katalogu danych. Uszkodzona linia nie kasuje reszty. |
 | `_chwila(tekst)` *(wewn.)* | ISO-8601 na moment w UTC, bez strefy. Zwraca None zamiast rzucac. |
 | `_nazwa(tekst)` *(wewn.)* | Nazwa wyswietlana do porownywania: male litery, jedna spacja. |
