@@ -4610,9 +4610,9 @@ def classify(
             flush=True,
         )
         # Odrzucamy TYLKO odpad i puste wyciągi. Próg trafności był tu bramką
-        # przez jeden przebieg i natychmiast wyrzucił pracę o atmosferze
-        # modyfikowanej na szpinaku — siedem liczb, trafność 0,20 od modelu,
-        # a to dosłownie temat artykułu. Trafność zostaje notatką do kolejności.
+        # przez jeden przebieg i natychmiast wyrzucił pracę naukową, która była
+        # DOSŁOWNIE tematem pisanego artykułu: siedem liczb w środku, a model
+        # dał jej trafność 0,20. Trafność zostaje notatką do kolejności.
         if klass == "ODPAD" or not excerpts:
             continue
         kept.append({
@@ -4645,11 +4645,11 @@ def _dobierz_przegladarka(conn, run_id: int, brakujace: list[dict[str, Any]],
                           juz_mamy: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Drugie podejscie do stron, ktore zwyklemu pobieraniu daly pusty szkielet.
 
-    Polowa zrodel przepadala i to bylo waskie gardlo jakosci: artykul o blokadzie
-    na karcie stanal na DWOCH dokumentach z szesciu znalezionych, bo `visa.no`
-    i `mtf.przyklad-platnosci.example` oddaly zero znakow. To nie sa blokady — to strony
-    rysowane JavaScriptem, ktorych klient HTTP nie widzi. Przegladarke mamy
-    i uzywamy jej do komentarzy; tutaj jej nie bylo.
+    Polowa zrodel przepadala i to bylo waskie gardlo jakosci: jeden artykul
+    stanal na DWOCH dokumentach z szesciu znalezionych, bo dwa serwisy
+    branzowe oddaly ZERO znakow. To nie sa blokady — to strony rysowane
+    JavaScriptem, ktorych klient HTTP nie widzi. Przegladarke mamy i uzywamy
+    jej do komentarzy; tutaj jej nie bylo.
 
     NIE dotyczy odmow ani bledow 404. Host, ktory mowi automatowi „nie", dostaje
     „nie" — to zasada projektu i nie omijamy jej narzedziem. Adres, ktory nie

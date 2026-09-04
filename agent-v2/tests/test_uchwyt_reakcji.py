@@ -17,9 +17,9 @@ Zmierzone 1 wrzesnia 2026 na produkcyjnym dzienniku serwera
     Halina Osma, Publikacja Drogowa: Founder, sidharth chandra), wiec jako
     cele sa bezuzyteczni — juz ich mamy;
   * przez rownosc slugu nazwy ze slugiem hosta z `gdzie_komentowalismy.json`
-    (94 hosty) trafia 7 z 69: davidoks.blog, eunnurilee.substack.com,
+    (94 hosty) trafia 7 z 69: annanowak.blog, eunnurilee.substack.com,
     fatemaraja.substack.com, igordziewiaty.substack.com, ixcarus.substack.com,
-    thenemethreport.substack.com, www.ryanpuzycki.com — z czego po odsianiu
+    raportbranzowy.substack.com, www.jankowalski.com — z czego po odsianiu
     wszystkiego sprzed przestawienia konta na AI (2026-08-25) zostaja TRZY.
 
 Czyli poziom pierwszenstwa celow zbudowany na NAJMOCNIEJSZYM sygnale, jaki
@@ -115,7 +115,7 @@ LUDZIE = [
     # NADAWCA BEZ NAZWY. Stary kod wycinal go z `kto`; jesli uchwyty leca
     # osobna petla, to od TEGO miejsca kazda para jest przesunieta.
     {"id": 2, "handle": "duchbeznazwy"},
-    {"id": 3, "name": "Jan Dziesiaty", "handle": "ryanpuzycki"},
+    {"id": 3, "name": "Jan Dziesiaty", "handle": "jankowalski"},
     # KONTO BEZ UCHWYTU W ODPOWIEDZI. Ma byc `None`, nie pusty napis.
     {"id": 4, "name": "Lech Dwunasty"},
     # UCHWYT PUSTY I UCHWYT Z BIALYMI ZNAKAMI — jedno i drugie to „nie wiem".
@@ -214,7 +214,7 @@ po_kluczu = {w["zdarzenie"]: w for w in wpisy}
 lajk = po_kluczu["note_like:900"]
 sprawdz("uchwyty sa w zapisie", "uchwyty" in lajk, sorted(lajk))
 sprawdz("i niosa prawdziwe konta, nie nazwy",
-        lajk["uchwyty"] == ["igordziewiaty", "ryanpuzycki"], lajk)
+        lajk["uchwyty"] == ["igordziewiaty", "jankowalski"], lajk)
 
 print()
 print("=== 2. NAZWA I UCHWYT TO TA SAMA OSOBA ===")
@@ -260,7 +260,7 @@ sprawdz("piatka to PIERWSZE piec osob z nazwa, w kolejnosci kanalu",
         restack["kto"] == ["Igor Dziewiaty", "Jan Dziesiaty", "Lech Dwunasty",
                            "Pusty Uchwyt", "Spacja"], restack["kto"])
 sprawdz("a uchwyty stoja przy nich",
-        restack["uchwyty"] == ["igordziewiaty", "ryanpuzycki", None, None, None],
+        restack["uchwyty"] == ["igordziewiaty", "jankowalski", None, None, None],
         restack["uchwyty"])
 sprawdz("`ilu` dalej mowi, ilu bylo NAPRAWDE, mimo przyciecia",
         restack["ilu"] == 8, restack["ilu"])
@@ -376,7 +376,7 @@ try:
     sprawdz("run.kogo_juz_dotknelismy nie wywala sie na mieszance",
             isinstance(dotkneli, set) and dotkneli, sorted(dotkneli)[:4])
     sprawdz("i widzi nazwy z OBU polowek",
-            "igordziewiaty" in dotkneli and "ryanpuzycki" in dotkneli,
+            "igordziewiaty" in dotkneli and "jankowalski" in dotkneli,
             sorted(dotkneli))
 finally:
     browser.DZIENNIK = o_dz

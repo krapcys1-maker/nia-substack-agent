@@ -833,7 +833,7 @@ def cele_wedlug_pierwszenstwa(historia: dict) -> tuple[list[str], dict]:
     # jednoczesnie reagujacym i hostem `igordziewiaty.substack.com` z historii
     # komentarzy — bez tego odsiewu poszedlby przez dwa poziomy naraz i zjadl
     # dwa sloty na jednym profilu. Porownujemy slugiem, bo host z historii bywa
-    # wlasna domena (`www.ryanpuzycki.com` to `puzycki`... i akurat tam slug
+    # wlasna domena (`www.jankowalski.com` to `kowalski`... i akurat tam slug
     # NIE zbiega sie z uchwytem — dlatego to sito lapie tylko czesc, a reszte
     # domyka `czy_juz_obserwujemy` po rozwiazaniu uchwytu).
     juz_w_reakcjach = {_slug_hosta(a) for a in reagujacy}
@@ -1998,7 +1998,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             # DRUGIE SPRAWDZENIE, JUZ PO ROZWIAZANIU UCHWYTU. Tanie sito wyzej
             # jest dokladne tylko dla adresow w domenie Substacka; dla wlasnej
             # domeny (24 z 92 hostow) uchwyt wychodzi dopiero z API i dopiero
-            # tutaj widac, ze `www.ryanpuzycki.com` to `puzycki`, ktorego
+            # tutaj widac, ze `www.jankowalski.com` to `kowalski`, ktorego
             # zasubskrybowalismy 30 sierpnia.
             if uchwyt and uchwyt in zamkniete:
                 z_pamieci += 1

@@ -2395,15 +2395,15 @@ FETCH_TIMEOUT_S = 30.0
 # ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO.
 #
 # Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu.
-# Zmierzone 25 sierpnia 2026 na artykule o automatycznym wykrywaniu naduzyc
-# w zasilkach, dziewiec zrodel:
+# Zmierzone 25 sierpnia 2026 na jednym artykule, dziewiec zrodel — pokazuje
+# tylko RZEDY WIELKOSCI, bo o nie tu chodzi:
 #
-#     amnesty.nl                      146038 znakow   12 fragmentow   2 liczby
-#     hrw.org                          81669           11             10
-#     documents.uow.edu.au              7891
-#     cdn.greens.org.au                 3275
-#     autoriteitpersoonsgegevens.nl      716            3              0
-#     openresearch-repository.anu.edu.au 483            2              0
+#     duza organizacja pozarzadowa    146038 znakow   12 fragmentow   2 liczby
+#     druga taka                       81669           11             10
+#     repozytorium uczelniane           7891
+#     serwis partii politycznej         3275
+#     urzad ochrony danych               716            3              0
+#     drugie repozytorium                483            2              0
 #
 # Obie strony ponizej tysiaca znakow oddaly ZERO liczb, a mimo to weszly do
 # bilansu jako pelnoprawne zrodla pierwotne — jedna z nich dostala nawet

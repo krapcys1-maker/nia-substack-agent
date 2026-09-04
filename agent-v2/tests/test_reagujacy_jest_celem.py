@@ -329,8 +329,8 @@ def uruchom_blok(kod_bloku, nazwa, historia, konta, budzet=1,
         host = (host or "").strip().lower()
         if host.endswith(".substack.com"):
             return host.split(".")[0]
-        return {"www.ryanpuzycki.com": "puzycki",
-                "www.a16z.news": "a16z"}.get(host)
+        return {"www.jankowalski.com": "kowalski",
+                "www.funduszx.news": "funduszx"}.get(host)
 
     stare = {k: getattr(browser, k) for k in
              ("podlacz_sie", "wymagaj_sesji", "naprawde_wyslac",
@@ -411,7 +411,7 @@ HISTORIA = {
     "thebuttergirlfriend.substack.com": "2026-08-16T13:00:00+00:00",
     "publikacja4.substack.com":          "2026-08-16T13:14:10+00:00",
     "igordziewiaty.substack.com":          "2026-08-31T10:00:00+00:00",
-    "www.a16z.news":                    "2026-08-30T09:00:00+00:00",
+    "www.funduszx.news":                    "2026-08-30T09:00:00+00:00",
 }
 
 # Osiem osob odwzorowujacych kazdy przypadek zmierzony na produkcji.
@@ -424,7 +424,7 @@ def dziennik_pelny():
                ["chaosengine2026"], DAWNO()),
         # PRZECHODZI: jedna reakcja, ale to ODPOWIEDZ — czyli ktos pisal.
         skutek("note_reply:3", "note_reply", ["Lech Dwunasty"],
-               ["davidoks"], DAWNO()),
+               ["annanowak"], DAWNO()),
         # ODPADA: jedno polubienie i nic wiecej (43 z 69 osob na produkcji).
         skutek("note_like:4", "note_like", ["Publikacja Lustrzana AI"],
                ["mirrormindai"], DAWNO()),
@@ -477,7 +477,7 @@ print("    kandydaci: %s" % kand)
 sprawdz("dwoje reagujacych weszlo do puli mimo braku w historii hostow",
         rach["reagujacy"] == 2, rach)
 sprawdz("i to sa ci dwoje, ktorzy mieli przejsc",
-        {"chaosengine2026.substack.com", "davidoks.substack.com"} <= set(kand),
+        {"chaosengine2026.substack.com", "annanowak.substack.com"} <= set(kand),
         kand)
 # Szesc, nie osiem: nasz wlasny uchwyt i uchwyt z rozjazdu list NIE licza sie
 # nawet jako kandydaci — nie sa odsiani, tylko nie sa ludzmi do zaczepienia.
@@ -514,12 +514,12 @@ print("=== 4. PRZEPLOT: POZIOM HOSTOW NIE JEST ZAGLODZONY ===")
 # osiagniety nigdy.
 pozycje_reakcji = [i for i, h in enumerate(kand)
                    if h in ("chaosengine2026.substack.com",
-                            "davidoks.substack.com")]
+                            "annanowak.substack.com")]
 print("    kolejnosc: %s" % kand)
 sprawdz("pierwszy slot nalezy do reagujacego", pozycje_reakcji[:1] == [0], kand)
 sprawdz("ale drugi juz do hosta z historii czytania",
         kand[1] not in ("chaosengine2026.substack.com",
-                        "davidoks.substack.com"), kand)
+                        "annanowak.substack.com"), kand)
 sprawdz("host, ktory jest JEDNOCZESNIE reagujacym, nie stoi w puli dwa razy",
         len(kand) == len(set(kand)), kand)
 
@@ -583,7 +583,7 @@ konta_st, wpisy_st, _, _ = uruchom_blok(
 print("    STARY blok odwiedzil: %s" % konta_st.odwiedzone)
 sprawdz("KONTRDOWOD: stary blok nie wszedl do zadnego reagujacego",
         "chaosengine2026" not in konta_st.odwiedzone
-        and "davidoks" not in konta_st.odwiedzone, konta_st.odwiedzone)
+        and "annanowak" not in konta_st.odwiedzone, konta_st.odwiedzone)
 sprawdz("KONTRDOWOD: poszedl za to do bloga sprzed przestawienia konta na AI",
         konta_st.odwiedzone == ["thebuttergirlfriend"], konta_st.odwiedzone)
 konta_dz, _, _, _ = uruchom_blok(
@@ -592,7 +592,7 @@ konta_dz, _, _, _ = uruchom_blok(
     dziennik_wstepny=dziennik_pelny(), czytelnicy=CZYTELNICY)
 print("    DZISIEJSZY blok na tych samych danych: %s" % konta_dz.odwiedzone)
 sprawdz("a dzisiejszy na tych samych danych idzie do reagujacego",
-        konta_dz.odwiedzone in (["chaosengine2026"], ["davidoks"]),
+        konta_dz.odwiedzone in (["chaosengine2026"], ["annanowak"]),
         konta_dz.odwiedzone)
 
 print()

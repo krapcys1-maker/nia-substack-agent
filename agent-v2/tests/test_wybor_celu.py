@@ -26,11 +26,11 @@ Puszczone przez `run.cele_wedlug_pierwszenstwa` na tych DWOCH plikach:
 
     rachunek {'wszystkich': 94, 'sprzed_przestawienia': 53,
               'po_przestawieniu': 41, 'ze_skutkiem': 3}
-    poziom skutku: igordziewiaty.substack.com, www.ryanpuzycki.com, davidoks.blog
+    poziom skutku: igordziewiaty.substack.com, www.jankowalski.com, annanowak.blog
     `kogo_juz_subskrybujemy` -> 14 uchwytow
     tanie sito odsiewa 2 z 41: publikacja-b, tiffaniedarke
 
-`www.ryanpuzycki.com` (-> `puzycki`, zasubskrybowany 30 sierpnia) NIE wpada
+`www.jankowalski.com` (-> `kowalski`, zasubskrybowany 30 sierpnia) NIE wpada
 w tanie sito, bo to wlasna domena — lapie go dopiero sprawdzenie PO
 rozwiazaniu uchwytu i to jest osobno mierzone nizej.
 
@@ -334,8 +334,8 @@ def uruchom_blok(kod_bloku, nazwa, historia, konta, budzet=1,
         host = (host or "").strip().lower()
         if host.endswith(".substack.com"):
             return host.split(".")[0]
-        return {"www.ryanpuzycki.com": "puzycki",
-                "www.a16z.news": "a16z",
+        return {"www.jankowalski.com": "kowalski",
+                "www.funduszx.news": "funduszx",
                 "www.wlasnadomena.example": "autor1"}.get(host)
 
     stare = {k: getattr(browser, k) for k in
@@ -416,9 +416,9 @@ HISTORIA = {
     "writersartistsyearbook.substack.com": "2026-08-23T07:00:00+00:00",
     # od 2026-08-25 wlacznie
     "igordziewiaty.substack.com":     "2026-08-31T10:00:00+00:00",
-    "www.a16z.news":               "2026-08-30T09:00:00+00:00",
+    "www.funduszx.news":               "2026-08-30T09:00:00+00:00",
     "publikacja-b.substack.com": "2026-08-29T20:17:52+00:00",
-    "www.ryanpuzycki.com":         "2026-08-28T11:00:00+00:00",
+    "www.jankowalski.com":         "2026-08-28T11:00:00+00:00",
 }
 TYLKO_STARE = {h: k for h, k in HISTORIA.items() if k[:10] < "2026-08-25"}
 
@@ -427,7 +427,7 @@ DZIENNIK_WSTEPNY = [
     {"kiedy": "2026-08-16T17:53:00+00:00", "rodzaj": "subskrypcja",
      "udane": True, "komu": "publikacja-b"},
     {"kiedy": "2026-08-30T11:53:32+00:00", "rodzaj": "subskrypcja",
-     "udane": True, "komu": "puzycki"},
+     "udane": True, "komu": "kowalski"},
     # Osoba, ktora zareagowala na nasza tresc. Uchwytu tu NIE MA — jest tylko
     # nazwa, i to jest cala slabosc tego poziomu.
     {"kiedy": "2026-08-31T11:38:09+00:00", "rodzaj": "skutek", "udane": True,
@@ -565,22 +565,22 @@ sprawdz("NOWY RODZAJ JEST POZA `norma.RODZAJE` — ani sukces, ani porazka",
 NIEUD_DUBEL = nieud
 sprawdz("pominiecie nie dolozylo ANI JEDNEJ porazki", nieud == 0, nieud)
 
-# WLASNA DOMENA: `www.ryanpuzycki.com` -> `puzycki`. Tanie sito go nie widzi
+# WLASNA DOMENA: `www.jankowalski.com` -> `kowalski`. Tanie sito go nie widzi
 # (nie ma mapy host->uchwyt), wiec kosztuje jedno zapytanie o uchwyt — ale NIE
 # kosztuje slotu: blok bierze nastepnego kandydata i subskrybuje jego.
 konta, wpisy, plik, out = uruchom_blok(
     BLOK_SUBSKRYBUJ, "subskrybuj",
-    {"www.ryanpuzycki.com": "2026-08-28T11:00:00+00:00",
-     "www.a16z.news": "2026-08-30T09:00:00+00:00"},
-    Substack(zasubskrybowani={"puzycki"}),
-    kolejnosc=("www.ryanpuzycki.com", "www.a16z.news"),
+    {"www.jankowalski.com": "2026-08-28T11:00:00+00:00",
+     "www.funduszx.news": "2026-08-30T09:00:00+00:00"},
+    Substack(zasubskrybowani={"kowalski"}),
+    kolejnosc=("www.jankowalski.com", "www.funduszx.news"),
     dziennik_wstepny=DZIENNIK_WSTEPNY)
 print("    odwiedzone profile: %s" % konta.odwiedzone)
 print("    klikniete: %s" % konta.klikniete)
 sprawdz("na profil juz zasubskrybowanego NIE weszlismy",
-        "puzycki" not in konta.odwiedzone, konta.odwiedzone)
+        "kowalski" not in konta.odwiedzone, konta.odwiedzone)
 sprawdz("SLOT NIE PRZEPADL: nastepny kandydat zostal zasubskrybowany",
-        "a16z" in konta.zasubskrybowani, konta.zasubskrybowani)
+        "funduszx" in konta.zasubskrybowani, konta.zasubskrybowani)
 sprawdz("i to jedna subskrypcja, nie dwie", konta.klikniete == ["Subscribe"],
         konta.klikniete)
 wyk, nieud, _ = licz_norma(plik, "subskrypcja")
