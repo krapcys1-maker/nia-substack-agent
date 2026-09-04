@@ -49,6 +49,18 @@ najmniej raz — przepisane zdanie oblewa tak samo jak zla liczba, i o to
 chodzi: cichy brak trafienia zamienilby ten plik w kolejna asercje, ktora
 nie moze oblac.
 
+## Poprawianie
+
+    python agent-v2/tests/test_liczby_w_dokumentach.py --popraw
+
+Przepisuje liczby w dokumentach na te z drzewa i konczy zwyklym sprawdzeniem.
+Jest to jedyna praktyczna droga do spelnienia tej zasady: bez niej kazda
+dopisana funkcja kosztuje szesc recznych poprawek, a taki koszt sprawia, ze
+sprawdzenie zaczyna sie obchodzic, zamiast je spelniac.
+
+Po poprawce przebuduj dokument sklejany:
+`python agent-v2/dokumentacja-zrodla/sklej.py`.
+
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
     PYTHONIOENCODING=utf-8 python agent-v2/tests/test_liczby_w_dokumentach.py
 """
@@ -134,6 +146,42 @@ MIEJSCA = [
     ("agent-v2/JAK_ZBUDOWANY_JEST_BOT.md",
      r"(\d+) zestawów\s+testów", ("testy",)),
 ]
+
+# --- POPRAWIANIE (--popraw) -------------------------------------------------
+#
+# Test wie, GDZIE kazda liczba stoi i ILE powinna wynosic. Bez tej galezi kazda
+# dopisana funkcja kosztuje szesc recznych poprawek w szesciu dokumentach —
+# a koszt jest tym, co sprawia, ze sprawdzenie zaczyna sie obchodzic zamiast
+# spelniac. Sprawdzanie zostaje domyslne; poprawka wymaga flagi.
+if "--popraw" in sys.argv:
+    zmienione = 0
+    for plik, wzorzec, nazwy in MIEJSCA:
+        p = KORZEN / plik
+        if not p.exists():
+            continue
+        tresc = p.read_text(encoding="utf-8")
+
+        def _popraw(m, nazwy=nazwy):
+            caly = m.group(0)
+            for i, nazwa in enumerate(nazwy, start=1):
+                stara = m.group(i)
+                nowa = str(POMIARY[nazwa][0])
+                if stara != nowa:
+                    # Podmieniamy TYLKO w obrebie trafienia i tylko pierwsze
+                    # wystapienie tej liczby — inaczej „25" w slowie „255"
+                    # albo druga liczba o tej samej wartosci ucierpialaby razem.
+                    caly = caly.replace(stara, nowa, 1)
+            return caly
+
+        nowa_tresc = re.sub(wzorzec, _popraw, tresc)
+        if nowa_tresc != tresc:
+            p.write_text(nowa_tresc, encoding="utf-8")
+            zmienione += 1
+            print("  poprawione  %s" % plik)
+    print("  zmienionych plikow: %d" % zmienione)
+    print("  PRZEBUDUJ dokument sklejany:"
+          " python agent-v2/dokumentacja-zrodla/sklej.py")
+    print()
 
 print("=== 1. POMIARY Z DRZEWA ===")
 for nazwa, (wartosc, regula) in sorted(POMIARY.items()):

@@ -300,7 +300,6 @@ def zawieszone() -> str | None:
 
 
 def dysk() -> str | None:
-    uzyte, wolne = 0, 0
     total, used, free = shutil.disk_usage(str(config.DATA_DIR))
     procent = used / total * 100
     if procent >= DYSK_ALARM:
@@ -309,6 +308,27 @@ def dysk() -> str | None:
     if procent >= DYSK_OSTRZEZENIE:
         return f"Dysk zajety w {procent:.0f}% — warto posprzatac."
     return None
+
+
+def _chwila_wpisu(tekst) -> datetime | None:
+    """Znacznik czasu wpisu dziennika jako moment w UTC, albo None.
+
+    None znaczy „nie da sie odczytac" i wolajacy ma to traktowac jako wpis
+    Z OKNA, a nie spoza niego: przy pytaniu „czy cos sie zapetlilo" bezpieczniej
+    policzyc za duzo niz za malo.
+
+    Wpis bez strefy uznajemy za UTC — caly ten bot pisze czas w UTC i taki
+    zapis jest bledem zapisujacego, a nie inna strefa.
+    """
+    if not tekst:
+        return None
+    try:
+        chwila = datetime.fromisoformat(str(tekst).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if chwila.tzinfo is None:
+        return chwila.replace(tzinfo=timezone.utc)
+    return chwila
 
 
 def nadaktywnosc() -> str | None:
@@ -331,7 +351,7 @@ def nadaktywnosc() -> str | None:
     """
     import json as _json
 
-    granica = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    granica = datetime.now(timezone.utc) - timedelta(hours=24)
     # DZIENNIK, NIE BAZA WYWOLAN. Tu stoi to, co naprawde wyszlo na Substacka —
     # patrz uzasadnienie przy `max_dzialan_dziennie`.
     plik = config.DATA_DIR / "dziennik.jsonl"
@@ -349,7 +369,15 @@ def nadaktywnosc() -> str | None:
                 continue
             if str(w.get("rodzaj") or "") in ("skutek", ""):
                 continue
-            if str(w.get("kiedy") or "") >= granica:
+            # PARSUJEMY, NIE POROWNUJEMY NAPISOW. Stalo tu
+            # `str(w.get("kiedy")) >= granica`, gdzie granica byla napisem
+            # z `isoformat()`. Dzialalo, bo wszystkie zapisy uzywaja strefy
+            # — ale napis BEZ strefy jest krotszy i w porownaniu tekstowym
+            # wypada przed granica ZAWSZE, wiec taki wpis nie zostalby
+            # policzony ani razu. Cena pomylki jest tu niesymetryczna: to
+            # jedyny straznik miedzy zapetleniem a banem konta.
+            kiedy = _chwila_wpisu(w.get("kiedy"))
+            if kiedy is None or kiedy >= granica:
                 n += 1
     except OSError:
         return None

@@ -393,7 +393,7 @@
 
 ### `alarm.py` — kontrola sesji, zdrowia i alarm do właściciela
 
-1016 wierszy, 24 funkcji na poziomie modułu, 0 klas
+1044 wierszy, 25 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -410,6 +410,7 @@
 | `cisza()` | Czy agent w ogole cos ostatnio zrobil. |
 | `zawieszone()` | Przebiegi, ktore zostaly w stanie RUNNING na zawsze. |
 | `dysk()` | — |
+| `_chwila_wpisu(tekst)` *(wewn.)* | Znacznik czasu wpisu dziennika jako moment w UTC, albo None. |
 | `nadaktywnosc()` | Czy agent nie zapetlil sie i nie zasypuje Substacka. |
 | `koszt()` | Czy zblizamy sie do sufitu — dziennego ALBO miesiecznego. |
 | `wolumeny()` | Czy agent robi tyle, ile deklaruje — czy tylko wyglada, ze robi. |

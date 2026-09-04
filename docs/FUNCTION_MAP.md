@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 25 |
-| functions and methods | 553 |
+| functions and methods | 554 |
 | functions that call a paid model | 25 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 41 |
@@ -37,7 +37,7 @@ For paid calls the verdict comes from
 | module | functions | paid | WWW | DB | what it is for |
 |---|---|---|---|---|---|
 | [`aktualne_modele.py`](#agent-v2aktualne-modele-py) | 4 | 1 | 0 | 0 | Jakie modele istnieja DZISIAJ — pytane na zywo, nie brane z pamieci. |
-| [`alarm.py`](#agent-v2alarm-py) | 26 | 0 | 1 | 6 | Alarm do właściciela i kontrola zdrowia agenta. |
+| [`alarm.py`](#agent-v2alarm-py) | 27 | 0 | 1 | 6 | Alarm do właściciela i kontrola zdrowia agenta. |
 | [`artykul_z_puli.py`](#agent-v2artykul-z-puli-py) | 18 | 1 | 1 | 2 | Artykul bierze temat z tej samej puli, co notki. |
 | [`audyt_researchu.py`](#agent-v2audyt-researchu-py) | 3 | 0 | 0 | 0 | Audyt segmentu researchu na ZYWYCH danych, jednym poleceniem. |
 | [`audyt_systemu.py`](#agent-v2audyt-systemu-py) | 7 | 0 | 1 | 0 | Audyt CALEGO systemu na zywych danych, jednym poleceniem. |
@@ -87,7 +87,7 @@ Alarm do właściciela i kontrola zdrowia agenta.
 
 **Wejscie produkcyjne:** `nia-alarm.timer`, raz na dobe 07:00 UTC: `alarm.py`
 
-26 funkcji.
+27 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -104,19 +104,20 @@ Alarm do właściciela i kontrola zdrowia agenta.
 | 256 | `cisza()` | DB | Czy agent w ogole cos ostatnio zrobil. | `alarm.sprawdz_wszystko` |
 | 283 | `zawieszone()` | DB | Przebiegi, ktore zostaly w stanie RUNNING na zawsze. | `alarm.sprawdz_wszystko` |
 | 302 | `dysk()` | — | — | `alarm.sprawdz_wszystko` |
-| 314 | `nadaktywnosc()` | — | Czy agent nie zapetlil sie i nie zasypuje Substacka. | `alarm.sprawdz_wszystko` |
-| 363 | `koszt()` | DB | Czy zblizamy sie do sufitu — dziennego ALBO miesiecznego. | `alarm.przeglad`, `alarm.sprawdz_wszystko` |
-| 420 | `wolumeny()` | — | Czy agent robi tyle, ile deklaruje — czy tylko wyglada, ze robi. | `alarm.sprawdz_wszystko` |
-| 457 | `powtorki()` | — | Czy agent nie zaczal pisac wciaz tego samego. | `alarm.sprawdz_wszystko` |
-| 476 | `kopia_subskrybentow()` | — | Czy istnieje AKTUALNA kopia listy subskrybentow. | `alarm.sprawdz_wszystko` |
-| 525 | `pomiar_wzajemnosci()` | — | Czy nadal mamy z czego liczyc, kto sie odwzajemnia. | `alarm.sprawdz_wszystko` |
-| 549 | `wydarzenie_bez_pokrycia()` | — | Wydarzenie odhaczone jako obsluzone, a w tresci ani slowa o nim. | `alarm.sprawdz_wszystko` |
-| 576 | `wydarzenie_bez_pokrycia._kiedy(wpis)` | — | — | `alarm.wydarzenie_bez_pokrycia` |
-| 632 | `bank_bez_tematow()` | — | Czy w banku zostalo dosc ROZNYCH tematow na dzisiejsze notki. | `alarm.sprawdz_wszystko` |
-| 671 | `sprawdz_wszystko()` | — | Uruchamia komplet kontroli i alarmuje o tym, co znalazl. | `alarm (poziom modulu)` |
-| 754 | `przeglad(dni)` | DB | Co agent NAPRAWDE zrobil przez ostatnie dni i gdzie sie pomylil. | `alarm (poziom modulu)` |
-| 851 | `_co_z_tego_wyszlo(wpisy)` | — | Czy nasze dzialania w ogole wracaja — i ktore z nich. | `alarm.przeglad` |
-| 889 | `_co_z_tego_wyszlo._ilu(warunek)` | — | — | `alarm._co_z_tego_wyszlo` |
+| 313 | `_chwila_wpisu(tekst)` | — | Znacznik czasu wpisu dziennika jako moment w UTC, albo None. | `alarm.nadaktywnosc` |
+| 334 | `nadaktywnosc()` | — | Czy agent nie zapetlil sie i nie zasypuje Substacka. | `alarm.sprawdz_wszystko` |
+| 391 | `koszt()` | DB | Czy zblizamy sie do sufitu — dziennego ALBO miesiecznego. | `alarm.przeglad`, `alarm.sprawdz_wszystko` |
+| 448 | `wolumeny()` | — | Czy agent robi tyle, ile deklaruje — czy tylko wyglada, ze robi. | `alarm.sprawdz_wszystko` |
+| 485 | `powtorki()` | — | Czy agent nie zaczal pisac wciaz tego samego. | `alarm.sprawdz_wszystko` |
+| 504 | `kopia_subskrybentow()` | — | Czy istnieje AKTUALNA kopia listy subskrybentow. | `alarm.sprawdz_wszystko` |
+| 553 | `pomiar_wzajemnosci()` | — | Czy nadal mamy z czego liczyc, kto sie odwzajemnia. | `alarm.sprawdz_wszystko` |
+| 577 | `wydarzenie_bez_pokrycia()` | — | Wydarzenie odhaczone jako obsluzone, a w tresci ani slowa o nim. | `alarm.sprawdz_wszystko` |
+| 604 | `wydarzenie_bez_pokrycia._kiedy(wpis)` | — | — | `alarm.wydarzenie_bez_pokrycia` |
+| 660 | `bank_bez_tematow()` | — | Czy w banku zostalo dosc ROZNYCH tematow na dzisiejsze notki. | `alarm.sprawdz_wszystko` |
+| 699 | `sprawdz_wszystko()` | — | Uruchamia komplet kontroli i alarmuje o tym, co znalazl. | `alarm (poziom modulu)` |
+| 782 | `przeglad(dni)` | DB | Co agent NAPRAWDE zrobil przez ostatnie dni i gdzie sie pomylil. | `alarm (poziom modulu)` |
+| 879 | `_co_z_tego_wyszlo(wpisy)` | — | Czy nasze dzialania w ogole wracaja — i ktore z nich. | `alarm.przeglad` |
+| 917 | `_co_z_tego_wyszlo._ilu(warunek)` | — | — | `alarm._co_z_tego_wyszlo` |
 
 ---
 
