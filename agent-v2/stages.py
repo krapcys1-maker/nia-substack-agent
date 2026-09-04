@@ -2922,8 +2922,8 @@ def artykul_do_promocji() -> dict[str, Any] | None:
         # OKNO WAZNOSCI. Wpis bez `dodane` pochodzi sprzed tej reguly, wiec z
         # definicji nie jest dzisiejszy — traktujemy go jak przeterminowany.
         # To nie jest ostroznosc na wyrost: wlasnie takie wpisy zostaly w
-        # kolejce po przestawieniu konta na AI i to one wystawilyby notke
-        # promujaca artykul o szamponie.
+        # kolejce po przestawieniu konta na nowa nisze i to one wystawilyby
+        # notke promujaca artykul z poprzedniej.
         if str(a.get("dodane") or "") < granica:
             continue
         # ZAKWESTIONOWANY NIE WRACA. Patrz `zakwestionuj_promocje` — jedno „nie"
@@ -2941,8 +2941,8 @@ def odhacz_promocje(url: str, tekst: str = "") -> None:
     Bez drugiego argumentu trzy notki promujace jeden artykul niosly te sama
     fraze trzy dni z rzedu: karta promocyjna to caly tekst artykulu, podawany
     bez zmian, a model wybieral z niego za kazdym razem to, co najbardziej
-    rzuca sie w oczy. Zmierzone na dzienniku: „ASTM, which maintains the
-    standard, says" i „68% of Americans" po trzy razy w trzy dni.
+    rzuca sie w oczy. Zmierzone na dzienniku: ta sama nazwa instytucji
+    i ta sama liczba procentowa po trzy razy w trzy dni.
 
     Indeks `zuzyte_fakty` tego nie lapal i lapac nie mogl — on pilnuje
     ciekawostek, ktore pochodza z puli faktow; promocja nie przechodzi przez
@@ -2961,16 +2961,31 @@ def odhacz_promocje(url: str, tekst: str = "") -> None:
                         encoding="utf-8")
 
 
-# Slowa, ktore w TEJ publikacji nic nie znacza, bo wystepuja wszedzie: pol
-# korpusu to amerykanskie przepisy i normy. Bez ich odsiania „federal rules
-# require" laczyloby ze soba dowolne dwa fakty.
-_PUSTE_SLOWA = frozenset("""
-america american rules rule that this from with have they their when what which
+# Slowa, ktore przy porownywaniu tekstow nic nie znacza, bo wystepuja
+# wszedzie. Bez ich odsiania dwa dowolne fakty z tej samej dziedziny maja
+# wspolne rdzenie, zanim ktokolwiek spojrzy na ich temat.
+#
+# DWIE CZESCI, I TO JEST CALA POPRAWKA. Czesc pierwsza to zwykle slowa
+# funkcyjne angielszczyzny — te same w kazdej niszy. Czesc druga to
+# slownictwo DZIEDZINY i ono nalezy do konfiguracji.
+#
+# Stalo tu jedno wyliczenie i bylo dostrojone do JEDNEJ niszy:
+# „america", „american", „federal", „government", „national", „states",
+# „united", „regulation". Przy publikacji o czym innym te slowa nie sa
+# szumem — a ich wyciecie zabiera wykrywaczowi powtorek dokladnie te
+# rdzenie, ktore odrozniaja tematy od siebie. Konto o polityce miejskiej
+# przestaloby odrozniac notke o stanie od notki o rzadzie.
+_PUSTE_SLOWA_OGOLNE = frozenset("""
+rules rule that this from with have they their when what which
 would could also than then into over under about after before other more most
 some such only even just been were will does each both must because make made
-require required requires federal government national states united standard
-standards regulation regulations legal
+require required requires
 """.split())
+
+# Slownictwo wlasnej dziedziny — puste z konfiguracji, bo tylko wlasciciel
+# wie, ktore slowa w JEGO niszy padaja w co drugim zdaniu.
+_PUSTE_SLOWA = _PUSTE_SLOWA_OGOLNE | frozenset(
+    s.lower() for s in getattr(config, "PUSTE_SLOWA_NISZY", ()))
 
 
 def _slowa(tekst: str) -> set[str]:
@@ -2978,13 +2993,14 @@ def _slowa(tekst: str) -> set[str]:
 
     Obcinamy do szesciu znakow, bo inaczej „refrigeration" i „refrigerated" to dla
     kodu dwa rozne slowa — a mowia o tym samym. Bierzemy od czterech liter, bo
-    inaczej wypada „eggs", czyli akurat to slowo, o ktore w tej wpadce chodzilo.
+    inaczej wypadaja slowa czteroliterowe — a to wlasnie jedno z nich bylo
+    rdzeniem tematu, ktory sie powtorzyl.
     """
     # Adresy WYLATUJA przed liczeniem slow. Notka promujaca artykul niesie link,
     # a z linku wpadaly do puli „https", „substack" i nazwa publikacji — wiec
     # dwie notki z linkiem mialy trzy wspolne slowa, zanim ktokolwiek spojrzal
     # na ich temat. Zmierzone: notka o okienku w samolocie zderzala sie z notka
-    # o jednym z tematow wylacznie na tych trzech.
+    # o czym innym wylacznie na tych trzech.
     bez_adresow = " ".join(s for s in (tekst or "").split()
                            if not s.lower().startswith("http"))
     return {s[:6] for s in re.findall(r"[a-z]{4,}", bez_adresow.lower())
@@ -3107,9 +3123,9 @@ def _o_tym_samym(a: str, b: str, min_wspolnych: int = 2,
 #
 # Powod jest zmierzony na 29 wystawionych notkach. Przy progu dziennym (2 slowa,
 # 0.15) okno dwunastu poprzednich notek blokowalo dziewiec z nich — ale tylko
-# piec bylo prawdziwymi powtorkami (trzy pary o jednym temacie, trzy o drugim, dwie
-# razy szampon). Cztery byly falszywe: notka o cenach w UE „zderzala sie" z
-# notka o filtrach UV na slowach `nothing`, `number`, `whole`.
+# piec bylo prawdziwymi powtorkami: trzy pary o jednym temacie, trzy
+# o drugim i dwie o trzecim. Cztery byly falszywe — dwie notki o zupelnie
+# roznych rzeczach „zderzaly sie" na slowach `nothing`, `number`, `whole`.
 #
 # Sily zderzen rozdzielaly sie czysto:
 #     prawdziwe powtorki   0.31 - 0.87, od 4 do 20 wspolnych rdzeni
@@ -3127,11 +3143,11 @@ POROWNANIE_MIEDZY_DNIAMI = {"min_wspolnych": 4, "prog": 0.30}
 # jedna strona jest dluga.
 #
 # Zmierzone na 7 artykulach w bazie, przy kandydatach z realnego przebiegu:
-#     powtorka Robodebt      4 wspolne rdzenie, udzial 0.25
-#     halt gieldowy          2                         0.17
-#     robotaxi               1                         0.09
-#     pamiec modelu          1                         0.17
-#     flaga plagiatu         1                         0.11
+#     prawdziwa powtorka     4 wspolne rdzenie, udzial 0.25
+#     temat obcy nr 1        2                         0.17
+#     temat obcy nr 2        1                         0.09
+#     temat obcy nr 3        1                         0.17
+#     temat obcy nr 4        1                         0.11
 # Rozroznia LICZBA RDZENI (4 wobec najwyzej 2), nie udzial. Prog udzialu
 # zostaje jako druga bariera, ale nizszy: 0.20 przepuszcza powtorke i odrzuca
 # najblizszy falszywy przypadek (0.17).
@@ -6686,9 +6702,14 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     # Data, nie slownik: filtr slownikowy na slowa o AI przepuscilby wszystko,
     # co przypadkiem wspomina "model" albo "training", a odrzucil dobry temat
     # o prawie autorskim. Dzien przestawienia konta jest faktem, nie heurystyka.
+    # Pusty `DATA_PRZESTAWIENIA` znaczy „to konto nie zmienialo tematu" i ma
+    # przepuscic cala spizarnie. Bez tego warunku porownanie i tak by dzialalo
+    # — kazdy napis jest >= "" — ale czytelnik musialby to wywiesc z reguly
+    # porownywania napisow w Pythonie, zeby stwierdzic, ze nic nie odpada.
+    od_kiedy = config.DATA_PRZESTAWIENIA
     wolni = [k for k in indeks
              if k.get("status") == "nowy"
-             and str(k.get("kiedy") or "")[:10] >= config.DATA_PRZESTAWIENIA]
+             and (not od_kiedy or str(k.get("kiedy") or "")[:10] >= od_kiedy)]
 
     # SWIEZOSC SPRAWDZANA PRZY WYJMOWANIU, NIE TYLKO PRZY WKLADANIU.
     #

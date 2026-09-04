@@ -1281,8 +1281,8 @@ def artykul_do_promocji() -> dict[str, Any] | None:
         # OKNO WAZNOSCI. Wpis bez `dodane` pochodzi sprzed tej reguly, wiec z
         # definicji nie jest dzisiejszy — traktujemy go jak przeterminowany.
         # To nie jest ostroznosc na wyrost: wlasnie takie wpisy zostaly w
-        # kolejce po przestawieniu konta na AI i to one wystawilyby notke
-        # promujaca artykul o szamponie.
+        # kolejce po przestawieniu konta na nowa nisze i to one wystawilyby
+        # notke promujaca artykul z poprzedniej.
         if str(a.get("dodane") or "") < granica:
             continue
         # ZAKWESTIONOWANY NIE WRACA. Patrz `zakwestionuj_promocje` — jedno „nie"

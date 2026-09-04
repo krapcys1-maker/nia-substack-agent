@@ -34,7 +34,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7324 wierszy, 133 funkcji na poziomie modułu, 0 klas
+7345 wierszy, 133 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -354,14 +354,16 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-273 wierszy, 10 funkcji na poziomie modułu, 1 klas
+311 wierszy, 12 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
 | `_napis(v, gdzie)` *(wewn.)* | — |
+| `_data_albo_pusto(v, gdzie)` *(wewn.)* | Dzien w postaci RRRR-MM-DD albo pusty napis znaczacy „nigdy". |
 | `_liczba(v, gdzie)` *(wewn.)* | — |
 | `_prawda(v, gdzie)` *(wewn.)* | — |
 | `_lista_napisow(v, gdzie)` *(wewn.)* | — |
+| `_lista_napisow_moze_pusta(v, gdzie)` *(wewn.)* | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. |
 | `_widelki(v, gdzie)` *(wewn.)* | Zakres [od, do]. Wolumeny sa losowane z widelek, nie stale. |
 | `_slownik_list(v, gdzie)` *(wewn.)* | Tablica `klucz = [napisy]`. Pusta lista jest DOZWOLONA i coś znaczy. |
 | `_slownik_napisow(v, gdzie)` *(wewn.)* | — |
@@ -445,7 +447,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-2874 wierszy, 27 funkcji na poziomie modułu, 0 klas
+2922 wierszy, 27 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

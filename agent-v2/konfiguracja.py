@@ -65,6 +65,24 @@ def _napis(v: Any, gdzie: str) -> str:
     return v
 
 
+def _data_albo_pusto(v: Any, gdzie: str) -> str:
+    """Dzien w postaci RRRR-MM-DD albo pusty napis znaczacy „nigdy".
+
+    Sprawdzamy KSZTALT, nie istnienie takiego dnia w kalendarzu. Data jest
+    porownywana z napisami w indeksie leksykograficznie, wiec „2026-8-25"
+    z jedna cyfra miesiaca porownuje sie zle i nie daje po sobie zadnego
+    znaku — odrzucamy ja tutaj, a nie pol roku pozniej.
+    """
+    import re as _re
+    if not isinstance(v, str):
+        raise BledKonfiguracji("%s: oczekiwano napisu, jest %r" % (gdzie, v))
+    if v and not _re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+        raise BledKonfiguracji(
+            "%s: oczekiwano daty RRRR-MM-DD albo pustego napisu, jest %r"
+            % (gdzie, v))
+    return v
+
+
 def _liczba(v: Any, gdzie: str) -> float:
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         raise BledKonfiguracji("%s: oczekiwano liczby, jest %r" % (gdzie, v))
@@ -81,6 +99,22 @@ def _lista_napisow(v: Any, gdzie: str) -> tuple[str, ...]:
     if not isinstance(v, list) or not v or not all(isinstance(x, str) for x in v):
         raise BledKonfiguracji(
             "%s: oczekiwano niepustej listy napisow, jest %r" % (gdzie, v))
+    return tuple(v)
+
+
+def _lista_napisow_moze_pusta(v: Any, gdzie: str) -> tuple[str, ...]:
+    """Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia.
+
+    Rozne od `_lista_napisow` dokladnie jednym warunkiem i to nie jest
+    drobiazg. Tam pusta lista jest bledem, bo pole, ktore nic nie wnosi,
+    zwykle znaczy literowke w nazwie klucza. Tu pusta lista to swiadome
+    „jeszcze nic tu nie nalezy" — i jest to jedyny stan, w ktorym nowa
+    instalacja moze byc uczciwie.
+    """
+    if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+        raise BledKonfiguracji(
+            "%s: oczekiwano listy napisow (pusta jest dozwolona), jest %r"
+            % (gdzie, v))
     return tuple(v)
 
 
@@ -128,6 +162,8 @@ POLA: dict[str, tuple[str | None, Any]] = {
     "konto.uchwyt": ("SUBSTACK_HANDLE", _napis),
     "konto.nazwa_marki": ("NAZWA_MARKI", _napis),
     "konto.strefa_czytelnika": ("PUBLISH_TIMEZONE", _napis),
+    # RRRR-MM-DD albo pusty napis — patrz `config.DATA_PRZESTAWIENIA`.
+    "konto.data_przestawienia": ("DATA_PRZESTAWIENIA", _data_albo_pusto),
 
     # --- temat ---------------------------------------------------------
     "temat.nisza": ("NISZA", _napis),
@@ -136,6 +172,8 @@ POLA: dict[str, tuple[str | None, Any]] = {
     "temat.znaki_niszy": ("ZNAKI_NISZY", _lista_napisow),
     "temat.hasla_szukania": ("HASLA_SZUKANIA", _lista_napisow),
     "temat.dziedziny": ("DZIEDZINY_CIEKAWOSTEK", _lista_napisow),
+    # Slowa, ktore w tej niszy padaja wszedzie — patrz `config.PUSTE_SLOWA_NISZY`.
+    "temat.puste_slowa": ("PUSTE_SLOWA_NISZY", _lista_napisow_moze_pusta),
     # Przyklady z niszy wstrzykiwane w prompty. Tablica tablic, bo kazda
     # z pieciu list trafia w INNE miejsce briefu — patrz `stages._pola_wspolne`.
     "temat.przyklady": (None, _slownik_list),

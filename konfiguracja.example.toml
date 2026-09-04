@@ -43,6 +43,15 @@ nazwa_marki = "Your Publication"
 # Strefa CZYTELNIKA, nie serwera. Decyduje o oknie publikacji ponizej.
 strefa_czytelnika = "America/New_York"
 
+# Dzien, w ktorym to konto ostatni raz zmienilo temat: RRRR-MM-DD albo pusto.
+#
+# PUSTO JEST POPRAWNA ODPOWIEDZIA dla nowego konta i dla takiego, ktore zawsze
+# pisalo o tym samym. Wpisz date tylko wtedy, gdy konto pisalo wczesniej o czym
+# innym: spizarnia kandydatow na artykuly przezywa zmiane tematu, a bez tej daty
+# bot bedzie opracowywal resztki po poprzednim pismie. Zmierzone na prawdziwym
+# koncie: ze 119 czekajacych kandydatow 65 nalezalo do poprzedniego tematu.
+data_przestawienia = ""
+
 
 # -----------------------------------------------------------------------------
 # TEMAT — o czym jest to konto
@@ -51,6 +60,16 @@ strefa_czytelnika = "America/New_York"
 # Jedno zdanie, podawane modelowi doslownie. Wchodzi w komunikat systemowy
 # skauta: „a publication about {nisza}".
 nisza = "how everyday things are made and regulated"
+
+# Co ta publikacja robi W OBREBIE tematu. Doklejane do niszy po myslniku, wiec
+# zacznij mala litera i zakoncz kropka.
+#
+# TO POLE POWSTALO Z BLEDU I WARTO WIEDZIEC Z JAKIEGO. Jedno zdanie o tym, co
+# publikacja robi, stalo wpisane na sztywno w DZIEWIECIU briefach. Robilo ono
+# z kazdego konta publikacje o technologii — niezaleznie od tego, co wlasciciel
+# ustawil w `nisza`. Konto o pieczeniu chleba dostawalo brief o systemach:
+# konfiguracja mowila jedno, prompt drugie, a prompt jest blizej modelu.
+kat_redakcyjny = "what the record actually says, how the thing is built, who decides what it is allowed to do, and what that arrangement hands the people who built it."
 
 # Jezyk tresci. STERUJE TYLKO CZTEREMA ETAPAMI (pisarz, notka, komentarz,
 # odpowiedz). Prompty i bramki `gates.py` sa po angielsku — zmiana samego tego
@@ -124,6 +143,54 @@ dziedziny = [
     "a hype cycle in this field that resolved, and how",
     "the people who were right early and ignored",
 ]
+
+# Slowa, ktore w TWOJEJ dziedzinie nic nie znacza, bo padaja w co drugim
+# zdaniu. Sluza jednemu: rozpoznawaniu, ze dwie notki mowia o tym samym.
+#
+# PUSTA LISTA JEST POPRAWNA ODPOWIEDZIA i tak zaczyna kazda instalacja. Slowa
+# funkcyjne angielszczyzny („that", „this", „from") sa juz w kodzie
+# (`stages._PUSTE_SLOWA_OGOLNE`) i sa te same w kazdej niszy. Tutaj wpisuje sie
+# WYLACZNIE slownictwo wlasnej dziedziny, i dopiero wtedy, gdy sie zobaczylo,
+# ze konkretne slowo wywoluje falszywy alarm o powtorce.
+#
+# ZA DUZO SLOW: kazde slowo dopisane tutaj przestaje odrozniac notki.
+# Publikacja o polityce miejskiej, ktora wpisze tu „state" i „government",
+# przestanie odrozniac notke o stanie od notki o rzadzie i zacznie
+# PRZEPUSZCZAC powtorki. Brak alarmu wyglada tak samo jak spokojny dzien.
+#
+# ZA MALO SLOW, czyli takze przy pustej liscie: wspolne staje sie to, co
+# powtarza sie w SPOSOBIE PISANIA, a nie w temacie. Dwanascie faktow o zupelnie
+# roznych rzeczach, konczacych sie tym samym zwrotem, ma przez to cztery
+# wspolne rdzenie — a to juz wystarczy, zeby uznac je za jeden temat. Wtedy
+# dobre kandydatury sa odrzucane jako „juz bylo".
+#
+# Zaczynaj od pustej i dopisuj po jednym slowie, gdy zobaczysz je w falszywym
+# alarmie. Odwrotna kolejnosc — wpisac od razu dwadziescia slow dziedziny —
+# wylacza wykrywanie powtorek bez zadnego sladu.
+puste_slowa = []
+
+
+# Przyklady z Twojej dziedziny, wstrzykiwane w briefy. Kazda z pieciu list
+# trafia w INNE miejsce promptu — patrz `stages._pola_wspolne`.
+#
+# WSZYSTKIE SA OPCJONALNE, A PUSTA LISTA COS ZNACZY: brief mowi wtedy modelowi,
+# zeby wyprowadzil odpowiednik dla wlasnego tematu. To gorzej niz prawdziwa
+# lista, ale zawsze o wlasciwym polu — inaczej niz przyklady z cudzej niszy,
+# ktore brzmia konkretnie i ciagna konto w bok. Wypelnienie ich podnosi jakosc,
+# bo model dostaje konkret zamiast polecenia.
+#
+# Po jednym zdaniu na pozycje: trafiaja do promptu doslownie.
+[temat.przyklady]
+# Tezy tak ograne, ze ich powtorzenie nie jest tematem.
+kanon = []
+# Co czytelnik z tej niszy widzial albo mial w rekach.
+rzeczy = []
+# Miejsca, gdzie regula powstala PO tym, jak cos poszlo zle.
+seam = []
+# Przekonania szeroko wyznawane i nieprawdziwe.
+przekonania = []
+# Publiczne sprawdziany tej dziedziny, ktore cos zmienily.
+precedensy = []
 
 
 # -----------------------------------------------------------------------------

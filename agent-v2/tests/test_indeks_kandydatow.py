@@ -124,26 +124,88 @@ try:
     # Naprawde rozne tematy. Pierwsza wersja tego testu miala dwanascie zdan
     # roznacych sie tylko numerem — i `_klucz_faktu` slusznie uznal je za jeden
     # fakt, bo jego zadaniem jest lapac bliskie powtorzenia. Test byl zly, nie kod.
-    TEMATY = [
-        ("aircraft oxygen masks", "drop-down masks supply about twelve minutes of oxygen"),
-        ("credit card numbers", "the final digit is a checksum, not part of the account"),
-        ("ship anchors", "an anchor holds by the chain lying flat, not by its weight"),
-        ("railway timetables", "published journey times carry deliberate padding"),
-        ("emergency numbers", "999 was chosen because it could be dialled in the dark"),
-        ("supermarket trolleys", "the wheel locks at a buried wire, not by radio"),
-        ("pedestrian crossings", "many buttons do nothing during peak signal cycles"),
-        ("fire door closers", "the closing speed is set by regulation, not by preference"),
-        ("bank cheques", "the ragged edge is a security feature, not a tearing artefact"),
-        ("motorway paint", "lane lines are longer than drivers estimate them to be"),
-        ("bottle caps", "the ring stays attached because a directive required it"),
-        ("lift buttons", "the door-close button is disabled during normal service"),
+    #
+    # DRUGA WERSJA MIALA TE SAMA WADE, TYLKO SLABIEJ WIDOCZNA, i warto wiedziec
+    # jak wygladala. Tematy byly rozne, ale zdania skladano z jednego szablonu:
+    # „Documented: X — Y, according to the published standard." Wszystkie
+    # dwanascie mialo wiec wspolne rdzenie `docume`, `accord`, `publis`
+    # i `standa`, a `_zderzenie` uznaje teksty za to samo juz przy dwoch
+    # wspolnych rdzeniach. Test przechodzil WYLACZNIE dlatego, ze `standard`
+    # stal na liscie pustych slow — czyli mierzyl konfiguracje, nie kod.
+    # Po wyprowadzeniu slownictwa dziedziny do `config.PUSTE_SLOWA_NISZY`
+    # oblal natychmiast i mial racje.
+    #
+    # Dlatego kazde zdanie jest tu napisane osobno. Jesli kiedys skrocisz to
+    # z powrotem do petli po szablonie, test zacznie zalezec od tego, ktore
+    # slowa akurat odsiewa konfiguracja — a to jest dokladnie ta wada.
+    FAKTY = [
+        ("aircraft oxygen masks",
+         "Drop-down masks on airliners hold roughly twelve minutes of oxygen, "
+         "which is how long a descent to breathable altitude takes.",
+         "People believe the mask feeds air for the rest of the flight.",
+         "It runs a chemical generator that cannot be switched off once pulled."),
+        ("credit card numbers",
+         "The last figure printed on a payment card is a checksum over the "
+         "others rather than part of the account it names.",
+         "Everybody assumes all sixteen figures address the account.",
+         "One of them exists only to catch a mistyped entry."),
+        ("ship anchors",
+         "An anchor grips because a length of chain lies flat along the "
+         "seabed, not because the iron itself is heavy.",
+         "Most assume weight alone keeps a vessel where it was left.",
+         "Pull the chain upward and the same anchor releases immediately."),
+        ("railway timetables",
+         "Journey times in a rail schedule carry deliberate slack, so a train "
+         "arriving early has simply spent none of it.",
+         "Passengers read a schedule as a prediction of travel duration.",
+         "It is a promise with a cushion built into every leg."),
+        ("emergency numbers",
+         "Britain settled on 999 because those three could be found and "
+         "dialled by touch on a rotary telephone in darkness or smoke.",
+         "It is widely thought the digits were picked arbitrarily.",
+         "The choice came from where the holes sat on the dial."),
+        ("supermarket trolleys",
+         "A trolley wheel seizes when it crosses a wire buried at the edge of "
+         "the car park, with no radio involved anywhere.",
+         "Shoppers imagine some transmitter watching the boundary.",
+         "The trigger is a loop of cable under the tarmac."),
+        ("pedestrian crossings",
+         "Many crossing buttons in city centres do nothing at all between "
+         "morning and evening, when signals run on a fixed cycle.",
+         "Pressing harder or repeatedly is believed to hurry the lights.",
+         "During those hours the button is not wired to anything that changes."),
+        ("fire door closers",
+         "How fast a fire door swings shut is fixed by regulation, and an "
+         "installer adjusting it for comfort is breaking that setting.",
+         "It looks like a matter of taste or convenience.",
+         "The speed is chosen so somebody slow can still get through."),
+        ("bank cheques",
+         "The rough edge left on a cheque is a security feature, because a "
+         "sheet trimmed cleanly on every side betrays a forgery.",
+         "It reads as a leftover from tearing paper out of a book.",
+         "Cutting it straight destroys the very mark that proves it genuine."),
+        ("motorway paint",
+         "Lane markings on a motorway are far longer than drivers estimate, "
+         "because speed compresses them into short dashes.",
+         "Anyone asked will guess about half their real length.",
+         "Standing beside one on foot settles the argument in a second."),
+        ("bottle caps",
+         "Caps that stay tethered to their bottles do so because a directive "
+         "required it, not because a manufacturer preferred the design.",
+         "Customers took it for a change in packaging fashion.",
+         "It was written to stop small plastic rings reaching waterways."),
+        ("lift buttons",
+         "In most modern lifts the door-close button is inert while the car "
+         "is in ordinary service and answers only to a service key.",
+         "Riders are convinced repeated presses shorten the wait.",
+         "It was left in place because removing it caused complaints."),
     ]
     partia = []
-    for temat, zdanie in TEMATY:
+    for temat, fakt, przekonanie, naprawde in FAKTY:
         k = dict(DOBRY)
-        k["fact"] = "Documented: %s — %s, according to the published standard." % (temat, zdanie)
-        k["wrong_belief"] = "Most people assume %s work in the obvious way" % temat
-        k["actually"] = "In fact %s, which nobody explains at the point of use" % zdanie
+        k["fact"] = fakt
+        k["wrong_belief"] = przekonanie
+        k["actually"] = naprawde
         k["domain"] = temat
         partia.append(k)
     w = stages.dopisz_kandydatow(partia)
@@ -301,20 +363,45 @@ try:
             return {"fact": fakt, "status": "nowy",
                     "kiedy": kiedy + "T10:00:00+00:00", "wazny_do": _daleko}
 
+        # GRANICA EPOKI USTAWIONA PRZEZ TEST, NIE WZIETA Z KONFIGURACJI.
+        #
+        # Ten blok bral date z `config.DATA_PRZESTAWIENIA` i wokol niej skladal
+        # atrapy. Dzialalo, dopoki stala byla konkretnym dniem wpisanym w kod.
+        # Odkad jest polem konfiguracji i domyslnie pusta — bo nowe konto nie
+        # ma czego odcinac — test sprawdzal filtr, ktorego nie wlaczyl.
+        # Ta sama zasada, co przy terminie waznosci kilka linii wyzej.
+        _granica_wlasciwa = config.DATA_PRZESTAWIENIA
+        config.DATA_PRZESTAWIENIA = "2026-08-25"
+
         stages.INDEKS_KANDYDATOW.write_text(_js2.dumps([
-            _kand("Stary temat o szamponie", "2026-08-22"),
-            _kand("Stary temat o jednym z tematow", "2026-08-24"),
-            _kand("Nowy temat o modelach", config.DATA_PRZESTAWIENIA),
-            _kand("Nowszy temat o tokenach", "2026-08-28"),
+            _kand("Temat sprzed granicy", "2026-08-22"),
+            _kand("Temat dzien przed granica", "2026-08-24"),
+            _kand("Temat z dnia granicy", "2026-08-25"),
+            _kand("Temat po granicy", "2026-08-28"),
         ], ensure_ascii=False), encoding="utf-8")
 
         wziete2 = stages.wez_kandydatow(10)
         fakty2 = [k["fact"] for k in wziete2]
         sprawdz("bierze tylko material po przestawieniu konta",
-                fakty2 == ["Nowy temat o modelach", "Nowszy temat o tokenach"],
-                fakty2)
+                fakty2 == ["Temat z dnia granicy", "Temat po granicy"], fakty2)
         sprawdz("dzien przestawienia WCHODZI (granica wlaczajaca)",
-                "Nowy temat o modelach" in fakty2, fakty2)
+                "Temat z dnia granicy" in fakty2, fakty2)
+
+        # PUSTA DATA WYLACZA FILTR, I TO TEZ TRZEBA ZMIERZYC. Nowe konto nie
+        # zmienialo tematu, wiec cala spizarnia jest jego wlasna. Gdyby pusty
+        # napis dzialal jak granica, taka instalacja traciloby wszystko, co
+        # zebrala — bez zadnego komunikatu, bo brak kandydatow wyglada tak samo
+        # jak brak kandydatow.
+        stages.INDEKS_KANDYDATOW.write_text(_js2.dumps([
+            _kand("Temat sprzed granicy", "2026-08-22"),
+            _kand("Temat po granicy", "2026-08-28"),
+        ], ensure_ascii=False), encoding="utf-8")
+        config.DATA_PRZESTAWIENIA = ""
+        fakty3 = [k["fact"] for k in stages.wez_kandydatow(10)]
+        sprawdz("pusta data przepuszcza takze material sprzed granicy",
+                fakty3 == ["Temat sprzed granicy", "Temat po granicy"], fakty3)
+
+        config.DATA_PRZESTAWIENIA = _granica_wlasciwa
 
         print()
         print("=== SWIEZOSC SPRAWDZANA PRZY WYJMOWANIU, NIE TYLKO PRZY WKLADANIU ===")
@@ -371,6 +458,11 @@ try:
 
         # KONTRDOWOD: bez filtru wzieloby wszystkie cztery — i wlasnie to robilo
         # przez pol godziny miedzy podlaczeniem indeksu a ta poprawka.
+        #
+        # Granica ustawiana tu drugi raz, bo blok o pustej dacie kilkadziesiat
+        # linii wyzej celowo ja wylaczyl. Kontrdowod, ktory bierze granice
+        # „skadkolwiek", udowadnia tyle co nic.
+        config.DATA_PRZESTAWIENIA = "2026-08-25"
         stages.INDEKS_KANDYDATOW.write_text(_js2.dumps([
             _kand("Stary A", "2026-08-22"), _kand("Stary B", "2026-08-24"),
         ], ensure_ascii=False), encoding="utf-8")

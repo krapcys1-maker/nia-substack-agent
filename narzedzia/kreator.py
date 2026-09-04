@@ -160,6 +160,17 @@ def zbierz(o: Odpowiadacz) -> dict:
          "As a reader sees it. Goes into every prompt.")
     pole("konto.strefa_czytelnika", "Reader time zone", config.PUBLISH_TIMEZONE,
          "IANA name, e.g. Europe/Warsaw. Decides WHEN things publish.")
+    pole("konto.data_przestawienia",
+         "Date this account last changed subject (blank if never)",
+         config.DATA_PRZESTAWIENIA,
+         "YYYY-MM-DD, or leave blank. Blank is the right answer for a new\n"
+         "account and for one that has always written about the same thing.\n"
+         "\n"
+         "Set it only if this account used to be about something else. The\n"
+         "stored pool of article candidates survives a change of subject, and\n"
+         "without this date the bot will keep writing up leftovers from the\n"
+         "old one. Measured on a real account: of 119 waiting candidates, 65\n"
+         "belonged to the previous subject.")
 
     print()
     print("=" * 72)
@@ -217,6 +228,12 @@ def zbierz(o: Odpowiadacz) -> dict:
     pole("temat.dziedziny", "Areas to look through for facts",
          list(config.DZIEDZINY_CIEKAWOSTEK),
          "The lens, not the destination. Rotated every run.")
+    pole("temat.puste_slowa", "Words that mean nothing in your subject",
+         list(config.PUSTE_SLOWA_NISZY),
+         "Words so common in your field that two unrelated facts share them.\n"
+         "Comma separated, and EMPTY IS THE RIGHT ANSWER to begin with:\n"
+         "add a word when you have watched it cause a third false\n"
+         "duplicate-alarm, not before.")
 
     print()
     print("=" * 72)

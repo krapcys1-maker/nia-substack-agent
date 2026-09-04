@@ -120,7 +120,7 @@
 | `WORST_NOTE_DAYS` | `("monday", "friday")` | — |
 | `NOTEK_PROMUJACYCH` | `3` | Rozkład na tydzień: pięć notek dziennie, dzień publikacji artykułu ma własny. Ile notek promuje jeden artykul i przez ile dni. Decyzja wlasc |
 | `OKNO_PROMOCJI_DNI` | `7` | PO ILU DNIACH ARTYKUL PRZESTAJE BYC PROMOWANY, nawet jesli nie wybral swoich trzech notek. `artykul_do_promocji` sam nazwal ten problem w do |
-| `DATA_PRZESTAWIENIA` | `"2026-08-25"` | DZIEN, W KTORYM KONTO ZMIENILO NISZE. Nie jest to data historyczna dla ozdoby — czyta ja `wez_kandydatow`. Indeks kandydatow przetrwal przep |
+| `DATA_PRZESTAWIENIA` | `""` | DZIEN, W KTORYM TO KONTO OSTATNI RAZ ZMIENILO TEMAT. Nie jest to data historyczna dla ozdoby — czyta ja `stages.wez_kandydatow` i odrzuca ka |
 | `BANK_UDZIAL_ARTYKULOW` | `0.33` | Jaka czesc banku moze niesc znacznik „na artykul". Pytany po kolei „czy to unioslo by artykul", model mowi tak prawie zawsze — ta sama degen |
 | `BANK_MAKS_WOLNYCH` | `20` | --- BANK POMYSLOW: BUFOR, NIE MAGAZYN -------------------------------------- Wlasciciel, 30 sierpnia: „nie moze byc tak, ze mamy za duzo tem |
 | `SZUKANIE_BANKU_NA_DOBE` | `1` | ILE RAZY NA DOBE WOLNO DOBIERAC MATERIAL DO BANKU. Bylo: przy kazdym z pieciu przebiegow. Zmierzone 1 wrzesnia 2026 na produkcji: srednio 26 |

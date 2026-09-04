@@ -1517,9 +1517,9 @@ NOTEK_PROMUJACYCH = 3
 # niewybranym dniem czekal w kolejce w nieskonczonosc.
 #
 # Zmierzone 26 sierpnia na produkcji: w kolejce lezaly cztery teksty z epoki
-# przedmiotow codziennych (temat pierwszy, okno w samolocie, szampon, kod na butelce),
-# dwa z nich z niewybranymi dniami. Po wyczerpaniu biezacego artykulu kanal
-# wystawilby notke promujaca artykul o szamponie sprzed tygodnia.
+# sprzed zmiany tematu, dwa z nich z niewybranymi dniami. Po wyczerpaniu
+# biezacego artykulu kanal wystawilby notke promujaca tekst sprzed tygodnia,
+# o czym innym niz publikacja pisze dzisiaj.
 #
 # Siedem dni, nie trzy: przydzial to trzy dni Z RZEDU zaraz po publikacji, ale
 # dzien potrafi wypasc (cichy dzien, wyczerpany limit notek), wiec okno musi
@@ -1527,18 +1527,29 @@ NOTEK_PROMUJACYCH = 3
 # konczy sie, zanim link zdazy ostygnac.
 OKNO_PROMOCJI_DNI = 7
 
-# DZIEN, W KTORYM KONTO ZMIENILO NISZE.
+# DZIEN, W KTORYM TO KONTO OSTATNI RAZ ZMIENILO TEMAT.
 #
-# Nie jest to data historyczna dla ozdoby — czyta ja `wez_kandydatow`. Indeks
-# kandydatow przetrwal przeprowadzke i trzyma material obu pism naraz. Zmierzone
-# 30 sierpnia 2026 na 119 wolnych kandydatach:
+# Nie jest to data historyczna dla ozdoby — czyta ja `stages.wez_kandydatow`
+# i odrzuca kazdego kandydata dopisanego wczesniej. Indeks kandydatow
+# przezywa zmiane niszy i trzyma material obu pism naraz. Zmierzone
+# 30 sierpnia 2026 na 119 wolnych kandydatach jednego konta:
 #     przed zmiana niszy   65 pozycji, z tego 1 w nowej niszy
 #     po zmianie niszy     54 pozycje, z tego 46 w nowej niszy
 # Rozdzial jest ostry, wiec data dziala jak filtr, a nie jak przyblizenie.
 #
-# TA SAMA KLASA WADY, CO SZAMPON W KOLEJCE PROMOCYJNEJ: rzeczy z poprzedniego
-# pisma nie znikaja same, tylko czekaja w kolejce, az cos po nie siegnie.
-DATA_PRZESTAWIENIA = "2026-08-25"
+# TA SAMA KLASA WADY, CO STARY ARTYKUL W KOLEJCE PROMOCYJNEJ: rzeczy
+# z poprzedniego pisma nie znikaja same, tylko czekaja, az cos po nie siegnie.
+#
+# STALA DATA W KODZIE BYLA TU BLEDEM I WARTO WIEDZIEC JAKIM. Stal tu konkretny
+# dzien z historii jednego konta. Dla kazdej innej instalacji byla to CUDZA
+# data — a jesli pozniejsza niz jej wlasne pierwsze przebiegi, indeks odrzucal
+# wszystko, co ta instalacja zdazyla zebrac. Bez sladu: brak kandydatow wyglada
+# dokladnie tak samo jak brak kandydatow.
+#
+# PUSTY NAPIS ZNACZY „NIGDY NIE ZMIENIALEM TEMATU" i przepuszcza cala spizarnie.
+# To jest poprawna odpowiedz dla nowego konta i domyslna tutaj — filtr wlacza
+# sie dopiero wtedy, gdy jest co odcinac.
+DATA_PRZESTAWIENIA = ""
 
 # Jaka czesc banku moze niesc znacznik „na artykul".
 #
@@ -2183,6 +2194,43 @@ OBSZARY_REWIRU = {
     "pieniadze i wladza": ("bodies", "capture", "cost", "insurance",
                            "procurement", "patent", "supply"),
 }
+
+# SLOWA, KTORE W TWOJEJ NISZY PADAJA W CO DRUGIM ZDANIU.
+#
+# `stages._slowa` wycina je przed porownywaniem tekstow, bo inaczej dwa
+# dowolne fakty z tej samej dziedziny maja wspolne rdzenie, zanim ktokolwiek
+# spojrzy na ich temat. Wykrywacz powtorek zglaszalby wtedy blizniaki, ktore
+# nimi nie sa, a kazdy falszywy alarm kosztuje jedna notke.
+#
+# DO 2026-09-04 TA LISTA BYLA WPISANA W KOD i dostrojona do jednej niszy:
+# „america", „american", „federal", „government", „national", „states",
+# „united", „regulation", „standard". Konto o czym innym traci przez to
+# dokladnie te rdzenie, ktore u niego ODROZNIAJA tematy — publikacja
+# o polityce miejskiej przestalaby odrozniac notke o stanie od notki o rzadzie.
+#
+# Slowa funkcyjne angielszczyzny („that", „from", „with") zostaly w kodzie:
+# sa te same w kazdej niszy i nie ma o czym decydowac.
+#
+# PUSTA LISTA JEST POPRAWNA. Wykrywacz dziala bez niej, tylko ostrozniej —
+# lepiej zaczac od pustej i dopisac slowo, gdy zobaczysz je w trzecim
+# falszywym alarmie z rzedu, niz zgadywac z gory.
+# MYLI SIE W OBIE STRONY I ZADNA NIE JEST GLOSNA.
+#
+# Za duzo slow: rdzenie odrozniajace tematy znikaja, wiec powtorka przechodzi
+# jako nowy temat. Konto o polityce miejskiej, ktore wpisze tu „state"
+# i „government", przestanie odrozniac notke o stanie od notki o rzadzie.
+#
+# Za malo slow — czyli takze przy pustej liscie, ktora jest domyslna: wspolne
+# jest wszystko, co sie powtarza w SPOSOBIE PISANIA, nie w temacie. Zmierzone
+# 2026-09-04 na `tests/test_indeks_kandydatow.py`: dwanascie faktow o zupelnie
+# roznych rzeczach konczylo sie tym samym zwrotem, mialo przez to cztery
+# wspolne rdzenie — a `stages._zderzenie` uznaje teksty za ten sam temat juz
+# przy dwoch. Indeks oddawal po jednym kandydacie na przebieg zamiast po trzy.
+#
+# Odrzucony kandydat nie jest awaria i nigdzie nie zapala sie lampka. Jesli
+# `[indeks] przyjete` regularnie mocno przewyzsza to, co da sie wyjac, to jest
+# pierwsze miejsce do sprawdzenia.
+PUSTE_SLOWA_NISZY: tuple[str, ...] = ()
 
 # KAT REDAKCYJNY — czym to konto zajmuje sie W NISZY. Do 2026-09-03 stal
 # wpisany w DZIEWIECIU promptach, w szesciu jako „what these systems actually
