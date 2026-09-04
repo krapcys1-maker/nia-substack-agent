@@ -21,11 +21,12 @@ you can change.**
 The project's own rule is that a grep in the source is not proof that the code
 runs. So the split is explicit.
 
-**Verified by running:** the full test suite (119 passing, 4 failing, each
-failure traced to its cause by removing the cause and re-running); the paid-call
-reachability map built from the AST; a full reconfiguration onto a different
-topic and an invented account, with three runs on it; the configurator driving
-the bot end to end; the function map generated from all 24 modules.
+**Verified by running:** the full test suite (on 2026-09-04: 125 passing,
+2 failing — one needs a POSIX signal this machine does not have, one needs a
+real API key); the paid-call reachability map built from the AST; a full
+reconfiguration onto a different topic and an invented account, with three runs
+on it; the configurator driving the bot end to end; the function map generated
+from all 24 modules.
 
 **Read, not run:** everything touching a live Substack session — publishing,
 reach cards, the reader feed. There is no Playwright here, no session, and no
@@ -313,7 +314,7 @@ Brak sesji Substacka.
 
 ## 4.1 The proportions
 
-Measured across 529 functions in 24 modules:
+Measured across 544 functions in 24 modules:
 
 | layer | functions | portable? |
 |---|---|---|

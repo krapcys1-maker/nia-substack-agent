@@ -54,6 +54,12 @@ def sledzone() -> list[str]:
 PLIKI = sledzone()
 README = pathlib.Path("README.md").read_text(encoding="utf-8")
 MAPA = pathlib.Path("docs/FUNCTION_MAP.md").read_text(encoding="utf-8")
+# TRZECI DOKUMENT Z LICZBAMI. Ten test pilnowal README i REPO_MAP, a
+# `CONFIGURATION_MAP.md` — ktory takze podaje liczbe funkcji i modulow —
+# byl poza jego zasiegiem i rozjechal sie o siedemnascie funkcji, zanim
+# ktokolwiek zajrzal. Dokument z liczbami, ktorego nic nie pilnuje, jest
+# dokladnie tym, co ten plik istnieje po to, zeby wykluczyc.
+KONFIG_MAPA = pathlib.Path("docs/CONFIGURATION_MAP.md").read_text(encoding="utf-8")
 
 
 def z_mapy(etykieta: str) -> int | None:
@@ -83,6 +89,13 @@ if funkcji is not None:
                 "README: %s, mapa: %s" % (m.group(1), funkcji))
 
 if modulow is not None:
+    m2 = re.search(r"Measured across (\d+) functions", KONFIG_MAPA)
+    sprawdz("CONFIGURATION_MAP podaje liczbe funkcji", m2 is not None)
+    if m2:
+        sprawdz("  i zgadza sie z mapa (%s)" % funkcji,
+                int(m2.group(1)) == funkcji,
+                "CONFIGURATION_MAP: %s, mapa: %s" % (m2.group(1), funkcji))
+
     m = re.search(r"in (\d+) modules", README)
     if m:
         sprawdz("liczba modulow zgadza sie z mapa (%s)" % modulow,
