@@ -138,7 +138,7 @@ in the code.
 | nine git tags | `archive/stary-agent-*`, `prototyp-gpt-2026-08`, `v1`, `v2` — every one pointing into the old history |
 | six documents about one installation | moved out of the product |
 
-## 8. What seven sweeps could not see, and one reading found
+## 8. What the sweeps could not see, and reading found
 
 Sections 1–7 were written after the identity scan came back green. Everything
 below was found **afterwards**, and each item was invisible to every sweep that
