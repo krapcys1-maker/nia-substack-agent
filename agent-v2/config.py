@@ -551,20 +551,35 @@ WEB_SEARCH_USD_PER_1K = 10.00
 # pracy przy wlascicielu i trzeba go bylo pamietac wylaczyc — a o 00:04 timer
 # odpala przebieg BEZ NADZORU. Tym razem podniesienie WYGASA SAMO: jutro plik
 # jest ten sam, a sufit z powrotem 5,00, bez niczyjej pamieci.
+#
+# DZIEN JEST POLEM KONFIGURACJI I DOMYSLNIE PUSTY. Stala trzymala tu date
+# jednego dnia pracy przy jednym koncie („2026-08-30"), wiec u kazdej innej
+# instalacji ten mechanizm byl martwy: podniesienie sufitu wymagaloby edycji
+# kodu. Pusta wartosc znaczy „dzis nie ma podniesienia" — i to jest stan,
+# w ktorym ma stac przez wiekszosc dni.
 import datetime as _dt_sufit  # noqa: E402
-_DZIS_UTC = _dt_sufit.datetime.now(_dt_sufit.timezone.utc).strftime("%Y-%m-%d")
-SUFIT_PODNIESIONY_NA = "2026-08-30"
-SUFIT_DZIENNY_BAZOWY = 5.00
-# Podniesienie WYGASA SAMO: jutro plik jest ten sam, a sufit z powrotem bazowy.
-DAILY_LIMIT_USD = (SUFIT_DZIENNY_BAZOWY * 2.0
-                   if _DZIS_UTC == SUFIT_PODNIESIONY_NA
-                   else SUFIT_DZIENNY_BAZOWY)
 
+
+def _dzis_utc() -> str:
+    """Dzisiejszy dzien UTC. Funkcja, nie stala — proces moze przejsc polnoc."""
+    return _dt_sufit.datetime.now(_dt_sufit.timezone.utc).strftime("%Y-%m-%d")
+
+
+SUFIT_PODNIESIONY_NA = ""
 
 # O ILE PODNOSI SIE SUFIT W DNIU PRACY PRZY WLASCICIELU. Mnoznik, nie druga
 # liczba: sufit dzienny jest polem konfiguracji, a wpisana tu kwota
 # rozjechalaby sie z nim przy pierwszej zmianie.
 SUFIT_PODNIESIONY_RAZY = 2.0
+
+# SUFIT BAZOWY JEST POLEM KONFIGURACJI (`pieniadze.sufit_dzienny_usd`),
+# a `DAILY_LIMIT_USD` — jego POCHODNA na dzis. Odwrotnie bylo zle i kosztowalo
+# to podwojne naliczenie podwyzki: konfiguracja ustawiala `DAILY_LIMIT_USD`,
+# ktory JUZ byl pomnozony przy imporcie, a `sufit_dnia()` mnozyl go DRUGI RAZ.
+# W dniu podniesienia sufit wychodzil CZTERY razy wiekszy od bazowego — i to
+# akurat tego dnia, w ktorym pieniedzy pilnuje sie najuwazniej. Branch nie
+# wykonal sie nigdy, bo data podniesienia byla przeszla.
+SUFIT_DZIENNY_BAZOWY = 5.00
 
 
 def sufit_dnia(dzien: str) -> float:
@@ -580,13 +595,26 @@ def sufit_dnia(dzien: str) -> float:
 
     Falszywy alarm uczy ignorowac alarmy, a ten akurat ma pilnowac pieniedzy.
 
-    LICZY SIE OD `DAILY_LIMIT_USD`, NIE OD LICZB WPISANYCH TUTAJ. Stalo tu
-    `return 10.00 if ... else 5.00` — dwie kwoty wpisane drugi raz, obok pola
-    konfiguracji, ktore mowi to samo. Konto z sufitem 3 USD dostawaloby alarm
-    dopiero po piatym, a konto z sufitem 20 — codziennie o niczym.
+    LICZY SIE OD `SUFIT_DZIENNY_BAZOWY`, NIE OD LICZB WPISANYCH TUTAJ. Stalo
+    tu `return 10.00 if ... else 5.00` — dwie kwoty wpisane drugi raz, obok
+    pola konfiguracji, ktore mowi to samo. Konto z sufitem 3 USD dostawaloby
+    alarm dopiero po piatym, a konto z sufitem 20 — codziennie o niczym.
+
+    I NIE OD `DAILY_LIMIT_USD`, bo ten jest JUZ PO podniesieniu. Poprawka
+    zdejmujaca dwie wpisane kwoty siegnela po niego i podwyzka naliczala sie
+    dwa razy: w dniu podniesienia wychodzilo czterokrotnosc bazy. Pierwsza
+    poprawka usunela duplikat i wprowadzila podwojne mnozenie; obie wady maja
+    to samo zrodlo — dwie stale mowiace o tej samej kwocie w dwoch stanach.
     """
-    return (DAILY_LIMIT_USD * SUFIT_PODNIESIONY_RAZY
-            if str(dzien)[:10] == SUFIT_PODNIESIONY_NA else DAILY_LIMIT_USD)
+    return (SUFIT_DZIENNY_BAZOWY * SUFIT_PODNIESIONY_RAZY
+            if SUFIT_PODNIESIONY_NA
+            and str(dzien)[:10] == SUFIT_PODNIESIONY_NA
+            else SUFIT_DZIENNY_BAZOWY)
+
+
+# Podniesienie WYGASA SAMO: jutro plik jest ten sam, a sufit z powrotem bazowy.
+# Przeliczany po wczytaniu konfiguracji — patrz koniec pliku.
+DAILY_LIMIT_USD = sufit_dnia(_dzis_utc())
 
 # SUFIT TORU TESTOWEGO — osobny od produkcyjnego i CELOWO NIE NIESKONCZONY.
 #
@@ -2979,6 +3007,9 @@ KONFIGURACJA_ZMIENILA = _konf.zastosuj(_dane_konfiguracji, sys.modules[__name__]
 # dopisuje sie TUTAJ, a nie liczy sie drugi raz gdzie indziej. Pilnuje tego
 # `tests/test_pochodne_po_konfiguracji.py`.
 FETCH_USER_AGENT = _naglowek_klienta()
+
+# Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia.
+DAILY_LIMIT_USD = sufit_dnia(_dzis_utc())
 
 if KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():
     print("  [konfiguracja] %s: przestawiono %d pozycji"

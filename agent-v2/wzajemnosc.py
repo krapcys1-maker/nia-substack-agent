@@ -513,7 +513,7 @@ def zaczepienia() -> dict[str, dict]:
         # proby, obie 23 sierpnia i obie nieudane — liczac ery po sukcesach
         # dostawalo sie „0 przed, 0 po", czyli obraz bloku, ktory nigdy nie
         # wstal. Prawda jest inna i wazniejsza: probowal, ale ANI RAZU po
-        # przestawieniu konta na AI, wiec jego cisza jest z innego powodu.
+        # przestawieniu tematu konta, wiec jego cisza jest z innego powodu.
         po_kotwicy = po_zmianie_tematu(kiedy)
         kubel["prob_od_kotwicy" if po_kotwicy else "prob_przed_kotwica"] += 1
         if w.get("udane"):
@@ -599,10 +599,10 @@ def odwzajemnienie() -> dict[str, dict]:
         nieorzekalne = [t for t in trafienia if t["kolejnosc"] == NIEORZEKALNA]
         orzekalnych = udanych - len(nieorzekalne)
 
-        # ODWZAJEMNIENIA LICZONE OSOBNO DLA ERY AI. Cztery z dwunastu udanych
-        # subskrypcji sa sprzed 25 sierpnia, czyli z konta o innym temacie —
-        # wrzucenie ich do jednego mianownika rozcienczaloby dzisiejsze
-        # pytanie o publicznosc AI danymi o blogach kulinarnych.
+        # ODWZAJEMNIENIA LICZONE OSOBNO DLA OBECNEJ ERY KONTA. Cztery
+        # z dwunastu udanych subskrypcji sa sprzed kotwicy, czyli z konta
+        # o innym temacie — wrzucenie ich do jednego mianownika rozcienczaloby
+        # dzisiejsze pytanie o publicznosc danymi o poprzedniej dziedzinie.
         def _od_kotwicy(lista):
             return [t for t in lista if po_zmianie_tematu(t["kiedy"])]
 
@@ -963,6 +963,7 @@ def kanaly() -> dict:
                           "role": sorted(wpis["role"])})
 
     pozycyjnie = None
+    powod_braku = ""
     try:
         import statystyki
 
@@ -985,10 +986,19 @@ def kanaly() -> dict:
                     "subskrypcje": p["subskrypcje"],
                     "obserwacje": p["obserwacje"],
                 }
-    except Exception:
-        # Pomiary pozycji sa DODATKIEM. Gdy `statystyki` nie da sie wczytac,
-        # raport ma dalej odpowiadac na trzy pozostale pytania.
+    except Exception as e:
+        # SZEROKIE LAPANIE ZOSTAJE, CICHE NIE. Pomiary pozycji sa DODATKIEM
+        # i raport ma odpowiadac na trzy pozostale pytania takze wtedy, gdy
+        # czwarte padnie — ale uzasadnienie pod tym `except` mowilo wylacznie
+        # o imporcie („gdy `statystyki` nie da sie wczytac"), a `try` obejmuje
+        # dwadziescia linii liczenia. Blad W SRODKU petli konczyl sie tak samo
+        # jak brak modulu: tabela znikala z raportu bez slowa.
+        #
+        # To jest dokladnie ta wada, przed ktora broni sie reszta tego pliku
+        # („odrzucone sa LICZONE, nie wyrzucane po cichu"). Powod idzie wiec
+        # do wyniku i zostaje wydrukowany.
         pozycyjnie = None
+        powod_braku = "%s: %s" % (type(e).__name__, e)
 
     return {
         "osobowo": osobowo,
@@ -996,6 +1006,7 @@ def kanaly() -> dict:
         "wszystkich_czytelnikow": len(ludzie),
         "szczegoly": datowalni,
         "pozycyjnie": pozycyjnie,
+        "pozycyjnie_powod_braku": powod_braku,
     }
 
 
@@ -1256,13 +1267,14 @@ def raport() -> list[str]:
                      " cel bywa poddomena PUBLIKACJI,")
             L.append("    a czytelnik jest zawsze uchwytem UZYTKOWNIKA — ta"
                      " sama osoba moze miec oba rozne.")
-        L.append("    proby wg ery konta: %d przed przestawieniem na AI (%s),"
-                 " %d po"
+        L.append("    proby wg ery konta: %d przed przestawieniem tematu"
+                 " (%s), %d po"
                  % (d["prob_przed_kotwica"],
                     KOTWICA_NISZY or "(konto nie zmienialo tematu)",
                     d["prob_od_kotwicy"]))
         if d["udane_od_kotwicy"] and d["orzekalnych_od_kotwicy"] > 0:
-            L.append("    z samej ery AI: odwzajemnilo sie %d z %d orzekalnych"
+            L.append("    z obecnej ery konta: odwzajemnilo sie %d z %d"
+                     " orzekalnych"
                      " (%s), przy %d udanych probach"
                      % (d["odwzajemnili_od_kotwicy"],
                         d["orzekalnych_od_kotwicy"],
@@ -1270,15 +1282,17 @@ def raport() -> list[str]:
                                  d["orzekalnych_od_kotwicy"]),
                         d["udane_od_kotwicy"]))
         elif d["udane_od_kotwicy"]:
-            L.append("    z ery AI zadnej udanej proby nie da sie orzec —"
+            L.append("    z obecnej ery konta zadnej udanej proby nie da sie"
+                     " orzec —"
                      " wszyscy trafieni byli z nami wczesniej albo")
             L.append("    poza zasiegiem zrzutow. %d udanych prob, ZERO"
                      " orzekalnych." % d["udane_od_kotwicy"])
         elif d["prob_od_kotwicy"]:
-            L.append("    z ery AI nie ma ANI JEDNEJ udanej proby — dzisiejszej"
+            L.append("    z obecnej ery konta nie ma ANI JEDNEJ udanej proby —"
+                     " dzisiejszej"
                      " publicznosci ten kanal nie dotknal.")
         else:
-            L.append("    PO PRZESTAWIENIU KONTA NA AI NIE BYLO ANI JEDNEJ"
+            L.append("    PO PRZESTAWIENIU TEMATU KONTA NIE BYLO ANI JEDNEJ"
                      " PROBY. Cisza tego kanalu nie jest wynikiem,")
             L.append("    tylko brakiem dzialania.")
 
@@ -1380,6 +1394,13 @@ def raport() -> list[str]:
         L.append("    ZADNEMU z nich nie poprzedza w dzienniku nasz kontakt."
                  " Odpowiedz brzmi „nie wiadomo\",")
         L.append("    a nie „zadnym kanalem\".")
+    if kan.get("pozycyjnie_powod_braku"):
+        # NIE MILCZYMY O BRAKUJACEJ TABELI. Bez tego wiersza raport wyglada
+        # identycznie, gdy pomiarow pozycyjnych nie ma, i gdy liczenie ich
+        # wysypalo sie w polowie.
+        L.append("  POZYCYJNIE: pomiar sie nie policzyl (%s). Tabela ponizej"
+                 " nie jest pusta — jej NIE MA."
+                 % kan["pozycyjnie_powod_braku"])
     if kan["pozycyjnie"]:
         L.append("  POZYCYJNIE (przypisanie SAMEGO SUBSTACKA, per wpis, nie per"
                  " osoba):")

@@ -400,17 +400,21 @@ def ile_przebiegow_zostalo(conn) -> int:
 # przypadkach na 100 zapraszamy na wlasny profil kogos, kto czytal u nas
 # o czym innym, i zostawiamy po sobie publiczny slad.
 #
-# TRZECIA KOPIA TEJ SAMEJ DATY — i najgorsza z trzech. Stala nazywala sie
-# `PRZESTAWIENIE_KONTA_NA_AI` i trzymala „2026-08-25" wpisane na sztywno, przy
-# `config.DATA_PRZESTAWIENIA` i `audyt_systemu.PIVOT` z ta sama wartoscia.
-# Nazwa niosla przy tym nazwe niszy, wiec u konta o czymkolwiek innym kod
-# czytalo sie jak zdanie nieprawdziwe — a przy zmianie tematu trzeba by bylo
-# pamietac o zmianie NAZWY, nie tylko wartosci.
+# TRZECIA KOPIA TEJ SAMEJ DATY — i najgorsza z pieciu. Stala trzymala
+# „2026-08-25" wpisane na sztywno, przy `config.DATA_PRZESTAWIENIA`,
+# `audyt_systemu.PIVOT`, `wzajemnosc.KOTWICA_NISZY` i `raport_statystyk.PIVOT`
+# z ta sama wartoscia.
 #
-# Nazwa zostaje jako alias, bo czytaja ja testy; wartosc idzie z konfiguracji.
+# NAZWA NIOSLA NAZWE NISZY — `PRZESTAWIENIE_KONTA`. U konta o czymkolwiek
+# innym kod czytalo sie jak zdanie nieprawdziwe, a przy zmianie tematu trzeba by
+# bylo pamietac o zmianie NAZWY, nie tylko wartosci. Wartosc przeniesiono do
+# konfiguracji 4 wrzesnia, ale nazwe zostawiono z uzasadnieniem „czytaja ja
+# testy" — czyli test trzymal nazwe niszy w kodzie produkcyjnym. Testy sa
+# nasze i zostaly przepisane.
+#
 # Pusty napis znaczy „to konto nie zmienialo tematu" i wtedy CALA historia
 # liczy sie jako biezaca — patrz `_po_zmianie_tematu`.
-PRZESTAWIENIE_KONTA_NA_AI = config.DATA_PRZESTAWIENIA
+PRZESTAWIENIE_KONTA = config.DATA_PRZESTAWIENIA
 
 
 def _po_zmianie_tematu(kiedy) -> bool:
@@ -420,9 +424,9 @@ def _po_zmianie_tematu(kiedy) -> bool:
     `stages._z_obecnej_epoki`. Pusta data znaczy „nie bylo zmiany tematu",
     wiec wszystko jest biezace.
     """
-    if not PRZESTAWIENIE_KONTA_NA_AI:
+    if not PRZESTAWIENIE_KONTA:
         return True
-    return str(kiedy or "")[:10] >= PRZESTAWIENIE_KONTA_NA_AI
+    return str(kiedy or "")[:10] >= PRZESTAWIENIE_KONTA
 
 # NAJKROTSZY ZMIERZONY ZBIEG NAZWY Z HOSTEM TO `publikacja2` — 7 znakow. Prog 6
 # jest wiec ponizej wszystkiego, co dzis dziala, i odcina wylacznie zbiegi
@@ -694,7 +698,7 @@ def reagujacy_jako_cele() -> tuple[list[str], dict]:
     wprost: mamy czym ja zaadresowac, wiec nie ma po co udawac, ze jej nie ma.
 
     ODSIEW TEMATYCZNY JEJ NIE DOTYCZY, i to tez jest swiadome. Granica
-    `PRZESTAWIENIE_KONTA_NA_AI` pyta „czy czytalismy ich PO tym, jak konto
+    `PRZESTAWIENIE_KONTA` pyta „czy czytalismy ich PO tym, jak konto
     zmienilo temat" — bo host z historii moze pochodzic sprzed zmiany
     tematu. Reagujacy nie ma tego problemu: on zareagowal na TE tresc, ktora
     konto wystawia dzis. Sam jest swiezszym dowodem niz data komentarza.
@@ -803,7 +807,7 @@ def cele_wedlug_pierwszenstwa(historia: dict) -> tuple[list[str], dict]:
     1. NAJMOCNIEJ Z HOSTOW: host, ktorego nazwa zgadza sie z kims, kto juz
        zareagowal na nasza tresc (`kogo_juz_dotknelismy` — i tam stoi, ile
        z tego naprawde da sie wyprowadzic: 7 osob z 69).
-    2. POTEM: host z komentarzem od `PRZESTAWIENIE_KONTA_NA_AI` wlacznie.
+    2. POTEM: host z komentarzem od `PRZESTAWIENIE_KONTA` wlacznie.
        41 z 94 hostow na dzien wdrozenia.
     3. NIGDY: host, ktorego OSTATNI komentarz jest starszy. 53 z 94.
 
@@ -907,7 +911,7 @@ def powod_pustej_puli(rachunek: dict) -> str:
             " %d mlodszych niz %d h, w puli %d"
             % (rachunek.get("wszystkich", 0),
                rachunek.get("sprzed_przestawienia", 0),
-               PRZESTAWIENIE_KONTA_NA_AI,
+               PRZESTAWIENIE_KONTA,
                rachunek.get("po_przestawieniu", 0),
                rachunek.get("reagujacy_z_uchwytem", 0),
                rachunek.get("reagujacy_juz_czyta", 0),
@@ -1714,8 +1718,8 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         WYBOR CELU PRZESTAL BYC LOSEM (1 wrzesnia 2026). Historia czytania
         nadal jest jedynym zrodlem, ale nie idzie juz do losowania w calosci:
         `cele_wedlug_pierwszenstwa` odcina hosty, u ktorych ostatni raz
-        komentowalismy przed przestawieniem konta na AI (53 z 94 zmierzone
-        tego dnia — blogi o jedzeniu, zdrowiu, modzie i literaturze),
+        komentowalismy przed przestawieniem tematu konta (53 z 94 zmierzone
+        tego dnia, wszystkie z poprzedniej dziedziny),
         i stawia na poczatku te, ktore juz zareagowaly na nasza tresc.
 
         DLACZEGO AKURAT TU TO BOLI NAJBARDZIEJ. Obserwacja WYSYLA
@@ -1782,7 +1786,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
               " %d ponizej progu, %d mlodszych niz %d h);"
               " %d zostaje po odsianiu obserwowanych"
               % (rachunek["wszystkich"], rachunek["sprzed_przestawienia"],
-                 PRZESTAWIENIE_KONTA_NA_AI, rachunek["ze_skutkiem"],
+                 PRZESTAWIENIE_KONTA, rachunek["ze_skutkiem"],
                  rachunek["reagujacy_z_uchwytem"], rachunek["reagujacy"],
                  rachunek["reagujacy_juz_czyta"], rachunek["reagujacy_slabi"],
                  rachunek["reagujacy_swiezy"], rachunek["odstep_h"],
@@ -1977,7 +1981,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
               " %d ponizej progu, %d mlodszych niz %d h);"
               " %d zostaje po odsianiu juz zasubskrybowanych"
               % (rachunek["wszystkich"], rachunek["sprzed_przestawienia"],
-                 PRZESTAWIENIE_KONTA_NA_AI, rachunek["ze_skutkiem"],
+                 PRZESTAWIENIE_KONTA, rachunek["ze_skutkiem"],
                  rachunek["reagujacy_z_uchwytem"], rachunek["reagujacy"],
                  rachunek["reagujacy_juz_czyta"], rachunek["reagujacy_slabi"],
                  rachunek["reagujacy_swiezy"], rachunek["odstep_h"],

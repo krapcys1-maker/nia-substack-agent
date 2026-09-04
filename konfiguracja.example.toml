@@ -266,6 +266,22 @@ sufit_miesieczny_usd = 40.0
 sufit_dzienny_usd = 5.0
 sufit_przebiegu_usd = 1.60
 
+# DZIEN, NA KTORY SUFIT DZIENNY JEST PODNIESIONY — i tylko ten jeden.
+#
+# Puste znaczy „bez podniesienia" i tak ma stac przez wiekszosc dni. Wpisuje
+# sie tu date (RRRR-MM-DD) w dniu, w ktorym pracujesz przy bocie i wiesz, ze
+# Twoje wlasne przebiegi sprawdzajace zjedza budzet konta.
+#
+# PODNIESIENIE WYGASA SAMO. Poprzednia wersja tego mechanizmu wymagala
+# pamietania, zeby je cofnac — a o 00:04 zegar odpala przebieg BEZ NADZORU.
+# Nazajutrz plik jest ten sam, a sufit z powrotem bazowy.
+#
+# Mnoznik (`SUFIT_PODNIESIONY_RAZY`, dwukrotnosc) siedzi w `config.py` i nie
+# jest polem: gdyby byl, „podniesienie na jeden dzien" dalo by sie ustawic na
+# stale przez wpisanie duzej liczby, a to jest dokladnie ten stan, przed ktorym
+# ten mechanizm chroni.
+sufit_podniesiony_na = ""
+
 
 # -----------------------------------------------------------------------------
 # PUBLIKOWANIE — kiedy i w jakim ksztalcie

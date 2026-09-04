@@ -1,7 +1,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2867 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2871 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -357,7 +357,7 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-311 wierszy, 12 funkcji na poziomie modułu, 1 klas
+319 wierszy, 12 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -450,7 +450,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-2985 wierszy, 29 funkcji na poziomie modułu, 0 klas
+3016 wierszy, 30 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -460,6 +460,7 @@
 | `pora_na_publikacje(kiedy)` | Czy teraz wolno wystawiac NOTKI — wg zegara CZYTELNIKOW, nie serwera. |
 | `w_szczycie(kiedy)` | Czy teraz obowiazuje droga taryfa. |
 | `narzedzie_wyszukiwania(model)` | Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie. |
+| `_dzis_utc()` *(wewn.)* | Dzisiejszy dzien UTC. Funkcja, nie stala — proces moze przejsc polnoc. |
 | `sufit_dnia(dzien)` | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. |
 | `kotwica_dlugosci(glebokosc)` | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. |
 | `dlugosc_dla(glebokosc)` | Ile slow ma miec artykul o tej glebokosci. |
@@ -517,19 +518,19 @@
 
 ### `raport_statystyk.py` — te same dane w tabeli dla człowieka
 
-278 wierszy, 5 funkcji na poziomie modułu, 0 klas
+304 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_skrot(tekst, ile)` *(wewn.)* | — |
 | `_mediana(liczby)` *(wewn.)* | — |
-| `dwie_epoki(najnowsze)` | Epoka AI osobno, epoka ukrytych systemow osobno. |
+| `dwie_epoki(najnowsze)` | Epoka SPRZED zmiany tematu osobno, epoka PO niej osobno. |
 | `wzrost_konta()` | Ilu nas czyta i czy tego przybywa. |
 | `main()` | — |
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-374 wierszy, 6 funkcji na poziomie modułu, 0 klas
+386 wierszy, 6 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -574,10 +575,11 @@
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1106 wierszy, 13 funkcji na poziomie modułu, 0 klas
+1165 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
+| `_zegar_agenta()` *(wewn.)* | Plik `.timer` agenta — znaleziony po TRESCI, nie po nazwie. |
 | `budzety_dzienne()` | Ile agent SOBIE ZALOZYL kazdego dnia — z pliku, nie z dzisiejszej konfiguracji. |
 | `_data(dzien)` *(wewn.)* | „2026-08-30" -> datetime w UTC. `cichy_dzien` pyta o obiekt, nie napis. |
 | `_poprawna_data(dzien)` *(wewn.)* | Czy da sie z tego zrobic date. Zepsuty wpis ma znikac, nie zabijac raport. |
@@ -615,7 +617,7 @@
 
 ### `audyt_systemu.py` — audyt CALEGO systemu na zywych danych: publikowanie, normy, komentarze, statystyki, artykul, pieniadze, pamiec
 
-654 wierszy, 7 funkcji na poziomie modułu, 0 klas
+660 wierszy, 7 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -629,7 +631,7 @@
 
 ### `wzajemnosc.py` — czy zaczepieni sie odwzajemniaja: liczy PO naszej akcji, osobno stan nieorzekalny
 
-1437 wierszy, 26 funkcji na poziomie modułu, 0 klas
+1458 wierszy, 26 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

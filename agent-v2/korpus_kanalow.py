@@ -29,6 +29,8 @@ import re
 from typing import Any
 from xml.etree import ElementTree as ET
 
+import config
+
 RSS = "https://www.youtube.com/feeds/videos.xml"
 NS = {"a": "http://www.w3.org/2005/Atom"}
 
@@ -147,15 +149,25 @@ def przetworz(wpisy: list[tuple[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
-# Slowa, ktore nie odrozniaja jednego wydarzenia od drugiego. Bez tej listy
-# „AI" i „model" laczylyby w jedno wydarzenie cala tablice.
-_TLO = {
+# Slowa, ktore nie odrozniaja jednego wydarzenia od drugiego. Bez nich jedno
+# slowo powtarzajace sie w calej dziedzinie laczyloby w jedno wydarzenie cala
+# tablice kanalow.
+#
+# CZWARTA KOPIA TEJ SAMEJ LISTY. Trzy poprzednie (`stages`) scalono
+# 3 wrzesnia 2026 w `config.PUSTE_SLOWA_NISZY`; ta przezyla, bo nazywa sie
+# `_TLO`, a szukano po nazwie `PUSTE_SLOWA`. Trzymala osiem slow jednej
+# dziedziny wpisanych na sztywno — u konta o czymkolwiek innym osiem slow bez
+# znaczenia, a jego wlasne slowa-tlo nadal laczace wszystko ze wszystkim.
+#
+# ROZDZIELONE TAK SAMO, JAK W `stages`: czesc ogolna jest wlasnoscia jezyka
+# i zostaje w kodzie, czesc dziedzinowa przychodzi z konfiguracji.
+_TLO_OGOLNE = {
     "the", "a", "an", "and", "or", "but", "of", "to", "in", "on", "for",
     "with", "is", "are", "was", "were", "it", "its", "this", "that", "you",
-    "your", "we", "our", "just", "now", "new", "ai", "model", "models", "gpt",
-    "llm", "how", "why", "what", "chatgpt", "openai", "google", "than",
+    "your", "we", "our", "just", "now", "new", "how", "why", "what", "than",
     "from", "has", "have", "can", "will", "about", "more", "most", "first",
 }
+_TLO = _TLO_OGOLNE | {s.lower() for s in getattr(config, "PUSTE_SLOWA_NISZY", ())}
 
 
 def _rdzen(temat: str) -> set[str]:

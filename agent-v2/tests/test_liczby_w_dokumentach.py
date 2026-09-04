@@ -28,6 +28,20 @@ pomiaru innej rzeczy.
 
 Dlatego kazdy pomiar ma tu REGULE zapisana obok, a nie tylko wartosc.
 
+## Dlaczego to jest JEDEN plik, a nie dwa
+
+`test_liczby_w_readme.py` robil to samo od wczesniej — na RECZNIE WYPISANEJ
+liscie dwoch dokumentow. Pozostale cztery miejsca byly poza jego zasiegiem
+i rozjechaly sie o trzydziesci funkcji. Sam docstring tamtego pliku mowil, ze
+recepta z `TROUBLESHOOTING.md` „przez chwile byla TYLKO w dokumencie" —
+i skonczyla jako sprawdzenie dwoch dokumentow z szesciu.
+
+Zostawienie obu bylo by trzecim przykladem tej samej wady w jednym dniu:
+liczyly funkcje INACZEJ (jedna z `zbierz()`, druga z tabeli w wygenerowanym
+`FUNCTION_MAP.md`) i juz dawaly rozne wyniki. Tamten plik zostal usuniety,
+a jego jedyne wlasne sprawdzenie — dlugosc dokumentu sklejanego — jest tutaj
+w sekcji 3.
+
 ## Jak to dziala
 
 Kazdy wpis to (plik, wzorzec, nazwy pomiarow). Wzorzec MUSI trafic co
@@ -150,7 +164,27 @@ for plik, wzorzec, nazwy in MIEJSCA:
                     "w dokumencie %s, w drzewie %d" % (wartosc, oczek))
 
 print()
-print("=== 3. KONTRDOWOD: WZORZEC NAPRAWDE PATRZY NA LICZBE ===")
+print("=== 3. DLUGOSC DOKUMENTU SKLEJANEGO ===")
+# PRZENIESIONE z `test_liczby_w_readme.py`, ktory to sprawdzal jako jedyny.
+# TOLERANCJA 50 WIERSZY, I TO JEST SWIADOME: dokument przebudowuje sie przy
+# kazdej zmianie komentarza w kodzie, wiec wymaganie rownosci co do wiersza
+# kazaloby poprawiac README przy KAZDYM commicie — a wtedy ludzie zaczna to
+# obchodzic zamiast poprawiac. Liczba ma mowic o skali, nie o wersji.
+_jzb = KORZEN / "agent-v2/JAK_ZBUDOWANY_JEST_BOT.md"
+if _jzb.exists():
+    _ile = len(_jzb.read_text(encoding="utf-8").splitlines())
+    _m = re.search(r"JAK_ZBUDOWANY_JEST_BOT\.md` — ([\d,]+) lines",
+                   (KORZEN / "README.md").read_text(encoding="utf-8"))
+    sprawdz("README podaje dlugosc dokumentu sklejanego", _m is not None)
+    if _m:
+        _podane = int(_m.group(1).replace(",", ""))
+        sprawdz("i miesci sie w 50 wierszach od prawdy (%d)" % _ile,
+                abs(_podane - _ile) <= 50,
+                "README: %d, plik: %d, roznica %d"
+                % (_podane, _ile, abs(_podane - _ile)))
+
+print()
+print("=== 4. KONTRDOWOD: WZORZEC NAPRAWDE PATRZY NA LICZBE ===")
 # Bez tego caly plik moglby przechodzic na wzorcach, ktore trafiaja w cokolwiek.
 _probka = "all **1 functions** in 1 modules"
 _m = re.findall(r"\*\*(\d+) functions\*\* in (\d+) modules", _probka)

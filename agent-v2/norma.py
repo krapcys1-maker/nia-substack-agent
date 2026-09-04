@@ -238,7 +238,46 @@ MIN_PLAN_W_OKNIE_DO_ALARMU_O_POLOWIE = 3
 # `run.py:265-268` nazywa te zasade wprost („powtorzenie ich tutaj zlamaloby
 # zasade jednej liczby w jednym miejscu"), a `tests/test_rytm.py:132` juz ten
 # plik czyta z Pythona.
-ZEGAR = Path(__file__).resolve().parent / "systemd" / "nia-agent.timer"
+KATALOG_JEDNOSTEK = Path(__file__).resolve().parent / "systemd"
+
+
+def _zegar_agenta() -> Path | None:
+    """Plik `.timer` agenta — znaleziony po TRESCI, nie po nazwie.
+
+    Stalo tu `systemd/nia-agent.timer` wpisane wprost. NAZWA JEDNOSTKI NALEZY
+    DO INSTALACJI: kto wdrozy bota pod wlasna marka, nazwie ja inaczej —
+    i wtedy ten modul po cichu przechodzil na oszacowanie, bo `except` nizej
+    lapie takze brak pliku.
+
+    Pytamy wiec o to, CO JEDNOSTKA URUCHAMIA. Usluga agenta to ta, ktorej
+    `ExecStart` wola `run.py`; jej zegar ma te sama nazwe z innym
+    rozszerzeniem — to zwiazek wymuszany przez samego systemd, wiec nie jest
+    kolejna nasza umowa do zapamietania. `tests/test_jednostki_systemd.py`
+    pilnuje, ze kazda usluga oneshot ma swoj zegar.
+    """
+    try:
+        uslugi = sorted(KATALOG_JEDNOSTEK.glob("*.service"))
+    except OSError:
+        return None
+    for usluga in uslugi:
+        try:
+            tresc = usluga.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        wiersze = [w for w in tresc.splitlines() if w.startswith("ExecStart=")]
+        if not any("run.py" in w for w in wiersze):
+            continue
+        zegar = usluga.with_suffix(".timer")
+        if zegar.exists():
+            return zegar
+    return None
+
+
+ZEGAR = _zegar_agenta()
+
+# CZY ROZKLAD DOBY JEST POMIAREM, CZY ZGADYWANIEM. Ustawiane przez
+# `godziny_przebiegow()`; czytane na dole raportu. Patrz tam po powod.
+ZEGAR_ODCZYTANY = False
 
 
 def budzety_dzienne() -> dict:
@@ -510,11 +549,19 @@ def przebiegow_dzis() -> int:
 def godziny_przebiegow() -> list:
     """Minuty od polnocy UTC, o ktorych systemd odpala agenta.
 
-    Czytane z `nia-agent.timer`, bo tam ta lista juz jest i drugiej byc nie
+    Czytane z jednostki zegara, bo tam ta lista juz jest i drugiej byc nie
     moze. Gdy pliku nie ma (uruchomienie poza serwerem, np. na Windows),
     zakladamy rowny rozklad — lepszy od udawania, ze cala doba jest
     rozliczalna od pierwszej minuty.
+
+    OSZACOWANIE ZOSTAWIA SLAD (`ZEGAR_ODCZYTANY`). Ten modul opiera sie na
+    zasadzie, ze liczba niebedaca pomiarem musi byc oznaczona — tylda przy
+    planie jest calym akapitem w docstringu pliku. Rozklad przebiegow w dobie
+    jest DRUGA taka liczba i do 4 wrzesnia 2026 nie byl niczym oznaczony:
+    przy nieczytelnej jednostce cala kolumna „nalezne" byla zgadywana, a raport
+    wygladal identycznie jak przy odczytanym zegarze.
     """
+    global ZEGAR_ODCZYTANY
     minuty = []
     try:
         for linia in ZEGAR.read_text(encoding="utf-8").splitlines():
@@ -526,8 +573,10 @@ def godziny_przebiegow() -> list:
     except Exception:
         minuty = []
     if not minuty:
+        ZEGAR_ODCZYTANY = False
         n = max(1, config.PRZEBIEGOW_DZIENNIE)
         return [round(24 * 60 * (i + 1) / (n + 1.0)) for i in range(n)]
+    ZEGAR_ODCZYTANY = True
     return sorted(minuty)
 
 
@@ -995,6 +1044,16 @@ def main() -> int:
         ogon = " — z okna %d dni; reszta w toku albo bez danych" % len(kolejne)
     print("  dni: %d (%s .. %s)%s"
           % (zmierzone_dni, kolejne[0], kolejne[-1], ogon))
+    if not ZEGAR_ODCZYTANY:
+        # LICZBA, KTORA NIE JEST POMIAREM, MOWI O SOBIE. Bez tego wiersza
+        # kolumna „nalezne" dla dnia biezacego wyglada tak samo, gdy pochodzi
+        # z harmonogramu, i gdy jest rownym rozkladem zmyslonym z liczby
+        # przebiegow na dobe.
+        print("  ! ROZKLAD DOBY OSZACOWANY: nie udalo sie odczytac jednostki"
+              " zegara w `agent-v2/systemd/`,")
+        print("    wiec %d przebiegow rozlozono rowno po dobie. Rozliczenie"
+              " DNIA BIEZACEGO jest z tego liczone."
+              % max(1, config.PRZEBIEGOW_DZIENNIE))
     if bez_wpisow:
         # „NIC" ZNACZY TU „NIC Z MIERZONYCH RODZAJOW". `wczytaj` odsiewa wpisy
         # spoza RODZAJE (norma.py:121), a `browser.py:1138` zapisuje takze

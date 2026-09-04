@@ -21,6 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import config      # noqa: E402
 import statystyki  # noqa: E402
 
 
@@ -29,10 +30,22 @@ def _skrot(tekst: str, ile: int = 46) -> str:
     return (t[: ile - 1] + "…") if len(t) > ile else t
 
 
-# Dzien, w ktorym konto przestalo pisac o ukrytych systemach w zwyklych
-# rzeczach, a potem zmienilo temat. Wszystko starsze opisuje INNA publikacje i
-# mieszanie tego z dzisiejszym stanem juz raz doprowadzilo do zlej decyzji.
-PIVOT = "2026-08-25"
+# Dzien, w ktorym konto zmienilo temat. Wszystko starsze opisuje INNA
+# publikacje i mieszanie tego z dzisiejszym stanem juz raz doprowadzilo do
+# zlej decyzji.
+#
+# PIATA KOPIA TEJ SAMEJ DATY — po `config`, `audyt_systemu`, `run`
+# i `wzajemnosc`. Cztery poprzednie znaleziono, bo ktos ich szukal po nazwie;
+# ta miala nazwe identyczna z druga (`PIVOT`) i mimo to przezyla, bo lista
+# miejsc byla WYPISANA RECZNIE. Dzis pilnuje tego `test_epoka_konta.py`,
+# ktory nie ma listy: chodzi po modulach i szuka KSZTALTU „RRRR-MM-DD"
+# przypisanego do stalej.
+#
+# PUSTA ZNACZY „TO KONTO NIE ZMIENIALO TEMATU" — wtedy epoki nie ma i podzialu
+# sie nie drukuje. Gole porownanie `data >= ""` jest prawdziwe zawsze, wiec bez
+# tego sprawdzenia caly material wpadalby do epoki „po" i tabela pokazywalaby
+# podzial na jedna epoke.
+PIVOT = config.DATA_PRZESTAWIENIA
 
 POLA = ("wyswietlenia", "polubienia", "odpowiedzi", "restacki",
         "subskrypcje", "obserwacje", "klikniecia_w_link")
@@ -47,7 +60,13 @@ def _mediana(liczby: list[int]) -> float:
 
 
 def dwie_epoki(najnowsze: dict) -> None:
-    """Epoka AI osobno, epoka ukrytych systemow osobno.
+    """Epoka SPRZED zmiany tematu osobno, epoka PO niej osobno.
+
+    NAZWY EPOK NIE NIOSA JUZ NAZWY NISZY. Naglowek brzmial „EPOKA AI (od %s)
+    OSOBNO OD EPOKI UKRYTYCH SYSTEMOW" i byl drukowany wlascicielowi przy
+    kazdym raporcie — dwie nazwy dziedzin w jednym wierszu, w module, ktory
+    o zadnej z nich nie musi nic wiedziec. Kubelek „AI" byl tez KLUCZEM
+    slownika, wiec nazwa niszy siedziala w strukturze danych.
 
     DZIELIMY PO DACIE WYSTAWIENIA, NIGDY PO DACIE POMIARU. Pole `zmierzone`
     mowi, kiedy PYTALISMY — a pytamy zawsze niedawno, takze o notki sprzed
@@ -59,15 +78,22 @@ def dwie_epoki(najnowsze: dict) -> None:
     ktorejkolwiek epoki — bo doliczone po cichu skrzywilyby porownanie w
     strone, ktorej nie widac.
     """
-    epoki: dict[str, list[dict]] = {"PRZED": [], "AI": [], "?": []}
+    # BEZ DATY NIE MA DWOCH EPOK. Konto, ktore nie zmienialo tematu, ma jedna
+    # historie — a `data >= ""` jest prawdziwe zawsze, wiec bez tego wyjscia
+    # wszystko wpadaloby do epoki „PO" i drukowalaby sie tabela z podzialem
+    # na jedna epoke. To ta sama pulapka, co przy `_z_obecnej_epoki`: gole
+    # porownanie z pusta wartoscia DZIALA i dlatego jest niebezpieczne.
+    if not PIVOT:
+        return
+    epoki: dict[str, list[dict]] = {"PRZED": [], "PO": [], "?": []}
     for r in najnowsze.values():
         data = str(r.get("wystawione") or "")[:10]
         if not data:
             epoki["?"].append(r)
         else:
-            epoki["AI" if data >= PIVOT else "PRZED"].append(r)
+            epoki["PO" if data >= PIVOT else "PRZED"].append(r)
 
-    if not epoki["AI"] and not epoki["PRZED"]:
+    if not epoki["PO"] and not epoki["PRZED"]:
         print()
         print("PODZIAL NA EPOKI: zaden pomiar nie ma jeszcze daty wystawienia.")
         print("   Pole `wystawione` dopisano 31.08.2026 — pojawi sie przy")
@@ -76,7 +102,7 @@ def dwie_epoki(najnowsze: dict) -> None:
 
     print()
     print("=" * 96)
-    print("EPOKA AI (od %s) OSOBNO OD EPOKI UKRYTYCH SYSTEMOW" % PIVOT)
+    print("EPOKA PO ZMIANIE TEMATU (od %s) OSOBNO OD WCZESNIEJSZEJ" % PIVOT)
     print("=" * 96)
     if epoki["?"]:
         print("  bez daty wystawienia (pomiar sprzed 31.08): %d — NIE wliczone"
@@ -85,7 +111,7 @@ def dwie_epoki(najnowsze: dict) -> None:
     for rodzaj in sorted({str(r.get("rodzaj") or "?")
                           for r in najnowsze.values()}):
         wiersze = []
-        for epoka in ("PRZED", "AI"):
+        for epoka in ("PRZED", "PO"):
             poz = [r for r in epoki[epoka]
                    if str(r.get("rodzaj") or "?") == rodzaj]
             if poz:
@@ -115,7 +141,7 @@ def dwie_epoki(najnowsze: dict) -> None:
 
     print()
     print("  SKAD PRZYCHODZILY WEJSCIA, wg epoki:")
-    for epoka in ("PRZED", "AI"):
+    for epoka in ("PRZED", "PO"):
         lic: dict[str, int] = {}
         for r in epoki[epoka]:
             for nazwa, ile in (r.get("powierzchnie") or {}).items():

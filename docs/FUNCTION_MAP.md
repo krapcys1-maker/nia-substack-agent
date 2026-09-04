@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 25 |
-| functions and methods | 549 |
+| functions and methods | 551 |
 | functions that call a paid model | 25 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 41 |
@@ -44,7 +44,7 @@ For paid calls the verdict comes from
 | [`audyt_tematow.py`](#agent-v2audyt-tematow-py) | 4 | 0 | 0 | 0 | Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem. |
 | [`bramki.py`](#agent-v2bramki-py) | 7 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
 | [`browser.py`](#agent-v2browser-py) | 97 | 0 | 44 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
-| [`config.py`](#agent-v2config-py) | 30 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
+| [`config.py`](#agent-v2config-py) | 31 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
 | [`db.py`](#agent-v2db-py) | 11 | 0 | 0 | 7 | Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK. |
 | [`gates.py`](#agent-v2gates-py) | 21 | 0 | 0 | 0 | Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu. |
 | [`jezyki.py`](#agent-v2jezyki-py) | 5 | 0 | 0 | 0 | Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma. |
@@ -54,7 +54,7 @@ For paid calls the verdict comes from
 | [`korpus_kanalow.py`](#agent-v2korpus-kanalow-py) | 6 | 0 | 0 | 0 | Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja. |
 | [`llm.py`](#agent-v2llm-py) | 16 | 0 | 0 | 3 | Jedyna warstwa miedzy `run.py` a dostawca. |
 | [`migracja_okno_promocji.py`](#agent-v2migracja-okno-promocji-py) | 2 | 0 | 0 | 0 | Jednorazowe uzupelnienie pola `dodane` w kolejce promocji. |
-| [`norma.py`](#agent-v2norma-py) | 16 | 0 | 0 | 1 | Ile agent naprawde zrobil, dzien po dniu, wobec normy. |
+| [`norma.py`](#agent-v2norma-py) | 17 | 0 | 0 | 1 | Ile agent naprawde zrobil, dzien po dniu, wobec normy. |
 | [`raport_statystyk.py`](#agent-v2raport-statystyk-py) | 5 | 0 | 0 | 0 | Co przyniosla kazda notka, restack i artykul — do czytania przez czlowieka. |
 | [`run.py`](#agent-v2run-py) | 40 | 0 | 10 | 4 | Jedno polecenie uruchamiające — to samo lokalnie i na serwerze. |
 | [`stages.py`](#agent-v2stages-py) | 159 | 23 | 1 | 18 | Etapy lancucha, po kolei, w pamieci. |
@@ -334,7 +334,7 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 
 Jedyne miejsce ze stałymi.
 
-30 funkcji.
+31 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -344,30 +344,31 @@ Jedyne miejsce ze stałymi.
 | 422 | `pora_na_publikacje(kiedy)` | — | Czy teraz wolno wystawiac NOTKI — wg zegara CZYTELNIKOW, nie serwera. | `run.dzien` |
 | 468 | `w_szczycie(kiedy)` | DEAD? | Czy teraz obowiazuje droga taryfa. | — |
 | 494 | `narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie. | `llm._narzedzie_wyszukiwania` |
-| 570 | `sufit_dnia(dzien)` | — | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. | `alarm.koszt` |
-| 727 | `kotwica_dlugosci(glebokosc)` | — | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. | `stages.write` |
-| 732 | `dlugosc_dla(glebokosc)` | — | Ile slow ma miec artykul o tej glebokosci. | `artykul_z_puli._napisz_i_zapisz`, `run.main`, `stages.write` |
-| 884 | `_tokens_for(chars)` | — | — | `config (poziom modulu)` |
-| 1258 | `losowa_postawa()` | — | Ktora postawa dla TEGO komentarza. | `stages.comment_on` |
-| 1280 | `losowe_otwarcie()` | — | — | `stages.comment_on`, `stages.reply_to` |
-| 1286 | `losowa_dlugosc()` | — | Ile slow ma miec ta konkretna wypowiedz. | `stages.comment_on`, `stages.reply_to` |
-| 1692 | `losowy_ksztalt_mysli()` | — | Ktory ksztalt dostaje ta MYSL. | `stages._opis_typu` |
-| 1843 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `audyt_systemu.main`, `norma.main`, `stages.podsumowanie_dzialan` |
-| 1931 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
-| 1938 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
-| 2390 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._deepseek_pick_from_urls` |
-| 2449 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
-| 2455 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
-| 2484 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
-| 2539 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
-| 2554 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
-| 2575 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
-| 2603 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
-| 2638 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
-| 2758 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
-| 2766 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
-| 2871 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
-| 2928 | `co_teraz_w_reku(kiedy)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
+| 563 | `_dzis_utc()` | — | Dzisiejszy dzien UTC. | `config (poziom modulu)` |
+| 585 | `sufit_dnia(dzien)` | — | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. | `alarm.koszt`, `config (poziom modulu)` |
+| 755 | `kotwica_dlugosci(glebokosc)` | — | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. | `stages.write` |
+| 760 | `dlugosc_dla(glebokosc)` | — | Ile slow ma miec artykul o tej glebokosci. | `artykul_z_puli._napisz_i_zapisz`, `run.main`, `stages.write` |
+| 912 | `_tokens_for(chars)` | — | — | `config (poziom modulu)` |
+| 1286 | `losowa_postawa()` | — | Ktora postawa dla TEGO komentarza. | `stages.comment_on` |
+| 1308 | `losowe_otwarcie()` | — | — | `stages.comment_on`, `stages.reply_to` |
+| 1314 | `losowa_dlugosc()` | — | Ile slow ma miec ta konkretna wypowiedz. | `stages.comment_on`, `stages.reply_to` |
+| 1720 | `losowy_ksztalt_mysli()` | — | Ktory ksztalt dostaje ta MYSL. | `stages._opis_typu` |
+| 1871 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `audyt_systemu.main`, `norma.main`, `stages.podsumowanie_dzialan` |
+| 1959 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
+| 1966 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
+| 2418 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._deepseek_pick_from_urls` |
+| 2477 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
+| 2483 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
+| 2512 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
+| 2567 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
+| 2582 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
+| 2603 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
+| 2631 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
+| 2666 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
+| 2786 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
+| 2794 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
+| 2899 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
+| 2956 | `co_teraz_w_reku(kiedy)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
 
 ---
 
@@ -484,9 +485,9 @@ Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach.
 | 121 | `_widelki(v, gdzie)` | — | Zakres [od, do]. | `konfiguracja (poziom modulu)` |
 | 132 | `_slownik_list(v, gdzie)` | — | Tablica `klucz = [napisy]`. | `konfiguracja (poziom modulu)` |
 | 152 | `_slownik_napisow(v, gdzie)` | — | — | `konfiguracja (poziom modulu)` |
-| 216 | `sciezka(agent_dir)` | DEAD? | — | — |
-| 220 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
-| 258 | `zastosuj(dane, cfg)` | DEAD? | Wklada wartosci do modulu `config`. | — |
+| 224 | `sciezka(agent_dir)` | DEAD? | — | — |
+| 228 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
+| 266 | `zastosuj(dane, cfg)` | DEAD? | Wklada wartosci do modulu `config`. | — |
 
 ---
 
@@ -515,12 +516,12 @@ Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 109 | `oczysc(tytul)` | — | Zdejmuje obietnice, zostawia zdarzenie. | `korpus_kanalow.przetworz` |
-| 118 | `przetworz(wpisy)` | — | (nazwa_kanalu, element) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
-| 161 | `_rdzen(temat)` | — | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. | `korpus_kanalow.wielkie_wydarzenia` |
-| 172 | `_numer_wersji(slowo)` | — | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. | `korpus_kanalow.wielkie_wydarzenia` |
-| 180 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | — | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
-| 330 | `korpus_kanalow(ile)` | — | — | `audyt_tematow.main`, `korpus_kanalow (poziom modulu)`, `stages.zaczyn_z_kanalow`, `stages.znajdz_ciekawostki` |
+| 111 | `oczysc(tytul)` | — | Zdejmuje obietnice, zostawia zdarzenie. | `korpus_kanalow.przetworz` |
+| 120 | `przetworz(wpisy)` | — | (nazwa_kanalu, element) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
+| 173 | `_rdzen(temat)` | — | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. | `korpus_kanalow.wielkie_wydarzenia` |
+| 184 | `_numer_wersji(slowo)` | — | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. | `korpus_kanalow.wielkie_wydarzenia` |
+| 192 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | — | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
+| 342 | `korpus_kanalow(ile)` | — | — | `audyt_tematow.main`, `korpus_kanalow (poziom modulu)`, `stages.zaczyn_z_kanalow`, `stages.znajdz_ciekawostki` |
 
 ---
 
@@ -571,26 +572,27 @@ Jednorazowe uzupelnienie pola `dodane` w kolejce promocji.
 
 Ile agent naprawde zrobil, dzien po dniu, wobec normy.
 
-16 funkcji.
+17 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 244 | `budzety_dzienne()` | — | Ile agent SOBIE ZALOZYL kazdego dnia — z pliku, nie z dzisiejszej konfiguracji. | `norma.main` |
-| 293 | `_data(dzien)` | — | „2026-08-30" -> datetime w UTC. | `norma._poprawna_data`, `norma.dni_okna`, `norma.main` |
-| 298 | `_poprawna_data(dzien)` | — | Czy da sie z tego zrobic date. | `norma.budzety_dzienne`, `norma.slad_dziennika`, `norma.wczytaj` |
-| 315 | `wczytaj(dni)` | — | (zrobione, nieudane) — liczniki per dzien i rodzaj. | `norma.main` |
-| 340 | `slad_dziennika(zalozone)` | — | (najstarszy znany dzien, zbior dni z JAKIMKOLWIEK wpisem w dzienniku). | `norma.main` |
-| 386 | `_znak(ile, norma)` | — | Jak daleko od planu NA TEN DZIEN. | `norma._komorka`, `norma.main` |
-| 425 | `dni_okna(dni, z_wpisami, zalozone, najstarszy)` | — | Wszystkie dni okna — TAKZE te, w ktorych nie wyszlo NIC. | `norma.main` |
-| 470 | `_komorka(ile, cel, wyciszony, ma_wpisy, w_toku, szacowany)` | — | Jedna kratka tabeli. | `norma.main` |
-| 495 | `przebiegow_dzis()` | DB | Ile przebiegow agenta domknelo sie dzis. | `norma.main` |
-| 510 | `godziny_przebiegow()` | — | Minuty od polnocy UTC, o ktorych systemd odpala agenta. | `norma.przebiegow_naleznych` |
-| 534 | `przebiegow_naleznych(teraz)` | — | (ile przebiegow POWINNO juz oddac swoja czesc, ile ich jest na dobe). | `norma.main` |
-| 564 | `slad(dni)` | — | Gdzie dokladnie psuja sie publikacje — wg pozycji w serii i odstepu. | `norma.main` |
-| 653 | `main()` | — | — | `norma (poziom modulu)` |
-| 957 | `main._srednia(r)` | — | None, gdy tej pozycji nie zmierzylismy ANI RAZU. | `norma.main`, `norma.main._procent_normy` |
-| 968 | `main._wykonanie(r)` | — | Ile z tego, co agent SOBIE ZALOZYL, naprawde zrobil. | `norma.main` |
-| 972 | `main._procent_normy(r)` | — | — | `norma.main` |
+| 244 | `_zegar_agenta()` | — | Plik `.timer` agenta — znaleziony po TRESCI, nie po nazwie. | `norma (poziom modulu)` |
+| 283 | `budzety_dzienne()` | — | Ile agent SOBIE ZALOZYL kazdego dnia — z pliku, nie z dzisiejszej konfiguracji. | `norma.main` |
+| 332 | `_data(dzien)` | — | „2026-08-30" -> datetime w UTC. | `norma._poprawna_data`, `norma.dni_okna`, `norma.main` |
+| 337 | `_poprawna_data(dzien)` | — | Czy da sie z tego zrobic date. | `norma.budzety_dzienne`, `norma.slad_dziennika`, `norma.wczytaj` |
+| 354 | `wczytaj(dni)` | — | (zrobione, nieudane) — liczniki per dzien i rodzaj. | `norma.main` |
+| 379 | `slad_dziennika(zalozone)` | — | (najstarszy znany dzien, zbior dni z JAKIMKOLWIEK wpisem w dzienniku). | `norma.main` |
+| 425 | `_znak(ile, norma)` | — | Jak daleko od planu NA TEN DZIEN. | `norma._komorka`, `norma.main` |
+| 464 | `dni_okna(dni, z_wpisami, zalozone, najstarszy)` | — | Wszystkie dni okna — TAKZE te, w ktorych nie wyszlo NIC. | `norma.main` |
+| 509 | `_komorka(ile, cel, wyciszony, ma_wpisy, w_toku, szacowany)` | — | Jedna kratka tabeli. | `norma.main` |
+| 534 | `przebiegow_dzis()` | DB | Ile przebiegow agenta domknelo sie dzis. | `norma.main` |
+| 549 | `godziny_przebiegow()` | — | Minuty od polnocy UTC, o ktorych systemd odpala agenta. | `norma.przebiegow_naleznych` |
+| 583 | `przebiegow_naleznych(teraz)` | — | (ile przebiegow POWINNO juz oddac swoja czesc, ile ich jest na dobe). | `norma.main` |
+| 613 | `slad(dni)` | — | Gdzie dokladnie psuja sie publikacje — wg pozycji w serii i odstepu. | `norma.main` |
+| 702 | `main()` | — | — | `norma (poziom modulu)` |
+| 1006 | `main._srednia(r)` | — | None, gdy tej pozycji nie zmierzylismy ANI RAZU. | `norma.main`, `norma.main._procent_normy` |
+| 1017 | `main._wykonanie(r)` | — | Ile z tego, co agent SOBIE ZALOZYL, naprawde zrobil. | `norma.main` |
+| 1021 | `main._procent_normy(r)` | — | — | `norma.main` |
 
 ---
 
@@ -603,11 +605,11 @@ Co przyniosla kazda notka, restack i artykul — do czytania przez czlowieka.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 27 | `_skrot(tekst, ile)` | — | — | `raport_statystyk.main` |
-| 41 | `_mediana(liczby)` | — | — | `raport_statystyk.dwie_epoki` |
-| 49 | `dwie_epoki(najnowsze)` | — | Epoka AI osobno, epoka ukrytych systemow osobno. | `raport_statystyk.main` |
-| 131 | `wzrost_konta()` | — | Ilu nas czyta i czy tego przybywa. | `raport_statystyk.main` |
-| 189 | `main()` | — | — | `raport_statystyk (poziom modulu)` |
+| 28 | `_skrot(tekst, ile)` | — | — | `raport_statystyk.main` |
+| 54 | `_mediana(liczby)` | — | — | `raport_statystyk.dwie_epoki` |
+| 62 | `dwie_epoki(najnowsze)` | — | Epoka SPRZED zmiany tematu osobno, epoka PO niej osobno. | `raport_statystyk.main` |
+| 157 | `wzrost_konta()` | — | Ilu nas czyta i czy tego przybywa. | `raport_statystyk.main` |
+| 215 | `main()` | — | — | `raport_statystyk (poziom modulu)` |
 
 ---
 
@@ -633,35 +635,35 @@ Jedno polecenie uruchamiające — to samo lokalnie i na serwerze.
 | 309 | `zmiesci_sie(rodzaj, ile, udzial)` | — | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. | `run.dzien` |
 | 331 | `zmiesci_sie.potrzeba(n)` | — | — | `run.zmiesci_sie` |
 | 344 | `ile_przebiegow_zostalo(conn)` | DB | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. | `run.dzien` |
-| 416 | `_po_zmianie_tematu(kiedy)` | — | Czy ten wpis jest z obecnej epoki konta. | `run.cele_wedlug_pierwszenstwa` |
-| 495 | `_slug(tekst)` | — | Nazwa do porownywania: same litery i cyfry ASCII, malymi. | `run._reakcje_z_dziennika`, `run._slug_hosta` |
-| 508 | `_slug_hosta(host)` | — | Pierwszy czlon adresu jako slug: `www.imienazwisko.com` -> `imienazwisko`. | `run.cele_wedlug_pierwszenstwa` |
-| 516 | `_reakcje_z_dziennika()` | — | Jeden przebieg po dzienniku, dwie odpowiedzi o tych samych ludziach. | `run.kogo_juz_dotknelismy`, `run.reagujacy_jako_cele` |
-| 610 | `kogo_juz_dotknelismy()` | — | Slugi nazw ludzi, ktorzy zareagowali na NASZA tresc — z dziennika. | `run.cele_wedlug_pierwszenstwa` |
-| 634 | `nasi_czytelnicy()` | — | Uchwyty ludzi, ktorzy JUZ nas czytaja — z `czytelnicy.jsonl`. | `run.reagujacy_jako_cele` |
-| 682 | `reagujacy_jako_cele()` | — | Ludzie, ktorzy zareagowali na nasza tresc, jako CELE WPROST. | `run.cele_wedlug_pierwszenstwa` |
-| 765 | `_przeplot(pierwsza, druga)` | — | Na przemian z dwoch list; gdy jedna sie konczy, druga idzie dalej. | `run.cele_wedlug_pierwszenstwa` |
-| 781 | `cele_wedlug_pierwszenstwa(historia)` | — | Hosty do zaczepienia, w kolejnosci pierwszenstwa. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
-| 890 | `powod_pustej_puli(rachunek)` | — | Zdanie do dziennika, gdy po odsianiu nie zostal nikt. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
-| 919 | `kogo_juz_subskrybujemy()` | — | Uchwyty, na ktore subskrypcja NIE MA JUZ CO wysylac. | `run.dzien`, `run.dzien.subskrybuj` |
-| 981 | `czy_juz_subskrybujemy(host, zamkniete, pamiec)` | — | Czy ten HOST wskazuje konto, na ktore nie ma juz po co wchodzic. | `run.dzien`, `run.dzien.subskrybuj` |
-| 1006 | `dzien(conn, run_id, wyslij)` | WWW | Jeden dzień pracy konta: notki, komentarze, odpowiedzi, polubienia. | `run.main` |
-| 1124 | `dzien.blok(nazwa, robota)` | — | — | `run.dzien` |
-| 1157 | `dzien.odpowiedzi()` | WWW | — | `run.dzien` |
-| 1254 | `dzien.notki()` | WWW | — | `run.dzien`, `run.dzien.dyskusje` |
-| 1336 | `dzien.komentarze()` | WWW | — | `run.dzien` |
-| 1584 | `dzien.dyskusje()` | WWW | Wejscie w rozmowe pod cudza notka. | `run.dzien` |
-| 1678 | `dzien.obserwuj()` | WWW | Obserwuje autorów, których teksty faktycznie czytaliśmy. | `run.dzien` |
-| 1914 | `dzien.subskrybuj()` | WWW | Subskrybuje publikacje, ktore naprawde czytamy — i pilnuje dubli. | `run.dzien` |
-| 2069 | `dzien.polubienia()` | WWW | — | `run.dzien` |
-| 2074 | `dzien.restacki()` | WWW | Podanie dalej trafia do kanału NASZYCH obserwujących i powiadamia autora oryginału — za cenę jednego zdania zamiast całej notki. | `run.dzien` |
-| 2109 | `dzien.zalegly_artykul()` | — | Dowozi tekst, ktory zostal na dysku po nieudanej publikacji. | `run.dzien` |
-| 2169 | `dzien.kopia_listy()` | — | Jedyne aktywo, ktorego nie da sie odtworzyc — i jedyne miejsce, gdzie wlasciciel musial dotad cos kliknac. | `run.dzien` |
-| 2218 | `_sygnal_ma_zostawic_slad()` | — | Zamienia SIGTERM na wyjatek, zeby przebieg zdazyl sie zapisac. | `run.main` |
-| 2234 | `_sygnal_ma_zostawic_slad.podnies(numer, _ramka)` | — | — | `run._sygnal_ma_zostawic_slad` |
-| 2244 | `main()` | WWW DB | — | `run (poziom modulu)` |
-| 2852 | `_done(conn, run_id, stage)` | DB | — | `run.main` |
-| 2858 | `_summary(conn, run_id)` | DB | — | `run._done`, `run.main` |
+| 420 | `_po_zmianie_tematu(kiedy)` | — | Czy ten wpis jest z obecnej epoki konta. | `run.cele_wedlug_pierwszenstwa` |
+| 499 | `_slug(tekst)` | — | Nazwa do porownywania: same litery i cyfry ASCII, malymi. | `run._reakcje_z_dziennika`, `run._slug_hosta` |
+| 512 | `_slug_hosta(host)` | — | Pierwszy czlon adresu jako slug: `www.imienazwisko.com` -> `imienazwisko`. | `run.cele_wedlug_pierwszenstwa` |
+| 520 | `_reakcje_z_dziennika()` | — | Jeden przebieg po dzienniku, dwie odpowiedzi o tych samych ludziach. | `run.kogo_juz_dotknelismy`, `run.reagujacy_jako_cele` |
+| 614 | `kogo_juz_dotknelismy()` | — | Slugi nazw ludzi, ktorzy zareagowali na NASZA tresc — z dziennika. | `run.cele_wedlug_pierwszenstwa` |
+| 638 | `nasi_czytelnicy()` | — | Uchwyty ludzi, ktorzy JUZ nas czytaja — z `czytelnicy.jsonl`. | `run.reagujacy_jako_cele` |
+| 686 | `reagujacy_jako_cele()` | — | Ludzie, ktorzy zareagowali na nasza tresc, jako CELE WPROST. | `run.cele_wedlug_pierwszenstwa` |
+| 769 | `_przeplot(pierwsza, druga)` | — | Na przemian z dwoch list; gdy jedna sie konczy, druga idzie dalej. | `run.cele_wedlug_pierwszenstwa` |
+| 785 | `cele_wedlug_pierwszenstwa(historia)` | — | Hosty do zaczepienia, w kolejnosci pierwszenstwa. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
+| 894 | `powod_pustej_puli(rachunek)` | — | Zdanie do dziennika, gdy po odsianiu nie zostal nikt. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
+| 923 | `kogo_juz_subskrybujemy()` | — | Uchwyty, na ktore subskrypcja NIE MA JUZ CO wysylac. | `run.dzien`, `run.dzien.subskrybuj` |
+| 985 | `czy_juz_subskrybujemy(host, zamkniete, pamiec)` | — | Czy ten HOST wskazuje konto, na ktore nie ma juz po co wchodzic. | `run.dzien`, `run.dzien.subskrybuj` |
+| 1010 | `dzien(conn, run_id, wyslij)` | WWW | Jeden dzień pracy konta: notki, komentarze, odpowiedzi, polubienia. | `run.main` |
+| 1128 | `dzien.blok(nazwa, robota)` | — | — | `run.dzien` |
+| 1161 | `dzien.odpowiedzi()` | WWW | — | `run.dzien` |
+| 1258 | `dzien.notki()` | WWW | — | `run.dzien`, `run.dzien.dyskusje` |
+| 1340 | `dzien.komentarze()` | WWW | — | `run.dzien` |
+| 1588 | `dzien.dyskusje()` | WWW | Wejscie w rozmowe pod cudza notka. | `run.dzien` |
+| 1682 | `dzien.obserwuj()` | WWW | Obserwuje autorów, których teksty faktycznie czytaliśmy. | `run.dzien` |
+| 1918 | `dzien.subskrybuj()` | WWW | Subskrybuje publikacje, ktore naprawde czytamy — i pilnuje dubli. | `run.dzien` |
+| 2073 | `dzien.polubienia()` | WWW | — | `run.dzien` |
+| 2078 | `dzien.restacki()` | WWW | Podanie dalej trafia do kanału NASZYCH obserwujących i powiadamia autora oryginału — za cenę jednego zdania zamiast całej notki. | `run.dzien` |
+| 2113 | `dzien.zalegly_artykul()` | — | Dowozi tekst, ktory zostal na dysku po nieudanej publikacji. | `run.dzien` |
+| 2173 | `dzien.kopia_listy()` | — | Jedyne aktywo, ktorego nie da sie odtworzyc — i jedyne miejsce, gdzie wlasciciel musial dotad cos kliknac. | `run.dzien` |
+| 2222 | `_sygnal_ma_zostawic_slad()` | — | Zamienia SIGTERM na wyjatek, zeby przebieg zdazyl sie zapisac. | `run.main` |
+| 2238 | `_sygnal_ma_zostawic_slad.podnies(numer, _ramka)` | — | — | `run._sygnal_ma_zostawic_slad` |
+| 2248 | `main()` | WWW DB | — | `run (poziom modulu)` |
+| 2856 | `_done(conn, run_id, stage)` | DB | — | `run.main` |
+| 2862 | `_summary(conn, run_id)` | DB | — | `run._done`, `run.main` |
 
 ---
 
@@ -911,9 +913,9 @@ Czy zaczepieni odwzajemniaja sie, i skad naprawde biora sie czytelnicy.
 | 779 | `kanal_reakcji(reakcja, pozycje)` | — | Ktorego NASZEGO kanalu dotknal czlowiek — z CELU reakcji, nie z jej typu. | `wzajemnosc.kanaly` |
 | 806 | `opoznienia()` | — | Dwa rozne czasy, celowo NIE zsumowane w jeden. | `wzajemnosc.raport` |
 | 900 | `kanaly()` | — | Co poprzedzilo pojawienie sie czytelnika — osobowo i pozycyjnie. | `wzajemnosc.raport` |
-| 1013 | `pomiar_oslepl()` | — | Czy w ogole mamy z czego liczyc wzajemnosc. | `alarm.pomiar_wzajemnosci`, `wzajemnosc.main` |
-| 1092 | `_procent(licznik, mianownik)` | — | — | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
-| 1096 | `naglowek()` | — | Jeden wiersz bez zrzutow albo cztery do szesciu. | `alarm.sprawdz_wszystko` |
-| 1154 | `raport()` | — | Pelna odpowiedz na cztery pytania. | `alarm.przeglad`, `wzajemnosc.main` |
-| 1428 | `main()` | — | — | `wzajemnosc (poziom modulu)` |
+| 1024 | `pomiar_oslepl()` | — | Czy w ogole mamy z czego liczyc wzajemnosc. | `alarm.pomiar_wzajemnosci`, `wzajemnosc.main` |
+| 1103 | `_procent(licznik, mianownik)` | — | — | `wzajemnosc.naglowek`, `wzajemnosc.raport` |
+| 1107 | `naglowek()` | — | Jeden wiersz bez zrzutow albo cztery do szesciu. | `alarm.sprawdz_wszystko` |
+| 1165 | `raport()` | — | Pelna odpowiedz na cztery pytania. | `alarm.przeglad`, `wzajemnosc.main` |
+| 1449 | `main()` | — | — | `wzajemnosc (poziom modulu)` |
 

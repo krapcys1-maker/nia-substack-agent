@@ -195,7 +195,15 @@ POLA: dict[str, tuple[str | None, Any]] = {
 
     # --- pieniadze -----------------------------------------------------
     "pieniadze.sufit_miesieczny_usd": ("MONTHLY_LIMIT_USD", _liczba),
-    "pieniadze.sufit_dzienny_usd": ("DAILY_LIMIT_USD", _liczba),
+    # CELUJE W SUFIT BAZOWY, NIE W `DAILY_LIMIT_USD`. Ten drugi jest POCHODNA
+    # na dzis (baza albo baza razy mnoznik w dniu podniesienia) i przeliczany
+    # po wczytaniu konfiguracji — ustawianie go wprost kasowaloby podniesienie
+    # albo naliczalo je drugi raz.
+    "pieniadze.sufit_dzienny_usd": ("SUFIT_DZIENNY_BAZOWY", _liczba),
+    # Dzien, na ktory sufit jest podniesiony `SUFIT_PODNIESIONY_RAZY` razy.
+    # Pusty (domyslnie) znaczy „bez podniesienia"; wygasa sam nastepnego dnia.
+    "pieniadze.sufit_podniesiony_na": ("SUFIT_PODNIESIONY_NA",
+                                      _data_albo_pusto),
     "pieniadze.sufit_przebiegu_usd": ("RUN_LIMIT_USD", _liczba),
 
     # --- publikowanie --------------------------------------------------

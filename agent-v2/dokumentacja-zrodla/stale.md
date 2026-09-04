@@ -47,11 +47,10 @@
 | `WEB_SEARCH_TOOL` | `{ CLAUDE: "web_search_20260209", SONNET: "we` | Filtrowanie dynamiczne (`_20260209`) jest na Opusie i Sonnecie 5. |
 | `NAJNOWSZE_WYSZUKIWANIE` | `"web_search_20260209"` | Wersja narzedzia wyszukiwania dla modelu Anthropic, z galezia awaryjna. |
 | `WEB_SEARCH_USD_PER_1K` | `10.00` | Wyszukiwanie po stronie Anthropic: USD za 1000 zapytań. |
-| `_DZIS_UTC` | `_dt_sufit.datetime.now(_dt_sufit.timezone.ut` | — |
-| `SUFIT_PODNIESIONY_NA` | `"2026-08-30"` | — |
-| `SUFIT_DZIENNY_BAZOWY` | `5.00` | — |
-| `DAILY_LIMIT_USD` | `SUFIT_DZIENNY_BAZOWY * 2.0 if _DZIS_UTC == S` | Podniesienie WYGASA SAMO: jutro plik jest ten sam, a sufit z powrotem bazowy. |
+| `SUFIT_PODNIESIONY_NA` | `""` | — |
 | `SUFIT_PODNIESIONY_RAZY` | `2.0` | O ILE PODNOSI SIE SUFIT W DNIU PRACY PRZY WLASCICIELU. Mnoznik, nie druga liczba: sufit dzienny jest polem konfiguracji, a wpisana tu kwota  |
+| `SUFIT_DZIENNY_BAZOWY` | `5.00` | SUFIT BAZOWY JEST POLEM KONFIGURACJI (`pieniadze.sufit_dzienny_usd`), a `DAILY_LIMIT_USD` — jego POCHODNA na dzis. Odwrotnie bylo zle i kosz |
+| `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Podniesienie WYGASA SAMO: jutro plik jest ten sam, a sufit z powrotem bazowy. Przeliczany po wczytaniu konfiguracji — patrz koniec pliku. |
 | `TEST_LIMIT_USD` | `3.00` | SUFIT TORU TESTOWEGO — osobny od produkcyjnego i CELOWO NIE NIESKONCZONY. Wlasciciel: „nie licz budzetu do testow, to cos osobnego". Zgoda c |
 | `MONTHLY_LIMIT_USD` | `40.00` | — |
 | `PONOWIENIA` | `2` | Sufit na JEDEN przebieg. Działa ZAWSZE, także przy AGENT_V2_NO_LIMIT=1. „Bez limitu na budowę" miało znaczyć „nie blokuj eksperymentów", a n |
@@ -198,3 +197,4 @@
 | `_BEZ_KONFIGURACJI` | `_env("NIA_BEZ_KONFIGURACJI", "0").lower() in` | `NIA_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi |
 | `KONFIGURACJA_ZMIENILA` | `_konf.zastosuj(_dane_konfiguracji, sys.modul` | — |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
+| `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |

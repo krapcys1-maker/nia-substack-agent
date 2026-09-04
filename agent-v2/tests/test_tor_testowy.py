@@ -122,14 +122,27 @@ sprawdz("i nie wiekszy niz produkcyjny",
 
 print()
 print("=== 6. SUFIT DNIA NA DZIS WYGASA SAM ===")
-# Podniesienie do 10 USD bylo zgoda na JEDEN dzien. Poprzednim razem trzeba
-# bylo pamietac, zeby je cofnac; teraz ma wygasnac bez niczyjej pamieci.
-sprawdz("data podniesienia jest zapisana",
-        bool(getattr(config, "SUFIT_PODNIESIONY_NA", "")))
-sprawdz_nasze("poza tym dniem sufit wraca do 5",
-        config.DAILY_LIMIT_USD == 5.00
-        or config._DZIS_UTC == config.SUFIT_PODNIESIONY_NA,
-        "%s przy dacie %s" % (config.DAILY_LIMIT_USD, config._DZIS_UTC))
+# Podniesienie sufitu bylo zgoda na JEDEN dzien. Poprzednim razem trzeba bylo
+# pamietac, zeby je cofnac; teraz ma wygasnac bez niczyjej pamieci.
+#
+# STALO TU „data podniesienia jest zapisana" — czyli asercja, ze w kodzie MA
+# BYC wpisana data. To jest zdanie o jednej instalacji w jednym dniu, a nie
+# o dzialaniu wygasania: u konta, ktore sufitu nie podnosilo, oblewalo bez
+# zadnej wady. Pytamy wiec o MECHANIZM.
+sprawdz("brak daty znaczy: bez podniesienia",
+        config.sufit_dnia("2000-01-01") == config.SUFIT_DZIENNY_BAZOWY
+        if not config.SUFIT_PODNIESIONY_NA else True,
+        config.sufit_dnia("2000-01-01"))
+sprawdz_nasze("poza dniem podniesienia sufit jest bazowy",
+              config.sufit_dnia("2000-01-01") == config.SUFIT_DZIENNY_BAZOWY,
+              "%s wobec bazy %s" % (config.sufit_dnia("2000-01-01"),
+                                    config.SUFIT_DZIENNY_BAZOWY))
+sprawdz("sufit na dzis jest pochodna, nie drugim zrodlem",
+        config.DAILY_LIMIT_USD == config.sufit_dnia(config._dzis_utc()),
+        "%s wobec %s" % (config.DAILY_LIMIT_USD,
+                         config.sufit_dnia(config._dzis_utc())))
+# Arytmetyka podniesienia (RAZ, nie dwa razy) ma wlasny plik:
+# `tests/test_sufit_dnia.py`. Tutaj wystarczy, ze wygasanie w ogole dziala.
 
 print()
 print("=== 7. CICHY DZIEN — JEDNA LISTA DLA OBU CZYTELNIKOW ===")

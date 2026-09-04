@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 267 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 434 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 130 zestawów
-testów, 3512 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 3516 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -143,7 +143,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2867 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2871 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -499,7 +499,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-311 wierszy, 12 funkcji na poziomie modułu, 1 klas
+319 wierszy, 12 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -592,7 +592,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-2985 wierszy, 29 funkcji na poziomie modułu, 0 klas
+3016 wierszy, 30 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -602,6 +602,7 @@ wiec nie da sie go rozjechac z kodem.
 | `pora_na_publikacje(kiedy)` | Czy teraz wolno wystawiac NOTKI — wg zegara CZYTELNIKOW, nie serwera. |
 | `w_szczycie(kiedy)` | Czy teraz obowiazuje droga taryfa. |
 | `narzedzie_wyszukiwania(model)` | Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie. |
+| `_dzis_utc()` *(wewn.)* | Dzisiejszy dzien UTC. Funkcja, nie stala — proces moze przejsc polnoc. |
 | `sufit_dnia(dzien)` | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. |
 | `kotwica_dlugosci(glebokosc)` | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. |
 | `dlugosc_dla(glebokosc)` | Ile slow ma miec artykul o tej glebokosci. |
@@ -659,19 +660,19 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `raport_statystyk.py` — te same dane w tabeli dla człowieka
 
-278 wierszy, 5 funkcji na poziomie modułu, 0 klas
+304 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_skrot(tekst, ile)` *(wewn.)* | — |
 | `_mediana(liczby)` *(wewn.)* | — |
-| `dwie_epoki(najnowsze)` | Epoka AI osobno, epoka ukrytych systemow osobno. |
+| `dwie_epoki(najnowsze)` | Epoka SPRZED zmiany tematu osobno, epoka PO niej osobno. |
 | `wzrost_konta()` | Ilu nas czyta i czy tego przybywa. |
 | `main()` | — |
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-374 wierszy, 6 funkcji na poziomie modułu, 0 klas
+386 wierszy, 6 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -716,10 +717,11 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1106 wierszy, 13 funkcji na poziomie modułu, 0 klas
+1165 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
+| `_zegar_agenta()` *(wewn.)* | Plik `.timer` agenta — znaleziony po TRESCI, nie po nazwie. |
 | `budzety_dzienne()` | Ile agent SOBIE ZALOZYL kazdego dnia — z pliku, nie z dzisiejszej konfiguracji. |
 | `_data(dzien)` *(wewn.)* | „2026-08-30" -> datetime w UTC. `cichy_dzien` pyta o obiekt, nie napis. |
 | `_poprawna_data(dzien)` *(wewn.)* | Czy da sie z tego zrobic date. Zepsuty wpis ma znikac, nie zabijac raport. |
@@ -757,7 +759,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `audyt_systemu.py` — audyt CALEGO systemu na zywych danych: publikowanie, normy, komentarze, statystyki, artykul, pieniadze, pamiec
 
-654 wierszy, 7 funkcji na poziomie modułu, 0 klas
+660 wierszy, 7 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -771,7 +773,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `wzajemnosc.py` — czy zaczepieni sie odwzajemniaja: liczy PO naszej akcji, osobno stan nieorzekalny
 
-1437 wierszy, 26 funkcji na poziomie modułu, 0 klas
+1458 wierszy, 26 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -12813,11 +12815,10 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `WEB_SEARCH_TOOL` | `{ CLAUDE: "web_search_20260209", SONNET: "we` | Filtrowanie dynamiczne (`_20260209`) jest na Opusie i Sonnecie 5. |
 | `NAJNOWSZE_WYSZUKIWANIE` | `"web_search_20260209"` | Wersja narzedzia wyszukiwania dla modelu Anthropic, z galezia awaryjna. |
 | `WEB_SEARCH_USD_PER_1K` | `10.00` | Wyszukiwanie po stronie Anthropic: USD za 1000 zapytań. |
-| `_DZIS_UTC` | `_dt_sufit.datetime.now(_dt_sufit.timezone.ut` | — |
-| `SUFIT_PODNIESIONY_NA` | `"2026-08-30"` | — |
-| `SUFIT_DZIENNY_BAZOWY` | `5.00` | — |
-| `DAILY_LIMIT_USD` | `SUFIT_DZIENNY_BAZOWY * 2.0 if _DZIS_UTC == S` | Podniesienie WYGASA SAMO: jutro plik jest ten sam, a sufit z powrotem bazowy. |
+| `SUFIT_PODNIESIONY_NA` | `""` | — |
 | `SUFIT_PODNIESIONY_RAZY` | `2.0` | O ILE PODNOSI SIE SUFIT W DNIU PRACY PRZY WLASCICIELU. Mnoznik, nie druga liczba: sufit dzienny jest polem konfiguracji, a wpisana tu kwota  |
+| `SUFIT_DZIENNY_BAZOWY` | `5.00` | SUFIT BAZOWY JEST POLEM KONFIGURACJI (`pieniadze.sufit_dzienny_usd`), a `DAILY_LIMIT_USD` — jego POCHODNA na dzis. Odwrotnie bylo zle i kosz |
+| `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Podniesienie WYGASA SAMO: jutro plik jest ten sam, a sufit z powrotem bazowy. Przeliczany po wczytaniu konfiguracji — patrz koniec pliku. |
 | `TEST_LIMIT_USD` | `3.00` | SUFIT TORU TESTOWEGO — osobny od produkcyjnego i CELOWO NIE NIESKONCZONY. Wlasciciel: „nie licz budzetu do testow, to cos osobnego". Zgoda c |
 | `MONTHLY_LIMIT_USD` | `40.00` | — |
 | `PONOWIENIA` | `2` | Sufit na JEDEN przebieg. Działa ZAWSZE, także przy AGENT_V2_NO_LIMIT=1. „Bez limitu na budowę" miało znaczyć „nie blokuj eksperymentów", a n |
@@ -12964,6 +12965,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `_BEZ_KONFIGURACJI` | `_env("NIA_BEZ_KONFIGURACJI", "0").lower() in` | `NIA_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi |
 | `KONFIGURACJA_ZMIENILA` | `_konf.zastosuj(_dane_konfiguracji, sys.modul` | — |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
+| `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 
 
 ## ZALACZNIK C — MAPA DYSKU I BAZY (stan produkcji)

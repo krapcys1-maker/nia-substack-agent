@@ -536,10 +536,16 @@ def main() -> int:
     werdykt("dzisiejsza produkcja miesci sie w sufcie",
             "OK" if dzis_prod <= config.DAILY_LIMIT_USD else "BLAD",
             "%.2f z %.2f USD" % (dzis_prod, config.DAILY_LIMIT_USD))
+    # PROG Z KONFIGURACJI, NIE WPISANY. Stalo tu `<= 5.0` — ta sama kwota, co
+    # domyslny sufit bazowy, wpisana drugi raz obok pola konfiguracji. Konto
+    # z sufitem 8 USD mialo tu UWAGA kazdego dnia swojego zycia, a konto
+    # z sufitem 3 — nigdy, nawet w dniu podniesienia. Pytanie brzmi „czy dzis
+    # obowiazuje wiecej niz baza", a to jest porownanie dwoch pol.
     werdykt("sufit dzienny nie jest podniesiony na stale",
-            "OK" if config.DAILY_LIMIT_USD <= 5.0
+            "OK" if config.DAILY_LIMIT_USD <= config.SUFIT_DZIENNY_BAZOWY
             or config.SUFIT_PODNIESIONY_NA == dzis else "UWAGA",
-            "%.2f USD" % config.DAILY_LIMIT_USD)
+            "%.2f USD (baza %.2f)"
+            % (config.DAILY_LIMIT_USD, config.SUFIT_DZIENNY_BAZOWY))
 
     # ---------------------------------------------------------------
     etap(7, "CO NAS KOSZTUJE JEDEN CZYTELNIK")

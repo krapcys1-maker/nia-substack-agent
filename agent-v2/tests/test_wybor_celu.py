@@ -368,7 +368,7 @@ def uruchom_blok(kod_bloku, nazwa, historia, konta, budzet=1,
               "powod_pustej_puli": run.powod_pustej_puli,
               "kogo_juz_subskrybujemy": run.kogo_juz_subskrybujemy,
               "czy_juz_subskrybujemy": run.czy_juz_subskrybujemy,
-              "PRZESTAWIENIE_KONTA_NA_AI": run.PRZESTAWIENIE_KONTA_NA_AI}
+              "PRZESTAWIENIE_KONTA": run.PRZESTAWIENIE_KONTA}
         exec(compile(kod_bloku, "run.py::%s" % nazwa, "exec"), ns)
         buf, stare_out = io.StringIO(), sys.stdout
         sys.stdout = buf

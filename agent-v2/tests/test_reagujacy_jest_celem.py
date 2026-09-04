@@ -81,7 +81,7 @@ KONTRDOWODY SA ODTWARZANE, NIE OPISANE, i sa dwa, bo sa dwie rozne wady:
 
 Test nie zalezy od dzisiejszej daty: daty reakcji sa liczone wzglednie
 („trzy dni temu", „piec minut temu") w chwili uruchomienia, a daty hostow sa
-stalymi porownywanymi ze stala `PRZESTAWIENIE_KONTA_NA_AI`.
+stalymi porownywanymi ze stala `PRZESTAWIENIE_KONTA`.
 
 PRODUKCJA: bez zmian. Dziennik, plik czytelnikow i pamiec obserwowanych ida do
 katalogu tymczasowego; `podlacz_sie` jest atrapa, ktora liczy sesje.
@@ -360,7 +360,7 @@ def uruchom_blok(kod_bloku, nazwa, historia, konta, budzet=1,
               "powod_pustej_puli": run.powod_pustej_puli,
               "kogo_juz_subskrybujemy": run.kogo_juz_subskrybujemy,
               "czy_juz_subskrybujemy": run.czy_juz_subskrybujemy,
-              "PRZESTAWIENIE_KONTA_NA_AI": run.PRZESTAWIENIE_KONTA_NA_AI}
+              "PRZESTAWIENIE_KONTA": run.PRZESTAWIENIE_KONTA}
         ns.update(dodatki or {})
         exec(compile(kod_bloku, "run.py::%s" % nazwa, "exec"), ns)
         buf, stare_out = io.StringIO(), sys.stdout

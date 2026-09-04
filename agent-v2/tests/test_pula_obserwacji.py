@@ -246,7 +246,7 @@ def wytnij(src: str, nazwa: str) -> str:
 class Kanal:
     """Historia komentarzy — jedyne zrodlo puli. Odwzorowuje `kanal._historia`.
 
-    DATA JEST PO PRZESTAWIENIU KONTA NA AI (`run.PRZESTAWIENIE_KONTA_NA_AI`
+    DATA JEST PO PRZESTAWIENIU TEMATU KONTA (`run.PRZESTAWIENIE_KONTA`
     = 2026-08-25), bo od 1 wrzesnia `obserwuj` odsiewa hosty, u ktorych
     ostatni komentarz jest starszy — to osobne kryterium i ma wlasny test
     (`test_wybor_celu.py`). Tutaj mierzymy odsiew po PAMIECI OBSERWOWANYCH,
@@ -317,7 +317,7 @@ def uruchom_blok(mod_browser, kod_bloku, hosty, obserwowani_na_substacku,
               # Wersja z `64d881a` ich nie wola, wiec obie sciezki dzialaja.
               "cele_wedlug_pierwszenstwa": run.cele_wedlug_pierwszenstwa,
               "powod_pustej_puli": run.powod_pustej_puli,
-              "PRZESTAWIENIE_KONTA_NA_AI": run.PRZESTAWIENIE_KONTA_NA_AI}
+              "PRZESTAWIENIE_KONTA": run.PRZESTAWIENIE_KONTA}
         exec(compile(kod_bloku, "run.py::obserwuj", "exec"), ns)
         buf, stare_out = io.StringIO(), sys.stdout
         sys.stdout = buf
