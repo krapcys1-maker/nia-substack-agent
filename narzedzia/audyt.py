@@ -58,15 +58,37 @@ def tozsamosc_wlasna() -> list[tuple[str, str]]:
     if not PLIK_WLASNYCH.exists():
         return []
     out = []
-    for linia in PLIK_WLASNYCH.read_text(encoding="utf-8").splitlines():
+    for nr, linia in enumerate(
+            PLIK_WLASNYCH.read_text(encoding="utf-8").splitlines(), 1):
         linia = linia.strip()
         if not linia or linia.startswith("#"):
             continue
+
+        # ZNAK STERUJACY W WZORCU TO WZORZEC MARTWY, KTORY WYGLADA NA ZYWY.
+        #
+        # Zmierzone: linia 100 tego pliku brzmiala `\x08o1\x08` — „o1"
+        # otoczone backspace'ami, ktore wjechaly przy wklejaniu. Wzorzec
+        # KOMPILUJE SIE poprawnie (backspace to zwykly znak), stoi na liscie,
+        # jest liczony w podsumowaniu — i nie moze dopasowac sie do niczego,
+        # bo w zadnym pliku zrodlowym backspace nie wystepuje.
+        #
+        # Audyt raportowal wiec „brak: wzorzec o1" na zielono nad plikiem,
+        # ktory to `o1` zawieral. Znalezione czytaniem `stages.py`, nie
+        # audytem — bo audyt byl tu wlasnie sluszny i wlasnie bezuzyteczny.
+        sterujace = sorted({c for c in linia if ord(c) < 32})
+        if sterujace:
+            raise SystemExit(
+                "%s linia %d: wzorzec %r zawiera znaki sterujace (%s).\n"
+                "Taki wzorzec kompiluje sie i NIE LAPIE NICZEGO — wyglada\n"
+                "na dzialajacy, a jest martwy. Przepisz go recznie."
+                % (PLIK_WLASNYCH.name, nr, linia,
+                   ", ".join("\\x%02x" % ord(c) for c in sterujace)))
+
         try:
             re.compile(linia)
         except re.error as exc:
-            raise SystemExit("%s: zly wzorzec %r (%s)"
-                             % (PLIK_WLASNYCH.name, linia, exc))
+            raise SystemExit("%s linia %d: zly wzorzec %r (%s)"
+                             % (PLIK_WLASNYCH.name, nr, linia, exc))
         out.append((linia, "wzorzec wlasny z %s" % PLIK_WLASNYCH.name))
     return out
 

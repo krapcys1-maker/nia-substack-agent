@@ -603,7 +603,7 @@ def bank_bez_tematow() -> str | None:
     zamiast pieciu wyglada w logu jak decyzja („zostal tylko material o tym
     samym"), a nie jak brak — i przez to nie alarmowal nikogo. Zmierzone
     2 wrzesnia 2026: bank mial 37 wolnych pozycji i tylko 24 RONZE tematy,
-    bo ten sam fakt o chipie Jalapeño lezal w nim w siedmiu wariantach.
+    bo ten sam fakt o chipie SkladnikA lezal w nim w siedmiu wariantach.
 
     Liczymy wiec nie pozycje, tylko tematy — tym samym porownaniem, ktorego
     uzywa odsiew przy dopisywaniu. Zero wywolan modelu, jeden plik z dysku.

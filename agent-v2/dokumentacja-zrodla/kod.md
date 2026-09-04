@@ -1307,12 +1307,12 @@ def grafika(
     kadr; tożsamość wizualna zmienia się w jednym miejscu, nie osobno przy
     każdym artykule.
 
-    Do 26 sierpnia 2026 powtarzalność szła dalej: model wybierał jeden PRZEDMIOT,
-    zawsze wyizolowany, zawsze na szarym papierze. To była reguła napisana dla
-    konta o rzeczach codziennych, gdzie butelka szamponu na tle czytała się jak
-    eksponat. Przy koncie o AI dała laptop z pustym białym ekranem leżący na
-    papierze — poprawny wobec briefu i martwy. Scena odpowiada na pytania,
-    na które eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
+    Powtarzalność szła kiedyś dalej: model wybierał jeden PRZEDMIOT, zawsze
+    wyizolowany, zawsze na szarym papierze. To była reguła napisana pod
+    jedną konkretną niszę, w której pojedynczy przedmiot na tle czytał się
+    jak eksponat. Po przestawieniu konta ta sama reguła dawała okładki
+    poprawne wobec briefu i martwe. Scena odpowiada na pytania, na które
+    eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
     """
     # GRAFIKA NIGDY NIE ZABIJA ARTYKUŁU. Zasada właściciela mówi wprost: gdy
     # temat jest wybrany, a research zrobiony i opłacony, artykuł MUSI powstać.

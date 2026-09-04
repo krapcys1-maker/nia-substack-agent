@@ -1075,12 +1075,13 @@ PAMIEC_NOTEK = None
 #
 # Wlasciciel ustawil to sam, dwa razy. Najpierw ogolnie: „cos, co mialo sens w
 # styczniu 2026, w maju juz moze byc nieaktualne" — cztery miesiace. Potem, po
-# zlapaniu notki o o1, konkretnie: dane maja byc „max 2-3 miesiace do tylu".
+# zlapaniu tamtej notki, konkretnie: dane maja byc „max 2-3 miesiace do tylu".
 #
 # Stad 90 dni, a nie 180, ktore wpisalem najpierw. To jest decyzja wlasciciela
 # o tym, jak swieze ma byc konto, nie wynik pomiaru — i tak jest zapisana.
 #
-# Zlapane na zywym tekscie: notka o ukrytych tokenach w modelach o1, napisana
+# Zlapane na zywym tekscie: notka o szczegole technicznym wycofywanej
+# rodziny modeli, napisana
 # 25 sierpnia 2026 na podstawie artykulu o ich premierze z konca 2024. Okolo
 # 700 dni. Sprawdzanie faktow ja przepuscilo, bo fakt byl PRAWDZIWY.
 MAKS_WIEK_ZRODLA_DNI = 90
@@ -1100,7 +1101,7 @@ TWIERDZI_O_TERAZ = (
 # Slowa, ktore mowia, ze rzecz jest W TRAKCIE ZNIKANIA. Publikacja o szybko
 # zmieniajacej sie dziedzinie nie ma
 # po co opisywac czegos, co za osiem tygodni przestanie istniec — a dokladnie
-# to sie stalo z o1.
+# to sie stalo z tamta rodzina modeli.
 ZNIKA = (
     "deprecat", "retired", "retirement", "sunset", "end of life",
     "end-of-life", "will be removed", "shutting down", "discontinued",

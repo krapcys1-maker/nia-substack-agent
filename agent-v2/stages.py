@@ -106,10 +106,10 @@ def _na_kanal(nazwa: str):
 # (`komentarze`, `dyskusje`, `zweryfikuj` w sciezce artykulu)
 # i `artykul_z_puli.main`.
 
-# TRZECI KOMUNIKAT SYSTEMOWY Z POPRZEDNIEJ EPOKI, znaleziony przy tym samym
-# przegladzie co CURIOSITY_SYSTEM. Skaut dostawal "ordinary things" w
-# komunikacie systemowym i inny w prompcie — a to tlumaczy,
-# czemu kazdy przebieg skreca ku przepisom i procedurom.
+# TRZECI KOMUNIKAT SYSTEMOWY Z POPRZEDNIEJ EPOKI, znaleziony przy tym
+# samym przegladzie co CURIOSITY_SYSTEM. Skaut dostawal jedna definicje
+# tematu w komunikacie systemowym i INNA w prompcie — a to tlumaczy,
+# czemu kazdy przebieg skrecal w te sama strone.
 # SKLADANY Z CONFIGU, nie wpisany. Poprzednia wersja miala nazwe konta rozbita
 # miedzy dwa literaly i przetrwala dzieki temu caly przebieg czyszczenia
 # tozsamosci — zaden skan po pelnej nazwie jej nie widzial.
@@ -256,13 +256,13 @@ def tematy_do_porownania(conn: sqlite3.Connection,
     """Poprzednie artykuly w postaci NADAJACEJ SIE DO POROWNANIA.
 
     Rozne od `recent_angles`, ktore oddaje same tytuly do promptu skauta.
-    Tytul jest metafora — „Convicted by Deadline" nie ma ani jednego slowa
-    wspolnego z „automated debt recovery" — wiec do wykrywania powtorki jest
-    najgorszym mozliwym materialem.
+    Tytul jest metafora — potrafi nie miec ANI JEDNEGO slowa wspolnego
+    z tym, o czym artykul naprawde jest — wiec do wykrywania powtorki
+    jest najgorszym mozliwym materialem.
 
-    Zmierzone: przy porownaniu po samych tytulach temat o Robodebt wrocil
-    nastepnego przebiegu pod nazwa „Example Article Six" i
-    przeszedl, bo wspolny byl jeden rdzen („letter") przy wymaganych czterech.
+    Zmierzone: przy porownaniu po samych tytulach ten sam temat wrocil
+    nastepnego przebiegu pod inna nazwa i przeszedl, bo wspolny byl jeden
+    rdzen przy wymaganych czterech.
 
     Bierzemy wiec `topic` + `title` + poczatek TRESCI. Tresc niesie nazwy
     instytucji, liczby i rzeczowniki tematu, czyli dokladnie to, na czym
@@ -489,10 +489,10 @@ def karta_dla_pisarza(card: dict[str, Any],
     kazde twierdzenie o temacie potwierdzone zrodlami pierwotnymi. Oba zatrzymala
     bramka faktow — i za kazdym razem na zdaniu o NASZYCH ZRODLACH, nie o temacie:
 
-        karta:   „Only METR's URL carries an explicit publication date;
-                  the other sources are undated in the excerpts."
+        karta:   „Only one source URL carries an explicit publication date;
+                  the others are undated in the excerpts."
         tekst 1: „the three publisher accounts are undated"
-        tekst 2: „only METR's carries an explicit publication date; the passages
+        tekst 2: „only one carries an explicit publication date; the passages
                   we rely on (...) reached us undated"
         bramka:  „the three publisher accounts ALL carry
                   explicit dates"
@@ -540,10 +540,11 @@ def wstaw_date_zrodel(tekst: str, card: dict[str, Any]) -> str:
     """Stopka z data zrodel pisana PRZEZ KOD, nie przez model.
 
     TRZECI raz z rzedu ta jedna linijka zablokowala gotowy artykul. Ostatni
-    raz 1 wrzesnia 2026: sprawdzenie faktow napisalo wprost „every substantive
-    claim about the AI industry is confirmed by current primary sources", po
-    czym obalilo caly tekst za JEDNO zdanie — „figures checked against sources
-    dated up to July 9, 2026" — bo artykul cytowal zrodla z 4 i 5 sierpnia.
+    raz: sprawdzenie faktow napisalo wprost, ze KAZDE twierdzenie
+    merytoryczne jest potwierdzone zrodlami pierwotnymi — po czym obalilo
+    caly tekst za JEDNO zdanie, stopke z data zrodel, bo model przepisal
+    do niej date sprzed miesiaca, a artykul cytowal material sprzed dwoch
+    dni.
 
     Przyczyna nie lezala w modelu. `pisarz.md` kazal MU przepisac date z karty
     do zdania, a karta ma ja w `source_dates["newest"]` i kod czyta to pole w
@@ -583,15 +584,17 @@ def write(
 ) -> dict[str, Any]:
     """Etap 7 — artykuł (Claude). To jest produkt.
 
-    `glebokosc` pochodzi z odsiewu i decyduje o DLUGOSCI. Temat bez drugiego
-    aktu dostaje krotsza forme zamiast rozciagania: artykul o symbolu
-    otwartego sloiczka mial material na trzysta slow i przy sztywnym celu
-    tysiaca wypelnil reszte powtorzeniami.
+    `glebokosc` pochodzi z odsiewu i decyduje o DLUGOSCI. Temat bez
+    drugiego aktu dostaje krotsza forme zamiast rozciagania: artykul
+    zbudowany na jednym oznaczeniu na jednym produkcie mial material na
+    trzysta slow i przy sztywnym celu tysiaca wypelnil reszte
+    powtorzeniami.
     """
 
     dl = config.dlugosc_dla(glebokosc)
-    # Ruch koncowy i szerokosc drugiego aktu losujemy per artykul. Dwa teksty
-    # napisane po naprawie szamponu mialy identyczny szkielet, bo prompt
+    # Ruch koncowy i szerokosc drugiego aktu losujemy per artykul. Dwa
+    # teksty napisane po jednej z poprzednich poprawek mialy identyczny
+    # szkielet, bo prompt
     # zamawial go doslownie: ten sam drogowskaz, trzy paralele, to samo
     # zamkniecie. Powtarzalna forma zdradza maszyne tak samo jak powtarzana tresc.
     ruch_nazwa, ruch_opis = config.losowy_ruch_koncowy()
@@ -902,12 +905,12 @@ def grafika(
     kadr; tożsamość wizualna zmienia się w jednym miejscu, nie osobno przy
     każdym artykule.
 
-    Do 26 sierpnia 2026 powtarzalność szła dalej: model wybierał jeden PRZEDMIOT,
-    zawsze wyizolowany, zawsze na szarym papierze. To była reguła napisana dla
-    konta o rzeczach codziennych, gdzie butelka szamponu na tle czytała się jak
-    eksponat. Przy koncie o AI dała laptop z pustym białym ekranem leżący na
-    papierze — poprawny wobec briefu i martwy. Scena odpowiada na pytania,
-    na które eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
+    Powtarzalność szła kiedyś dalej: model wybierał jeden PRZEDMIOT, zawsze
+    wyizolowany, zawsze na szarym papierze. To była reguła napisana pod
+    jedną konkretną niszę, w której pojedynczy przedmiot na tle czytał się
+    jak eksponat. Po przestawieniu konta ta sama reguła dawała okładki
+    poprawne wobec briefu i martwe. Scena odpowiada na pytania, na które
+    eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
     """
     # GRAFIKA NIGDY NIE ZABIJA ARTYKUŁU. Zasada właściciela mówi wprost: gdy
     # temat jest wybrany, a research zrobiony i opłacony, artykuł MUSI powstać.
@@ -1259,20 +1262,25 @@ def wybierz_cele(
 
 # KOMUNIKAT SYSTEMOWY BYL Z POPRZEDNIEJ EPOKI — i to jest gorsze, niz wyglada.
 #
-# Stalo tu "documented facts about ORDINARY THINGS", podczas gdy prompt
-# uzytkownika w TYM SAMYM wywolaniu mowi "a publication about
-# intelligence". Model dostawal wiec dwie sprzeczne instrukcje naraz, a
-# komunikat systemowy jest zwykle mocniejszy — pismo o AI bylo ciagniete z
-# powrotem ku szamponom i przepisom konsumenckim.
+# Stal tu opis JEDNEJ konkretnej niszy, podczas gdy prompt uzytkownika
+# w TYM SAMYM wywolaniu mowil o niszy z konfiguracji. Model dostawal wiec
+# dwie sprzeczne instrukcje naraz, a komunikat systemowy jest zwykle
+# MOCNIEJSZY — konto bylo ciagniete z powrotem ku tematowi, ktorego juz
+# nie mialo.
 #
-# Przegladu 25 promptow to nie objelo, bo ten tekst siedzi w KODZIE, nie w
-# pliku promptu. Znalazl go dopiero audyt.
+# Przegladu promptow to nie objelo, bo ten tekst siedzi w KODZIE, nie
+# w pliku promptu.
+#
+# I NIE WYSTARCZYLO GO ZNALEZC. Pierwsza poprawka podmienila jedna nisze
+# na druga — czyli zostawila dokladnie te sama wade, tylko z inna trescia.
+# Dopiero ta wersja sklada komunikat z `config.NISZA`, tak jak
+# `SCOUT_SYSTEM` i `WRITER_SYSTEM`. To samo dotyczylo `BANK_SYSTEM`
+# i `FEDREG_SYSTEM`, ktore przy tamtej poprawce w ogole pominieto.
 CURIOSITY_SYSTEM = (
-    "You find documented facts about how everyday things are made and regulated for an anonymous "
-    "editorial brand: what these systems do, how they are built, who decides "
-    "what they may do, and what that arrangement hands the people who built "
-    "them. You search before you answer and you never state a fact you cannot "
-    "put a source against. Return only valid JSON."
+    f"You find documented facts about {config.NISZA} for an anonymous "
+    f"editorial brand — {config.KAT_REDAKCYJNY} You search before you "
+    f"answer and you never state a fact you cannot put a source against. "
+    f"Return only valid JSON."
 )
 
 
@@ -1642,7 +1650,7 @@ def znajdz_ciekawostki(
         # OPUBLIKOWANE. O wolnych pozycjach bank model nie wiedzial nic — wiec
         # przy kazdym szukaniu spokojnie oddawal to samo, co juz mielismy.
         # Zmierzone na zywym banku: 37 wolnych pozycji to 24 rozne tematy,
-        # a jeden fakt — chip Jalapeño — lezal tam w SIEDMIU wariantach.
+        # a jeden fakt — chip SkladnikA — lezal tam w SIEDMIU wariantach.
         # To byla przyczyna zrodlowa „calej puli zderzajacej sie z pamiecia",
         # przez ktora dzien konczyl sie na trzech notkach zamiast pieciu:
         # bank miec mogl trzydziesci siedem pozycji i wciaz nie miec o czym pisac.
@@ -2026,7 +2034,7 @@ def swiezosc_faktu(fakt: dict[str, Any], teraz=None) -> tuple[bool, str]:
 
     1. RZECZ, KTORA ZNIKA. Model albo produkt z ogloszonym koncem zycia nie
        jest tematem — czytelnik dostanie wiedze, ktora przeterminuje sie,
-       zanim skonczy czytac. Tak wlasnie wyszlo z o1.
+       zanim skonczy czytac. Tak wlasnie wyszlo raz na tym koncie.
 
     2. NAZWANA WERSJA przy starym zrodle. „GPT 5.0" ze zrodla sprzed roku
        brzmi jak sprzed roku, choc fakt moze byc prawdziwy.
@@ -6560,18 +6568,18 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
     # ODSIEW PO ZNACZENIU, NIE PO NAPISIE. `_klucz_faktu` porownuje tekst, wiec
     # ten sam fakt opowiedziany innymi slowami wchodzil do banku jako nowy.
     # Zmierzone na produkcji 2 wrzesnia 2026: 37 wolnych pozycji to 24 rozne
-    # tematy, a chip Jalapeño lezal tam w SIEDMIU wariantach („unveiled with
+    # tematy, a chip SkladnikA lezal tam w SIEDMIU wariantach („unveiled with
     # Broadcom", „built with Broadcom and fabricated…", „a 700-watt part…").
     # Prog dobrany pomiarem na tym samym banku, nie na oko: przy
     # min_wspolnych=2/prog=0,12 podobnych par jest 117 (kasowaloby material
     # naprawde rozny), przy 5/0,45 tylko 15 (przepuszcza bliskie warianty).
-    # 4/0,35 daje 30 par i lapie caly klaster Jalapeño.
+    # 4/0,35 daje 30 par i lapie caly klaster SkladnikA.
     #
     # SAMO PODOBIENSTWO SLOW NIE WYSTARCZY — potrzebna jest WSPOLNA KOTWICA.
     # Zdania zbudowane z tej samej ramki („Documented: X — Y, according to the
     # published standard") dziela cztery slowa z samego szablonu i wygladaja
     # na to samo, nie bedac tym samym. Dwa opisy TEGO SAMEGO faktu dziela
-    # natomiast NAZWE albo LICZBE: siedem wariantow chipu mowi „Jalapeño",
+    # natomiast NAZWE albo LICZBE: siedem wariantow chipu mowi „SkladnikA",
     # „OpenAI" i „Broadcom", a dwa o FirmaD — „Anthropic" i „100".
     PODOBIENSTWO = {"min_wspolnych": 4, "prog": 0.35}
     fakty_w_banku = [str(k.get("fact") or "") for k in indeks]
@@ -6789,7 +6797,7 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
         # bo dzielily cztery pospolite rdzenie, z ktorych jeden trafil sie
         # akurat dwa razy. Rdzen, ktory ma odroznic JEDNA RZECZ od innej, musi
         # wygladac jak nazwa: wielka litera albo cyfra w oryginalnym tekscie.
-        # „FrameworkA", „Jalapeño", „GB300" tak; „report", „august", „single" nie.
+        # „FrameworkA", „SkladnikA", „GB300" tak; „report", „august", „single" nie.
         nazwy = {w.lower()[:6] for tekst in (a, b)
                  for w in re.findall(r"[A-Za-z][A-Za-z0-9'’-]*", tekst)
                  if (w[:1].isupper() and len(w) > 3) or any(c.isdigit() for c in w)}
@@ -6932,8 +6940,8 @@ def co_zadzialalo(ile: int = 6) -> str:
 
 
 BANK_SYSTEM = (
-    "You rank candidate facts for a publication about how everyday things are made and regulated. "
-    "You return an order, never a score. Return only valid JSON."
+    f"You rank candidate facts for a publication about {config.NISZA}. "
+    f"You return an order, never a score. Return only valid JSON."
 )
 
 
@@ -7281,10 +7289,10 @@ def korpus_fedreg(ile_dokumentow: int = 50, ile_gestych: int = 6) -> list[dict[s
 
 
 FEDREG_SYSTEM = (
-    "You read the preamble of a published regulation and extract candidates for "
-    "an editorial brand that explains how everyday things are built, "
-    "deployed and governed. A candidate exists only where a documented decision "
-    "produced something a reader can touch. Return only valid JSON."
+    f"You read the preamble of a published regulation and extract candidates "
+    f"for an editorial brand about {config.NISZA}. A candidate exists only "
+    f"where a documented decision produced something a reader can recognise. "
+    f"Return only valid JSON."
 )
 
 

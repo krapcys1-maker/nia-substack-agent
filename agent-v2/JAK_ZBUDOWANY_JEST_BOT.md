@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 28 955 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 28 964 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -176,7 +176,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7313 wierszy, 133 funkcji na poziomie modułu, 0 klas
+7321 wierszy, 133 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -587,7 +587,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-2873 wierszy, 27 funkcji na poziomie modułu, 0 klas
+2874 wierszy, 27 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -7607,12 +7607,12 @@ def grafika(
     kadr; tożsamość wizualna zmienia się w jednym miejscu, nie osobno przy
     każdym artykule.
 
-    Do 26 sierpnia 2026 powtarzalność szła dalej: model wybierał jeden PRZEDMIOT,
-    zawsze wyizolowany, zawsze na szarym papierze. To była reguła napisana dla
-    konta o rzeczach codziennych, gdzie butelka szamponu na tle czytała się jak
-    eksponat. Przy koncie o AI dała laptop z pustym białym ekranem leżący na
-    papierze — poprawny wobec briefu i martwy. Scena odpowiada na pytania,
-    na które eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
+    Powtarzalność szła kiedyś dalej: model wybierał jeden PRZEDMIOT, zawsze
+    wyizolowany, zawsze na szarym papierze. To była reguła napisana pod
+    jedną konkretną niszę, w której pojedynczy przedmiot na tle czytał się
+    jak eksponat. Po przestawieniu konta ta sama reguła dawała okładki
+    poprawne wobec briefu i martwe. Scena odpowiada na pytania, na które
+    eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
     """
     # GRAFIKA NIGDY NIE ZABIJA ARTYKUŁU. Zasada właściciela mówi wprost: gdy
     # temat jest wybrany, a research zrobiony i opłacony, artykuł MUSI powstać.
@@ -12538,7 +12538,7 @@ so treat currency as a separate question from truth, and ask it every time.
 1. **Does the thing still exist?** A model, an API, a product, a programme. If
    it has been deprecated, retired, sunset or scheduled for removal, the claim
    is `outdated` however true it is. Real case: a note explained hidden
-   reasoning tokens in OpenAI's o1 models, sourced from the launch coverage.
+   a technical detail of one model family, sourced from the launch coverage.
    Every word was true. The models are being removed from the API weeks later.
 
 2. **Is the version current?** Naming a specific release is a claim about the

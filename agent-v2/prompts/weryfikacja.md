@@ -108,7 +108,7 @@ so treat currency as a separate question from truth, and ask it every time.
 1. **Does the thing still exist?** A model, an API, a product, a programme. If
    it has been deprecated, retired, sunset or scheduled for removal, the claim
    is `outdated` however true it is. Real case: a note explained hidden
-   reasoning tokens in OpenAI's o1 models, sourced from the launch coverage.
+   a technical detail of one model family, sourced from the launch coverage.
    Every word was true. The models are being removed from the API weeks later.
 
 2. **Is the version current?** Naming a specific release is a claim about the

@@ -1,12 +1,12 @@
 """Jakie modele istnieja DZISIAJ — pytane na zywo, nie brane z pamieci.
 
 DLACZEGO TO ISTNIEJE. Bot napisal notke o ukrytych tokenach rozumowania w
-modelach o1 i wystawil ja 25 sierpnia 2026 jako rzecz biezaca. Zrodlem byl
+rodzinie modeli i wystawil ja jako rzecz biezaca. Zrodlem byl
 artykul o ich premierze z konca 2024. Fakt byl prawdziwy, wiec sprawdzanie
 faktow go przepuscilo — ono pyta „czy to prawda", nie „czy to jeszcze aktualne".
-Wlasciciel zlapal to jednym zdaniem: „a czy modele o1 jeszcze w ogole sa?".
+Wlasciciel zlapal to jednym zdaniem: „a czy te modele jeszcze w ogole sa?".
 
-Nie sa. OpenAI wylacza o1 z API 23 pazdziernika 2026.
+Nie byly. Dostawca wylaczal je z API osiem tygodni po tamtej notce.
 
 Glebszy problem jest taki, ze MODEL NIE MA JAK TEGO ZAUWAZYC. Jego wiedza
 konczy sie kilka miesiecy temu, a przeterminowany fakt czyta sie od srodka
@@ -118,7 +118,7 @@ def pobierz(conn=None, run_id: int | None = None,
             conn=conn, run_id=run_id,
             # WYSZUKIWANIE JEST TU CALA WARTOSCIA. Bez niego pytamy pamieci
             # modelu o to, czego pamiec z definicji nie wie — a wlasnie ta
-            # pomylka kosztowala nas notke o modelach o1.
+            # pomylka kosztowala nas notke o modelach, ktorych juz nie bylo.
             web_search=True)
         dane = llm.parse_json(tekst)
         if not isinstance(dane, dict) or not dane.get("aktualne"):

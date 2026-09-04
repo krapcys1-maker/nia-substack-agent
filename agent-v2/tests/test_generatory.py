@@ -172,7 +172,7 @@ sprawdz("prompt zamawia nadprodukcje",
 print()
 print("=== 8b. TRZECIA OS: FAKT POD WIELKIM PYTANIEM ===")
 # POMIAR, KTORY TO WYMUSIL (25 sierpnia 2026): przebieg oddal cztery dobre
-# fakty — ukryte tokeny rozumowania w o1, cztery ceny jednego modelu Gemini,
+# fakty — ukryty koszt w jednej rodzinie modeli, cztery ceny jednego modelu,
 # SystemBadawczy, radiolodzy przy mammografii — kazdy z decydentem i data, i ZERO
 # z czterech pod pytaniem, ktore czytelnik zadaje sam z siebie.
 #

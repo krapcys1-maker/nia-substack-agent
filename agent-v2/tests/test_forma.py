@@ -260,7 +260,7 @@ sprawdz("zwykle przeczenie bez apozycji nie jest tikiem",
 # losowe.
 sprawdz("samo zaprzeczenie to nie kuplet",
         stages.kuplet_korygujacy(
-            "You pay for sentences the model never shows you. OpenAI's o1 "
+            "You pay for sentences the model never shows you. That family "
             "models think in hidden reasoning tokens.") is False)
 sprawdz("powtorzona fraza to tez nie kuplet",
         stages.kuplet_korygujacy(

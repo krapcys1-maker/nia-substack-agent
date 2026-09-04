@@ -165,7 +165,7 @@ sprawdz("bez opisanego zakonczenia odpada", not ok)
 
 print()
 print("=== 6. STARE ODMOWY NIE ZNIKLY ===")
-ok, powod = wolno(fact="o1 is being deprecated", control_verdict="CONFIRMS",
+ok, powod = wolno(fact="that model family is being deprecated", control_verdict="CONFIRMS",
                   control_date="2026-08-20", control_fact="x")
 sprawdz("rzecz z ogloszonym koncem zycia nadal odpada", not ok, powod)
 sprawdz("i to PRZED sprawdzeniem kontrolnym", "koncem zycia" in powod, powod)
