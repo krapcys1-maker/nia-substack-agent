@@ -234,23 +234,32 @@ If you want it under different terms, ask.
 ## Honest notes
 
 **How many tests fail depends on how far you got with the install**, and none
-of the failures is a code defect. Measured on a fresh clone of this repository:
+of the failures is a code defect. The table says **what** fails rather than how
+many pass, because the second number rots the moment anyone adds a test — and
+the version that stood here did exactly that, drifting to 102 while the real
+figure had reached 137:
 
-| after | passed | skipped | failed | what still fails |
-|---|---|---|---|---|
-| `pip install -r requirements-dev.txt` | 102 | 18 | 4 | `playwright` browser not downloaded, Windows has no POSIX signals, empty `data/`, no `.env` |
-| `+ playwright install chromium` | 103 | 18 | 3 | the last three |
-| `+ .env` and the first run | **104** | 18 | **2** | `test_czas` needs POSIX signals; `test_podlogi_playbook` needs a production article file that is gitignored |
+| after | what still fails |
+|---|---|
+| `pip install -r requirements-dev.txt` | four — `playwright` browser not downloaded, Windows has no POSIX signals, empty `data/`, no `.env` |
+| `+ playwright install chromium` | the last three |
+| `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_zapora_platnych_wywolan` needs a real `ANTHROPIC_API_KEY` to prove the paid-call firewall refuses it |
 
-Both remaining failures are impossible to fix on a fresh Windows install and
-neither says anything about the code. Each is listed with its cause in
-[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+Measured on this copy: of 141 test files, **137 pass, 2 skip themselves and 2
+fail**. Both remaining failures are impossible to fix on a fresh Windows install
+and neither says anything about the code. Each is listed with its cause in
+[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The count of files is
+checked against the tree on every run by `test_liczby_w_dokumentach.py`, so this
+paragraph cannot drift again in silence.
 
-**Seventeen more tests skip in this copy.** They reproduce a counterproof out of
-a specific commit, because the project's doctrine requires a reference version
-pinned to a SHA and never to `HEAD`. This repository's history was started fresh
-when the account identity was removed, so those commits do not exist here. They
-say so and exit cleanly rather than crashing.
+**Twenty assertions skip themselves in this copy**, spread over twenty files.
+Eighteen reproduce a counterproof out of a specific commit, because the
+project's doctrine requires a reference version pinned to a SHA and never to
+`HEAD`; this repository's history was started fresh when the account identity
+was removed, so those commits do not exist here. Two are whole files. All of
+them say so and exit cleanly rather than crashing — a skipped assertion is
+printed with a dash instead of `OK`, because one that passed quietly would be
+worse than one that failed: it would look like proof.
 
 **`agent-v2/` is a leftover name** from when this repo held two agents side by
 side. Renaming it was tried and reverted: nineteen tests read their reference

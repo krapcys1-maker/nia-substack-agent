@@ -121,6 +121,11 @@ MIEJSCA = [
     ("README.md",
      r"\*\*(\d+) functions\*\* in (\d+) modules", ("funkcje", "moduly")),
     ("README.md", r"(\d+) tests · ", ("testy",)),
+    # Akapit „Honest notes". Stala tam tabela z liczbami przejsc
+    # (102/103/104), ktorej nikt nie przeliczal — zdryfowala do 102
+    # przy prawdziwych 137. Zostala jedna liczba i jest liczona
+    # z drzewa.
+    ("README.md", r"of (\d+) test files", ("testy",)),
     ("docs/ARCHITECTURE.md",
      r"(\d+) functions with line numbers", ("funkcje",)),
     ("docs/ARCHITECTURE.md",
