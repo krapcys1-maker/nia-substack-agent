@@ -7,7 +7,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 139 tests · 16 gates on every finished text
+26 model roles · 140 tests · 16 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real

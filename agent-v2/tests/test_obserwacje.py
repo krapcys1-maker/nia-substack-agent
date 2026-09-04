@@ -187,10 +187,34 @@ print()
 print("=== 2. OSOBNE BUDZETY ===")
 
 zrodlo = pathlib.Path("agent-v2/run.py").read_text(encoding="utf-8")
-sprawdz("blok obserwowania uzywa budzetu 'follow'",
-        'budzet["follow"]' in zrodlo)
-sprawdz("blok subskrypcji uzywa budzetu 'subskrypcje'",
-        'budzet["subskrypcje"]' in zrodlo)
+# OBA PRZYDZIALY ISTNIEJA I SA OSOBNE — pytamy o WLASNOSC, nie o zapis.
+#
+# Stalo tu `'budzet["follow"]' in zrodlo` i `'budzet["subskrypcje"]' in
+# zrodlo`. Kod bierze dzis oba jednym wyrazeniem (`budzet[k] for k in (...)`),
+# a tamte napisy zostaly w KOMENTARZU opisujacym poprawke z 20 sierpnia — wiec
+# obie asercje przechodzily na cytacie STAREGO kodu i nie zauwazylyby, gdyby
+# ktorykolwiek przydzial zniknal. Zlapal to `test_asercje_po_zrodle.py`.
+_klucze_budzetu = set()
+for _w in ast.walk(ast.parse(zrodlo)):
+    if (isinstance(_w, ast.Subscript)
+            and isinstance(_w.value, ast.Name) and _w.value.id == "budzet"):
+        if isinstance(_w.slice, ast.Constant) and isinstance(_w.slice.value, str):
+            _klucze_budzetu.add(_w.slice.value)
+    # `budzet[k] for k in (...)` — klucze stoja w krotce, nie w indeksie.
+    if isinstance(_w, ast.comprehension) and isinstance(_w.iter, ast.Tuple):
+        _klucze_budzetu |= {e.value for e in _w.iter.elts
+                            if isinstance(e, ast.Constant)
+                            and isinstance(e.value, str)}
+sprawdz("dzien rozdziela przydzial na 'follow'",
+        "follow" in _klucze_budzetu, sorted(_klucze_budzetu))
+sprawdz("i osobno na 'subskrypcje'",
+        "subskrypcje" in _klucze_budzetu, sorted(_klucze_budzetu))
+# I SA TO DWIE ROZNE LICZBY, a nie jedna pod dwiema nazwami: przy roznych
+# widelkach przydzialy musza sie roznic. To jest awaria, przed ktora ta sekcja
+# stoi — subskrypcje szly W TEMPIE OBSERWACJI.
+sprawdz("widelki obserwacji i subskrypcji sa osobne",
+        config.FOLLOW_MIESIECZNIE != config.SUBSKRYPCJE_MIESIECZNIE,
+        (config.FOLLOW_MIESIECZNIE, config.SUBSKRYPCJE_MIESIECZNIE))
 sprawdz("obserwowanie wola obserwuj_profil, nie zasubskrybuj",
         "browser.obserwuj_profil(uchwyt, wyslij=True)" in zrodlo)
 sprawdz("subskrypcje sa osobnym blokiem dnia",
