@@ -95,6 +95,26 @@ def _re_escape_ze_zawijaniem(fraza: str) -> str:
     """
     return r"\s+".join(re.escape(s) for s in fraza.split())
 
+def _napisy_instrukcyjne(wartosc, klucz: str = ""):
+    """Napisy wygladajace na instrukcje dla modelu, z dowolnie zagniezdzonej
+    stalej — razem ze sciezka, pod ktora leza.
+
+    Prog czterdziestu znakow i spacji odsiewa identyfikatory, sciezki, nazwy
+    modeli i stawki, a przepuszcza kazde zdanie po angielsku. Falszywe
+    trafienie kosztuje jeden wpis w WYJATKI; przeoczenie kosztuje polecenie
+    z poprzedniej niszy idace do modelu przy kazdej notce.
+    """
+    if isinstance(wartosc, str):
+        if len(wartosc) > 40 and " " in wartosc:
+            yield klucz, wartosc
+    elif isinstance(wartosc, dict):
+        for k, v in wartosc.items():
+            yield from _napisy_instrukcyjne(v, "%s[%s]" % (klucz, k))
+    elif isinstance(wartosc, (list, tuple)):
+        for i, v in enumerate(wartosc):
+            yield from _napisy_instrukcyjne(v, "%s[%d]" % (klucz, i))
+
+
 def _na_zdania(tekst: str) -> list[str]:
     """Brief na zdania, zeby wyjatek zakrywal zdanie, a nie caly brief.
 
@@ -228,19 +248,24 @@ def zrodla():
         yield ("config.py:NOTE_FORMS[%s]" % nazwa,
                _na_zdania(config.NOTE_FORMS[nazwa]))
 
-    # I TRZECIE MIEJSCE TEJ SAMEJ KLASY, znalezione 4 wrzesnia 2026.
-    # `GENERATORY` i `DZIEDZINY_CIEKAWOSTEK` ida do `prompts/ciekawostki.md`
-    # przez `stages.znajdz_ciekawostki` — czyli sa promptem tak samo jak
-    # `NOTE_FORMS`, i tak samo nie byly skanowane. Dwa z czternastu wzorcow
-    # mowily wprost o poprzedniej niszy i trafialy do modelu w co czwartym
-    # przebiegu (`ILE_GENERATOROW_NA_PRZEBIEG = 4`).
+    # A TERAZ CALA RESZTA CONFIGU, BEZ RECZNEJ LISTY.
     #
-    # Docstring tego pliku opisuje te wade od dawna — „prompt w kazdym sensie
-    # oprocz rozszerzenia pliku" — a lista skanowanych miejsc byla wyliczona
-    # recznie i o jedno krotsza.
-    for nazwa in sorted(config.GENERATORY):
-        yield "config.py:GENERATORY[%s]" % nazwa, [config.GENERATORY[nazwa]]
-    yield "config.py:DZIEDZINY_CIEKAWOSTEK", list(config.DZIEDZINY_CIEKAWOSTEK)
+    # Trzy razy z rzedu ta sama wada w tym samym pliku: skanowal tylko
+    # `prompts/*.md`, potem dopisano `NOTE_FORMS`, potem `GENERATORY`. A do
+    # promptow ida tak samo `NOTE_TYPES`, `KSZTALTY_MYSLI`,
+    # `POSTAWY_KOMENTARZA`, `OTWARCIA`, `RUCHY_KONCOWE` i `DZIEDZINY_
+    # CIEKAWOSTEK`. Recznej listy nie da sie utrzymac — to jest zdanie
+    # z doktryny tego projektu i wlasnie zebralo trzeci dowod.
+    #
+    # Bierzemy KAZDA stala z `config.py`, ktora wyglada jak instrukcja dla
+    # modelu: napis dluzszy niz 40 znakow, ze spacja, w stalej pisanej
+    # WIELKIMI LITERAMI. Nowa stala dopisana jutro trafi pod skan sama.
+    for nazwa in sorted(dir(config)):
+        if not nazwa.isupper() or nazwa.startswith("_"):
+            continue
+        wartosc = getattr(config, nazwa)
+        for klucz, tekst in _napisy_instrukcyjne(wartosc):
+            yield ("config.py:%s%s" % (nazwa, klucz)), _na_zdania(tekst)
 
 
 WSZYSTKIE = list(zrodla())

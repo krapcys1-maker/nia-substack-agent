@@ -1633,9 +1633,10 @@ WYDARZENIE_PROB_MAKS = 3
 
 # TERMIN WAZNOSCI W BANKU, liczony od dnia dopisania — osobny od wieku ZRODLA.
 # To sa dwa rozne pytania: dokument kontrolny mowi, czy fakt jest nadal
-# prawdziwy, a to mowi, czy jest jeszcze AKTUALNY jako temat. Fakt o modelu
-# sprzed tygodnia bywa prawdziwy i martwy zarazem — korpus kanalow obraca sie
-# w dniach, wiec tydzien to w tej dziedzinie zamierzchlosc.
+# PRAWDZIWY, a to mowi, czy jest jeszcze AKTUALNY jako temat. Fakt sprzed
+# tygodnia bywa prawdziwy i martwy zarazem — korpus obserwowanych kanalow
+# obraca sie w dniach, wiec w szybkiej dziedzinie tydzien to zamierzchlosc.
+# Publikacja o czyms, co zmienia sie wolniej, powinna te liczbe podniesc.
 BANK_MAKS_DNI = 7
 
 # MIESZANKA DNIA. Ostatnia pozycja to MYSL — notka bez zadnego dowodu.
@@ -1668,9 +1669,10 @@ KSZTALTY_MYSLI = {
         "resolution. Do NOT open with the question and then quietly answer it."
     ),
     "OBSERWACJA": (
-        "Name something everyone who uses these systems has felt and nobody "
-        "has said out loud, then say what you think it means. First person, "
-        "specific, about a habit or a moment rather than about the industry."
+        "Name something everyone who deals with this subject has felt and "
+        "nobody has said out loud, then say what you think it means. First "
+        "person, specific, about a habit or a moment rather than about the "
+        "industry."
     ),
     "TEZA": (
         "State a position you would defend out loud, then the reasoning that "
