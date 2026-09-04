@@ -99,12 +99,12 @@ sprawdz("5-minutowa notka nadal odpada",
 print()
 print("=== 3. KONTEKST CELU DO DZIENNIKA ===")
 
-cel = {"pub": "Construction Physics", "skad": "szukanie: zoning",
+cel = {"pub": "Publikacja Budowlana", "skad": "szukanie: zoning",
        "komentarze": 81, "reakcje": 678,
        "data": (teraz - timedelta(minutes=200)).isoformat(), "url": "https://x/p/y"}
 op = run.opis_celu(cel)
 print("    %s" % op)
-sprawdz("niesie publikacje", op["publikacja"] == "Construction Physics")
+sprawdz("niesie publikacje", op["publikacja"] == "Publikacja Budowlana")
 sprawdz("niesie skad przyszedl cel", "zoning" in op["skad"])
 sprawdz("niesie ILU BYLO PRZED NAMI", op["komentarzy_przed"] == 81)
 sprawdz("niesie wielkosc publicznosci", op["reakcje_celu"] == 678)

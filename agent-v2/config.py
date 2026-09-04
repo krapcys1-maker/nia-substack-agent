@@ -2398,7 +2398,7 @@ def _w_darmowym_tescie() -> bool:
 #
 # Zmierzone 2 wrzesnia 2026 na serwerze: `agent-v2/data/tematy_przegrane.json`
 # mial 400 wpisow (czyli sufit `ILE_PRZEGRANYCH_TRZYMAMY`), z czego 294 to byly
-# ATRAPY Z TESTOW — „A", „B", „The Soap That Says Antibacterial" i trzy inne, po
+# ATRAPY Z TESTOW — „A", „B", „Example Article Seven" i trzy inne, po
 # 49 sztuk kazda. `test_wybor_tematu.py` wola `stages.pick_topic`, ta wola
 # `zapisz_przegranych`, a sciezka byla liczona z `config.DATA_DIR`. Kazde
 # uruchomienie zestawu na serwerze wypychalo z bufora prawdziwe przegrane
@@ -2597,8 +2597,8 @@ NAPRAW_NA_PRZEBIEG = 4
 
 
 # --- ruch koncowy i szerokosc drugiego aktu --------------------------------
-# Dwa artykuly napisane PO naprawie szamponu (0017 "The Gas You Didn't Buy",
-# 0019 "The Yellow Light...") wyszly z identycznym szkieletem: ten sam
+# Dwa artykuly napisane PO naprawie szamponu (0017 "Example Article Ten",
+# 0019 "Example Article Eleven...") wyszly z identycznym szkieletem: ten sam
 # drogowskaz przed paralelami ("once you see this shape, it turns up
 # everywhere"), dokladnie trzy paralele, akapit o granicach zapowiedziany
 # meta-zdaniem, zamkniecie "sprawdz to u siebie". Zaden z tych ruchow nie jest

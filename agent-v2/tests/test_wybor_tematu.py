@@ -80,7 +80,7 @@ def przetworz(topics, ranking=None):
 
 # --- PRAWDZIWE tematy z przebiegu 20 sierpnia, nie wymyslone -----------------
 CLICHE = {
-    "title": "The Wipe That Says Flushable", "kind": "BROKEN_BELIEF",
+    "title": "Example Article Eight", "kind": "BROKEN_BELIEF",
     "broken_belief": "Everyone assumes wipes labelled flushable break down in "
                      "water the way toilet paper does.",
     "already_written": ["utility companies on fatbergs",
@@ -89,13 +89,13 @@ CLICHE = {
     "threads": ["what the label legally means"],
 }
 CLICHE2 = {
-    "title": "The Soap That Says Antibacterial", "kind": "BROKEN_BELIEF",
+    "title": "Example Article Seven", "kind": "BROKEN_BELIEF",
     "broken_belief": "Everyone assumes antibacterial soap kills more germs than plain.",
     "already_written": ["regulator ban coverage", "handwashing guidance pieces"],
     "threads": ["what the regulator actually banned"],
 }
 SWIEZY = {
-    "title": "The Broken Machine at the Polling Place", "kind": "SYSTEM_UNDER_TEST",
+    "title": "Example Article Sixteen at the Polling Place", "kind": "SYSTEM_UNDER_TEST",
     "the_moment": "a voter arrives and the machines are down",
     "open_outcome": "what happens to my vote if the machine fails while I am using it",
     "governing_record": "election statutes and provisional ballot rules",
@@ -117,11 +117,11 @@ SWIEZY2 = {
 print("=== 1. NASYCENIE: PAMIEC MODELU UZYTA PRZECIW NIEMU ===")
 t = przetworz([dict(CLICHE), dict(SWIEZY)])
 sprawdz("próg nasycenia to 2", config.NASYCENIE_OD_ILU == 2, config.NASYCENIE_OD_ILU)
-c = next(x for x in t if x["title"].startswith("The Wipe"))
-s = next(x for x in t if x["title"].startswith("The Broken"))
+c = next(x for x in t if x["title"] == CLICHE["title"])
+s = next(x for x in t if x["title"] == SWIEZY["title"])
 sprawdz("cliché rozpoznane jako nasycone", c["nasycony"] is True, c["ile_juz_napisano"])
 sprawdz("świeży temat nie jest nasycony", s["nasycony"] is False)
-sprawdz("świeży idzie PRZED cliché", t[0]["title"].startswith("The Broken"),
+sprawdz("świeży idzie PRZED cliché", t[0]["title"] == SWIEZY["title"],
         [x["title"][:26] for x in t])
 # KONTRDOWOD: jeden przypomniany tekst zdarza sie przy kazdym istniejacym
 # temacie. Prog jeden zabilby wszystko.
@@ -134,7 +134,7 @@ sprawdz("cliché ma jeden wątek", c["ile_watkow"] == 1, c["ile_watkow"])
 sprawdz("świeży ma cztery", s["ile_watkow"] == 4, s["ile_watkow"])
 t = przetworz([dict(SWIEZY2), dict(SWIEZY)])
 sprawdz("przy równym nasyceniu wygrywa więcej wątków",
-        t[0]["title"].startswith("The Broken"), [x["title"][:22] for x in t])
+        t[0]["title"] == SWIEZY["title"], [x["title"][:22] for x in t])
 
 print()
 print("=== 3. pick_topic — TU SIEDZIAL GLOWNY BLAD ===")
@@ -147,7 +147,7 @@ wybrany, _ = stages.pick_topic(TEMATY, OCENY)
 print("    kolejność po przetworzeniu: %s" % [x["title"][:30] for x in TEMATY])
 print("    wybrany: %s" % wybrany["title"])
 sprawdz("wybiera świeży system, nie cliché",
-        wybrany["title"].startswith("The Broken"), wybrany["title"])
+        wybrany["title"] == SWIEZY["title"], wybrany["title"])
 
 # KONTRDOWOD 1: stary ranking sortowal po ma_przekonanie jako pierwszym kluczu.
 # Cliche ma przekonanie, system pod proba NIE MA — wiec stary klucz wybralby
@@ -157,8 +157,8 @@ po_staremu = sorted(OCENY, key=lambda a: (
     a["confidence"]), reverse=True)
 stary_wybor = TEMATY[po_staremu[0]["index"]]
 sprawdz("STARY ranking wziąłby cliché (test rozróżnia)",
-        stary_wybor["title"].startswith("The Wipe")
-        or stary_wybor["title"].startswith("The Soap"), stary_wybor["title"])
+        stary_wybor["title"] in (CLICHE["title"], CLICHE2["title"]),
+        stary_wybor["title"])
 sprawdz("i NIE wziąłby systemu pod próbą",
         not stary_wybor["title"].startswith("The Broken"), stary_wybor["title"])
 
@@ -275,7 +275,7 @@ print("=== 4. NOSNOSC NADAL BIJE SWIEZOSC ===")
 # Swiezy, ale nienosny temat nie moze wyprzedzic nosnego i oklepanego —
 # lepiej napisac znany temat dobrze niz nieznany bez luki i bez stawki.
 t = przetworz([dict(CLICHE), dict(PUSTY, already_written=[], threads=[])])
-sprawdz("nośne cliché przed nienośną nowością", t[0]["title"].startswith("The Wipe"),
+sprawdz("nośne cliché przed nienośną nowością", t[0]["title"] == CLICHE["title"],
         [x["title"][:20] for x in t])
 
 print()
@@ -295,7 +295,7 @@ try:
     sprawdz("i jest oznaczony jako wziety mimo odrzucenia",
             ocena.get("mimo_odrzucenia") is True, ocena)
     sprawdz("wybrano najlepszy z odrzuconych, nie pierwszy z brzegu",
-            w["title"].startswith("The Broken"), w["title"])
+            w["title"] == SWIEZY["title"], w["title"])
 except Exception as e:
     sprawdz("wszystko odrzucone -> nadal jest temat", False, repr(e))
 # Ale PUSTA lista ocen to co innego: nie ma z czego wybierac.
@@ -530,11 +530,11 @@ _POPRZEDNI = ("The Licence Revoked Before Any Appeal Was Heard "
               "two years earlier. By the time an appeal was possible the automated "
               "revocation had already been treated as final.")
 
-_POWTORKA = {"title": "The Appeal Window That Closed Before The Notice Arrived",
+_POWTORKA = {"title": "Example Article Fifteen The Notice Arrived",
              "question": "What happens when an automated system revokes a licence and "
                          "the appeal window runs out before anyone is told?",
              "nosny": True, "na_artykul": True, "pozycja": 5, "nasycony": False}
-_INNY = {"title": "The Chatbot That Remembers You",
+_INNY = {"title": "Example Article Thirteen",
          "question": "What does a model keeping memory of you change about what it is?",
          "nosny": True, "na_artykul": True, "pozycja": 0, "nasycony": False}
 _OCENY = [{"index": 0, "feasible": True, "confidence": 0.95},
@@ -543,14 +543,14 @@ _OCENY = [{"index": 0, "feasible": True, "confidence": 0.95},
 _wybrany, _ = stages.pick_topic([_POWTORKA, _INNY], _OCENY, 1,
                                 wczesniejsze=[_POPRZEDNI])
 sprawdz("powtorzony temat NIE zostaje wybrany",
-        _wybrany.get("title") == "The Chatbot That Remembers You",
+        _wybrany.get("title") == "Example Article Thirteen",
         _wybrany.get("title"))
 
 # KONTRDOWOD: bez pamieci wygrywa powtorka — czyli test mierzy TE zmiane,
 # a nie przypadkowa kolejnosc. Powtorka ma tu wyzsza `pozycja` wlasnie po to.
 _bez, _ = stages.pick_topic([_POWTORKA, _INNY], _OCENY, 1)
 sprawdz("a bez pamieci wygralaby (tak powstala wpadka)",
-        _bez.get("title") == "The Appeal Window That Closed Before The Notice Arrived",
+        _bez.get("title") == "Example Article Fifteen The Notice Arrived",
         _bez.get("title"))
 
 # Prog musi rozrozniac powtorke od tematu sasiadujacego. Zmierzone na 7

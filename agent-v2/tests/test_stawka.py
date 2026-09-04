@@ -281,7 +281,7 @@ TEMATY = [
      "open_outcome": "who stops the trading and for how long",
      "governing_record": "the exchange halt rules"},
     {"title": "zlamane przekonanie", "kind": "BROKEN_BELIEF",
-     "broken_belief": "Everyone assumes the yellow light lasts the same everywhere"},
+     "broken_belief": "Everyone assumes the interval is the same everywhere"},
 ]
 # Odtwarzamy dokladnie petle z `topics_from_scout` — bez wolania modelu.
 for t in TEMATY:

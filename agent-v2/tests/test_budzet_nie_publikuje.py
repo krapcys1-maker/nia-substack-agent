@@ -171,8 +171,8 @@ KARTA = {"working_thesis": "Kto ustawil ten uklad i za czyje pieniadze.",
          "confirmed_claims": [{"claim": "x", "evidence": "y",
                                "url": "https://example.org/a"}],
          "source_dates": {"newest": "2026-08-20", "oldest": "2026-08-01"}}
-BRIEF = {"title": "The Meter That Reads Itself",
-         "question": "Who decided the meter reads itself?"}
+BRIEF = {"title": "Example Article Twelve",
+         "question": "Who decided the device reports its own reading?"}
 TRESC = " ".join(["word"] * 650)
 
 

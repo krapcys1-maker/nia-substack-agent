@@ -62,7 +62,7 @@ KORPUS = [
 
 # Temat oparty o pierwsza pozycje korpusu.
 Z_KANALU = {
-    "title": "The Chip Built in Nine Months",
+    "title": "Example Article Eighteen in Nine Months",
     "question": "What did the custom inference chip built with Broadcom change "
                 "about who sets the price of a token?",
     "kind": "BROKEN_BELIEF", "scale": "AN_INDUSTRY",
@@ -72,7 +72,7 @@ Z_KANALU = {
 }
 # Temat z pamieci — nic wspolnego z korpusem.
 Z_PAMIECI = {
-    "title": "The Tenant Screening Report",
+    "title": "Example Article Seventeen Report",
     "question": "When a rental application is refused by an algorithmic "
                 "screening report, what must the landlord disclose?",
     "kind": "SYSTEM_UNDER_TEST", "scale": "AN_INDUSTRY", "zaczyn": "",

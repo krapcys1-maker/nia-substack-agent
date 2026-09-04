@@ -12,9 +12,9 @@ Zmierzone 1 wrzesnia 2026 na produkcyjnym dzienniku serwera
 
   * przez `czytelnicy.jsonl` — jedyna mapa nazwa -> uchwyt, jaka mamy —
     rozwiazuje sie 11 nazw z 69, i sa to DOKLADNIE nasi obecni czytelnicy
-    (Alexx Roy, Camli Travel Notes, Chaos Engine, CourseManagement System,
-    Dipankar Sarkar, Faisal Shahzad Naeem, Leonard, Mirror Mind AI,
-    Petros Bountis, The Lonely Road: Founder, sidharth chandra), wiec jako
+    (Maria Trzynasta, Publikacja Podrozna, Publikacja Chaosu, CourseManagement System,
+    Grzegorz Siodmy, Filip Szosty, Leonard, Publikacja Lustrzana AI,
+    Halina Osma, Publikacja Drogowa: Founder, sidharth chandra), wiec jako
     cele sa bezuzyteczni — juz ich mamy;
   * przez rownosc slugu nazwy ze slugiem hosta z `gdzie_komentowalismy.json`
     (94 hosty) trafia 7 z 69: davidoks.blog, eunnurilee.substack.com,
@@ -111,13 +111,13 @@ PRZED = {str(p): odcisk(p) for p in PILNOWANE}
 # dobrani, zeby uderzyc w kazdy sposob, w jaki dwie rownolegle listy moga sie
 # rozjechac.
 LUDZIE = [
-    {"id": 1, "name": "Hedley Rees", "handle": "hedleyrees"},
+    {"id": 1, "name": "Igor Dziewiaty", "handle": "hedleyrees"},
     # NADAWCA BEZ NAZWY. Stary kod wycinal go z `kto`; jesli uchwyty leca
     # osobna petla, to od TEGO miejsca kazda para jest przesunieta.
     {"id": 2, "handle": "duchbeznazwy"},
-    {"id": 3, "name": "Ryan Puzycki", "handle": "ryanpuzycki"},
+    {"id": 3, "name": "Jan Dziesiaty", "handle": "ryanpuzycki"},
     # KONTO BEZ UCHWYTU W ODPOWIEDZI. Ma byc `None`, nie pusty napis.
-    {"id": 4, "name": "David Oks"},
+    {"id": 4, "name": "Lech Dwunasty"},
     # UCHWYT PUSTY I UCHWYT Z BIALYMI ZNAKAMI — jedno i drugie to „nie wiem".
     {"id": 5, "name": "Pusty Uchwyt", "handle": ""},
     {"id": 6, "name": "Spacja", "handle": "   "},
@@ -246,7 +246,7 @@ sprawdz("listy sa rownej dlugosci w KAZDYM wpisie",
 # Nadawca bez nazwy wypada tak samo, jak wypadal przedtem — czyli `kto` sie
 # nie zmienilo i czytajacy je moduly nie widza nowego ksztaltu.
 sprawdz("nadawca bez nazwy dalej wypada z obu list",
-        lajk["kto"] == ["Hedley Rees", "Ryan Puzycki"], lajk["kto"])
+        lajk["kto"] == ["Igor Dziewiaty", "Jan Dziesiaty"], lajk["kto"])
 
 print()
 print("=== 2b. LIMIT PIATKI TNIE OBIE LISTY TAK SAMO ===")
@@ -257,7 +257,7 @@ sprawdz("i dokladnie tyle samo uchwytow",
 # Osmiu nadawcow, jeden bez nazwy (nr 2) -> po odsiewie zostaje siedmiu,
 # a piatka to nadawcy 1,3,4,5,6.
 sprawdz("piatka to PIERWSZE piec osob z nazwa, w kolejnosci kanalu",
-        restack["kto"] == ["Hedley Rees", "Ryan Puzycki", "David Oks",
+        restack["kto"] == ["Igor Dziewiaty", "Jan Dziesiaty", "Lech Dwunasty",
                            "Pusty Uchwyt", "Spacja"], restack["kto"])
 sprawdz("a uchwyty stoja przy nich",
         restack["uchwyty"] == ["hedleyrees", "ryanpuzycki", None, None, None],
@@ -287,7 +287,7 @@ print("=== 3. KONTRDOWOD A: NAIWNE DWIE PETLE DAJA CICHY ROZJAZD ===")
 # bo to jest wlasnie blad, ktorego ten test pilnuje.
 ludzie_po_id = {i: PO_ID[i] for i in PO_ID}
 for zdarzenie, oczekiwane in (("note_like:900",
-                               ["Hedley Rees", "Ryan Puzycki"]),
+                               ["Igor Dziewiaty", "Jan Dziesiaty"]),
                               ("note_restack:903", None)):
     z = [x for x in KANAL["activityItems"] if x["id"] == zdarzenie][0]
     naiwne_kto = [(ludzie_po_id.get(i) or {}).get("name")
@@ -300,8 +300,8 @@ for zdarzenie, oczekiwane in (("note_like:900",
     sprawdz("NAIWNA wersja rozjezdza pary w %s (test rozroznia)" % zdarzenie,
             bool(zle), pary_naiwne)
     if oczekiwane:
-        sprawdz("  konkretnie: 'Ryan Puzycki' dostaje uchwyt kogos innego",
-                dict(pary_naiwne).get("Ryan Puzycki") == "duchbeznazwy",
+        sprawdz("  konkretnie: 'Jan Dziesiaty' dostaje uchwyt kogos innego",
+                dict(pary_naiwne).get("Jan Dziesiaty") == "duchbeznazwy",
                 pary_naiwne)
     else:
         sprawdz("  i przy osmiu nadawcach listy maja rozne dlugosci",

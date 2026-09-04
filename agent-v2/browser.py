@@ -3349,9 +3349,9 @@ def polec_publikacje(fraza: str, powod: str,
     dziesiec publikacji „ktore moze Pan/Pani chciec polecic". Sprawdzone
     30 sierpnia 2026 — z tych dziesieciu JEDNA dotykala AI:
 
-        Construction Physics, Urbanism Speakeasy, mandates, Malone News,
-        Publikacja 1, It's Not Sustainable, Your Brain on Money,
-        The Nemeth Report, The Butter Girlfriend, People of Interest
+        Publikacja Budowlana, Publikacja Miejska, mandates, Publikacja Wlasnej Domeny,
+        Publikacja 1, It's Publikacja Srodowiskowa, Publikacja Umyslowa on Money,
+        Publikacja Raportowa, Publikacja Kulinarna, People of Interest
 
     Substack liczy je z historii czytania konta, a ta pochodzi sprzed
     przestawienia na AI. To ta sama skaza, co w banku tematow i w dziewieciu
@@ -4663,7 +4663,7 @@ def potwierdz_adres_artykulu(page, tytul: str) -> str:
     """Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu.
 
     Adres byl skladany przez zamiane tytulu na slug, a Substack slugi SKRACA:
-    „The Hole in Your Airplane Window Is Doing Exactly What It Should" dostalo
+    „The Hole in Example Article Nine Is Doing Exactly What It Should" dostalo
     adres `/p/the-hole-in-your-airplane-window`. Zgadniety adres odpowiadal 302,
     wiec notka promujaca dzialala tylko dzieki przekierowaniu, ktorego Substack
     nam nie obiecal. Notka promujaca z martwym linkiem jest gorsza niz jej brak.

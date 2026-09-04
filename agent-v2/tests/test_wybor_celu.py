@@ -432,7 +432,7 @@ DZIENNIK_WSTEPNY = [
     # nazwa, i to jest cala slabosc tego poziomu.
     {"kiedy": "2026-08-31T11:38:09+00:00", "rodzaj": "skutek", "udane": True,
      "zdarzenie": "note_like:327008677", "typ": "note_like", "czego": 327008677,
-     "ilu": 1, "kto": ["Hedley Rees"], "kiedy_zdarzenia": "2026-08-31T02:04:35"},
+     "ilu": 1, "kto": ["Igor Dziewiaty"], "kiedy_zdarzenia": "2026-08-31T02:04:35"},
 ]
 
 BLOK_OBSERWUJ = wytnij(zrodlo_run(), "obserwuj")
@@ -485,7 +485,7 @@ try:
     browser.DZIENNIK.write_text(json.dumps(
         {"kiedy": "2026-08-31T11:38:09+00:00", "rodzaj": "skutek",
          "udane": True, "zdarzenie": "note_like:1", "typ": "note_like",
-         "kto": ["Chaos Engine"], "ilu": 1}, ensure_ascii=False) + "\n",
+         "kto": ["Publikacja Chaosu"], "ilu": 1}, ensure_ascii=False) + "\n",
         encoding="utf-8")
     _, rach4 = run.cele_wedlug_pierwszenstwa(HISTORIA)
     sprawdz("osoba, ktorej nazwa nie jest hostem, NIE podnosi nikogo",

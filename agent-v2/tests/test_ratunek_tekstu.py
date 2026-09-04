@@ -188,9 +188,9 @@ KARTA = {"working_thesis": "Kto ustawil ten uklad i za czyje pieniadze.",
                                            " przyjal, bo prog to szescdziesiat"
                                            " znakow i tyle."]}],
          "source_dates": {"newest": "2026-08-20", "oldest": "2026-08-01"}}
-BRIEF = {"title": "The Meter That Reads Itself",
-         "question": "Who decided the meter reads itself?"}
-TYTUL = "The Meter That Reads Itself"
+BRIEF = {"title": "Example Article Twelve",
+         "question": "Who decided the device reports its own reading?"}
+TYTUL = "Example Article Twelve"
 # 650 slow, czyli pasmo SINGLE — tyle wlasnie kosztuje okolo 0,76 USD pisania.
 # Slowa musza byc ROZNE, zeby dalo sie sprawdzic, ze na dysk trafil TEN tekst,
 # a nie jego kawalek: powtarzane „word" pasowaloby do dowolnego wycinka.

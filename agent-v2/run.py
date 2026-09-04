@@ -500,10 +500,10 @@ def _reakcje_z_dziennika() -> tuple[set[str], dict[str, dict]]:
         miare wplywu komentarzy, cytuje slepote tego sita. Zmierzone
         2 wrzesnia 2026: na 10 parach (nazwa, uchwyt), ktore znamy z pola
         `uchwyty`, rownosc slug(nazwa) == slug(hosta) trafia 5 razy na 10
-        (`chaosengine2026` to „Chaos Engine", `theaioperators` to „Sherif
+        (`chaosengine2026` to „Publikacja Chaosu", `theaioperators` to „Norbert
         Saad", „Thor" wypada na progu dlugosci). Porownanie nazwy reagujacego
         z polem `publikacja` z dziennika — ktore trzyma NAZWE publikacji,
-        a nie host — daje 26 z 73. Najwiekszy reagujacy, „Chaos Engine"
+        a nie host — daje 26 z 73. Najwiekszy reagujacy, „Publikacja Chaosu"
         (112 z 279 zetkniec, 40 procent), JEST publikacja, pod ktora
         komentowalismy 29 sierpnia, a stary przyrzad go nie widzi.
         Droga zostaje, bo dziala takze dla 199 wpisow sprzed 1 wrzesnia 2026,

@@ -502,7 +502,7 @@ KARTA = {"working_thesis": "Kto ustawil ten sufit i za czyje pieniadze.",
                                "url": "https://example.org/a"}],
          "citable_numbers": [],
          "source_dates": {"newest": "2026-08-20", "oldest": "2026-08-01"}}
-TEMAT = {"title": "The Ceiling That Signs Itself", "index": 0,
+TEMAT = {"title": "Example Article Fourteen", "index": 0,
          "question": "Who set the ceiling and who grants the waiver?"}
 KORPUS = [{"url": "https://example.org/a", "host": "example.org",
            "class": "PRIMARY", "title": "t", "text": "x" * 4000,

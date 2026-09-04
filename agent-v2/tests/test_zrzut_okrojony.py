@@ -184,11 +184,11 @@ def link(uchwyt, nazwa=None):
     return Odnosnik("/@%s" % uchwyt, nazwa if nazwa is not None else uchwyt)
 
 
-OBSERWUJACY = [link("czytelnik2", "The Lonely Road: Founder"),
-               link("petrosbountis", "Petros Bountis"),
-               link("czytelnik3", "Mirror Mind AI")]
+OBSERWUJACY = [link("czytelnik2", "Publikacja Drogowa: Founder"),
+               link("petrosbountis", "Halina Osma"),
+               link("czytelnik3", "Publikacja Lustrzana AI")]
 SUBSKRYBENCI = [link("leonard896188", "Leonard"),
-                link("chaosengine2026", "Chaos Engine")]
+                link("chaosengine2026", "Publikacja Chaosu")]
 NAWIGACJA = [Odnosnik("/@explore", "Explore"),
              Odnosnik("/@dashboard", "Dashboard")]
 
@@ -376,11 +376,11 @@ with (UDAWANA / "czytelnicy.jsonl").open("w", encoding="utf-8") as f:
     f.write(json.dumps(okrojony, ensure_ascii=False) + "\n")
     f.write(json.dumps({"kiedy": "2026-08-31T11:38:23+00:00",
                         "obserwujacy": [{"uchwyt": "petrosbountis",
-                                         "nazwa": "Petros Bountis"}],
+                                         "nazwa": "Halina Osma"}],
                         "subskrybenci": [{"uchwyt": "leonard896188",
                                           "nazwa": "Leonard"},
                                          {"uchwyt": "chaosengine2026",
-                                          "nazwa": "Chaos Engine"}]},
+                                          "nazwa": "Publikacja Chaosu"}]},
                        ensure_ascii=False) + "\n")
 _zdjecie_data = wzajemnosc.config.uzyj_katalogu_danych(UDAWANA)
 try:
@@ -412,9 +412,9 @@ with (STARE / "czytelnicy.jsonl").open("w", encoding="utf-8") as f:
                                "2026-09-01T11:38:25+00:00")):
         f.write(json.dumps({
             "kiedy": kiedy,
-            "obserwujacy": [{"uchwyt": "petrosbountis", "nazwa": "Petros Bountis"},
-                            {"uchwyt": "czytelnik3", "nazwa": "Mirror Mind AI"}],
-            "subskrybenci": [{"uchwyt": "chaosengine2026", "nazwa": "Chaos Engine"}]
+            "obserwujacy": [{"uchwyt": "petrosbountis", "nazwa": "Halina Osma"},
+                            {"uchwyt": "czytelnik3", "nazwa": "Publikacja Lustrzana AI"}],
+            "subskrybenci": [{"uchwyt": "chaosengine2026", "nazwa": "Publikacja Chaosu"}]
             + ([{"uchwyt": "leonard896188", "nazwa": "Leonard"}] if i else []),
         }, ensure_ascii=False) + "\n")
 _zdjecie_data = wzajemnosc.config.uzyj_katalogu_danych(STARE)

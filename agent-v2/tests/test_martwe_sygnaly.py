@@ -413,7 +413,7 @@ import korpus_kanalow as _kk   # noqa: E402
 import stages as _stages       # noqa: E402
 
 _TEMAT_WZORCOWY = {
-    "title": "The Chip Built in Nine Months",
+    "title": "Example Article Eighteen in Nine Months",
     "question": "What did the custom inference chip change about who sets the "
                 "price of a token?",
     "kind": "BROKEN_BELIEF", "scale": "AN_INDUSTRY", "zaczyn": "",

@@ -82,10 +82,10 @@ STRONA = AtrapaStrony([
     # test oblewal, choc kod dzialal.
     Odnosnik("/@%s" % config.SUBSTACK_HANDLE, config.NAZWA_MARKI),  # my sami
     Odnosnik("/@czytelnik2", ""),    # awatar — bez tekstu
-    Odnosnik("/@czytelnik2", "The Lonely Road: Founder"),
-    Odnosnik("/@czytelnik6", "Adebamiwa Olugbenga Michael"),
-    Odnosnik("/@czytelnik1?utm=x", "Dipankar Sarkar"),
-    Odnosnik("/@czytelnik3/notes", "Mirror Mind AI"),
+    Odnosnik("/@czytelnik2", "Publikacja Drogowa: Founder"),
+    Odnosnik("/@czytelnik6", "Ewa Piata"),
+    Odnosnik("/@czytelnik1?utm=x", "Grzegorz Siodmy"),
+    Odnosnik("/@czytelnik3/notes", "Publikacja Lustrzana AI"),
 ])
 
 print("=== 1. LUDZIE, NIE NAWIGACJA ===")
@@ -109,7 +109,7 @@ print("=== 3. AWATAR NIE KASUJE NAZWY ===")
 # nazwa. Gdyby wygrywal ostatni, polowa listy bylaby bezimienna.
 lonely = next(x for x in ludzie if x["uchwyt"] == "czytelnik2")
 sprawdz("nazwa zachowana mimo pustego awatara",
-        lonely["nazwa"] == "The Lonely Road: Founder", lonely)
+        lonely["nazwa"] == "Publikacja Drogowa: Founder", lonely)
 
 print()
 print("=== 4. BRAK NAZWY SPADA DO UCHWYTU ===")

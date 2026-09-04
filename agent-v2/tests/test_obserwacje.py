@@ -236,8 +236,8 @@ PULA = [
     {"domain": "Grocery and food safety",
      "fact": "American eggs must be refrigerated because US federal rules require "
              "that shell eggs be washed and sanitized, stripping the cuticle."},
-    {"domain": "Air travel", "fact": "The tiny hole in the middle pane of an "
-     "airplane window is a bleed hole that vents cabin pressure."},
+    {"domain": "Sealed enclosures", "fact": "The tiny hole in the middle pane of a "
+     "pressure panel is a bleed hole that equalises the gap."},
     {"domain": "Restaurants", "fact": "Under the tip credit, US employers can pay "
      "tipped staff a lower base wage if tips make up the difference."},
 ]
@@ -248,7 +248,7 @@ print("    artykul dnia: eggs / refrigeration")
 print("    wybrano:      %s" % (wybrany or {}).get("domain"))
 sprawdz("NIE wybiera faktu o jajkach, gdy artykuł jest o jajkach",
         wybrany is not None and "egg" not in wybrany["fact"].lower(), wybrany)
-sprawdz("wybiera pierwszy NIEKOLIDUJACY", wybrany["domain"] == "Air travel",
+sprawdz("wybiera pierwszy NIEKOLIDUJACY", wybrany["domain"] == "Sealed enclosures",
         wybrany["domain"])
 sprawdz("zdjety z zapasu", len(zapas) == 2, len(zapas))
 
@@ -327,7 +327,7 @@ sprawdz("i luzne zderzenie NIE blokuje notki",
 # Adres w notce promocyjnej nie jest tematem. Dwie notki z linkiem mialy trzy
 # wspolne slowa — `https`, `substack`, nazwa publikacji — zanim ktokolwiek
 # spojrzal, o czym sa.
-Z_LINKIEM = "Airplane windows have a tiny hole. https://your-handle.substack.com/p/x"
+Z_LINKIEM = "Pressure panels have a tiny hole. https://your-handle.substack.com/p/x"
 Z_LINKIEM_2 = "Eggs are refrigerated in America. https://your-handle.substack.com/p/y"
 sprawdz("adres nie wpada do slow tematu",
         not ({"https", "substa"} & stages._slowa(Z_LINKIEM)),
@@ -497,8 +497,8 @@ print("=== 4e. DZIEN SIE NIE ZAGLADZA ===")
 # zderzy. Osiem faktow z puli to 0,35^8; z druga pula 0,35^16.
 
 ZDERZONY = {"domain": "Cosmetics labelling", "fact": DZIS["fact"]}
-SWIEZY_1 = {"domain": "Air travel",
-            "fact": ("The tiny hole in the middle pane of an airplane window is "
+SWIEZY_1 = {"domain": "Sealed enclosures",
+            "fact": ("The tiny hole in the middle pane of a pressure panel is "
                      "a bleed hole that keeps the outer pane carrying the "
                      "pressure load during flight.")}
 SWIEZY_2 = {"domain": "Restaurants",

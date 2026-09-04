@@ -418,15 +418,15 @@ HISTORIA = {
 def dziennik_pelny():
     return [
         # PRZECHODZI: dwie reakcje, obie dawno, nie ma jej w historii hostow.
-        skutek("note_like:1", "note_like", ["Chaos Engine"],
+        skutek("note_like:1", "note_like", ["Publikacja Chaosu"],
                ["chaosengine2026"], DAWNO()),
-        skutek("note_like:2", "note_like", ["Chaos Engine"],
+        skutek("note_like:2", "note_like", ["Publikacja Chaosu"],
                ["chaosengine2026"], DAWNO()),
         # PRZECHODZI: jedna reakcja, ale to ODPOWIEDZ — czyli ktos pisal.
-        skutek("note_reply:3", "note_reply", ["David Oks"],
+        skutek("note_reply:3", "note_reply", ["Lech Dwunasty"],
                ["davidoks"], DAWNO()),
         # ODPADA: jedno polubienie i nic wiecej (43 z 69 osob na produkcji).
-        skutek("note_like:4", "note_like", ["Mirror Mind AI"],
+        skutek("note_like:4", "note_like", ["Publikacja Lustrzana AI"],
                ["mirrormindai"], DAWNO()),
         # ODPADA: dwie reakcje, ale najswiezsza sprzed pieciu minut.
         skutek("note_like:5", "note_like", ["Swiezak"], ["swiezak"], DAWNO()),
@@ -437,9 +437,9 @@ def dziennik_pelny():
                DAWNO()),
         skutek("follow:8", "follow", ["Leonard"], ["leonard896188"], DAWNO()),
         # ODPADA: dwie reakcje, ale stoi w `czytelnicy.jsonl`.
-        skutek("note_like:9", "note_like", ["Petros Bountis"],
+        skutek("note_like:9", "note_like", ["Halina Osma"],
                ["petrosbountis"], DAWNO()),
-        skutek("note_like:10", "note_like", ["Petros Bountis"],
+        skutek("note_like:10", "note_like", ["Halina Osma"],
                ["petrosbountis"], DAWNO()),
         # ODPADA: to MY. Substack melduje w tym samym kanale, ze nasza
         # zaplanowana notka poszla — 9 takich zdarzen na produkcji.
@@ -453,15 +453,15 @@ def dziennik_pelny():
         skutek("note_like:14", "note_like", ["Ktos A", "Ktos B"],
                ["ktosa"], DAWNO()),
         # ODPADA: stary wpis bez pola `uchwyty` — 199 takich na produkcji.
-        skutek("note_like:15", "note_like", ["Hedley Rees"], None, DAWNO()),
-        skutek("note_like:16", "note_like", ["Hedley Rees"], None, DAWNO()),
+        skutek("note_like:15", "note_like", ["Igor Dziewiaty"], None, DAWNO()),
+        skutek("note_like:16", "note_like", ["Igor Dziewiaty"], None, DAWNO()),
     ]
 
 
 CZYTELNICY = [{"kiedy": "2026-09-01T11:38:25+00:00",
                "odczytane": ["obserwujacy", "subskrybenci"], "blad": None,
                "obserwujacy": [{"uchwyt": "petrosbountis",
-                                "nazwa": "Petros Bountis"}],
+                                "nazwa": "Halina Osma"}],
                "subskrybenci": [{"uchwyt": "chaosengine2026x",
                                  "nazwa": "ktos inny"}]}]
 
@@ -550,7 +550,7 @@ print("=== 6. PUSTA PULA NADAL MOWI, ILU BYLO NA KAZDYM POZIOMIE ===")
 # wpadli w hamulce. Poprawny wynik to zero Z POWODEM.
 TYLKO_STARE = {h: k for h, k in HISTORIA.items() if k[:10] < "2026-08-25"}
 SAMI_ODRZUCENI = [w for w in dziennik_pelny()
-                  if w["kto"][0] in ("Mirror Mind AI", "Swiezak", "Leonard")]
+                  if w["kto"][0] in ("Publikacja Lustrzana AI", "Swiezak", "Leonard")]
 konta2, wpisy2, plik2, out2 = uruchom_blok(
     BLOK_OBSERWUJ, "obserwuj", TYLKO_STARE, Substack(),
     dziennik_wstepny=SAMI_ODRZUCENI, czytelnicy=CZYTELNICY)

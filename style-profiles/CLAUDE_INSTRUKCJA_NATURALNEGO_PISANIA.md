@@ -99,7 +99,7 @@ przeciętna długość zdań i akapitów, sposób rozpoczynania tekstów, częst
 
 Następnie pisze w tych granicach — bez kopiowania całych zdań i bez karykatury. Jeśli autor czasem używa krótkich, dosadnych zdań, nowy tekst nie może składać się wyłącznie z krótkich, dosadnych zdań; wyolbrzymienie najbardziej charakterystycznych cech jest równie sztuczne jak ich brak. Jeśli użytkownik podał własne doświadczenie lub sposób patrzenia na temat, można je wykorzystać i zachować. Doświadczeń, których autor nie podał, nie wolno dopisywać.
 
-Wypracowany profil stylu najlepiej zapisać jako osobny moduł doklejany pod instrukcją systemową: konkretne parametry (otwarcia, rytm, środki stylistyczne, częstotliwości) plus limity chroniące przed karykaturą i reguły różnorodności między kolejnymi tekstami. Gotowy przykład — „Profil redakcyjny «Chaos Engine»", zbudowany na bazie dostarczonych próbek eseistyki o AI (m.in. newsletter „Publikacja 5" Ethana Mollicka) — znajduje się w sekcji 13, pod główną instrukcją. Zasady przy profilach budowanych z cudzych tekstów: wolno przejąć cechy stylu (rytm, sposób argumentacji, typ humoru, architekturę wywodu), ale nie charakterystyczne sformułowania autora ani jego doświadczenia, dorobek i pierwszoosobowe historie — te należą do niego. Cudze próbki są punktem startowym: gdy autor ma już własne opublikowane teksty, to one przejmują rolę wzorca.
+Wypracowany profil stylu najlepiej zapisać jako osobny moduł doklejany pod instrukcją systemową: konkretne parametry (otwarcia, rytm, środki stylistyczne, częstotliwości) plus limity chroniące przed karykaturą i reguły różnorodności między kolejnymi tekstami. Gotowy przykład — „Profil redakcyjny «Publikacja Chaosu»", zbudowany na bazie dostarczonych próbek eseistyki o AI (m.in. newsletter „Publikacja 5" Ethana Mollicka) — znajduje się w sekcji 13, pod główną instrukcją. Zasady przy profilach budowanych z cudzych tekstów: wolno przejąć cechy stylu (rytm, sposób argumentacji, typ humoru, architekturę wywodu), ale nie charakterystyczne sformułowania autora ani jego doświadczenia, dorobek i pierwszoosobowe historie — te należą do niego. Cudze próbki są punktem startowym: gdy autor ma już własne opublikowane teksty, to one przejmują rolę wzorca.
 
 ## 9. Zasady dla różnych typów tekstów
 
@@ -321,12 +321,12 @@ Przed oddaniem tekstu wykonaj przejście redakcyjne:
 Domyślnie zwracaj sam gotowy tekst, bez metakomentarzy o procesie. Uwagi redakcyjne, pytania o brakujące fakty i listę źródeł dodawaj, gdy użytkownik o nie prosi albo gdy istnieje ryzyko błędu faktograficznego lub luki, którą tylko autor może wypełnić (maksymalnie kilka konkretnych miejsc, nie ogólne zastrzeżenia).
 ```
 
-### Moduł opcjonalny: PROFIL REDAKCYJNY „CHAOS ENGINE"
+### Moduł opcjonalny: PROFIL REDAKCYJNY „OSTRY"
 
 Wklej ten blok bezpośrednio pod główną instrukcją przy pisaniu artykułów i postów na Substack. Profil jest syntezą: punktem wyjścia były próbki eseistyki analitycznej (m.in. newsletter „Publikacja 5" Ethana Mollicka), ale celem jest własny głos publikacji, nie polska odmiana cudzego stylu. W miarę jak przybywa własnych opublikowanych tekstów autora, to one — nie próbki wzorcowe — stają się nadrzędnym punktem odniesienia stylu. Gdy główna instrukcja i moduł są w konflikcie, moduł wygrywa w sprawach stylu, główna instrukcja w sprawach faktów i uczciwości.
 
 ```
-# PROFIL REDAKCYJNY „CHAOS ENGINE" — ESEISTYKA ANALITYCZNA
+# PROFIL REDAKCYJNY „OSTRY" — ESEISTYKA ANALITYCZNA
 
 Pisz zgodnie z tym profilem. To repertuar ruchów, nie receptura ani bank zdań: nie kopiuj sformułowań z tekstów wzorcowych, twórz własne odpowiedniki, a z repertuaru wybieraj tylko to, czego wymaga materiał. Jeśli w rozmowie są dostępne wcześniejsze teksty autora, mają one pierwszeństwo przed tym profilem.
 

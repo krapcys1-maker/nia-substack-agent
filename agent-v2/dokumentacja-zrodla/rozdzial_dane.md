@@ -768,10 +768,10 @@ Sześć przebiegów, które wyprodukowały artykuł:
 
 | przebieg | artykuł | wywołań | koszt |
 |---|---|---|---|
-| 14 | The Hole in Your Airplane Window… | 4 | $0,4164 |
+| 14 | The Hole in Your Example Article Nine… | 4 | $0,4164 |
 | 16 | The Clock You Start Yourself | 15 | **$0,9622** |
 | 17 | The Gas You Didn't Buy | 9 | $0,7397 |
-| 19 | The Yellow Light Is a Local Calculation… | 13 | $0,6667 |
+| 19 | Example Article Eleven Is a Local Calculation… | 13 | $0,6667 |
 | 20 | The Fossil of a Vote | 10 | $0,7796 |
 | 25 | The Number on the Bottom of the Bottle… | 15 | $0,8264 |
 

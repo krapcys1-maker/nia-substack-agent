@@ -82,19 +82,19 @@ try:
     # Doslownie stan produkcji z 19 sierpnia: dwa starsze bez ani jednej notki,
     # swiezy artykul dopisany na koncu.
     ustaw(wpis("Example Article Three", wystawione=3),
-          wpis("Airplane Window"),
+          wpis("Example Article Nine"),
           wpis("The Clock"),
           wpis("The Bottle"))
     w = stages.artykul_do_promocji()
     sprawdz("wybrany jest NAJSWIEZSZY", w and w["tytul"] == "The Bottle",
             w and w["tytul"])
 
-    # KONTRDOWOD: stary sposob (kolejnosc wstawiania) wzialby Airplane Window,
+    # KONTRDOWOD: stary sposob (kolejnosc wstawiania) wzialby Example Article Nine,
     # czyli tekst sprzed dwoch dni. Bez tego test nie odroznialby wersji.
     stary = next((a for a in stages.wczytaj_promocje()
                   if a.get("wystawione", 0) < config.NOTEK_PROMUJACYCH), None)
     sprawdz("stary sposob wzialby starszy tekst (test rozroznia)",
-            stary and stary["tytul"] == "Airplane Window", stary and stary["tytul"])
+            stary and stary["tytul"] == "Example Article Nine", stary and stary["tytul"])
 
     print()
     print("=== 3. TYLE DNI Z RZEDU NA TYM SAMYM ARTYKULE, ILE MOWI KONFIGURACJA ===")

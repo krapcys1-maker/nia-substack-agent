@@ -1802,8 +1802,8 @@ word is read.
   A note built the natural way — context first, surprise second — puts the one
   interesting thing below the fold, where nobody meets it.
 
-  Wrong: *Traffic engineers use a formula to set signal timing.* (setup)
-  Right: *A downhill approach makes the yellow light longer.* (the thing itself)
+  Wrong: *There is a formula behind how long that setting lasts.* (setup)
+  Right: *The slope of the approach is what changes it.* (the thing itself)
 
   Test before you write the second line: if a stranger read only your first
   sentence and nothing else, would they have learned the surprising thing? If

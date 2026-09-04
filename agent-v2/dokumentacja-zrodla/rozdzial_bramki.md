@@ -108,7 +108,7 @@ Komentarz w kodzie nazywa to *„najostrzejszą regułą w całym potoku"*, a uz
 
 | wejście `wrong_belief` | wynik |
 |---|---|
-| `"Everyone assumes the yellow light lasts the same everywhere"` | przechodzi |
+| `"Everyone assumes the interval is the same everywhere"` | przechodzi |
 | `"Most people do not know about it at all"` | `niewiedza to nie przekonanie` |
 | `"People assume"` | `brak przekonania do zlamania` |
 

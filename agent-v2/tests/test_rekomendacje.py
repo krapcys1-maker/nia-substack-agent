@@ -5,9 +5,9 @@ CO POKAZALO ROZPOZNANIE NA ZYWO 30 SIERPNIA 2026. Ekran
 `/publish/recommendations` podsuwa dziesiec publikacji „ktore moze Pan/Pani
 chciec polecic". Z tych dziesieciu JEDNA dotykala AI:
 
-    Construction Physics, Urbanism Speakeasy, mandates, Malone News,
-    Publikacja 1, It's Not Sustainable with Tiffanie Darke,
-    Your Brain on Money, The Nemeth Report, The Butter Girlfriend,
+    Publikacja Budowlana, Publikacja Miejska, mandates, Publikacja Wlasnej Domeny,
+    Publikacja 1, It's Publikacja Srodowiskowa with Klara Jedenasta,
+    Publikacja Umyslowa on Money, Publikacja Raportowa, Publikacja Kulinarna,
     People of Interest
 
 Substack liczy je z historii czytania konta, a ta pochodzi sprzed
@@ -125,7 +125,7 @@ print("=== 9. SKAZA PROPOZYCJI JEST OPISANA W KODZIE ===")
 # Zeby ktos, kto tu zajrzy za miesiac, nie „uproscil" tego do klikania
 # gotowej listy.
 sprawdz("kod wymienia, co Substack podsuwal",
-        "The Butter Girlfriend" in blok and "Construction Physics" in blok)
+        "Publikacja Kulinarna" in blok and "Publikacja Budowlana" in blok)
 sprawdz("i nazywa przyczyne",
         "historii czytania" in blok)
 

@@ -208,8 +208,8 @@ def _uchwyt(tekst) -> str:
 
     Substack pozwala na kropki i myslniki w uchwytach publikacji, a nazwy
     wyswietlane maja spacje i interpunkcje — sprowadzenie obu do samych liter
-    i cyfr jest jedynym mostem miedzy „Camli Travel Notes" a
-    „camlitravelnotes". Most jest SLABY i dlatego trafienia przez niego lecza
+    i cyfr jest jedynym mostem miedzy „Publikacja Podrozna" a
+    „publikacjapodrozna". Most jest SLABY i dlatego trafienia przez niego lecza
     do kupki „niepewne", nigdy do „na pewno".
     """
     return "".join(c for c in str(tekst or "").lower() if c.isalnum())
@@ -559,7 +559,7 @@ def odwzajemnienie() -> dict[str, dict]:
             jak = "uchwyt"
             if k and not czytelnik and k in po_nazwie:
                 # Uchwyt PUBLIKACJI zderzony z NAZWA WYSWIETLANA czytelnika.
-                # Bywa trafne („Camli Travel Notes" = camlitravelnotes), ale
+                # Bywa trafne („Publikacja Podrozna" = publikacjapodrozna), ale
                 # nazwy wyswietlane sie powtarzaja i nikt ich nie waliduje.
                 czytelnik, jak = po_nazwie[k], "nazwa wyswietlana"
             if not czytelnik:

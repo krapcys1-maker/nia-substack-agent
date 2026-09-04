@@ -3716,7 +3716,7 @@ Trzy rzeczy naraz:
 2. **`-1` zamiast `None`**, gdy komentarz jest, ale odpowiedź nie podaje numeru: `None` znaczyłoby „nie ma" i agent dopisałby kolejny komentarz.
 3. **Numer jest potrzebny do dziennika** — kanał aktywności mówi o polubieniach i odpowiedziach właśnie numerami komentarzy, więc bez niego wiemy tylko, że coś napisaliśmy, a nie czy ktokolwiek to zauważył.
 
-**Artykuł** — `potwierdz_artykul` (browser.py:1485) plus `potwierdz_adres_artykulu` (browser.py:1916). Ten drugi jest osobną lekcją: adres był składany z tytułu przez zamianę na slug, a Substack slugi SKRACA — „The Hole in Your Airplane Window Is Doing Exactly What It Should" dostało `/p/the-hole-in-your-airplane-window`. Zgadnięty adres odpowiadał 302, więc notka promująca działała tylko dzięki przekierowaniu, którego nikt nam nie obiecał.
+**Artykuł** — `potwierdz_artykul` (browser.py:1485) plus `potwierdz_adres_artykulu` (browser.py:1916). Ten drugi jest osobną lekcją: adres był składany z tytułu przez zamianę na slug, a Substack slugi SKRACA — „The Hole in Your Example Article Nine Is Doing Exactly What It Should" dostało `/p/the-hole-in-your-airplane-window`. Zgadnięty adres odpowiadał 302, więc notka promująca działała tylko dzięki przekierowaniu, którego nikt nam nie obiecał.
 
 #### 13.3 Ochrona przed drugim głosem — `juz_sie_odezwalismy` (browser.py:1868)
 
@@ -4121,7 +4121,7 @@ Komentarz w kodzie nazywa to *„najostrzejszą regułą w całym potoku"*, a uz
 
 | wejście `wrong_belief` | wynik |
 |---|---|
-| `"Everyone assumes the yellow light lasts the same everywhere"` | przechodzi |
+| `"Everyone assumes the interval is the same everywhere"` | przechodzi |
 | `"Most people do not know about it at all"` | `niewiedza to nie przekonanie` |
 | `"People assume"` | `brak przekonania do zlamania` |
 
@@ -5952,10 +5952,10 @@ Sześć przebiegów, które wyprodukowały artykuł:
 
 | przebieg | artykuł | wywołań | koszt |
 |---|---|---|---|
-| 14 | The Hole in Your Airplane Window… | 4 | $0,4164 |
+| 14 | The Hole in Your Example Article Nine… | 4 | $0,4164 |
 | 16 | The Clock You Start Yourself | 15 | **$0,9622** |
 | 17 | The Gas You Didn't Buy | 9 | $0,7397 |
-| 19 | The Yellow Light Is a Local Calculation… | 13 | $0,6667 |
+| 19 | Example Article Eleven Is a Local Calculation… | 13 | $0,6667 |
 | 20 | The Fossil of a Vote | 10 | $0,7796 |
 | 25 | The Number on the Bottom of the Bottle… | 15 | $0,8264 |
 
@@ -10334,8 +10334,8 @@ word is read.
   A note built the natural way — context first, surprise second — puts the one
   interesting thing below the fold, where nobody meets it.
 
-  Wrong: *Traffic engineers use a formula to set signal timing.* (setup)
-  Right: *A downhill approach makes the yellow light longer.* (the thing itself)
+  Wrong: *There is a formula behind how long that setting lasts.* (setup)
+  Right: *The slope of the approach is what changes it.* (the thing itself)
 
   Test before you write the second line: if a stranger read only your first
   sentence and nothing else, would they have learned the surprising thing? If
@@ -12908,7 +12908,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `WOLNO_TKNAC_PRODUKCYJNA_BAZE` | `not W_TESCIE` | Trzecia zapora tej samej rodziny: darmowy test nie ma prawa OTWORZYC produkcyjnej bazy. Patrz `uzyj_katalogu_danych` i `db.connect`. |
 | `NAPRAWA_OBALONYCH` | `True` | --- naprawa zamiast blokady i zamiast ciecia -------------------------------- 1 wrzesnia 2026 o 19:46 poszla notka z liczba, ktora nasze wla |
 | `NAPRAW_NA_PRZEBIEG` | `4` | Ile napraw najwyzej w jednym przebiegu. Kazda to dwa platne wywolania (przepisanie plus PONOWNE sprawdzenie), wiec bez sufitu zly dzien potr |
-| `RUCHY_KONCOWE` | `{ "DO_SPRAWDZENIA": ( "Close by handing the ` | --- ruch koncowy i szerokosc drugiego aktu -------------------------------- Dwa artykuly napisane PO naprawie szamponu (0017 "The Gas You Di |
+| `RUCHY_KONCOWE` | `{ "DO_SPRAWDZENIA": ( "Close by handing the ` | --- ruch koncowy i szerokosc drugiego aktu -------------------------------- Dwa artykuly napisane PO naprawie szamponu (0017 "Example Articl |
 | `RUCH_KONCOWY_MIX` | `("DO_SPRAWDZENIA", "KTO_NA_TYM_STOI", "POWRO` | — |
 | `ILE_PARALELI_WAGI` | `{1: 4, 2: 4, 3: 3}` | Ile paraleli w drugim akcie. Trzy wyliczone po kolei czytaja sie jak lista; jedna rozwinieta na dwa akapity czyta sie jak mysl. Chcemy obu,  |
 | `OPIS_LICZBY_PARALELI` | `{ 1: ("ONE parallel, developed properly — tw` | — |

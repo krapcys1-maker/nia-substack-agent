@@ -20,7 +20,7 @@ sprawdzilo, czy autor jest w ogole osiagalny z przycisku „Like":
 
     0: poziom 1   Genie                        /@publikacja2
     1: poziom 1   LonnieSly                    /@czytelnik5
-    2: poziom 1   Adebamiwa Olugbenga Michael  /@czytelnik6
+    2: poziom 1   Ewa Piata  /@czytelnik6
     3: poziom 1   Robert M. Hamburger          /@hamburgersstand
     4: poziom 1   Allen R.                     /@allenras
     ODCZYTANYCH: 5 z 5
@@ -73,9 +73,9 @@ sprawdz("uchwyt wyluskany z adresu", kto and kto["uchwyt"] == "publikacja2", kto
 # przypadkiem zescapowac po drodze.
 dlugi = browser._autor_przy_przycisku(AtrapaPrzycisku(
     {"href": "/@czytelnik6",
-     "tekst": "  Adebamiwa Olugbenga" + chr(10) + "  Michael  "}))
+     "tekst": "  Ewa" + chr(10) + "  Piata  "}))
 sprawdz("biale znaki sklejone w jedna nazwe",
-        dlugi and dlugi["nazwa"] == "Adebamiwa Olugbenga Michael", dlugi)
+        dlugi and dlugi["nazwa"] == "Ewa Piata", dlugi)
 
 print()
 print("=== 2. BRAK AUTORA ZNACZY 'NIE WIEM', NIE 'PRZERWIJ' ===")

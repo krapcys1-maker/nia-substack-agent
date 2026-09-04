@@ -7,10 +7,10 @@ CO BYLO ZLE, zmierzone na serwerze 2 wrzesnia 2026. Plik
 
     49 x "A"
     49 x "B"
-    49 x "The Soap That Says Antibacterial"
-    49 x "The Wipe That Says Flushable"
+    49 x "Example Article Seven"
+    49 x "Example Article Eight"
     49 x "Example Article Six"
-    49 x "The Chatbot That Remembers You"
+    49 x "Example Article Thirteen"
 
 Droga byla krotka i niewidoczna: `test_wybor_tematu.py` wola `stages.pick_topic`,
 ta wola `zapisz_przegranych`, a sciezka szla ze stalej modulowej liczonej
