@@ -7,7 +7,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 140 tests · 16 gates on every finished text
+26 model roles · 141 tests · 16 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -85,7 +85,7 @@ behind each entry, is [docs/ROZWIAZYWANIE_PROBLEMOW.md](docs/ROZWIAZYWANIE_PROBL
 The bot's own design documents are in `agent-v2/` and are in Polish:
 `DOKTRYNA.md` (what it must and must not do — canonical, and its closing
 "Discrepancies" section is part of the document), `JAK_DZIALA_V2.md`
-(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 13,086 lines,
+(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 13,083 lines,
 **generated from the code** and guarded by a test so it cannot drift.
 
 ---
