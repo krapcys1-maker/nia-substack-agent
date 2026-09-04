@@ -127,7 +127,8 @@
 | `SZUKANIE_BANKU_NA_DOBE` | `1` | ILE RAZY NA DOBE WOLNO DOBIERAC MATERIAL DO BANKU. Bylo: przy kazdym z pieciu przebiegow. Zmierzone 1 wrzesnia 2026 na produkcji: srednio 26 |
 | `WYDARZENIE_WAZNE_DNI` | `2` | JAK DLUGO TO SAMO WYDARZENIE NIE OTWIERA FURTKI DRUGI RAZ. Wlasciciel: „chce napisac o tym w tym samym dniu, max dzien po". Dwie doby pokryw |
 | `WYDARZENIE_PROB_MAKS` | `3` | ILE RAZY PROBUJEMY DOBRAC MATERIAL DO JEDNEGO WYDARZENIA, zanim uznamy je za zamkniete mimo braku materialu. Od 2 wrzesnia 2026 furtke zamyk |
-| `BANK_MAKS_DNI` | `7` | TERMIN WAZNOSCI W BANKU, liczony od dnia dopisania — osobny od wieku ZRODLA. To sa dwa rozne pytania: dokument kontrolny mowi, czy fakt jest |
+| `BANK_MAKS_WPISOW` | `600` | TERMIN WAZNOSCI W BANKU, liczony od dnia dopisania — osobny od wieku ZRODLA. To sa dwa rozne pytania: dokument kontrolny mowi, czy fakt jest |
+| `BANK_MAKS_DNI` | `7` | — |
 | `NOTE_MIX_ARTICLE_DAY` | `("ARTYKUL", "ARTYKUL", "CIEKAWOSTKA", "SPROS` | MIESZANKA DNIA. Ostatnia pozycja to MYSL — notka bez zadnego dowodu. Powod jest w NOTE_TYPES przy samym typie: wszystkie pozostale wymagaja  |
 | `KSZTALTY_MYSLI` | `{ "PYTANIE": ( "Ask something nobody can set` | KSZTALTY NOTKI TYPU MYSL. Losowane w kodzie i podawane jako PRZYDZIAL. Powod jest zmierzony: opis typu wymienial pytanie i obserwacje jako d |
 | `NOTE_MIX_OTHER_DAY` | `("CIEKAWOSTKA", "CIEKAWOSTKA", "DYSKUSJA", "` | — |

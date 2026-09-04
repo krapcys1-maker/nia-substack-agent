@@ -6508,8 +6508,12 @@ def _zapisz_indeks(indeks: list[dict[str, Any]]) -> None:
 
     INDEKS_KANDYDATOW.parent.mkdir(parents=True, exist_ok=True)
     tymczasowy = INDEKS_KANDYDATOW.with_suffix(".json.nowy")
+    # SUFIT Z NAZWY, NIE Z KROJENIA. Stalo tu `indeks[-600:]` — liczba, ktora
+    # rzadzi tym, ile OPLACONEGO materialu bank zatrzymuje, i ktora
+    # `audyt_systemu` przepisal sobie z pamieci w trzech miejscach.
     tymczasowy.write_text(
-        json.dumps(indeks[-600:], ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(indeks[-config.BANK_MAKS_WPISOW:], ensure_ascii=False,
+                   indent=2), encoding="utf-8")
     os.replace(tymczasowy, INDEKS_KANDYDATOW)
 
 

@@ -35,7 +35,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7401 wierszy, 135 funkcji na poziomie modułu, 0 klas
+7405 wierszy, 135 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -455,7 +455,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3184 wierszy, 35 funkcji na poziomie modułu, 0 klas
+3195 wierszy, 35 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -628,7 +628,7 @@
 
 ### `audyt_systemu.py` — audyt CALEGO systemu na zywych danych: publikowanie, normy, komentarze, statystyki, artykul, pieniadze, pamiec
 
-660 wierszy, 7 funkcji na poziomie modułu, 0 klas
+664 wierszy, 7 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

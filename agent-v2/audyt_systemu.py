@@ -596,7 +596,7 @@ def main() -> int:
     if indeks:
         lic = Counter(str(k.get("status")) for k in indeks)
         print("  bank: %s  (sufit %d wpisow, termin %d dni)"
-              % (dict(lic), 600, config.BANK_MAKS_DNI))
+              % (dict(lic), config.BANK_MAKS_WPISOW, config.BANK_MAKS_DNI))
         zmarnowane = lic.get("przeterminowany", 0)
         wziete = lic.get("uzyty", 0)
         rozliczone = zmarnowane + wziete
@@ -609,9 +609,13 @@ def main() -> int:
         else:
             werdykt("bank ma juz co rozliczac", "UWAGA",
                     "nic jeszcze nie zostalo ani uzyte, ani przeterminowane")
+        # SUFIT Z KONFIGURACJI, NIE Z PAMIECI. Byla tu liczba 600 wpisana
+        # trzy razy w tym pliku, przy krojeniu `indeks[-600:]` w `stages`.
+        # Audyt mierzacy wobec liczby, ktorej kod juz nie uzywa, melduje
+        # spokoj tym pewniej, im dalej sie rozjechal.
         werdykt("bank daleko od sufitu",
-                "OK" if len(indeks) < 600 * 0.8 else "UWAGA",
-                "%d z 600" % len(indeks))
+                "OK" if len(indeks) < config.BANK_MAKS_WPISOW * 0.8 else "UWAGA",
+                "%d z %d" % (len(indeks), config.BANK_MAKS_WPISOW))
 
     # ---------------------------------------------------------------
     etap(8, "PROMOCJA I PAMIEC — czy nic sie nie starzeje w cichosci")

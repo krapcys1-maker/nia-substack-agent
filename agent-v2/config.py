@@ -1671,6 +1671,17 @@ WYDARZENIE_PROB_MAKS = 3
 # tygodnia bywa prawdziwy i martwy zarazem — korpus obserwowanych kanalow
 # obraca sie w dniach, wiec w szybkiej dziedzinie tydzien to zamierzchlosc.
 # Publikacja o czyms, co zmienia sie wolniej, powinna te liczbe podniesc.
+# ILE WPISOW ZATRZYMUJE BANK TEMATOW. Powyzej tej liczby najstarsze wypadaja
+# przy KAZDYM zapisie indeksu — po cichu, bez wpisu w logu i bez statusu
+# `przeterminowany`, wiec `audyt_systemu` nie policzy ich jako zmarnowanych.
+#
+# BYLA TO LICZBA W KROJENIU LISTY (`indeks[-600:]` w `stages.zapisz_indeks`)
+# i TRZY jej kopie w `audyt_systemu` — cztery wystapienia w dwoch plikach,
+# ani jednej nazwy. Audyt raportowal „bank daleko od sufitu" wobec liczby
+# przepisanej z pamieci, wiec zmiana krojenia zostawilaby go mierzacego
+# wobec szescset i meldujacego spokoj.
+BANK_MAKS_WPISOW = 600
+
 BANK_MAKS_DNI = 7
 
 # MIESZANKA DNIA. Ostatnia pozycja to MYSL — notka bez zadnego dowodu.
