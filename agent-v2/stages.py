@@ -6715,14 +6715,8 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     # przypadkiem uzywa jej slownictwa w innym znaczeniu, i odrzucalby dobry
     # temat, ktory jej slownictwa nie uzywa wcale. Dzien zmiany tematu jest
     # faktem, nie heurystyka — i dlatego tniemy po nim.
-    # Pusty `DATA_PRZESTAWIENIA` znaczy „to konto nie zmienialo tematu" i ma
-    # przepuscic cala spizarnie. Bez tego warunku porownanie i tak by dzialalo
-    # — kazdy napis jest >= "" — ale czytelnik musialby to wywiesc z reguly
-    # porownywania napisow w Pythonie, zeby stwierdzic, ze nic nie odpada.
-    od_kiedy = config.DATA_PRZESTAWIENIA
     wolni = [k for k in indeks
-             if k.get("status") == "nowy"
-             and (not od_kiedy or str(k.get("kiedy") or "")[:10] >= od_kiedy)]
+             if k.get("status") == "nowy" and _z_obecnej_epoki(k)]
 
     # SWIEZOSC SPRAWDZANA PRZY WYJMOWANIU, NIE TYLKO PRZY WKLADANIU.
     #
@@ -7021,8 +7015,7 @@ def posortuj_bank(conn: sqlite3.Connection, run_id: int | None = None,
     """
     indeks = wczytaj_indeks()
     wolni = [k for k in indeks
-             if k.get("status") == "nowy"
-             and str(k.get("kiedy") or "")[:10] >= config.DATA_PRZESTAWIENIA]
+             if k.get("status") == "nowy" and _z_obecnej_epoki(k)]
     if len(wolni) < 2:
         print("  [bank] za malo kandydatow do rankingu (%d)" % len(wolni),
               flush=True)
@@ -7069,11 +7062,11 @@ def posortuj_bank(conn: sqlite3.Connection, run_id: int | None = None,
     # POWOD WYRZUCENIA SPRAWDZA KOD, NIE PROMPT. Zmierzone na dwoch kolejnych
     # przebiegach: bank.md ma caly akapit zakazujacy wyrzucania „za to, ze
     # szeroko opisane, ze to premiera produktu albo ze mniej ciekawe niz
-    # sasiedzi", z opisem konkretnej straty — ukladu scalonego zaprojektowanego
-    # w dziewiec miesiecy, ktory poszedl do kosza razem z komunikatem prasowym.
-    # Model wyrzucil DOKLADNIE TEN SAM fakt drugi raz, slowami „a widely covered
-    # product launch, not a finding". Dwa z trzech odrzucen lamaly reguly
-    # wlasnego promptu.
+    # sasiedzi", z opisem KONKRETNEJ STRATY: jednego dobrego faktu, ktory
+    # poszedl do kosza tylko dlatego, ze przy okazji byl szeroko opisany.
+    # Model wyrzucil DOKLADNIE TEN SAM fakt drugi raz, slowami „a widely
+    # covered product launch, not a finding". Dwa z trzech odrzucen lamaly
+    # reguly wlasnego promptu.
     #
     # Zakaz w prompcie przegral dwa razy z rzedu, wiec przestaje byc zakazem, a
     # zaczyna byc sprawdzeniem. Model wybiera KOD z trzech, a nie pisze zdanie —
@@ -7166,6 +7159,25 @@ def _termin_waznosci(dni: int | None = None) -> str:
     return (_d.now(_tz.utc) + _td(days=ile)).strftime("%Y-%m-%d %H:%M")
 
 
+def _z_obecnej_epoki(k: dict[str, Any]) -> bool:
+    """Czy ta kandydatura powstala PO ostatniej zmianie tematu konta.
+
+    JEDNO MIEJSCE NA CZTERECH PYTAJACYCH. Warunek stal w czterech funkcjach
+    (`wez_kandydatow`, `posortuj_bank`, `bank_pelny`, `odbior_notek`) w trzech
+    roznych ksztaltach, bo kazda poprawka dotykala tych miejsc, o ktorych
+    akurat sie pamietalo. Rozjazd byl kwestia czasu — a przy pustej dacie
+    wersje BEZ jawnej bramki i tak dzialaja poprawnie, wiec rozjazd nie
+    zapalilby zadnej lampki.
+
+    Pusty `config.DATA_PRZESTAWIENIA` znaczy „to konto nie zmienialo tematu"
+    i przepuszcza cala spizarnie.
+    """
+    od_kiedy = config.DATA_PRZESTAWIENIA
+    if not od_kiedy:
+        return True
+    return str(k.get("kiedy") or "")[:10] >= od_kiedy
+
+
 def _po_terminie(k: dict[str, Any]) -> bool:
     """Czy kandydatura jest juz po swoim terminie przydatnosci.
 
@@ -7201,8 +7213,7 @@ def bank_pelny() -> bool:
     jest zapasem.
     """
     ile = sum(1 for k in wczytaj_indeks()
-              if k.get("status") == "nowy"
-              and str(k.get("kiedy") or "")[:10] >= config.DATA_PRZESTAWIENIA
+              if k.get("status") == "nowy" and _z_obecnej_epoki(k)
               and not _po_terminie(k))
     return ile >= config.BANK_MAKS_WOLNYCH
 
@@ -7291,6 +7302,23 @@ def korpus_fedreg(ile_dokumentow: int = 50, ile_gestych: int = 6) -> list[dict[s
 
     Dostep jest czysty: HTTP 200, JSON, bez klucza i bez blokad. To odwrotnosc
     naszego zwyklego problemu, gdzie skutecznosc pobran wynosi 65 procent.
+
+    DWIE RZECZY, KTORE TRZEBA WIEDZIEC, ZANIM SIE TO WEPNIE.
+
+    NIKT TEGO NIE WOLA. Ani ta funkcja, ani `kandydaci_z_fedreg` nie maja
+    wywolania w kodzie produkcyjnym — jedyne sa w `tests/platne/`. Sciezka
+    jest napisana, zmierzona ($0,0048 za uzytecznego kandydata wobec $0,0514
+    za wywolanie `curiosity`) i nigdy nie wpieta. Decyzja nalezy do
+    wlasciciela i jest opisana w `tests/test_kanal_platnego_wywolania.py`
+    (slownik `BEZ_WOLAJACYCH`), zeby nie zginela w komentarzu.
+
+    I JEST TO ZRODLO ZWIAZANE Z JEDNYM KRAJEM. Federal Register to amerykanski
+    dziennik urzedowy; publikacja o czymkolwiek spoza tamtejszej regulacji nie
+    znajdzie tu nic swojego, a filtr sporu (`FEDREG_SPOR`) jest wzorcem po
+    ANGIELSKU na frazach tamtejszej praktyki administracyjnej. Odpowiednik dla
+    innego kraju to inny adres API, inne pola i inne frazy — czyli osobna
+    funkcja tego samego ksztaltu, a nie parametr. Dopoki nikt tego nie wola,
+    nic to nie kosztuje; przy wpinaniu jest to pierwsza rzecz do sprawdzenia.
     """
     import httpx
 
