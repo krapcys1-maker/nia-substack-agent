@@ -179,7 +179,7 @@ WYJATKI = {
 # PUSTE OD 1 WRZESNIA. Stal tu `fedreg.md`, zawieszony w calosci jako „caly
 # prompt z epoki przedmiotow, czeka na decyzje wlasciciela o korpusie Federal
 # Register". Powod zawieszenia byl prawdziwy, a skutek taki, ze plik gnil:
-# jeszcze 1 wrzesnia uczyl na „the price on your ticket" i „the bill for your
+# jeszcze 1 wrzesnia uczyl na przykladach z poprzedniej niszy — rachunkach
 # call-out" — tych samych zdaniach, ktore w `ciekawostki.md` przepisano tydzien
 # wczesniej. Przyklady przepisano na ere AI, wiec plik wraca do sekcji 1.
 # Decyzja, czy korpus Federal Register w ogole zostaje, nadal nalezy do

@@ -375,7 +375,7 @@ def uwagi_z_formy(obserwacja: dict[str, Any], body: str) -> list[dict[str, str]]
         uwagi.append({
             # TRESC KOMUNIKATU OPISYWALA KONTRAKT, KTOREGO JUZ NIE MA.
             # `forma.md` przestal wymagac fizycznego przedmiotu („It does not
-            # have to be a thing they can pick up"), bo pod AI wiekszosc
+            # have to be a thing they can pick up"), bo w wielu niszach wiekszosc
             # artykulow zadnego nie ma; bramka sprawdza wylacznie obecnosc
             # `quote`. Zachowanie sie nie zmienilo, ale wlasciciel czytajacy
             # `.uwagi.md` dostawal opis reguly z epoki przedmiotow.

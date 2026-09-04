@@ -91,9 +91,10 @@ NIE_TEMAT = re.compile(
     r"\b(how to|tutorial|my (setup|workflow|system)|behind the scenes|BTS|"
     r"i built|build a business|giveaway|q&a|ama|livestream|podcast #\d)\b"
     r"|\bthe .{0,20} situation\b"
-    # TRESCI PRODUKTOWE I PORADNIKI. Pierwszy przebieg przepuscil „Grok Bot can
-    # shop for you", „11 Use Cases That Feel Like Cheating", „You NEED to try
-    # this" — to sa recenzje narzedzi, nie zdarzenia, i nie ma o czym pisac.
+    # TRESCI PRODUKTOWE I PORADNIKI. Pierwszy przebieg przepuscil trzy
+    # tytuly tej klasy: „<narzedzie> can do X for you", „N Use Cases That
+    # Feel Like <cos>", „You NEED to try this" — to sa recenzje
+    # narzedzi, nie zdarzenia, i nie ma o czym pisac.
     r"|\b(use cases?|you need to try|saves? (so much )?time|is so easy|"
     r"hands-?on|first look|i tested|top \d+|\d+ (best|new|open-source))\b"
     # KLIPY Z WYWIADU. Kanaly rozmow tna jedna rozmowe na kilkanascie kawalkow

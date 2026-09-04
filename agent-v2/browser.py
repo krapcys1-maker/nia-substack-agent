@@ -114,7 +114,7 @@ def dopisz_wynik(rodzaj: str, wynik: dict, **szczegoly) -> None:
     # w OSTATNIEJ linii, po podaniu faktu. Zliczylem wiec pytajniki w dzienniku,
     # dostalem zero na 53 notki i oglosilem wlascicielowi, ze forma jest martwa.
     # Byla to nieprawda: na profilu wisi nasza wlasna notka konczaca sie
-    # „How far back does your work chat history go?". Pomiar mierzyl obciecie,
+    # pytaniem w ostatniej linii. Pomiar mierzyl obciecie,
     # nie tresc — a wniosek z niego byl gotowa decyzja o przepisaniu promptow.
     #
     # 1200 znakow miesci notke (do 64 slow) i komentarz (do 70 slow) w calosci,

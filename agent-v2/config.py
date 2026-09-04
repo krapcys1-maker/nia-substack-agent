@@ -213,11 +213,11 @@ MODEL_FOR = {
     # materiale z banku. Trzy powody, w tej kolejnosci:
     #
     # 1. Fable pisze wyraznie lepiej i to widac golym okiem. Na tym samym
-    #    patencie DeepSeek dal „a structural panel in a pressurized cabin"
-    #    (nieprzezroczyste dla obcego), Fable „an aircraft cabin window that
-    #    seals itself" — i zamknal linia „Failure is the mechanism, not the
-    #    emergency". Fable sformatowal tez numer jako 2,989,787 zamiast
-    #    US2989787, wiec czyta sie jak wielkosc, a nie jak kod.
+    #    materiale DeepSeek dal opis nieprzezroczysty dla kogos spoza
+    #    branzy, a Fable te sama rzecz nazwal tak, ze widac ja bez
+    #    slownika — i zamknal jednym zdaniem, ktore niosło cala mysl.
+    #    Fable sformatowal tez numer identyfikacyjny z przecinkami
+    #    zamiast ciagiem, wiec czyta sie jak wielkosc, a nie jak kod.
     # 2. Badania nad Substackiem mowia zgodnie, ze NOTKI daja ponad 60%
     #    przyrostu subskrybentow i sa jedynym narzedziem pokazujacym nas
     #    ludziom, ktorzy nas nie obserwuja. Artykul czyta ten, kto juz

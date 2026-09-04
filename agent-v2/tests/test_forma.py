@@ -243,7 +243,7 @@ sprawdz("wariant ze skroceniem",
 # TRZECIA POSTAC — najczestsza, i przez pierwsza wersje niewidziana.
 sprawdz("apozycja z przecinkiem: X, not Y",
         stages.kuplet_korygujacy(
-            "It was a cost-cutting move, not a tradition.") is True)
+            "It was a scheduling decision, not a rule.") is True)
 sprawdz("apozycja w drugiej czesci zdania",
         stages.kuplet_korygujacy(
             "Standard gauge won because Parliament made it the law, not because "

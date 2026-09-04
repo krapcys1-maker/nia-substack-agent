@@ -127,7 +127,7 @@ try:
     print()
     print('=== 3. TIK „nie X. Y.” IDZIE DO MODELU JAKO JEGO WLASNE ZDANIA ===')
     NASZE_Z_TIKIEM = [
-        "It was a cost-cutting move, not a tradition.",
+        "It was a scheduling decision, not a rule.",
         "A quarter less oxygen is a weight decision, not bad luck.",
         "The number is not a measurement, it is a band.",
     ]

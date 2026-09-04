@@ -1851,11 +1851,12 @@ def zdania_z_tikiem(tekst: str) -> list[str]:
     # ZBIORY SA ROZLACZNE. Razem 16 z 30 — czyli 53%, a nie 17%, na ktorych
     # opieralem decyzje „sortujemy zamiast odrzucac".
     #
-    # Realne przyklady z konta:
-    #   „It was a cost-cutting move, not a tradition."
-    #   „A negotiated business compromise, not a unit of nature."
-    #   „The loaf was built to the statute, not the market."
-    #   „A quarter less oxygen is a weight decision, not bad luck."
+    # Ksztalt, ktory ta postac lapie — przyklady zbudowane, nie cytowane:
+    #   „It was a <rzeczownik>, not a <rzeczownik>."
+    #   „A <przymiotnik> <rzeczownik>, not a <rzeczownik>."
+    #   „The <rzecz> was built to the <regula>, not the <regula>."
+    # Wszystkie cztery z konta mialy dokladnie te budowe: dwa rzeczowniki
+    # rozdzielone przecinkiem i slowem „not".
     #
     # Detektor powstal 25 sierpnia, PO 29 z 30 notek — wiec korpus, na ktorym
     # go kalibrowalem, w ogole go nie testowal. Lekcja jest o mierzeniu
@@ -6301,7 +6302,7 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
     #      batching policy, caching"
     #     „A face-recognition system returns ranked candidates, never a
     #      certainty, so a false match is a ranking artefact"
-    #     „Kather and colleagues at Heidelberg measured it on 500+ real ED cases"
+    #     „A named team measured it on 500+ real cases at one hospital"
     #
     # Dlugosc rozdziela je czysto, a lista slow kluczowych nie rozdzielala ich
     # ani razu: probowalem slow decyzyjnych (zlapala „chose" w zaprzeczeniu) i
@@ -6379,8 +6380,8 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
     #
     # Roznica miedzy dobrym a zlym skutkiem jest inna: dobry nazywa RZECZ,
     # ktora czytelnik ma, zly nazywa OSOBE, ktorej dotyczy przepis.
-    #   dobrze: „the bottle of sunscreen in your bathroom", „the clock on
-    #           your oven", „the pending charge in your banking app"
+    #   dobrze: rzecz, ktora czytelnik ma pod reka i moze na nia
+    #           spojrzec — nazwana konkretnie, nie kategoria
     #   zle:    „an Atlantic-region pelagic longline permit holder",
     #           „GS and FWS wildland firefighters assigned to prescribed burns"
     #
@@ -6391,8 +6392,8 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
     # SZUKALO SAMEGO „your" I TO BYLA WADA NA JEDNA LITERE. Zmierzone 30
     # sierpnia 2026 na 173 kandydatach z produkcji: SZESNASCIE odrzucen z
     # powodem „brak slowa 'your'" dotyczylo zdan pisanych w drugiej osobie —
-    # „the model you talk to", „the sandbox you're told keeps a model
-    # contained", „the number you see on a benchmark leaderboard", „the
+    # rzeczy z wlasnej niszy, nazwane tak, jak czytelnik ich uzywa —
+    # nie kategoria, tylko egzemplarz, ktory ma przed soba. „the
     # entry-level job you apply for". To jest DOKLADNIE forma, ktorej ta
     # bramka zada, odrzucana przez brak litery „r".
     #
