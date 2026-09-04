@@ -278,13 +278,22 @@ rather than a percentage, because a percentage hides which half you got.
 | `kopia_subskrybentow.py`, `audyt_researchu.py`, `aktualne_modele.py` | 590 | **all of them** |
 | `alarm.py` | 1,053 | **all of it** |
 | `norma.py` | 1,170 | **all of it** |
-| `audyt_systemu.py`, `audyt_tematow.py`, `raport_statystyk.py`, `korpus_kanalow.py` | 1,680 | the parts touched here |
-| `migracja_okno_promocji.py` | 97 | **not yet** |
+| `audyt_systemu.py`, `audyt_tematow.py` | 1,030 | **all of them** |
+| `raport_statystyk.py`, `korpus_kanalow.py` | 690 | **all of them** |
+| `migracja_okno_promocji.py` | 97 | **all of it** |
 | the 143 test files | 39,086 | roughly 35 of them, in the parts touched |
 
-That is 28,170 of the 29,970 lines in the agent's modules — 94% — and it is
-every file that carries a publishing decision, a setting, a money guard
-or an alarm.
+That is all 30,294 lines in the agent's 25 modules — every module, in full,
+from `stages.py` at 7,401 lines down to `migracja_okno_promocji.py` at 97.
+
+**What the reading found that no sweep did.** Every defect listed in the sweeps
+table above was found by a pattern. These were not: a guard written for
+"just before publishing" that nothing ever called; a daily-ceiling raise
+applied **twice**, so the day it fired the limit was four times the base; a
+configurator field that was asked for, validated, and silently dropped; four
+names in a nine-name list that do not exist; an assertion that read as a
+guarantee about a whole file and tested one string. Each of those reads as
+working code. None of them is.
 
 The unread part has been through all thirteen sweeps but not through a person's
 eyes. Every one of those sweeps found something the earlier ones could not, and

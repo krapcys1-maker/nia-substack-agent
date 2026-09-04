@@ -316,8 +316,9 @@ def wielkie_wydarzenia(korpus: list[dict[str, Any]], min_kanalow: int = 3,
     return wyniki
 
 
-# Korpus zbudowany w tym procesie, i kiedy. Trzynascie zapytan HTTP na kanaly
-# YouTube'a nie jest darmowe w czasie, a przebieg wola te funkcje DWA RAZY:
+# Korpus zbudowany w tym procesie, i kiedy. Jedno zapytanie HTTP na KAZDY
+# skonfigurowany kanal nie jest darmowe w czasie, a przebieg wola te funkcje
+# DWA RAZY:
 # raz po zaczyn do promptu ciekawostek, raz po wykrywacz wielkich wydarzen.
 # Zmierzone 30 sierpnia: w logu jednego przebiegu linia „180 filmow z 13
 # kanalow" pojawiala sie dwukrotnie, kilkanascie sekund po sobie.
@@ -334,8 +335,6 @@ def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
     import time
 
     import httpx
-
-    import config
 
     # Zapas trzyma PELNA liste, a nie przyciete `ile` — inaczej wywolanie po 26
     # tematow zatrulo by pozniejsze wywolanie po 200, ktorego potrzebuje

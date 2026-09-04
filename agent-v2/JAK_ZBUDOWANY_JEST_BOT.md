@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 30 279 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 30 294 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -684,7 +684,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-377 wierszy, 6 funkcji na poziomie modułu, 0 klas
+376 wierszy, 6 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -817,7 +817,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `migracja_okno_promocji.py` — jednorazowo: data publikacji z dziennika do kolejki promocji
 
-97 wierszy, 2 funkcji na poziomie modułu, 0 klas
+113 wierszy, 2 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

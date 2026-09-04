@@ -534,7 +534,7 @@ Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja.
 | 164 | `_rdzen(temat)` | — | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. | `korpus_kanalow.wielkie_wydarzenia` |
 | 175 | `_numer_wersji(slowo)` | — | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. | `korpus_kanalow.wielkie_wydarzenia` |
 | 183 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | — | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
-| 333 | `korpus_kanalow(ile)` | — | — | `audyt_tematow.main`, `korpus_kanalow (poziom modulu)`, `stages.zaczyn_z_kanalow`, `stages.znajdz_ciekawostki` |
+| 334 | `korpus_kanalow(ile)` | — | — | `audyt_tematow.main`, `korpus_kanalow (poziom modulu)`, `stages.zaczyn_z_kanalow`, `stages.znajdz_ciekawostki` |
 
 ---
 
@@ -575,8 +575,8 @@ Jednorazowe uzupelnienie pola `dodane` w kolejce promocji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 34 | `daty_publikacji()` | — | Tytul artykulu -> data pierwszej udanej publikacji (YYYY-MM-DD). | `migracja_okno_promocji.main` |
-| 62 | `main()` | — | — | `migracja_okno_promocji (poziom modulu)` |
+| 50 | `daty_publikacji()` | — | Tytul artykulu -> data pierwszej udanej publikacji (YYYY-MM-DD). | `migracja_okno_promocji.main` |
+| 78 | `main()` | — | — | `migracja_okno_promocji (poziom modulu)` |
 
 ---
 

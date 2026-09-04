@@ -19,6 +19,13 @@ swiezosci, a jedyny koszt bledu to niewystawiona notka promujaca stary tekst.
 
 Uruchamiac raz. Powtorne uruchomienie niczego nie psuje — wpisy, ktore juz maja
 `dodane`, sa pomijane.
+
+NA SWIEZEJ INSTALACJI TEN PLIK NIE MA CO ROBIC i mowi to wprost: kolejka
+promocji jest wtedy pusta, a kazdy nowy wpis dostaje `dodane` od razu. Zostaje
+w repozytorium jako zapis TEGO, CO SIE STALO — schemat zmienil sie w locie
+i istniejace wpisy trzeba bylo uzupelnic z dziennika, a nie z sufitu. Nastepna
+zmiana schematu w tym miejscu ma wygladac tak samo: date bierze sie z faktu,
+brak dowodu na swiezosc nie jest dowodem swiezosci.
 """
 import json
 import sys
@@ -26,9 +33,18 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import config  # noqa: E402
 import stages  # noqa: E402
 
-DZIENNIK = Path(__file__).resolve().parent / "data" / "dziennik.jsonl"
+# SCIEZKA Z `config.DATA_DIR`, NIE SKLEJANA Z `__file__`. Stalo tu
+# `Path(__file__).parent / "data" / "dziennik.jsonl"` — czwarty sposob na
+# policzenie tej samej sciezki i JEDYNY, ktory nie idzie za `DATA_DIR`.
+# Skutek jest dokladnie ten, ktory opisuje `db._odmow_produkcji`: test albo
+# narzedzie podstawiajace katalog danych przez `config.uzyj_katalogu_danych`
+# przestawia `browser.DZIENNIK` i `norma.DZIENNIK`, a ten plik dalej czyta
+# PRODUKCJE. Wartosc jest dzis ta sama, wiec nic nie pekalo — i wlasnie
+# dlatego nikt tego nie widzial.
+DZIENNIK = config.DATA_DIR / "dziennik.jsonl"
 
 
 def daty_publikacji() -> dict[str, str]:

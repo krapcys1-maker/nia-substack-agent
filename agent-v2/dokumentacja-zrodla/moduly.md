@@ -542,7 +542,7 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-377 wierszy, 6 funkcji na poziomie modułu, 0 klas
+376 wierszy, 6 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -675,7 +675,7 @@
 
 ### `migracja_okno_promocji.py` — jednorazowo: data publikacji z dziennika do kolejki promocji
 
-97 wierszy, 2 funkcji na poziomie modułu, 0 klas
+113 wierszy, 2 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
