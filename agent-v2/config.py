@@ -2491,6 +2491,30 @@ def _znacznik_klienta(marka: str) -> str:
 # JEDNO MIEJSCE, BO INACZEJ ZARAZ BEDA DWA. `norma.py` szukalo zegara wlasnym
 # kodem, `alarm.py` mial nazwe wpisana w tresc maila; obie potrzeby sa tej
 # samej wielkosci co cztery kopie daty przestawienia konta.
+# --- KANALY YOUTUBE, KTORE ROBIA DOBOR TEMATOW W TEJ NISZY -------------------
+#
+# Identyfikatory kanalow (`UC...`), ktore od lat wybieraja, o czym w tej
+# dziedzinie warto mowic. `korpus_kanalow` czyta z nich RSS i szuka rzeczy,
+# o ktorych mowi NARAZ kilka roznych kanalow — to jest jedyny sygnal
+# „wielkiego wydarzenia", ktory liczy KOD, a nie model.
+#
+# PUSTY SLOWNIK NIE ZABIJA PRZEBIEGU: `stages.zaczyn_z_kanalow` oddaje wtedy
+# jawne „(nothing fetched today)", a prompt radzi sobie sama siatka dziedzin.
+#
+# BYLO WPISANE W `korpus_kanalow.KANALY`, a `konfiguracja.POLA` mialo pole
+# `zrodla.kanaly_youtube` z adnotacja „obsluzone osobno w `zastosuj`" —
+# i `zastosuj` tego pola NIE OBSLUGIWALO. Konfigurator pytal, operator
+# odpowiadal, wartosc szla do pliku, przechodzila sprawdzenie i byla cicho
+# wyrzucana. Caly korpus kanalow byl przez to martwy u kazdego operatora
+# i nie dalo sie go wlaczyc.
+#
+# JAK ZDOBYC IDENTYFIKATOR: `youtube.com/@uchwyt` przekierowuje na sciane
+# zgody i nie oddaje niczego; oEmbed dziala tylko dla FILMOW. Dziala zapytanie
+# HTTP z ciasteczkiem `CONSENT=YES+cb...` i `SOCS=CAI`, a potem szukanie
+# `"externalId":"(UC...)"` w HTML. Sam kanal RSS zgody NIE wymaga.
+KANALY_YOUTUBE: dict[str, str] = {}
+
+
 # --- SEKCJA ZRODEL POD ARTYKULEM --------------------------------------------
 #
 # Naglowek pisze KOD (`stages.save` i sciezka ratunku), a potem rozdziela po nim

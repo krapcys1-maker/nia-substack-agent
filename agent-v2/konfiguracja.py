@@ -19,8 +19,10 @@ PODAJE mu wartosci. Konfiguracja nie podejmuje decyzji, tylko je zapisuje.
 na pola, a sa decyzjami:
 
   * sufit miesieczny jako „nieograniczony" — to jedyna twarda blokada
-    w systemie; furtka `NIA_NO_LIMIT` juz istnieje i jest zmienna
-    srodowiskowa, a nie domyslna wartoscia w pliku;
+    w systemie; furtka `AGENT_V2_NO_LIMIT` juz istnieje i jest zmienna
+    srodowiskowa, a nie domyslna wartoscia w pliku. Stalo tu `NIA_NO_LIMIT`
+    — nazwa, ktorej nie czyta ANI JEDNA linia w tym repozytorium, ta sama
+    klasa co `NIA_SERVER` w komunikacie `browser.py`;
   * progi bramek (`SLOW_NA_BEAT`, `BUDZET_ZASTRZEZEN`, `MIN_ZRODEL_DO_PISANIA`)
     — to wyniki pomiarow na konkretnych tekstach; wystawione jako suwaki
     zostana pokrecone w strone „mniej blokuje", bo tak zawsze idzie;
@@ -179,7 +181,11 @@ POLA: dict[str, tuple[str | None, Any]] = {
     "temat.przyklady": (None, _slownik_list),
 
     # --- zrodla --------------------------------------------------------
-    "zrodla.kanaly_youtube": (None, _slownik_napisow),
+    # WSKAZUJE NA STALA, NIE NA `None`. Stalo tu `(None, ...)`, czyli
+    # „obsluzone osobno w `zastosuj`" — a `zastosuj` tego pola NIE
+    # OBSLUGIWALO. Konfigurator pytal o kanaly, operator odpowiadal, wartosc
+    # szla do pliku, przechodzila sprawdzenie i byla cicho wyrzucana.
+    "zrodla.kanaly_youtube": ("KANALY_YOUTUBE", _slownik_napisow),
     "zrodla.blokowane_hosty": ("BLOCKED_HOSTS", _lista_napisow),
 
     # --- modele --------------------------------------------------------

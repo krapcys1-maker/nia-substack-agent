@@ -36,31 +36,22 @@ NS = {"a": "http://www.w3.org/2005/Atom"}
 
 # Identyfikatory ustalone przez wyszukiwarke (strony statystyk kanalow), bo
 # youtube.com/@uchwyt przekierowuje na zgode. Sprawdzone: kazdy oddaje RSS 200.
-KANALY = {
-    # ====================================================================
-    # PRZYKLAD I JEDNOCZESNIE PUSTE MIEJSCE. Tu wchodza identyfikatory
-    # kanalow YouTube, ktore robia w TWOJEJ niszy dobor tematow — czyli
-    # ktore od lat wybieraja, o czym warto mowic, i maja na tym liczniki.
-    #
-    # Slownik jest CELOWO PUSTY. Poprzednia zawartosc byla lista trzynastu
-    # prawdziwych, nazwanych kanalow z jednej konkretnej niszy i wyszla przy
-    # czyszczeniu repozytorium razem z resztą tozsamosci.
-    #
-    # PUSTY SLOWNIK NIE ZABIJA PRZEBIEGU — sprawdzone uruchomieniem:
-    # `stages.zaczyn_z_kanalow` oddaje wtedy jawny tekst "(nothing fetched
-    # today)", a prompt radzi sobie sama siatka dziedzin. Notka bez zaczynu
-    # jest mniej aktualna; brak notki jest gorszy.
-    #
-    # JAK ZDOBYC IDENTYFIKATOR: youtube.com/@uchwyt przekierowuje na sciane
-    # zgody i nie oddaje niczego, a oEmbed dziala tylko dla FILMOW. Dziala
-    # zapytanie HTTP z ciasteczkiem zgody `CONSENT=YES+cb...` i `SOCS=CAI`,
-    # a potem regex na `"externalId":"(UC...)"` w HTML. Sam kanal RSS zgody
-    # NIE wymaga — jest potrzebna wylacznie do jednorazowego ustalenia
-    # identyfikatora.
-    #
-    # Ksztalt wpisu:  "Nazwa kanalu": "UCxxxxxxxxxxxxxxxxxxxxxx",
-    # ====================================================================
-}
+# KANALY IDA Z KONFIGURACJI (`zrodla.kanaly_youtube` -> `config.KANALY_YOUTUBE`).
+#
+# Byly wpisane TUTAJ, a pole konfiguracji o tej samej nazwie nie docieralo
+# nigdzie: `konfiguracja.POLA` mialo przy nim `None` z adnotacja „obsluzone
+# osobno w `zastosuj`", a `zastosuj` obslugiwalo osobno trzy inne pola i to
+# nie. Konfigurator pytal, operator odpowiadal, wartosc byla sprawdzana
+# i cicho wyrzucana — a bot jechal dalej na slowniku z kodu.
+#
+# PUSTY SLOWNIK NIE ZABIJA PRZEBIEGU — sprawdzone uruchomieniem:
+# `stages.zaczyn_z_kanalow` oddaje wtedy jawne „(nothing fetched today)",
+# a prompt radzi sobie sama siatka dziedzin. Notka bez zaczynu jest mniej
+# aktualna; brak notki jest gorszy.
+#
+# Jak zdobyc identyfikator kanalu — patrz komentarz przy `config.KANALY_YOUTUBE`
+# i akapit ponizej.
+KANALY = dict(getattr(config, "KANALY_YOUTUBE", {}) or {})
 
 # JAK ZDOBYWA SIE IDENTYFIKATOR KANALU, bo to kosztowalo pol godziny.
 # youtube.com/@uchwyt przekierowuje na sciane zgody i nie oddaje niczego;
