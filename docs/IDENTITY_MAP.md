@@ -30,16 +30,25 @@ Constant `config.NAZWA_MARKI`, set by `konto.nazwa_marki`
 |---|---|---|---|
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 1 | GENERATED — rebuilds itself | `# Your Publication — dokumentacja odtworzeniowa agenta` |
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 46 | GENERATED — rebuilds itself | `Agent prowadzi anglojęzycznego Substacka **„Your Publication"**, który` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12765 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
-| `agent-v2/config.py` | 116 | **FIELD** | `NAZWA_MARKI = "Your Publication"` |
-| `agent-v2/run.py` | 564 | comment — harmless, but stale | `# „Your Publication", czyli nas — Substack melduje w tym` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12832 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
+| `agent-v2/config.py` | 122 | **FIELD** | `NAZWA_MARKI = "Your Publication"` |
+| `agent-v2/run.py` | 592 | comment — harmless, but stale | `# „Your Publication", czyli nas — Substack melduje w tym` |
 | `agent-v2/systemd/nia-agent.service` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — agent` |
+| `agent-v2/systemd/nia-agent.timer` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — zegar agenta` |
+| `agent-v2/systemd/nia-alarm.service` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — kontrola sesji, zdrowia i alarm` |
+| `agent-v2/systemd/nia-alarm.timer` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — zegar kontroli sesji` |
 | `agent-v2/systemd/nia-artykul.service` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — artykul tygodniowy` |
+| `agent-v2/systemd/nia-artykul.timer` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — zegar artykulu tygodniowego` |
 | `agent-v2/tests/test_data_wystawienia.py` | 52 | test fixture | `"author": {"name": "Your Publication"}}}},` |
+| `agent-v2/tests/test_jednostki_dla_instalacji.py` | 108 | test fixture | `"Your Publication" not in tresc)` |
+| `agent-v2/tests/test_jednostki_dla_instalacji.py` | 134 | test fixture | `_zostala_marka = any("Your Publication" in t for t in bez_zmian.values())` |
+| `agent-v2/tests/test_pochodne_po_konfiguracji.py` | 26 | test fixture | `domyslnej „Your Publication".` |
+| `agent-v2/tests/test_pochodne_po_konfiguracji.py` | 86 | test fixture | `if isinstance(wartosc, str) and ("Your Publication" in wartosc` |
+| `agent-v2/tests/test_pochodne_po_konfiguracji.py` | 114 | test fixture | `config.NAZWA_MARKI == "Your Publication", config.NAZWA_MARKI)` |
 | `agent-v2/tests/test_reagujacy_jest_celem.py` | 446 | test fixture | `skutek("sched:11", "scheduled_note_sent", ["Your Publication"],` |
 | `agent-v2/tests/test_reagujacy_jest_celem.py` | 448 | test fixture | `skutek("sched:12", "scheduled_note_sent", ["Your Publication"],` |
-| `agent-v2/tests/test_wzajemnosc.py` | 231 | test fixture | `w.append(skutek("scheduled_note_sent", ["Your Publication"],` |
-| `agent-v2/tests/test_wzajemnosc.py` | 383 | test fixture | `"Your Publication" not in` |
+| `agent-v2/tests/test_wzajemnosc.py` | 230 | test fixture | `w.append(skutek("scheduled_note_sent", ["Your Publication"],` |
+| `agent-v2/tests/test_wzajemnosc.py` | 402 | test fixture | `"Your Publication" not in` |
 | `agent-v2/tests/test_zrodla_ruchu.py` | 105 | test fixture | `return {"source": "c-%s" % ident, "sourceName": "Your Publication: …",` |
 | `konfiguracja.example.toml` | 41 | TEMPLATE — this is the file you copy | `nazwa_marki = "Your Publication"` |
 
@@ -51,11 +60,9 @@ Constant `config.NISZA`, set by `temat.nisza`
 
 | file | line | how | context |
 |---|---|---|---|
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12904 | GENERATED — rebuilds itself | `\| `NISZA` \| `"how everyday things are made and regulated"` \| HASLA, KTORYMI AGENT SZUKA ` |
-| `agent-v2/config.py` | 2165 | **FIELD** | `NISZA = "how everyday things are made and regulated"` |
-| `agent-v2/stages.py` | 1271 | **INJECTED** — follows the field | `"You find documented facts about how everyday things are made and regulated for an anony` |
-| `agent-v2/stages.py` | 6934 | **INJECTED** — follows the field | `"You rank candidate facts for a publication about how everyday things are made and regul` |
-| `konfiguracja.example.toml` | 53 | TEMPLATE — this is the file you copy | `nisza = "how everyday things are made and regulated"` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12972 | GENERATED — rebuilds itself | `\| `NISZA` \| `"how everyday things are made and regulated"` \| HASLA, KTORYMI AGENT SZUKA ` |
+| `agent-v2/config.py` | 2229 | **FIELD** | `NISZA = "how everyday things are made and regulated"` |
+| `konfiguracja.example.toml` | 62 | TEMPLATE — this is the file you copy | `nisza = "how everyday things are made and regulated"` |
 
 ---
 
@@ -65,17 +72,17 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 
 | file | line | how | context |
 |---|---|---|---|
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2084 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12766 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2097 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12833 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
 | `agent-v2/browser.py` | 507 | comment — harmless, but stale | `# (your-handle.substack.com), a /api/v1/reader/* i /api/v1/user/*` |
-| `agent-v2/browser.py` | 1246 | comment — harmless, but stale | `# `substack.com/@your-handle/following` oddaje 26 uchwytow, a` |
-| `agent-v2/config.py` | 118 | **FIELD** | `SUBSTACK_HANDLE = "your-handle"` |
+| `agent-v2/browser.py` | 1253 | comment — harmless, but stale | `# `substack.com/@your-handle/following` oddaje 26 uchwytow, a` |
+| `agent-v2/config.py` | 124 | **FIELD** | `SUBSTACK_HANDLE = "your-handle"` |
 | `agent-v2/tests/test_cicha_porazka.py` | 413 | test fixture | `"https://your-handle.substack.com/p/tekst", "Ktos", TEKST, wyslij=True)` |
-| `agent-v2/tests/test_dowod_przeciw_hostowi.py` | 448 | test fixture | `"https://your-handle.substack.com/p/%s" % sciezka,` |
+| `agent-v2/tests/test_dowod_przeciw_hostowi.py` | 447 | test fixture | `"https://your-handle.substack.com/p/%s" % sciezka,` |
 | `agent-v2/tests/test_komentarz_potwierdzony.py` | 502 | test fixture | `"url": "https://your-handle.substack.com/p/tekst"},` |
-| `agent-v2/tests/test_naprawa_zamiast_ciecia.py` | 302 | test fixture | `LINK = "https://your-handle.substack.com/p/first-remove-the-brakes"` |
-| `agent-v2/tests/test_obserwacje.py` | 330 | test fixture | `Z_LINKIEM = "Pressure panels have a tiny hole. https://your-handle.substack.com/p/x"` |
-| `agent-v2/tests/test_obserwacje.py` | 331 | test fixture | `Z_LINKIEM_2 = "Eggs are refrigerated in America. https://your-handle.substack.com/p/y"` |
+| `agent-v2/tests/test_naprawa_zamiast_ciecia.py` | 306 | test fixture | `LINK = "https://your-handle.substack.com/p/first-remove-the-brakes"` |
+| `agent-v2/tests/test_obserwacje.py` | 332 | test fixture | `Z_LINKIEM = "Pressure panels have a tiny hole. https://your-handle.substack.com/p/x"` |
+| `agent-v2/tests/test_obserwacje.py` | 333 | test fixture | `Z_LINKIEM_2 = "Sorting machines read the barcode. https://your-handle.substack.com/p/y"` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 20 | test fixture | `Odczyt, nic nie klikniete, konto `your-handle`:` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 22 | test fixture | `substack.com/@your-handle/following  -> 26 uchwytow` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 23 | test fixture | `/api/v1/user/your-handle/public_profile` |
@@ -110,14 +117,18 @@ do not follow anything.
 
 ## What no field reaches
 
-**2 places** need a human hand when the account changes.
+**6 places** need a human hand when the account changes.
 Everything else either follows `konfiguracja.toml`, regenerates
 itself, or is a test fixture that no live run reads.
 
 | what | file | line | context |
 |---|---|---|---|
 | nazwa marki | `agent-v2/systemd/nia-agent.service` | 2 | `Description=Your Publication — agent` |
+| nazwa marki | `agent-v2/systemd/nia-agent.timer` | 2 | `Description=Your Publication — zegar agenta` |
+| nazwa marki | `agent-v2/systemd/nia-alarm.service` | 2 | `Description=Your Publication — kontrola sesji, zdrowia i alarm` |
+| nazwa marki | `agent-v2/systemd/nia-alarm.timer` | 2 | `Description=Your Publication — zegar kontroli sesji` |
 | nazwa marki | `agent-v2/systemd/nia-artykul.service` | 2 | `Description=Your Publication — artykul tygodniowy` |
+| nazwa marki | `agent-v2/systemd/nia-artykul.timer` | 2 | `Description=Your Publication — zegar artykulu tygodniowego` |
 
 The `systemd` unit descriptions are per-installation by nature,
 like `WorkingDirectory` and `User` in the same files. You edit those

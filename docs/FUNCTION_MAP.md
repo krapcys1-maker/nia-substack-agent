@@ -391,11 +391,11 @@ Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK.
 | 167 | `connect(path)` | — | Otwiera bazę i zakłada schemat, jeśli go nie ma. | `alarm._polaczenie`, `alarm.sprawdz_przebiegi_i_ostrzez`, `artykul_z_puli.main`, `norma.przebiegow_dzis` *(+1)* |
 | 198 | `_dopisz_brakujace_kolumny(conn)` | DB | — | `db.connect` |
 | 216 | `start_run(conn, stage, tryb)` | DB | Nowy przebieg. | `artykul_z_puli.main`, `run.main` |
-| 242 | `tryb_przebiegu(conn, run_id)` | DB | Tor, do ktorego nalezy przebieg. | `llm._preflight` |
-| 253 | `finish_run(conn, run_id, status, stage, note)` | DB | — | `alarm.zawieszone`, `artykul_z_puli.main`, `run._done`, `run.main` |
-| 265 | `record_call(conn, **fields)` | DB | Zapisuje wywołanie, wstawiając TYLKO te kolumny, które ktoś podał. | `llm.call`, `llm.obraz` |
-| 300 | `spent_usd(conn, since_prefix, tryb)` | DB | Suma kosztów od znacznika czasu zaczynającego się danym prefiksem. | `alarm.koszt`, `llm._preflight`, `run.main` |
-| 323 | `recent_domains(conn, limit)` | DB | Domeny z ostatnich N artykułów — wejście do reguły różnorodności. | `artykul_z_puli._przebieg`, `run.main` |
+| 256 | `tryb_przebiegu(conn, run_id)` | DB | Tor, do ktorego nalezy przebieg. | `llm._preflight` |
+| 267 | `finish_run(conn, run_id, status, stage, note)` | DB | — | `alarm.zawieszone`, `artykul_z_puli.main`, `run._done`, `run.main` |
+| 279 | `record_call(conn, **fields)` | DB | Zapisuje wywołanie, wstawiając TYLKO te kolumny, które ktoś podał. | `llm.call`, `llm.obraz` |
+| 314 | `spent_usd(conn, since_prefix, tryb)` | DB | Suma kosztów od znacznika czasu zaczynającego się danym prefiksem. | `alarm.koszt`, `llm._preflight`, `run.main` |
+| 337 | `recent_domains(conn, limit)` | DB | Domeny z ostatnich N artykułów — wejście do reguły różnorodności. | `artykul_z_puli._przebieg`, `run.main` |
 
 ---
 

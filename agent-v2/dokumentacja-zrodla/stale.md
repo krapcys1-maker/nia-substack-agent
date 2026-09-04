@@ -197,7 +197,7 @@
 | `KANDYDATOW_NA_PRZEBIEG` | `25` | Ile kandydatow-jednolinijkowcow zamawiamy, zanim cokolwiek napiszemy. Nadprodukcja jest obowiazkowa: piec notek z piatki pomyslow to mediana |
 | `W_TYM_MIESIACU` | `{ # PRZYKLAD. Kazde haslo mowi, GDZIE w dany` | --- co czytelnik trzyma w reku W TYM MIESIACU ------------------------------- Najtansza dzwignia, jaka mamy, i nie mielismy jej wcale. Zwykl |
 | `KONFIGURACJA_PLIK` | `_konf.sciezka(AGENT_DIR)` | — |
-| `_BEZ_KONFIGURACJI` | `_env("NIA_BEZ_KONFIGURACJI", "0").lower() in` | `NIA_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi |
+| `_BEZ_KONFIGURACJI` | `_env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower` | `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE s |
 | `KONFIGURACJA_ZMIENILA` | `_konf.zastosuj(_dane_konfiguracji, sys.modul` | — |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |

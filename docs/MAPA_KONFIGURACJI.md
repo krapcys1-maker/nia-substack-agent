@@ -333,7 +333,7 @@ poprzedniego agenta (patrz [TROUBLESHOOTING.md, pozycja 2](TROUBLESHOOTING.md)).
 | `AGENT_V2_CHEAP` | wszystko na DeepSeeku poza dyskowerią — do testów hydrauliki | domyślnie `0` |
 | `AGENT_V2_NO_LIMIT` | zdejmuje sufit dzienny i miesięczny (**nie na przebieg**) | domyślnie `0` |
 | `AGENT_V2_WRITER` | podmiana samego pisarza do porównań A/B | brak podmiany |
-| `NIA_TRYB` | `produkcja` / `test` — wybór toru bazy (`db.py:231`) | domyślnie `produkcja` |
+| `AGENT_V2_TRYB` | `produkcja` / `test` — wybór toru bazy (`db.py:231`) | domyślnie `produkcja` |
 | `ALARM_EMAIL_TO`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | jedyny kanał, którym bot mówi „stało się źle" | **degradacja cicha** — potwierdzone: `[alarm NIEWYSLANY — brak konfiguracji]` w logu i nic więcej |
 
 **Dziura w kontroli kluczy, sprawdzona w kodzie.** `llm.py:74-79` porównuje

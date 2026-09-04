@@ -52,7 +52,7 @@ sys.path.insert(0, str(KORZEN / "agent-v2"))
 #
 # To jest dokladnie ta wada, ktora ten plik ma tropic — tozsamosc konta
 # wchodzaca tam, gdzie nie powinna — tylko popelniona przez narzedzie.
-os.environ["NIA_BEZ_KONFIGURACJI"] = "1"
+os.environ["AGENT_V2_BEZ_KONFIGURACJI"] = "1"
 
 import config          # noqa: E402
 import konfiguracja    # noqa: E402

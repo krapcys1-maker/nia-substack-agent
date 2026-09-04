@@ -3043,7 +3043,7 @@ import konfiguracja as _konf   # noqa: E402
 
 KONFIGURACJA_PLIK = _konf.sciezka(AGENT_DIR)
 
-# `NIA_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA.
+# `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA.
 #
 # `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi
 # tozsamosc konta. Uruchomiony u operatora czytal jego `konfiguracja.toml`
@@ -3054,7 +3054,7 @@ KONFIGURACJA_PLIK = _konf.sciezka(AGENT_DIR)
 # Furtka jest zmienna srodowiskowa, nie polem konfiguracji, i to jest celowe:
 # ma byc widoczna w wywolaniu i niemozliwa do wlaczenia przez przypadek
 # w pliku, ktory sama wylacza.
-_BEZ_KONFIGURACJI = _env("NIA_BEZ_KONFIGURACJI", "0").lower() in {"1", "true", "yes"}
+_BEZ_KONFIGURACJI = _env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower() in {"1", "true", "yes"}
 _dane_konfiguracji = {} if _BEZ_KONFIGURACJI else _konf.wczytaj(KONFIGURACJA_PLIK)
 KONFIGURACJA_ZMIENILA = _konf.zastosuj(_dane_konfiguracji, sys.modules[__name__])
 

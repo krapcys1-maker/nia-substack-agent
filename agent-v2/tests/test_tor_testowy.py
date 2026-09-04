@@ -68,7 +68,7 @@ sprawdz("runs ma kolumne tryb", "tryb" in kolumny, sorted(kolumny))
 
 print()
 print("=== 1. DOMYSLNIE PRODUKCJA ===")
-os.environ.pop("NIA_TRYB", None)
+os.environ.pop("AGENT_V2_TRYB", None)
 r_prod = db.start_run(conn, "zwykly-przebieg")
 sprawdz("przebieg bez wskazania to produkcja",
         db.tryb_przebiegu(conn, r_prod) == "produkcja",
@@ -80,16 +80,16 @@ print()
 print("=== 2. TRYB Z ARGUMENTU I ZE ZMIENNEJ SRODOWISKA ===")
 r_test = db.start_run(conn, "sprawdzam-kod", tryb="test")
 sprawdz("argument dziala", db.tryb_przebiegu(conn, r_test) == "test")
-os.environ["NIA_TRYB"] = "test"
+os.environ["AGENT_V2_TRYB"] = "test"
 r_env = db.start_run(conn, "ze-zmiennej")
 sprawdz("zmienna srodowiskowa dziala",
         db.tryb_przebiegu(conn, r_env) == "test")
-os.environ["NIA_TRYB"] = "bzdura"
+os.environ["AGENT_V2_TRYB"] = "bzdura"
 r_zly = db.start_run(conn, "zla-wartosc")
 sprawdz("nieznana wartosc spada do produkcji",
         db.tryb_przebiegu(conn, r_zly) == "produkcja",
         db.tryb_przebiegu(conn, r_zly))
-os.environ.pop("NIA_TRYB", None)
+os.environ.pop("AGENT_V2_TRYB", None)
 
 print()
 print("=== 3. TORY LICZA SIE OSOBNO ===")

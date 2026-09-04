@@ -327,7 +327,7 @@
 
 ### `db.py` — schemat i zapis
 
-333 wierszy, 11 funkcji na poziomie modułu, 1 klas
+347 wierszy, 11 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|

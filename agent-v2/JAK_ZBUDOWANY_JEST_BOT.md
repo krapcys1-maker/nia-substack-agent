@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 732 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 746 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -469,7 +469,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `db.py` — schemat i zapis
 
-333 wierszy, 11 funkcji na poziomie modułu, 1 klas
+347 wierszy, 11 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -13006,7 +13006,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `KANDYDATOW_NA_PRZEBIEG` | `25` | Ile kandydatow-jednolinijkowcow zamawiamy, zanim cokolwiek napiszemy. Nadprodukcja jest obowiazkowa: piec notek z piatki pomyslow to mediana |
 | `W_TYM_MIESIACU` | `{ # PRZYKLAD. Kazde haslo mowi, GDZIE w dany` | --- co czytelnik trzyma w reku W TYM MIESIACU ------------------------------- Najtansza dzwignia, jaka mamy, i nie mielismy jej wcale. Zwykl |
 | `KONFIGURACJA_PLIK` | `_konf.sciezka(AGENT_DIR)` | — |
-| `_BEZ_KONFIGURACJI` | `_env("NIA_BEZ_KONFIGURACJI", "0").lower() in` | `NIA_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi |
+| `_BEZ_KONFIGURACJI` | `_env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower` | `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE s |
 | `KONFIGURACJA_ZMIENILA` | `_konf.zastosuj(_dane_konfiguracji, sys.modul` | — |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |

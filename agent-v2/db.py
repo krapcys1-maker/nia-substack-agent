@@ -223,12 +223,26 @@ def start_run(conn: sqlite3.Connection, stage: str = "start",
     chroni przed rozbieganym agentem w nocy i ma pilnowac PRACY KONTA, a nie
     pracy nad kodem.
 
-    Tryb bierze sie z jawnego argumentu albo ze zmiennej `NIA_TRYB`. Domyslnie
-    produkcja — bezpieczniejsza pomylka to policzyc test jako produkcje niz
-    otworzyc produkcji drugi, luzniejszy sufit.
+    Tryb bierze sie z jawnego argumentu albo ze zmiennej `AGENT_V2_TRYB`.
+    Domyslnie produkcja — bezpieczniejsza pomylka to policzyc test jako
+    produkcje niz otworzyc produkcji drugi, luzniejszy sufit.
+
+    NAZWA ZMIENNEJ BYLA `NIA_TRYB` i przezyla rename `NIA_SERVER` ->
+    `AGENT_V2_SERVER`. Nazwa zmiennej srodowiskowej to interfejs OPERATORA:
+    stoi w `.env`, w jednostkach systemd i w poleceniach z dokumentacji — wiec
+    konto pod wlasna marka dostawalo zmienna z cudza nazwa.
+
+    STARA NAZWA NIE JEST CICHYM ALIASEM. Czytanie obu „na wszelki wypadek"
+    daloby dwa imiona jednej rzeczy, z ktorych jedno przestaje byc testowane —
+    a to jest wzorzec, ktory ten projekt sciga. Zamiast tego mowimy glosno.
     """
     import os
-    wybrany = (tryb or os.environ.get("NIA_TRYB") or "produkcja").strip().lower()
+    if os.environ.get("NIA_TRYB") and not os.environ.get("AGENT_V2_TRYB"):
+        print("  [baza] UWAGA: `NIA_TRYB` juz nie dziala — zmienna nazywa sie"
+              " teraz `AGENT_V2_TRYB`. Przebieg idzie na tor PRODUKCYJNY.",
+              flush=True)
+    wybrany = (tryb or os.environ.get("AGENT_V2_TRYB")
+               or "produkcja").strip().lower()
     if wybrany not in ("produkcja", "test"):
         wybrany = "produkcja"
     cur = conn.execute(

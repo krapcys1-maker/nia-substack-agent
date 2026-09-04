@@ -236,7 +236,7 @@ agent until this work replaced it.
 | `AGENT_V2_CHEAP` | everything on DeepSeek but discovery | defaults 0 |
 | `AGENT_V2_NO_LIMIT` | lifts daily and monthly ceilings, **not per-run** | defaults 0 |
 | `AGENT_V2_WRITER` | swap the writer for an A/B | — |
-| `NIA_TRYB` | database track | `produkcja` |
+| `AGENT_V2_TRYB` | database track | `produkcja` |
 | `ALARM_EMAIL_TO`, `SMTP_*` | the only "something broke" channel | **silent degradation** |
 
 > **Fixed during this work.** The pre-flight key check compared *model
