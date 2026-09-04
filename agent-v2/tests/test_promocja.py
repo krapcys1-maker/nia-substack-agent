@@ -276,7 +276,7 @@ finally:
 
 print()
 print("=== TRZY NOTKI PROMUJACE NIE MOGA POWTARZAC TEGO SAMEGO ===")
-# Zmierzone na dzienniku produkcji: trzy notki promujace artykul 0025, z trzech
+# Zmierzone na dzienniku produkcji: trzy notki promujace tamten artykul, z trzech
 # kolejnych dni, nioslY te sama fraze „ASTM, which maintains the standard, says"
 # i ten sam „68% of Americans". Karta promocyjna to CALY TEKST ARTYKULU podawany
 # bez zmian, wiec model co dzien wybieral z niego to samo.

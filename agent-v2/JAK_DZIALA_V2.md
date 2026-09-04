@@ -264,7 +264,7 @@ schemacie `NOT NULL DEFAULT 0`, a mimo to wysadzała zapis. Funkcja zapisu
 wymieniała zawsze komplet kolumn, więc brakujące szły jako **jawny NULL** — a
 `DEFAULT` wchodzi wyłącznie wtedy, gdy kolumny w `INSERT` nie ma wcale.
 Podawało ją jedno miejsce z czterech. Grafika nie mogła się przez to zapisać
-nigdy (artykuł 0025 wyszedł bez okładki), a ścieżka zapisu **nieudanego**
+nigdy (tamten artykuł wyszedł bez okładki), a ścieżka zapisu **nieudanego**
 wywołania wywracała się na tym samym — czyli awaria dostawcy modelu
 przychodziła do logu jako awaria bazy. Naprawione w jednym miejscu: `INSERT`
 bierze tylko podane kolumny, więc następna dopisana kolumna nie powtórzy tego.

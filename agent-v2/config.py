@@ -726,7 +726,7 @@ MAX_WORDS = 1200
 # Ile razy w jednym tekscie wolno powiedziec „moim zdaniem" i pochodne.
 # Znakowanie wnioskowania jest DOBRE — recenzent wprost go chce, bo dzieki
 # niemu smiala interpretacja nie liczy sie jako fakt bez pokrycia. Ale szesc
-# takich zwrotow w jednym tekscie (artykul 0025) to juz tik, nie uczciwosc.
+# takich zwrotow w jednym tekscie to juz tik, nie uczciwosc.
 #
 # UWAGA NA PULAPKE: sciecie tego licznika NIE MOZE oznaczac, ze pisarz zacznie
 # podawac wnioski jako fakty, bo wtedy zamiast tiku dostaniemy zdania bez
@@ -793,7 +793,7 @@ ILE_TEKSTOW_DO_POROWNANIA_FORMY = 4
 # czytelnik wierzy w cos innego niz zdanie wczesniej; powtorzenie tej samej
 # tezy z nowym dowodem beatem NIE JEST.
 #
-# Artykul 0025 mial szesc beatow na 1097 slow, czyli jeden co 183 — i cztery
+# Tamten artykul mial szesc beatow na 1097 slow, czyli jeden co 183 — i cztery
 # pierwsze akapity byly jednym beatem rozpisanym na cztery. To jest wlasciwa
 # miara rozdmuchania, znacznie lepsza niz sama liczba slow: mierzy wade
 # bezposrednio, zamiast zgadywac ja z dlugosci.

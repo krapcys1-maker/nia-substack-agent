@@ -10,7 +10,7 @@ def record_call(conn: sqlite3.Connection, **fields: Any) -> None:
     Skutkiem był `IntegrityError: NOT NULL constraint failed` u każdego, kto nie
     podał kompletu.
 
-    Kosztowało to okładkę artykułu 0025 i — groźniej — przykrywało prawdziwe
+    Kosztowało to okładkę jednego artykułu i — groźniej — przykrywało prawdziwe
     błędy API: gdy wywołanie tekstowe padało, ścieżka błędu próbowała je zapisać,
     wywalała się na tej samej kolumnie i to `IntegrityError` szedł w górę zamiast
     prawdziwej przyczyny.
@@ -1334,7 +1334,7 @@ def grafika(
 
         dane = llm.obraz(opis, conn=conn, run_id=run_id)
     except Exception as exc:
-        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu 0025 padła
+        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu padła
         # na `IntegrityError`, log powiedział tylko tyle — a przyczyna („NOT NULL
         # constraint failed: calls.cache_hit") siedziała w zjedzonym komunikacie
         # i trzeba jej było szukać po kodzie. Awaria, która nie mówi na co padła,

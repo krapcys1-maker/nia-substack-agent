@@ -69,7 +69,7 @@ Seven article titles, each findable in a search engine, stood in:
 - `stages.py` — two in a single comment explaining the diversity rule
 - `run.py` — one inside the fact-check comment, **wrapped across a line**
 - test docstrings and fixtures — four more
-- `test_podlogi_playbook.py` — a file glob, `0025-*was-never*.md`
+- `test_podlogi_playbook.py` — a file glob carrying part of a published title
 
 The `run.py` one is worth its own paragraph. Identity patterns use `\s+`
 instead of a space specifically so a wrapped phrase still matches. That is not

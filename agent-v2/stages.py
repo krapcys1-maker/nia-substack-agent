@@ -929,7 +929,7 @@ def grafika(
 
         dane = llm.obraz(opis, conn=conn, run_id=run_id)
     except Exception as exc:
-        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu 0025 padła
+        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu padła
         # na `IntegrityError`, log powiedział tylko tyle — a przyczyna („NOT NULL
         # constraint failed: calls.cache_hit") siedziała w zjedzonym komunikacie
         # i trzeba jej było szukać po kodzie. Awaria, która nie mówi na co padła,

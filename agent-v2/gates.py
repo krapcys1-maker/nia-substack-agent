@@ -36,7 +36,7 @@ VAGUE_STUDY = jezyki.wzorzec("NIEISTNIEJACE_BADANIE", config.ARTICLE_LANGUAGE)
 
 # Zastrzezenia w pierwszej osobie. Znakowanie wnioskowania jest DOBRE i
 # recenzent wprost go chce — ale szesc raz w jednym tekscie to juz tik, nie
-# uczciwosc. W artykule 0025 bylo szesc.
+# uczciwosc. W tamtym artykule bylo szesc.
 ZASTRZEZENIE = jezyki.wzorzec("ZASTRZEZENIE", config.ARTICLE_LANGUAGE)
 
 # Obwieszczona powsciagliwosc. „Nie zmyslę tego" czyta sie jak poklepanie
@@ -44,14 +44,14 @@ ZASTRZEZENIE = jezyki.wzorzec("ZASTRZEZENIE", config.ARTICLE_LANGUAGE)
 POWSCIAGLIWOSC = jezyki.wzorzec("POWSCIAGLIWOSC", config.ARTICLE_LANGUAGE)
 
 # Otwarcia, ktore kaza czytelnikowi isc cos obejrzec zamiast go zatrzymac.
-# Lista jest z obserwacji, nie z gustu: 0025 zaczyna sie od „Turn over almost
-# any plastic container" — i to samo zdanie zglosila niezaleznie bramka
+# Lista jest z obserwacji, nie z gustu: jeden z tekstow zaczynal sie od „Turn over almost
+# any packaged part" — i to samo zdanie zglosila niezaleznie bramka
 # FAKT_BEZ_POKRYCIA, bo „almost any" bylo przesada nie do obrony.
 ZAKAZANE_OTWARCIA = jezyki.wzorzec("ZAKAZANE_OTWARCIA", config.ARTICLE_LANGUAGE)
 
 # Zrodlo, ktore nie jest zrodlem. Lapiemy je TYLKO w zdaniu z liczba —
 # „in one survey" bez zadnej statystyki jest nieszkodliwe, z liczba jest
-# przypisem donikad. 0025: „In one survey, 68% of Americans thought…".
+# przypisem donikad. tamten tekst: „In one survey, 68% of buyers thought…".
 NIBY_ZRODLO = jezyki.wzorzec("NIBY_ZRODLO", config.ARTICLE_LANGUAGE)
 
 # Akapit wyliczajacy niewiadome. Rozny od ZAPOWIEDZ_GRANIC, ktora pyta, czy
@@ -241,7 +241,7 @@ def niewiadome_na_koncu(body: str) -> str:
     przeszkadza — dlatego wymagamy DWOCH sygnalow w jednym akapicie, czyli
     passusu, a nie jednego uczciwego przyznania sie.
 
-    Artykul 0025 mial taki akapit na 82% glebokosci, z czterema sygnalami.
+    Tamten artykul mial taki akapit na 82% glebokosci, z czterema sygnalami.
     """
     korpus = body.split("## Sources")[0]
     akapity = _akapity(body)

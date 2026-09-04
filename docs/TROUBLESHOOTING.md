@@ -131,7 +131,7 @@ albo brak klucza**:
 | `test_artykul` | `ModuleNotFoundError: playwright` | brak pakietu (znane) |
 | `test_czas` | brak `SIGTERM` | Windows nie ma sygnałów POSIX (znane) |
 | `test_komplet_sciezek` | `BLAD policzone na 0 plikach` | `agent-v2/data/` jest pusty |
-| `test_podlogi_playbook` | `brak agent-v2/data/articles/0025-*.md` | katalog w `.gitignore` |
+| `test_podlogi_playbook` | `brak agent-v2/data/articles/NNNN-*.md` | katalog w `.gitignore` |
 | `test_ratunek_tekstu` | `(5) KONTRDOWOD: wiersz zajmowal jedno z pieciu miejsc (5, 5)` | brak `data/promocja.json` |
 | `test_zapora_platnych_wywolan` | `DRY_RUN nie jest blokowany: brak ANTHROPIC_API_KEY` | brak `.env` |
 

@@ -155,14 +155,14 @@ zamyka się sama z czasem, ale dopiero od 1 września.
 
 ## 9. Test podłóg na serwerze mierzy co innego niż lokalnie
 
-`test_podlogi_playbook.py` szuka prawdziwego artykułu 0025 w `data/articles/`.
+`test_podlogi_playbook.py` szukał prawdziwego artykułu w `data/articles/`.
 Katalog jest w `.gitignore`, więc **na świeżym klonie i na serwerze pliku nie
 ma** — a wtedy test po cichu podstawia wbudowane wycinki i dalej drukuje same OK.
 
 Docstring mówi: „każda nowa podłoga MUSI się na nim zapalić". Fallback tego
 zakazu nie egzekwuje.
 
-**Zrobione, gdy:** albo wycinki 0025 wchodzą do repozytorium jako materiał
+**Zrobione, gdy:** albo wycinki wchodzą do repozytorium jako materiał
 dowodowy, albo brak pliku **oblewa** test.
 
 ---

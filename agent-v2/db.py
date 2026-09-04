@@ -271,7 +271,7 @@ def record_call(conn: sqlite3.Connection, **fields: Any) -> None:
     Skutkiem był `IntegrityError: NOT NULL constraint failed` u każdego, kto nie
     podał kompletu.
 
-    Kosztowało to okładkę artykułu 0025 i — groźniej — przykrywało prawdziwe
+    Kosztowało to okładkę jednego artykułu i — groźniej — przykrywało prawdziwe
     błędy API: gdy wywołanie tekstowe padało, ścieżka błędu próbowała je zapisać,
     wywalała się na tej samej kolumnie i to `IntegrityError` szedł w górę zamiast
     prawdziwej przyczyny.

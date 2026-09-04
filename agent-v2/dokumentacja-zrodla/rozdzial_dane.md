@@ -32,7 +32,7 @@ Stan produkcji w chwili pisania: **28 przebiegów, 591 wywołań modeli, 6 artyk
 
 | kolumna | typ | po co jest |
 |---|---|---|
-| `id` | INTEGER PK AUTOINCREMENT | numer przebiegu; jest też **prefiksem nazwy pliku artykułu** (`0025-...md`), więc numeracja artykułów na dysku to numeracja przebiegów, nie artykułów |
+| `id` | INTEGER PK AUTOINCREMENT | numer przebiegu; jest też **prefiksem nazwy pliku artykułu** (`NNNN-...md`), więc numeracja artykułów na dysku to numeracja przebiegów, nie artykułów |
 | `started_at` | TEXT NOT NULL | ISO 8601 UTC z sekundową precyzją; wejście do kontroli ciszy w `alarm.cisza()` |
 | `finished_at` | TEXT | NULL dopóki przebieg trwa — po tym poznaje się przebieg wiszący |
 | `status` | TEXT NOT NULL | komentarz w schemacie mówi `RUNNING / DONE / FAILED` |
@@ -229,7 +229,7 @@ def record_call(conn: sqlite3.Connection, **fields: Any) -> None:
     Skutkiem był `IntegrityError: NOT NULL constraint failed` u każdego, kto nie
     podał kompletu.
 
-    Kosztowało to okładkę artykułu 0025 i — groźniej — przykrywało prawdziwe
+    Kosztowało to okładkę jednego artykułu i — groźniej — przykrywało prawdziwe
     błędy API: gdy wywołanie tekstowe padało, ścieżka błędu próbowała je zapisać,
     wywalała się na tej samej kolumnie i to `IntegrityError` szedł w górę zamiast
     prawdziwej przyczyny.
@@ -254,13 +254,13 @@ Mechanika w jednym zdaniu: `INSERT INTO calls (cache_hit) VALUES (NULL)` **nie j
 
 Konsekwencje były trzy i tylko pierwsza była widoczna:
 
-1. **Okładka artykułu 0025 nie powstała.** Ścieżka `llm.obraz` nie podawała `cache_hit`, więc `INSERT` padał po opłaceniu grafiki u OpenAI. Artykuł wyszedł bez nagłówka.
+1. **Okładka jednego artykułu nie powstała.** Ścieżka `llm.obraz` nie podawała `cache_hit`, więc `INSERT` padał po opłaceniu grafiki u OpenAI. Artykuł wyszedł bez nagłówka.
 2. **Prawdziwa przyczyna błędu była zjadana.** Ścieżka porażki w `llm.call` sama woła `record_call`. Gdy padało wywołanie tekstowe, obsługa błędu wywalała się na tej samej kolumnie i w górę szedł `IntegrityError` — a nie odmowa dostawcy, zły klucz czy timeout. Awaria kłamała o tym, na co padła.
 3. **Log mówił za mało, żeby to znaleźć.** Naprawa objęła też komunikat w `stages.py`:
 
 ```python
     except Exception as exc:
-        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu 0025 padła
+        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu padła
         # na `IntegrityError`, log powiedział tylko tyle — a przyczyna („NOT NULL
         # constraint failed: calls.cache_hit") siedziała w zjedzonym komunikacie
         # i trzeba jej było szukać po kodzie. Awaria, która nie mówi na co padła,

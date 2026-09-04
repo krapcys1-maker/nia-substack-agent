@@ -3,7 +3,7 @@
 Cztery rzeczy, ktorych zaden regex nie zmierzy: gestosc beatow, eskalacja
 rejestru, moment przylapania czytelnika i znajomosc otwarcia. Wszystkie
 pochodza z playbooka z 20 sierpnia, wszystkie potwierdzily sie na artykule
-0025 przy recznym sprawdzeniu.
+jeden z opublikowanych tekstow przy recznym sprawdzeniu.
 
 PODZIAL PRACY, KTORY JEST TU CALYM POMYSLEM. Model dostaje pytania, na ktore
 odpowiada CYTATEM albo tak/nie. Nie liczy, nie dzieli, nie ocenia glebokosci
@@ -53,9 +53,9 @@ TEKST = (
 # bramka zapalalaby sie tak samo, gdyby powtorzenia liczyly sie jako beaty,
 # czyli mierzylaby gadatliwosc zamiast gestosci.
 
-# Obserwacja taka, jaka model MUSI oddac dla 0025 — recznie sprawdzilem,
+# Obserwacja taka, jaka model MUSI oddac dla tamtego tekstu — recznie sprawdzilem,
 # ze te wlasnie cechy w nim sa.
-JAK_0025 = {
+JAK_NNNN = {
     "beliefs": [
         {"belief": "kod nie znaczy przetwarzalne",
          "first_stated": "The mark was designed for someone else entirely."},
@@ -83,13 +83,13 @@ JAK_0025 = {
 
 
 def bez(klucz, wartosc):
-    o = dict(JAK_0025)
+    o = dict(JAK_NNNN)
     o[klucz] = wartosc
     return o
 
 
 print("=== 1. GESTOSC BEATOW ===")
-u = gates.uwagi_z_formy(JAK_0025, TEKST)
+u = gates.uwagi_z_formy(JAK_NNNN, TEKST)
 nazwy = {x["gate"] for x in u}
 slow = len(TEKST.split())
 print("    tekst: %d słów, 4 przekonania -> jedno co %.0f słów (próg %d)"
@@ -103,9 +103,9 @@ sprawdz("uwaga cytuje to, co było samym wsparciem",
 # KONTRDOWOD: powtorzenie NIE moze liczyc sie jako beat. Gdyby liczylo,
 # ten sam tekst mialby szesc beatow i przeszedlby — czyli bramka mierzylaby
 # gadatliwosc, a nie gestosc.
-wszystkie_nowe = bez("beliefs", JAK_0025["beliefs"] + [
+wszystkie_nowe = bez("beliefs", JAK_NNNN["beliefs"] + [
     {"belief": "wsparcie policzone jako przekonanie", "first_stated": w["quote"]}
-    for w in JAK_0025["support_only"]])
+    for w in JAK_NNNN["support_only"]])
 sprawdz("gdyby wsparcie liczyło się jako przekonanie, przeszłoby (test rozróżnia)",
         "GESTOSC_BEATOW" not in {x["gate"] for x in
                                  gates.uwagi_z_formy(wszystkie_nowe, TEKST)})

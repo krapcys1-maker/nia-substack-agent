@@ -4464,7 +4464,7 @@ ZASTRZEZENIE = re.compile(
 )
 ```
 
-Próg `config.BUDZET_ZASTRZEZEN = 1`. Znakowanie wnioskowania jest **dobre** — recenzent go wprost chce, bo dzięki niemu śmiała interpretacja nie liczy się jako fakt bez pokrycia. Ale sześć takich zwrotów w artykule 0025 to już tik, nie uczciwość.
+Próg `config.BUDZET_ZASTRZEZEN = 1`. Znakowanie wnioskowania jest **dobre** — recenzent go wprost chce, bo dzięki niemu śmiała interpretacja nie liczy się jako fakt bez pokrycia. Ale sześć takich zwrotów w tamtym artykule to już tik, nie uczciwość.
 
 Config ostrzega przed pułapką odwrotną: *„sciecie tego licznika NIE MOZE oznaczac, ze pisarz zacznie podawac wnioski jako fakty, bo wtedy zamiast tiku dostaniemy zdania bez pokrycia — czyli wade powazniejsza"*. Dlatego `pisarz.md` mówi, że wnioskowanie znaczy się **strukturą** zdania, nie doklejoną formułką.
 
@@ -4506,11 +4506,11 @@ def zakazane_otwarcie(body: str) -> str:
     return pierwsze[:160] if ZAKAZANE_OTWARCIA.match(pierwsze) else ""
 ```
 
-Lista jest z obserwacji, nie z gustu: 0025 zaczyna się od `"Turn over almost any plastic container"` — i to samo zdanie zgłosiła **niezależnie** bramka statystyk, bo `"almost any"` było przesadą nie do obrony.
+Lista jest z obserwacji, nie z gustu: jeden z tekstow zaczynal sie od `"Turn over almost any packaged part"` — i to samo zdanie zgłosiła **niezależnie** bramka statystyk, bo `"almost any"` było przesadą nie do obrony.
 
 | otwarcie | wynik |
 |---|---|
-| `"Turn over almost any plastic container…"` | zgłoszone |
+| `"Turn over almost any packaged part…"` | zgłoszone |
 | `"Next time you board a plane, look up."` | zgłoszone |
 | `"We all know the drill."` | zgłoszone |
 | `"In 2018 the European grid ran slow and clocks lost six minutes."` | przechodzi |
@@ -4581,7 +4581,7 @@ def niewiadome_na_koncu(body: str) -> str:
     return ""
 ```
 
-Dwa progi: **dwa sygnały** w jednym akapicie (żeby jedno uczciwe przyznanie się nie było wadą) i **głębokość ≥ 2/3**. To jedyna bramka pytająca o pozycję i robi to w formie zakazu, nie nakazu. Artykuł 0025 miał taki akapit na 82% głębokości, z czterema sygnałami.
+Dwa progi: **dwa sygnały** w jednym akapicie (żeby jedno uczciwe przyznanie się nie było wadą) i **głębokość ≥ 2/3**. To jedyna bramka pytająca o pozycję i robi to w formie zakazu, nie nakazu. Tamten artykuł miał taki akapit na 82% głębokości, z czterema sygnałami.
 
 Test stawia oba kontrdowody: jedna niewiadoma na końcu → milczy; ten sam akapit na początku → milczy.
 
@@ -4738,7 +4738,7 @@ def uwagi_z_formy(obserwacja: dict[str, Any], body: str) -> list[dict[str, str]]
 | `CZYTELNIK_NIEPRZYLAPANY` | obecność niepustego `reader_moment.quote` | — |
 | `OTWARCIE_ZNANE` | flaga `already_familiar` | — |
 
-Uzasadnienie progu 150: artykuł 0025 miał sześć beatów na 1097 słów, czyli jeden co 183 — a *„cztery pierwsze akapity byly jednym beatem rozpisanym na cztery"*.
+Uzasadnienie progu 150: tamten artykuł miał sześć beatów na 1097 słów, czyli jeden co 183 — a *„cztery pierwsze akapity byly jednym beatem rozpisanym na cztery"*.
 
 #### Świadoma różnica wobec playbooka
 
@@ -4989,7 +4989,7 @@ i kończy się `sys.exit(1 if oblane else 0)`. Liczby poniżej to **wykonane** s
 | `test_wybor_tematu` | 61 | łańcuch skaut → nasycenie → wątki → `pick_topic`; nasycony cliché przegrywa ze świeżym systemem pod próbą; artykuł wymaga 2 precedensów **i** dużego zasięgu | tak |
 | `test_piec` | 47 | pięć osobnych poprawek przeglądarkowych: endpoint odpowiedzi pod notką, `mozna_komentowac`, uchwyt publikacji, wykrywanie odpowiedzi na nasze komentarze | tak (4) |
 | `test_pomiar` | 45 | `kanal.wartosc_celu`, próg świeżości notki, `dopisz_skutki` zapisuje NIEZNANE typy zdarzeń, odpowiedzi liczone osobno od polubień | tak (2) |
-| `test_podlogi_playbook` | 44 | **sześć podłóg na prawdziwym artykule 0025** + `verdict` nadal SAVED + stare podłogi nietknięte | tak (6) |
+| `test_podlogi_playbook` | 44 | **sześć podłóg na prawdziwym tamtym artykule** + `verdict` nadal SAVED + stare podłogi nietknięte | tak (6) |
 | `test_sufity` | 44 | każdy etap z promptem ma sufit w `MAX_TOKENS` pokrywający zmierzone maksimum z marginesem 1,5× | tak |
 | `test_forma_artykulu_bramka` | 41 | **cztery bramki obserwacyjne**; `pozycja_w_tekscie`; że `forma.md` nie prosi o procenty; wpięcie w `run.py` | tak |
 | `test_stawka` | 39 | **druga droga w `warto_pisac`** — stawka bez złamanego przekonania; siatka `_ZAPRZECZENIE`; ranking skauta | tak (2) |
@@ -5087,9 +5087,9 @@ sprawdz("STARA logika odłożyłaby go (test rozróżnia)",
 # KONTRDOWOD: powtorzenie NIE moze liczyc sie jako beat. Gdyby liczylo,
 # ten sam tekst mialby szesc beatow i przeszedlby — czyli bramka mierzylaby
 # gadatliwosc, a nie gestosc.
-wszystkie_nowe = bez("beliefs", JAK_0025["beliefs"] + [
+wszystkie_nowe = bez("beliefs", JAK_NNNN["beliefs"] + [
     {"belief": "wsparcie policzone jako przekonanie", "first_stated": w["quote"]}
-    for w in JAK_0025["support_only"]])
+    for w in JAK_NNNN["support_only"]])
 sprawdz("gdyby wsparcie liczyło się jako przekonanie, przeszłoby (test rozróżnia)",
         "GESTOSC_BEATOW" not in {x["gate"] for x in
                                  gates.uwagi_z_formy(wszystkie_nowe, TEKST)})
@@ -5161,15 +5161,15 @@ sprawdz("inny kształt nie jest zgłaszany",
 
 #### Odmiana C — materiałem dowodowym jest produkcja
 
-`test_podlogi_playbook` czyta **prawdziwy artykuł 0025** z dysku, a wbudowane wycinki są tylko kopią zapasową:
+`test_podlogi_playbook` czyta **prawdziwy artykuł z produkcji** z dysku, a wbudowane wycinki są tylko kopią zapasową:
 
 ```python
-KANDYDACI = list(pathlib.Path("agent-v2/data/articles").glob("0025-*was-never*.md"))
+KANDYDACI = list(pathlib.Path("agent-v2/data/articles").glob("*.md"))
 KANDYDACI = [p for p in KANDYDACI if not p.name.endswith(".uwagi.md")]
 ARTYKUL = KANDYDACI[0].read_text(encoding="utf-8") if KANDYDACI else ""
 ```
 
-Docstring stawia warunek falsyfikacji: *„kazda nowa podloga MUSI sie na nim zapalic. Jesli ktoras milczy, to znaczy, ze mierzy cos innego, niz mysle."* Sekcja 7 sprawdza to zbiorczo — sześć nazw bramek musi wystąpić w wyniku `deterministic_floors` na 0025.
+Docstring stawia warunek falsyfikacji: *„kazda nowa podloga MUSI sie na nim zapalic. Jesli ktoras milczy, to znaczy, ze mierzy cos innego, niz mysle."* Sekcja 7 sprawdza to zbiorczo — sześć nazw bramek musi wystąpić w wyniku `deterministic_floors` na tamtym artykule.
 
 `test_bramki_jakosci` używa dosłownych zdań z 0016, 0017, 0019 i 0020; `test_indeks_kandydatow` — czterech prawdziwych kandydatów z Federal Register, którzy **muszą** odpaść.
 
@@ -5216,7 +5216,7 @@ Stan produkcji w chwili pisania: **28 przebiegów, 591 wywołań modeli, 6 artyk
 
 | kolumna | typ | po co jest |
 |---|---|---|
-| `id` | INTEGER PK AUTOINCREMENT | numer przebiegu; jest też **prefiksem nazwy pliku artykułu** (`0025-...md`), więc numeracja artykułów na dysku to numeracja przebiegów, nie artykułów |
+| `id` | INTEGER PK AUTOINCREMENT | numer przebiegu; jest też **prefiksem nazwy pliku artykułu** (`NNNN-...md`), więc numeracja artykułów na dysku to numeracja przebiegów, nie artykułów |
 | `started_at` | TEXT NOT NULL | ISO 8601 UTC z sekundową precyzją; wejście do kontroli ciszy w `alarm.cisza()` |
 | `finished_at` | TEXT | NULL dopóki przebieg trwa — po tym poznaje się przebieg wiszący |
 | `status` | TEXT NOT NULL | komentarz w schemacie mówi `RUNNING / DONE / FAILED` |
@@ -5413,7 +5413,7 @@ def record_call(conn: sqlite3.Connection, **fields: Any) -> None:
     Skutkiem był `IntegrityError: NOT NULL constraint failed` u każdego, kto nie
     podał kompletu.
 
-    Kosztowało to okładkę artykułu 0025 i — groźniej — przykrywało prawdziwe
+    Kosztowało to okładkę jednego artykułu i — groźniej — przykrywało prawdziwe
     błędy API: gdy wywołanie tekstowe padało, ścieżka błędu próbowała je zapisać,
     wywalała się na tej samej kolumnie i to `IntegrityError` szedł w górę zamiast
     prawdziwej przyczyny.
@@ -5438,13 +5438,13 @@ Mechanika w jednym zdaniu: `INSERT INTO calls (cache_hit) VALUES (NULL)` **nie j
 
 Konsekwencje były trzy i tylko pierwsza była widoczna:
 
-1. **Okładka artykułu 0025 nie powstała.** Ścieżka `llm.obraz` nie podawała `cache_hit`, więc `INSERT` padał po opłaceniu grafiki u OpenAI. Artykuł wyszedł bez nagłówka.
+1. **Okładka jednego artykułu nie powstała.** Ścieżka `llm.obraz` nie podawała `cache_hit`, więc `INSERT` padał po opłaceniu grafiki u OpenAI. Artykuł wyszedł bez nagłówka.
 2. **Prawdziwa przyczyna błędu była zjadana.** Ścieżka porażki w `llm.call` sama woła `record_call`. Gdy padało wywołanie tekstowe, obsługa błędu wywalała się na tej samej kolumnie i w górę szedł `IntegrityError` — a nie odmowa dostawcy, zły klucz czy timeout. Awaria kłamała o tym, na co padła.
 3. **Log mówił za mało, żeby to znaleźć.** Naprawa objęła też komunikat w `stages.py`:
 
 ```python
     except Exception as exc:
-        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu 0025 padła
+        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu padła
         # na `IntegrityError`, log powiedział tylko tyle — a przyczyna („NOT NULL
         # constraint failed: calls.cache_hit") siedziała w zjedzonym komunikacie
         # i trzeba jej było szukać po kodzie. Awaria, która nie mówi na co padła,
@@ -6310,7 +6310,7 @@ def record_call(conn: sqlite3.Connection, **fields: Any) -> None:
     Skutkiem był `IntegrityError: NOT NULL constraint failed` u każdego, kto nie
     podał kompletu.
 
-    Kosztowało to okładkę artykułu 0025 i — groźniej — przykrywało prawdziwe
+    Kosztowało to okładkę jednego artykułu i — groźniej — przykrywało prawdziwe
     błędy API: gdy wywołanie tekstowe padało, ścieżka błędu próbowała je zapisać,
     wywalała się na tej samej kolumnie i to `IntegrityError` szedł w górę zamiast
     prawdziwej przyczyny.
@@ -7634,7 +7634,7 @@ def grafika(
 
         dane = llm.obraz(opis, conn=conn, run_id=run_id)
     except Exception as exc:
-        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu 0025 padła
+        # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu padła
         # na `IntegrityError`, log powiedział tylko tyle — a przyczyna („NOT NULL
         # constraint failed: calls.cache_hit") siedziała w zjedzonym komunikacie
         # i trzeba jej było szukać po kodzie. Awaria, która nie mówi na co padła,
@@ -12979,7 +12979,7 @@ drwxrwxr-x  2 ubuntu ubuntu   4096 2026-08-18 cache
 0019-the-yellow-light-is-a-local-calculation-not-a-universal-one.uwagi.md
 0020-the-fossil-of-a-vote.md
 0020-the-fossil-of-a-vote.uwagi.md
-0025-the-number-on-the-bottom-of-the-bottle-was-never-talking-to-.md
-0025-the-number-on-the-bottom-of-the-bottle-was-never-talking-to-.png
-0025-the-number-on-the-bottom-of-the-bottle-was-never-talking-to-.uwagi.md
+NNNN-example-article-slug.md
+NNNN-example-article-slug.png
+NNNN-example-article-slug.uwagi.md
 ```

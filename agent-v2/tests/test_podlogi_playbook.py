@@ -1,10 +1,10 @@
-"""Szesc nowych podlog z playbooka — sprawdzone na PRAWDZIWYM artykule 0025.
+"""Szesc podlog z playbooka — kazda sprawdzona na tekscie, nie na przykladzie.
 
-Playbook (20 sierpnia) postawil szereg zarzutow wobec artykulu o kodzie
-zywicy. Zanim cokolwiek z niego wzialem, sprawdzilem te zarzuty na tekscie —
-i wszystkie mierzalne okazaly sie prawdziwe. Dlatego 0025 jest tu materialem
-dowodowym, nie przykladem: kazda nowa podloga MUSI sie na nim zapalic. Jesli
-ktoras milczy, to znaczy, ze mierzy cos innego, niz mysle.
+Playbook postawil szereg zarzutow wobec jednego opublikowanego artykulu.
+Zanim cokolwiek z niego wzialem, sprawdzilem te zarzuty na samym tekscie —
+i wszystkie mierzalne okazaly sie prawdziwe. Kazda nowa podloga MUSI sie na
+takim materiale zapalic; jesli ktoras milczy, to znaczy, ze mierzy cos
+innego, niz mysle.
 
 CO TE PODLOGI ROBIA, A CZEGO NIE. Wszystkie ZAKAZUJA i zadna nie nakazuje
 pozycji. To rozroznienie jest cala ostroznoscia tej zmiany: regula zakazujaca
@@ -17,20 +17,23 @@ Dlatego szosta podloga — ODCISK_FORMY — pilnuje samej naprawy. Skoro
 dokladamy kilkanascie regul dotyczacych ksztaltu, ktos musi patrzec, czy
 ksztalt nie zrobil sie jeden.
 
-MATERIAL DOWODOWY LEZY POZA REPOZYTORIUM — I TO JEST TU NAJWAZNIEJSZE ZDANIE.
-`agent-v2/data/` jest w `.gitignore`, wiec artykul 0025 istnieje na maszynie,
-ktora go napisala, i NIE ISTNIEJE na swiezym klonie ani na serwerze. Do
-2 wrzesnia 2026 test po cichu podstawial wtedy wbudowane wycinki i szedl
-dalej — a wycinki sa krotsze i INNEGO KSZTALTU niz pelny tekst, wiec piec
-asercji o polozeniu akapitu granic mowilo wtedy „podloga sie nie zapalila",
-choc naprawde brakowalo dowodu. Ten sam plik dawal wiec na serwerze pieciu
-falszywych alarmow o podlogach, a lokalnie komplet OK.
+MATERIAL DOWODOWY JEST W TYM PLIKU I TO JEST TU NAJWAZNIEJSZE ZDANIE.
 
-DZIS JEST TAK: co da sie zmierzyc na wycinkach, mierzymy WSZEDZIE — i to
-komplet kontrdowodow oraz piec z szesciu podlog. Czego wycinki nie unosza,
-mierzymy tylko przy pelnym 0025, a jego brak oblewa DOKLADNIE JEDNA asercje,
-ktora mowi wprost, czego brakuje. Zaden komunikat nie udaje juz, ze to podloga
-zawiodla.
+Do 3 wrzesnia 2026 test czytal artykul z `agent-v2/data/articles/`, czyli
+z katalogu, ktory jest w `.gitignore`. Na swiezym klonie i na serwerze tego
+pliku nie ma Z DEFINICJI, wiec jedna asercja oblewala ZAWSZE i wszedzie poza
+jedna maszyna. Test, ktory na czysto zainstalowanym repozytorium swieci na
+czerwono, uczy, zeby na niego nie patrzec.
+
+Przy okazji sam wzorzec pliku niosl kawalek tytulu opublikowanego artykulu,
+a wycinki byly jego proza przepisana co do znaku. Bramkom jest wszystko jedno,
+o czym jest zdanie: reaguja na FRAZY. Wycinki maja wiec te same wyzwalacze
+i neutralna tresc.
+
+Pomiary calosciowe (polozenie akapitu granic, odcisk formy) potrzebuja tekstu
+DLUZSZEGO niz wycinki, wiec pelny sklada sie z nich swiadomie: akapity tresci,
+akapit granic ostatni. Powtorzenie wycinkow tego nie zalatwia — daje tekst
+dluzszy i o INNYM ksztalcie, czyli dokladnie nie to, o co chodzi.
 """
 import pathlib
 import sys
@@ -61,7 +64,7 @@ def sprawdz(nazwa, warunek, szczegol=""):
 # --- pelny tekst do pomiarow calosciowych ---------------------------------
 #
 # ZALEZNOSC OD ARTYKULU Z PRODUKCJI ZDJETA. Stalo tu wyszukiwanie pliku
-# `0025-*was-never*.md` w `agent-v2/data/articles`, czyli w katalogu, ktory
+# `NNNN-*.md` w `agent-v2/data/articles`, czyli w katalogu, ktory
 # jest w `.gitignore`. Na swiezym klonie i na serwerze tego pliku nie ma
 # Z DEFINICJI, wiec asercja „material dowodowy jest pod reka" oblewala zawsze
 # i wszedzie poza jedna maszyna. Test, ktory na czysto zainstalowanym
@@ -74,7 +77,7 @@ def sprawdz(nazwa, warunek, szczegol=""):
 # Sklada sie go wiec z wycinkow ponizej.
 KANDYDACI = []
 
-# WYCINKI VERBATIM Z 0025 — to jest material dowodowy, ktory JEST w
+# WYCINKI, ktore ida do bramek — to jest material dowodowy, ktory JEST w
 # repozytorium, i on idzie do bramek ZAWSZE, takze wtedy, gdy pelny artykul
 # lezy obok. Dzieki temu ten plik mierzy na serwerze to samo, co lokalnie.
 WYCINKI = """Turn over almost any packaged part and you will find a small stamp pressed into the base. In one survey, 68% of buyers thought the stamp meant the part had been individually tested.
@@ -113,9 +116,9 @@ _OTWARCIE = ("Turn over almost any packaged part and you will find a stamp "
              "pressed into the base. It is a claim about which grade the "
              "material belongs to, made by whoever pressed it, and nothing "
              "about the shape of the mark says who checked.")
-PELNY_0025 = "\n\n".join([_OTWARCIE] + _TRESC * 3 + _GRANICE)
+PELNY_TEKST = "\n\n".join([_OTWARCIE] + _TRESC * 3 + _GRANICE)
 
-# Bramki dostaja WYCINKI — te same wszedzie. Pelny 0025 dostaje osobna,
+# Bramki dostaja WYCINKI — te same wszedzie. Pelny tekst dostaje osobna,
 # jawnie oznaczona sekcje na koncu pliku.
 ARTYKUL = WYCINKI
 
@@ -125,17 +128,17 @@ KARTA = {"confirmed_claims": [
 ]}
 
 print("=== 0. MATERIAL DOWODOWY ===")
-print("    do bramek idą: wycinki verbatim z 0025 (%d słów) — wszędzie te same"
+print("    do bramek idą: wycinki verbatim z tamtego artykulu (%d słów) — wszędzie te same"
       % len(WYCINKI.split()))
-print("    pełny 0025:    %s"
-      % (("%s, %d słów" % (KANDYDACI[0].name, len(PELNY_0025.split())))
+print("    pełny tekst:    %s"
+      % (("%s, %d słów" % (KANDYDACI[0].name, len(PELNY_TEKST.split())))
          if KANDYDACI else "BRAK (data/ jest w .gitignore)"))
 # JEDYNA ASERCJA, KTORA OBLEWA PRZY BRAKU PELNEGO TEKSTU — i mowi wprost,
-# czego brakuje. Docstring obiecuje, ze kazda nowa podloga zapali sie na 0025;
+# czego brakuje. Docstring obiecuje, ze kazda nowa podloga zapali sie na tamtym artykule;
 # bez tego pliku obietnica jest niesprawdzalna, a niesprawdzalna obietnica to
 # w tym repozytorium osobna klasa bledu. Wycinki jej NIE zastepuja: sa krotsze
 # i innego ksztaltu, wiec podlogi pytajace o POLOZENIE nie maja na czym stanac.
-sprawdz("material dowodowy jest pod reka", bool(PELNY_0025),
+sprawdz("material dowodowy jest pod reka", bool(PELNY_TEKST),
         "PELNY sklada sie z wycinkow, wiec nie moze go zabraknac")
 
 print()
@@ -143,7 +146,7 @@ print("=== 1. BUDZET ZASTRZEZEN ===")
 z = gates.zastrzezenia(ARTYKUL)
 print("    znalezione: %s" % [x.lower() for x in z])
 sprawdz("budżet wynosi 1", config.BUDZET_ZASTRZEZEN == 1, config.BUDZET_ZASTRZEZEN)
-sprawdz("0025 przekracza budżet", len(z) > config.BUDZET_ZASTRZEZEN, len(z))
+sprawdz("tamten tekst przekracza budżet", len(z) > config.BUDZET_ZASTRZEZEN, len(z))
 sprawdz("łapie 'my reading'", any("my reading" in x.lower() for x in z))
 sprawdz("łapie 'my suspicion'", any("my suspicion" in x.lower() for x in z))
 # KONTRDOWOD: tekst z jednym zastrzezeniem ma przechodzic. Bez tego bramka
@@ -169,7 +172,7 @@ print()
 print("=== 3. ZAKAZANE OTWARCIE ===")
 o = gates.zakazane_otwarcie(ARTYKUL)
 print("    %s" % (o[:96] or "(nic)"))
-sprawdz("0025 otwiera się zakazanie", bool(o), "nie złapane")
+sprawdz("tamten tekst otwiera się zakazanie", bool(o), "nie złapane")
 sprawdz("to jest 'Turn over'", o.lower().startswith("turn over"), o[:40])
 for zle in ("Look at the label on your jar.", "Next time you board a plane, look up.",
             "Most people think the date is a safety limit.", "We all know the drill."):
@@ -185,7 +188,7 @@ print("=== 4. STATYSTYKA BEZ ZRODLA ===")
 s = gates.statystyki_bez_zrodla(ARTYKUL)
 for x in s:
     print("    %s" % x[:100])
-sprawdz("0025 ma taką statystykę", bool(s), "nie złapane")
+sprawdz("tamten tekst ma taką statystykę", bool(s), "nie złapane")
 sprawdz("to jest 'In one survey, 68%'",
         any("in one survey" in x.lower() for x in s), s)
 # KONTRDOWOD 1: niby-zrodlo BEZ liczby jest nieszkodliwe i ma przechodzic.
@@ -200,7 +203,7 @@ print()
 print("=== 5. NIEWIADOME NA KONCU ===")
 # TA PODLOGA PYTA O POLOZENIE, a nie o istnienie granic — wiec na wycinkach
 # NIE MA CZEGO ZMIERZYC: skrot ma szesc akapitow zamiast dwunastu i ten sam
-# akapit wypada w nim na innej glebokosci. Prawdziwy pomiar na 0025 jest
+# akapit wypada w nim na innej glebokosci. Prawdziwy pomiar na tamtym artykule jest
 # w sekcji 5b; tutaj zostaja oba kontrdowody, ktore stoja na wlasnym
 # materiale i dzialaja wszedzie tak samo.
 # KONTRDOWOD 1: pojedyncza niewiadoma nie jest passusem.
@@ -217,22 +220,22 @@ sprawdz("ten sam akapit na początku przechodzi",
         gates.niewiadome_na_koncu(wczesnie) == "", gates.niewiadome_na_koncu(wczesnie))
 
 print()
-print("=== 5b. POLOZENIE AKAPITU GRANIC — TYLKO NA PELNYM 0025 ===")
-if PELNY_0025:
-    n = gates.niewiadome_na_koncu(PELNY_0025)
+print("=== 5b. POLOZENIE AKAPITU GRANIC — TYLKO NA PELNYM tamten tekst ===")
+if PELNY_TEKST:
+    n = gates.niewiadome_na_koncu(PELNY_TEKST)
     print("    %s" % (n[:110] or "(nic)"))
-    sprawdz("0025 ma zbiorczy akapit granic na końcu", bool(n), "nie złapane")
+    sprawdz("tamten tekst ma zbiorczy akapit granic na końcu", bool(n), "nie złapane")
     sprawdz("i jest w ostatniej trzeciej",
             n.startswith(("6", "7", "8", "9", "1")), n[:12])
-    _odc_pelny = gates.odcisk_formy(PELNY_0025)
-    sprawdz("odcisk pełnego 0025 widzi, że otwarcie nie ma liczby",
+    _odc_pelny = gates.odcisk_formy(PELNY_TEKST)
+    sprawdz("odcisk pełnego tamten tekst widzi, że otwarcie nie ma liczby",
             _odc_pelny["liczba_w_otwarciu"] is False, _odc_pelny)
     sprawdz("i widzi granice na końcu",
             _odc_pelny["granice_na_koncu"] is True, _odc_pelny)
 else:
     # NIE `sprawdz(..., True)`. Asercja, ktora nie moze oblac, zawyza licznik
     # zdanych i niczego nie pilnuje — o braku dowodu powiedziala juz sekcja 0.
-    print("    POMINIETE — brak pełnego 0025 (sekcja 0 już to zgłosiła)")
+    print("    POMINIETE — brak pełnego tamten tekst (sekcja 0 już to zgłosiła)")
 
 print()
 print("=== 6. ODCISK FORMY — PILNUJE SAMEJ NAPRAWY ===")
@@ -287,18 +290,18 @@ print("    na wycinkach: %s" % sorted(nazwy))
 # pelnego tekstu, wiec jest nizej.
 for g in ("BUDZET_ZASTRZEZEN", "OBWIESZCZONA_POWSCIAGLIWOSC", "ZAKAZANE_OTWARCIE",
           "STATYSTYKA_BEZ_ZRODLA", "ODCISK_FORMY"):
-    sprawdz("%-28s zapala się na wycinkach 0025" % g, g in nazwy)
+    sprawdz("%-28s zapala się na wycinkach tamten tekst" % g, g in nazwy)
 
-if PELNY_0025:
-    uwagi_pelne, nazwy_pelne = zapalone(PELNY_0025)
-    print("    na pełnym 0025: %s" % sorted(nazwy_pelne))
-    # TU JEST OBIETNICA Z DOCSTRINGU: kazda podloga MUSI sie zapalic na 0025.
+if PELNY_TEKST:
+    uwagi_pelne, nazwy_pelne = zapalone(PELNY_TEKST)
+    print("    na pełnym tamten tekst: %s" % sorted(nazwy_pelne))
+    # TU JEST OBIETNICA Z DOCSTRINGU: kazda podloga MUSI sie zapalic na tamtym artykule.
     for g in ("BUDZET_ZASTRZEZEN", "OBWIESZCZONA_POWSCIAGLIWOSC",
               "ZAKAZANE_OTWARCIE", "STATYSTYKA_BEZ_ZRODLA",
               "NIEWIADOME_NA_KONCU", "ODCISK_FORMY"):
-        sprawdz("%-28s zapala się na pełnym 0025" % g, g in nazwy_pelne)
+        sprawdz("%-28s zapala się na pełnym tamten tekst" % g, g in nazwy_pelne)
 else:
-    print("    POMINIETE — brak pełnego 0025 (sekcja 0 już to zgłosiła)")
+    print("    POMINIETE — brak pełnego tamten tekst (sekcja 0 już to zgłosiła)")
 
 print()
 print("=== 8. NIC NIE BLOKUJE ARTYKULU ===")

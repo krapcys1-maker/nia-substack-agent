@@ -39,7 +39,7 @@ drwxrwxr-x  2 ubuntu ubuntu   4096 2026-08-18 cache
 0019-the-yellow-light-is-a-local-calculation-not-a-universal-one.uwagi.md
 0020-the-fossil-of-a-vote.md
 0020-the-fossil-of-a-vote.uwagi.md
-0025-the-number-on-the-bottom-of-the-bottle-was-never-talking-to-.md
-0025-the-number-on-the-bottom-of-the-bottle-was-never-talking-to-.png
-0025-the-number-on-the-bottom-of-the-bottle-was-never-talking-to-.uwagi.md
+NNNN-example-article-slug.md
+NNNN-example-article-slug.png
+NNNN-example-article-slug.uwagi.md
 ```

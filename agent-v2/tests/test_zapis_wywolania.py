@@ -1,6 +1,6 @@
 """Zapis wywolania do bazy: kolumna z wartoscia domyslna nie moze wysadzac INSERT-a.
 
-TO NIE JEST TEST TEORETYCZNY. Kosztowal okladke artykulu 0025, ktory poszedl na
+TO NIE JEST TEST TEORETYCZNY. Kosztowal okladke artykulu tamten artykul, ktory poszedl na
 zywo bez naglowka graficznego, i o wlos nie kosztowal czegos gorszego.
 
 Co sie stalo: dopisalem do `calls` kolumne `cache_hit INTEGER NOT NULL DEFAULT 0`.
