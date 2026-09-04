@@ -160,6 +160,9 @@ each still had a new one.
 | 10 | every domain in the source, counted | **three people's personal websites**, eighty occurrences across five files. Sweep 3 hunted a name glued into a *subdomain*; here the name was the *whole* domain, `www.<firstnamesurname>.com` |
 | 11 | the shape `<something>.substack.com` | **eleven real accounts.** A handle can be one lower-case word with no dot and no capital, so no sweep looking for names, addresses or numbers could ever see one |
 | 12 | every count claimed in a document, against the tree | **the number of functions stood in six documents in five versions** (548, 548, 535, 529, 519, 519) while the tree held 549 — and one of those documents is the chapter titled *"Every number in the original README was out of date"*. Two of the disagreements were not errors at all but different counting rules nobody had written down |
+| 13 | the niche's name as a **two-letter token** | it was in the *name* of a constant (`PRZESTAWIENIE_KONTA_NA_AI`), in a dictionary **key**, and in a header printed to the owner: *"EPOKA AI … OSOBNO OD EPOKI UKRYTYCH SYSTEMOW"* — both the current subject and the previous one, in one line. Unsearchable: two capitals, and the same letters appear legitimately in the same repo (Substack's own "Scan for AI text" feature) |
+| 14 | module-level constants holding a **date literal** | the **fifth** copy of the account's pivot date, in a constant with the same name as the second one — it survived the fix to that one because the test's list of places was hand-written |
+| 15 | the `systemd/` directory, read as if it were code | six units carrying **another machine's install path** twice each, another machine's user, and a placeholder brand in `Description=`. The audit reads these files, but it hunts identity patterns, and `/home/ubuntu/...` is not a name — it is a path |
 
 **What only reading found.** Three system messages — `CURIOSITY_SYSTEM`,
 `BANK_SYSTEM`, `FEDREG_SYSTEM` — had the niche written into them literally. This
@@ -252,14 +255,17 @@ rather than a percentage, because a percentage hides which half you got.
 | `browser.py` | 5,204 | **all of it** |
 | `run.py` | 2,845 | **all of it** |
 | `config.py` | 2,985 | **all of it** |
+| `wzajemnosc.py` | 1,442 | **all of it** |
 | `llm.py` | 823 | most |
 | `konfiguracja.py`, `jezyki.py`, `style.py` | ~800 | all — they were rewritten |
 | `audyt_systemu.py`, `audyt_tematow.py` | 980 | the parts touched here |
-| the other 15 modules | ~9,000 | **not yet** |
+| `norma.py` | 1,120 | the first quarter |
+| `raport_statystyk.py`, `korpus_kanalow.py` | 660 | the parts touched here |
+| the other 12 modules | ~7,900 | **not yet** |
 | the 143 test files | 39,086 | roughly 35 of them, in the parts touched |
 
-That is 18,435 of the 29,844 lines in the agent's modules — 62% — and it is
-the four files that carry every publishing decision and every setting.
+That is 20,150 of the 29,940 lines in the agent's modules — 67% — and it is
+the five files that carry every publishing decision and every setting.
 
 The unread part has been through all thirteen sweeps but not through a person's
 eyes. Every one of those sweeps found something the earlier ones could not, and
