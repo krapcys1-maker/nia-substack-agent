@@ -36,7 +36,27 @@ from pathlib import Path
 KORZEN = Path(__file__).resolve().parent
 
 # Pliki, w ktorych moze stac cokolwiek zatrzymujacego tresc.
-PLIKI = ("stages.py", "run.py", "browser.py", "artykul_z_puli.py")
+#
+# WYLICZANE, NIE WYPISANE. Stalo tu
+# `("stages.py", "run.py", "browser.py", "artykul_z_puli.py")` — cztery moduly
+# z dwudziestu pieciu. Bramka, ktora wyladuje w `gates.py`, `kanal.py` albo
+# `norma.py`, nie pojawilaby sie w odpowiedzi na pytanie „czy cos sie blokuje";
+# a to jest JEDYNE pytanie, dla ktorego ten przyrzad istnieje.
+#
+# Docstring tego pliku mowi, ze lista wyliczona z drzewa skladni „nie moze sie
+# rozjechac z kodem, bo jest kodem odczytanym". Zgoda dotyczyla jednego
+# poziomu: BRAMKI byly wyliczane, a PLIKI wypisane recznie.
+#
+# Przyrzad, ktory odpowiada „nie ma bramek", bo nie zajrzal tam, gdzie stoja,
+# jest gorszy od braku przyrzadu: daje spokoj, ktorego nikt nie zweryfikowal.
+def _moduly_agenta() -> tuple[str, ...]:
+    """Wszystkie moduly agenta, alfabetycznie. Bez testow i bez tego pliku."""
+    return tuple(sorted(
+        p.name for p in KORZEN.glob("*.py")
+        if p.name != Path(__file__).name))
+
+
+PLIKI = _moduly_agenta()
 
 # Funkcje, ktorych wywolanie ZNACZY „tresc idzie w swiat". Wszystko, co stoi
 # miedzy decyzja a nimi, jest potencjalna bramka.

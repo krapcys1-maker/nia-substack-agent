@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 25 |
-| functions and methods | 556 |
+| functions and methods | 557 |
 | functions that call a paid model | 25 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 41 |
@@ -42,7 +42,7 @@ For paid calls the verdict comes from
 | [`audyt_researchu.py`](#agent-v2audyt-researchu-py) | 3 | 0 | 0 | 0 | Audyt segmentu researchu na ZYWYCH danych, jednym poleceniem. |
 | [`audyt_systemu.py`](#agent-v2audyt-systemu-py) | 7 | 0 | 1 | 0 | Audyt CALEGO systemu na zywych danych, jednym poleceniem. |
 | [`audyt_tematow.py`](#agent-v2audyt-tematow-py) | 4 | 0 | 0 | 0 | Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem. |
-| [`bramki.py`](#agent-v2bramki-py) | 7 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
+| [`bramki.py`](#agent-v2bramki-py) | 8 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
 | [`browser.py`](#agent-v2browser-py) | 97 | 0 | 44 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
 | [`config.py`](#agent-v2config-py) | 33 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
 | [`db.py`](#agent-v2db-py) | 11 | 0 | 0 | 7 | Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK. |
@@ -208,17 +208,18 @@ Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem.
 
 Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci.
 
-7 funkcji.
+8 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 48 | `_zrodlo(nazwa)` | — | — | `bramki.przerwania_w_petlach`, `bramki.warunki_przed_wystawieniem`, `bramki.wstrzymania_publikacji` |
-| 60 | `_komentarz_nad(linie, nr, ile)` | — | Ostatnia linia komentarza nad wskazanym wierszem — zwykle uzasadnienie. | `bramki.przerwania_w_petlach`, `bramki.wstrzymania_publikacji` |
-| 74 | `_rodzic_funkcji(drzewo)` | — | Mapa: numer wiersza -> nazwa funkcji, w ktorej ten wiersz lezy. | `bramki.przerwania_w_petlach`, `bramki.warunki_przed_wystawieniem`, `bramki.wstrzymania_publikacji` |
-| 84 | `wstrzymania_publikacji(pelne)` | — | Kazde miejsce, ktore ustawia `safe_to_post` na falsz. | `bramki.raport` |
-| 113 | `warunki_przed_wystawieniem(pelne)` | — | Kazde wystawienie tresci i warunki, pod ktorymi stoi. | `bramki.raport` |
-| 157 | `przerwania_w_petlach()` | — | `continue` i `return` w petlach po kandydatach — czyli „ten odpada". | `bramki.raport` |
-| 207 | `raport(pelne)` | — | — | `bramki (poziom modulu)` |
+| 52 | `_moduly_agenta()` | — | Wszystkie moduly agenta, alfabetycznie. | `bramki (poziom modulu)` |
+| 68 | `_zrodlo(nazwa)` | — | — | `bramki.przerwania_w_petlach`, `bramki.warunki_przed_wystawieniem`, `bramki.wstrzymania_publikacji` |
+| 80 | `_komentarz_nad(linie, nr, ile)` | — | Ostatnia linia komentarza nad wskazanym wierszem — zwykle uzasadnienie. | `bramki.przerwania_w_petlach`, `bramki.wstrzymania_publikacji` |
+| 94 | `_rodzic_funkcji(drzewo)` | — | Mapa: numer wiersza -> nazwa funkcji, w ktorej ten wiersz lezy. | `bramki.przerwania_w_petlach`, `bramki.warunki_przed_wystawieniem`, `bramki.wstrzymania_publikacji` |
+| 104 | `wstrzymania_publikacji(pelne)` | — | Kazde miejsce, ktore ustawia `safe_to_post` na falsz. | `bramki.raport` |
+| 133 | `warunki_przed_wystawieniem(pelne)` | — | Kazde wystawienie tresci i warunki, pod ktorymi stoi. | `bramki.raport` |
+| 177 | `przerwania_w_petlach()` | — | `continue` i `return` w petlach po kandydatach — czyli „ten odpada". | `bramki.raport` |
+| 227 | `raport(pelne)` | — | — | `bramki (poziom modulu)` |
 
 ---
 

@@ -510,10 +510,11 @@
 
 ### `bramki.py` — co może zatrzymać treść — wyliczone z drzewa składni, nie spisane z pamięci
 
-258 wierszy, 7 funkcji na poziomie modułu, 0 klas
+278 wierszy, 8 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
+| `_moduly_agenta()` *(wewn.)* | Wszystkie moduly agenta, alfabetycznie. Bez testow i bez tego pliku. |
 | `_zrodlo(nazwa)` *(wewn.)* | — |
 | `_komentarz_nad(linie, nr, ile)` *(wewn.)* | Ostatnia linia komentarza nad wskazanym wierszem — zwykle uzasadnienie. |
 | `_rodzic_funkcji(drzewo)` *(wewn.)* | Mapa: numer wiersza -> nazwa funkcji, w ktorej ten wiersz lezy. |
