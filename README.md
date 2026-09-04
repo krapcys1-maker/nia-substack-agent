@@ -7,7 +7,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 141 tests · 16 gates on every finished text
+26 model roles · 141 tests · 12 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -25,7 +25,7 @@ replace. [docs/INSTALL.md](docs/INSTALL.md) says exactly where.
 
 Most content bots are one prompt and one model. This one has **26 distinct model
 roles**, a research pipeline that fetches and classifies primary documents
-before a word is written, and **sixteen deterministic gates** that read the
+before a word is written, and **12 deterministic gates** that read the
 finished text back against the evidence it was supposed to rest on.
 
 Four decisions explain most of the code.

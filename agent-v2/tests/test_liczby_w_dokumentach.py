@@ -64,6 +64,7 @@ Po poprawce przebuduj dokument sklejany:
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
     PYTHONIOENCODING=utf-8 python agent-v2/tests/test_liczby_w_dokumentach.py
 """
+import ast
 import pathlib
 import re
 import sys
@@ -102,6 +103,45 @@ import mapa_funkcji  # noqa: E402
 _zebrane = mapa_funkcji.zbierz()
 ILE_FUNKCJI = sum(len(z.funkcje) for z, _, _ in _zebrane.values())
 
+def _ile_bramek() -> int:
+    """Ile bramek NAPRAWDE chodzi na gotowym tekscie — z grafu wywolan.
+
+    README podawal 16 i nikt tego nie przeliczal; prawdziwa liczba to 12.
+    Recznie utrzymywana liczba w tekscie dla ludzi z zewnatrz to ta sama wada,
+    ktora zdjelismy z tabeli „Honest notes": wspomnienie po pomiarze.
+
+    Liczymy domkniecie: bierzemy funkcje z `gates.py` wolane z INNYCH modulow,
+    dokladamy to, co one wolaja wewnatrz `gates.py`, i odejmujemy agregatory —
+    `deterministic_floors` zbiera wyniki, `verdict` wydaje werdykt; zadna
+    z nich nie jest osobnym sprawdzeniem tekstu.
+    """
+    zrodlo_g = (AGENT / "gates.py").read_text(encoding="utf-8")
+    drzewo = ast.parse(zrodlo_g)
+    publiczne = {w.name for w in drzewo.body
+                 if isinstance(w, ast.FunctionDef) and not w.name.startswith("_")}
+    wewnetrzne = {
+        w.name: {n.func.id for n in ast.walk(w)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                 and n.func.id in publiczne}
+        for w in drzewo.body if isinstance(w, ast.FunctionDef)
+    }
+    z_zewnatrz = set()
+    for p in AGENT.glob("*.py"):
+        if p.name == "gates.py":
+            continue
+        tekst = p.read_text(encoding="utf-8")
+        z_zewnatrz |= {n for n in publiczne
+                       if re.search(r"gates\.%s\s*\(" % n, tekst)}
+    zywe, kolejka = set(), list(z_zewnatrz)
+    while kolejka:
+        n = kolejka.pop()
+        if n in zywe:
+            continue
+        zywe.add(n)
+        kolejka += list(wewnetrzne.get(n, ()))
+    return len(zywe - {"deterministic_floors", "verdict"})
+
+
 POMIARY = {
     "moduly": (len(MODULY),
                "pliki .py lezace BEZPOSREDNIO w agent-v2/ (bez tests/, "
@@ -114,6 +154,9 @@ POMIARY = {
     "prompty": (len(PROMPTY), "pliki agent-v2/prompts/*.md"),
     "wiersze_promptow": (_wierszy(PROMPTY), "wiersze tych plikow"),
     "wiersze_modulow": (_wierszy(MODULY), "wiersze tych modulow"),
+    "bramki": (_ile_bramek(),
+               "funkcje z gates.py, ktore NAPRAWDE chodza na gotowym tekscie "
+               "— wywiedzione z grafu wywolan, bez agregatorow"),
 }
 
 # (plik, wzorzec, nazwy pomiarow — po jednej na grupe we wzorcu)
@@ -121,6 +164,10 @@ MIEJSCA = [
     ("README.md",
      r"\*\*(\d+) functions\*\* in (\d+) modules", ("funkcje", "moduly")),
     ("README.md", r"(\d+) tests · ", ("testy",)),
+    # „16 gates" stalo w dwoch miejscach README i nikt tego nie
+    # przeliczal. Prawdziwa liczba, z grafu wywolan, to 12.
+    ("README.md", r"(\d+) gates on every finished text", ("bramki",)),
+    ("README.md", r"(\d+) deterministic gates", ("bramki",)),
     # Akapit „Honest notes". Stala tam tabela z liczbami przejsc
     # (102/103/104), ktorej nikt nie przeliczal — zdryfowala do 102
     # przy prawdziwych 137. Zostala jedna liczba i jest liczona
