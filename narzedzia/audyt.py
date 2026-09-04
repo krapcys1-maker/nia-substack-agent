@@ -387,6 +387,39 @@ def main() -> int:
     sprawdz("uchwyt konta ma JEDNO zrodlo",
             config.SUBSTACK_HANDLE == __import__("browser").PROFIL_HANDLE)
 
+    # ODWOLANIA DO STALYCH, KTORYCH NIE MA. Znalezione czytaniem `alarm.py`:
+    # `config.NOTEK_DZIENNIE` nie istnieje w tym projekcie, a stalo w warunku
+    # razem z `getattr(config, "NOTEK_DZIENNIE", None)` — czyli galaz nie mogla
+    # sie wykonac ANI RAZU i nic nie protestowalo, bo `getattr` z domyslna
+    # wartoscia nie rzuca. Kod czytalo sie jak konfigurowalny.
+    #
+    # Ta sama klasa, co asercja, ktora sie nie wykonuje: zapis wyglada na
+    # dzialajacy, bo nikt nie sprawdzil, czy jest osiagalny.
+    martwe = []
+    for p in sorted((KORZEN / "agent-v2").rglob("*.py")):
+        if "/tests/" in p.as_posix():
+            continue
+        try:
+            drzewo = ast.parse(p.read_text(encoding="utf-8"))
+        except (SyntaxError, OSError):
+            continue
+        for w in ast.walk(drzewo):
+            if (isinstance(w, ast.Attribute) and isinstance(w.value, ast.Name)
+                    and w.value.id == "config" and w.attr.isupper()
+                    and not hasattr(config, w.attr)):
+                martwe.append("%s:%d config.%s" % (p.name, w.lineno, w.attr))
+            elif (isinstance(w, ast.Call) and isinstance(w.func, ast.Name)
+                  and w.func.id == "getattr" and len(w.args) >= 2
+                  and isinstance(w.args[0], ast.Name) and w.args[0].id == "config"
+                  and isinstance(w.args[1], ast.Constant)
+                  and isinstance(w.args[1].value, str)
+                  and w.args[1].value.isupper()
+                  and not hasattr(config, w.args[1].value)):
+                martwe.append("%s:%d getattr(config, %r)"
+                              % (p.name, w.lineno, w.args[1].value))
+    sprawdz("kod nie siega po stale konfiguracji, ktorych nie ma",
+            not martwe, "; ".join(sorted(set(martwe))))
+
     print()
     print("=== 8. SPOJNOSC: PROGI PILNOWANE PRZEZ TESTY ===")
     sprawdz("hasel szukania jest >= 19", len(config.HASLA_SZUKANIA) >= 19,
@@ -414,6 +447,20 @@ def main() -> int:
 
     print()
     print("=== 9. KONTRDOWOD: CZY TEN AUDYT W OGOLE COKOLWIEK LAPIE ===")
+    # F: skan martwych stalych musi umiec zobaczyc odwolanie do nieistniejacej.
+    _probka = ast.parse("x = config.STALA_KTOREJ_NIE_MA\n")
+    _trafione = [w.attr for w in ast.walk(_probka)
+                 if isinstance(w, ast.Attribute) and isinstance(w.value, ast.Name)
+                 and w.value.id == "config" and w.attr.isupper()
+                 and not hasattr(config, w.attr)]
+    sprawdz("F: martwa stala      lapie", _trafione == ["STALA_KTOREJ_NIE_MA"],
+            _trafione)
+    _zywa = ast.parse("x = config.DATA_DIR\n")
+    _trafione2 = [w.attr for w in ast.walk(_zywa)
+                  if isinstance(w, ast.Attribute) and isinstance(w.value, ast.Name)
+                  and w.value.id == "config" and w.attr.isupper()
+                  and not hasattr(config, w.attr)]
+    sprawdz("F: zywa stala        NIE lapie", not _trafione2, _trafione2)
     # Audyt, ktory zawsze mowi OK, jest nieodrozninalny od audytu zepsutego.
     # Ta sekcja wstrzykuje TRZY przecieki do tekstu w pamieci i sprawdza, ze
     # kazdy zostaje zlapany. Kazdy odpowiada dziurze, ktora NAPRAWDE zdarzyla

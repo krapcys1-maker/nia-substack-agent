@@ -663,7 +663,7 @@ def bank_bez_tematow() -> str | None:
     OSTRZEZENIE PRZED AWARIA, NIE PO NIEJ. Dzien konczacy sie na trzech notkach
     zamiast pieciu wyglada w logu jak decyzja („zostal tylko material o tym
     samym"), a nie jak brak — i przez to nie alarmowal nikogo. Zmierzone
-    2 wrzesnia 2026: bank mial 37 wolnych pozycji i tylko 24 RONZE tematy,
+    2 wrzesnia 2026: bank mial 37 wolnych pozycji i tylko 24 ROZNE tematy,
     bo ten sam fakt o chipie SkladnikA lezal w nim w siedmiu wariantach.
 
     Liczymy wiec nie pozycje, tylko tematy — tym samym porownaniem, ktorego
@@ -686,8 +686,17 @@ def bank_bez_tematow() -> str | None:
                    and stages._wspolna_kotwica(tresc, g) for g in grupy):
             grupy.append(tresc)
 
-    trzeba = config.NOTEK_DZIENNIE if isinstance(getattr(config, "NOTEK_DZIENNIE", None), int) \
-        else len(getattr(config, "NOTE_MIX_OTHER_DAY", [1, 2, 3, 4, 5]))
+    # GALAZ, KTORA NIE MOGLA SIE WYKONAC NIGDY. Stalo tu
+    # `config.NOTEK_DZIENNIE if isinstance(...) else len(NOTE_MIX_OTHER_DAY)`,
+    # a stalej `NOTEK_DZIENNIE` NIE MA w tym projekcie — ani w `config.py`, ani
+    # nigdzie indziej. Kod czytalo sie jak konfigurowalny; jedyna zywa sciezka
+    # byla dlugosc krotki mieszanki, a zapasowa lista `[1, 2, 3, 4, 5]` byla
+    # piecioelementowa po to, zeby dac te sama piatke trzecim sposobem.
+    #
+    # Pytamy o to, o co pyta reszta systemu: `config.normy_dzienne()["notka"]`
+    # — ktore i tak liczy sie z `len(NOTE_MIX_OTHER_DAY)`. Jedno zrodlo
+    # zamiast trzech drog do tej samej liczby.
+    trzeba = int(round(config.normy_dzienne().get("notka", 0)))
     if len(grupy) >= trzeba:
         return None
     return ("Bank ma %d roznych tematow przy %d notkach na dobe (wolnych pozycji"
