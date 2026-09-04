@@ -1,7 +1,7 @@
 # NIA Substack Bot
 
 [![tests](../../actions/workflows/testy.yml/badge.svg)](../../actions/workflows/testy.yml)
-[![license: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](requirements.txt)
 
 An autonomous agent that runs an English-language Substack publication. It picks
@@ -235,22 +235,28 @@ they contain other people's email addresses.
 
 ## License
 
-**GNU Affero General Public License v3.0** — see [LICENSE](LICENSE).
+**MIT** — see [LICENSE](LICENSE). Read it, fork it, run it, build a product on
+it. Keep the copyright notice; that is the whole obligation.
 
-AGPL rather than MIT for one specific reason. This bot is meant to be **run as a
-service**: it sits on a server and operates a publication. Under a permissive
-licence someone could take it, run a paid content operation on it, and give
-nothing back — and because the software is never *distributed*, an ordinary GPL
-would not even apply. AGPL closes that: **if you run a modified version where
-other people can interact with it, you have to publish your changes.**
+**This was AGPL-3.0 until 2026-09-04, and the argument for AGPL was a good
+one**, so it is worth recording what changed rather than quietly swapping the
+file. The case was: this bot is meant to be *run as a service*, so under a
+permissive licence somebody could operate a paid content business on it and
+give nothing back — and because the software is never *distributed*, an
+ordinary GPL would not even bite. AGPL closes exactly that hole.
 
-What that means in practice:
+What outweighed it: **most of the value here is in being read.** The 13,000-line
+generated walkthrough, the cleaning log, the counterproof habit, the record of
+which checks turned out to be doing nothing — that is the part worth having,
+and AGPL keeps it away from a large share of the people who would benefit,
+because plenty of organisations forbid AGPL outright regardless of how the code
+is used. A licence that protects against a business model nobody has yet, at
+the cost of readers who exist now, is the wrong trade for this project.
 
-* read it, learn from it, fork it, run it for yourself — freely;
-* run a modified version as a service — publish the modifications;
-* build a product on it — the product is AGPL too.
-
-If you want it under different terms, ask.
+The risk is real and accepted: somebody can take this, close it, and give
+nothing back. If you are the sort of person who would rather not, the
+contribution that actually helps is a subject pack — see
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Honest notes
 
