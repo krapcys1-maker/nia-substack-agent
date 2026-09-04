@@ -475,6 +475,41 @@ def main() -> int:
 
     print()
     print("=== 8. SPOJNOSC: PROGI PILNOWANE PRZEZ TESTY ===")
+    # CZY WYLICZENIE TERMINU COKOLWIEK ROZROZNIA. `timeout_for()` liczy termin
+    # z sufitu tokenow — na prawdziwym pomiarze (16,08 ms/token, R2 0,98) —
+    # i przycina go do `MAX_TIMEOUT_S`. Gdy KAZDY etap przekracza prog
+    # przyciecia, funkcja zwraca stala i cala arytmetyka nad nia jest ozdoba.
+    #
+    # Zmierzone 2026-09-04: prog to 12 438 tokenow, a najmniejszy sufit
+    # w systemie (`restack`) ma 31 000 — wiec wszystkie 25 etapow dostaje 300 s.
+    # Przyczyna jest plaskie `+THINKING_HEADROOM_TOKENS` doklejane takze do
+    # dziewietnastu etapow, ktorych nie ma w `EFFORT`.
+    _prog_terminu = (config.MAX_TIMEOUT_S
+                     / (config.MS_PER_OUTPUT_TOKEN / 1000 * config.TIMEOUT_MARGIN))
+    _na_sufcie = [n for n, s in config.MAX_TOKENS.items()
+                  if config.timeout_for(s) >= config.MAX_TIMEOUT_S]
+    # POROWNANIE MA BYC UCZCIWE: ile wyszloby, gdyby ten etap NIE niosl plaskiego
+    # zapasu na myslenie. Pierwsza wersja tego komunikatu porownywala 300 s
+    # z 748 s, czyli z wynikiem liczonym Z zapasem — a to jest liczba, ktorej
+    # sufit wlasnie broni, nie liczba, ktora tracimy.
+    _najmniejszy = min(config.MAX_TOKENS, key=config.MAX_TOKENS.get)
+    _baza = config.MAX_TOKENS[_najmniejszy] - (
+        0 if _najmniejszy in config.EFFORT else config.THINKING_HEADROOM_TOKENS)
+    _bez_zapasu = max(1, _baza) * config.MS_PER_OUTPUT_TOKEN / 1000 * config.TIMEOUT_MARGIN
+    if len(_na_sufcie) == len(config.MAX_TOKENS):
+        uwaga("wyliczenie terminu rozroznia etapy",
+              "NIE rozroznia: wszystkie %d etapow saturuje MAX_TIMEOUT_S=%ds."
+              " Prog przyciecia to %.0f tokenow, a najmniejszy sufit ma %d —"
+              " zawieszony `%s` blokuje przebieg %ds; bez plaskiego zapasu na myslenie ten etap mialby %.0fs"
+              % (len(_na_sufcie), config.MAX_TIMEOUT_S, _prog_terminu,
+                 min(config.MAX_TOKENS.values()),
+                 _najmniejszy, config.MAX_TIMEOUT_S, _bez_zapasu))
+    else:
+        sprawdz("wyliczenie terminu rozroznia etapy",
+                True, "%d z %d etapow ponizej sufitu"
+                % (len(config.MAX_TOKENS) - len(_na_sufcie),
+                   len(config.MAX_TOKENS)))
+
     # PROG 19 TO NASZA LICZBA, NIE REGULA. Asercja PONIZEJ (siatka wzorcow)
     # zostala juz na to naprawiona; ta zostala pominieta i cudza instalacja
     # z trzema haslami dostawala BLAD za stan calkowicie poprawny.
