@@ -1090,7 +1090,8 @@ def _ratuj_tekst(run_id, brief, card, draft, etap: str, exc,
         # dopisania zostawiala go w tym stanie na stale.
         sciezka.write_text(
             _ramka(powod, brak, katalog)
-            + "# %s\n\n*%s*\n\n%s\n\n---\n\n## Sources\n\n%s\n"
+            + "# %s\n\n*%s*\n\n%s\n\n---\n\n" + config.NAGLOWEK_ZRODEL
+            + "\n\n%s\n"
             % (draft.get("title", ""), draft.get("subtitle", ""),
                draft["body"], _zrodla(card)),
             encoding="utf-8")

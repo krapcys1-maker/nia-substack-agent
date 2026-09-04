@@ -3602,7 +3602,8 @@ def wstaw_przycisk_subskrypcji(page) -> bool:
     obiecuje oświadczenie o AI. Dwa przyciski byłyby nachalne przy piśmie,
     którego walutą jest powściągliwość.
     """
-    naglowek = page.locator(".tiptap h1, .tiptap h2").filter(has_text="Sources").first
+    naglowek = page.locator(".tiptap h1, .tiptap h2").filter(
+        has_text=config.TYTUL_SEKCJI_ZRODEL).first
     if naglowek.count() == 0:
         print("  przycisk subskrypcji: brak nagłówka źródeł, pomijam", flush=True)
         return False

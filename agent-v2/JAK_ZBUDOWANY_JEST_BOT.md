@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 633 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 721 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 135 zestawów
-testów, 3586 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 3591 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -319,7 +319,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5203 wierszy, 96 funkcji na poziomie modułu, 0 klas
+5204 wierszy, 96 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -444,7 +444,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-555 wierszy, 18 funkcji na poziomie modułu, 0 klas
+599 wierszy, 18 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -487,7 +487,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `jezyki.py` — wzorce bramek zalezne od jezyka; przy jezyku bez wzorcow bramka jest JAWNIE wylaczona zamiast cicho nic nie lapac
 
-257 wierszy, 5 funkcji na poziomie modułu, 0 klas
+279 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -594,7 +594,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3062 wierszy, 32 funkcji na poziomie modułu, 0 klas
+3082 wierszy, 32 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -700,7 +700,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1469 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1470 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -7813,7 +7813,7 @@ def uwagi_z_formy(obserwacja: dict[str, Any], body: str) -> list[dict[str, str]]
     zapisujemy jako informacje dla wlasciciela, ale nie jest wada.
     """
     uwagi: list[dict[str, str]] = []
-    korpus = body.split("## Sources")[0]
+    korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     slow = max(1, len(korpus.split()))
 
     przekonania = obserwacja.get("beliefs") or []
@@ -7882,7 +7882,7 @@ def odcisk_formy(body: str) -> dict[str, Any]:
     szablon — a to jest ta sama wada, ktora juz raz zrobilismy, naprawiajac
     tresc i zamawiajac przy okazji szkielet.
     """
-    korpus = body.split("## Sources")[0]
+    korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     akapity = _akapity(body)
     slowa = korpus.split()
 
@@ -7891,7 +7891,18 @@ def odcisk_formy(body: str) -> dict[str, Any]:
             return "brak"
         return ("0-25", "25-50", "50-75", "75-100")[min(3, int(u * 4))]
 
-    ty = re.search(r"\byou(r)?\b", korpus, re.I)
+    # WZORZEC Z REJESTRU, NIE WPISANY. Stalo tu `r"\byou(r)?\b"` — angielszczyzna
+    # na sztywno w module, ktorego wszystkie pozostale wzorce ida przez
+    # `jezyki.wzorzec(..., config.ARTICLE_LANGUAGE)`. Przy innym jezyku ta cecha
+    # przyjmowala „brak" DLA KAZDEGO tekstu, a cecha stala zgadza sie zawsze:
+    # `powtorzona_forma` wymaga pieciu z szesciu wlasnie dlatego, ze „cztery
+    # zdarzaja sie przypadkiem", wiec faktyczny prog spadal do czterech
+    # z pieciu prawdziwych cech.
+    #
+    # `jezyki.brakujace()` nie mialo jak tego zauwazyc: porownuje jezyki
+    # z angielskim SPISEM, a tego wzorca w spisie nie bylo. Straznik dawal
+    # zielone swiatlo o sobie samym.
+    ty = ZWROT_DO_CZYTELNIKA.search(korpus)
     granice = niewiadome_na_koncu(body)
 
     return {
@@ -7989,7 +8000,20 @@ def frazy_z_instrukcji(body: str, dlugosc: int = 6) -> list[str]:
     sie utrzymuje, gdy prompt sie zmieni.
     """
     def slowa_z(tekst: str) -> list[str]:
-        return re.findall(r"[a-z]+", tekst.lower())
+        r"""Slowa tekstu — LITERY W SENSIE UNICODE, nie alfabet angielski.
+
+        Stalo tu `[a-z]+`. W jezyku z diakrytykami kazda litera z ogonkiem
+        rozcinala slowo na dwa kawalki — w prompcie i w tekscie w INNYCH
+        miejscach — wiec ciagi szesciu slow przestawaly sie zgadzac i bramka
+        nie zglaszala juz NICZEGO. Ta sama cicha awaria, dla ktorej powstal
+        `jezyki.py`; ten wzorzec siedzial w `re.findall`, wiec ani rejestr,
+        ani straznik wzorcow go nie widzial.
+
+        `[^\W\d_]+` znaczy „ciag liter": bez cyfr, bez podkreslenia, bez
+        interpunkcji, ZE wszystkimi alfabetami. Dla angielskiego po `lower()`
+        daje dokladnie to samo, co `[a-z]+`.
+        """
+        return re.findall(r"[^\W\d_]+", tekst.lower(), re.UNICODE)
 
     def ciagi(slowa: list[str]) -> list[tuple[str, ...]]:
         return [tuple(slowa[i:i + dlugosc])
@@ -12964,7 +12988,9 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `REFUSAL_PHRASES` | `( "you have been blocked", "access denied", ` | — |
 | `FETCH_TIMEOUT_S` | `30.0` | — |
 | `FETCH_MIN_CHARS` | `1500` | ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO. Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu. Zmierzone  |
-| `KATALOG_JEDNOSTEK` | `AGENT_DIR / "systemd"` | --- JEDNOSTKI SYSTEMD ------------------------------------------------------ NAZWA JEDNOSTKI NALEZY DO INSTALACJI, nie do bota: kto postawi  |
+| `TYTUL_SEKCJI_ZRODEL` | `"Sources"` | --- JEDNOSTKI SYSTEMD ------------------------------------------------------ NAZWA JEDNOSTKI NALEZY DO INSTALACJI, nie do bota: kto postawi  |
+| `NAGLOWEK_ZRODEL` | `"## " + TYTUL_SEKCJI_ZRODEL` | — |
+| `KATALOG_JEDNOSTEK` | `AGENT_DIR / "systemd"` | — |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | Wartosc domyslna; przeliczana po wczytaniu konfiguracji. |
 | `W_TESCIE` | `_w_darmowym_tescie()` | Jedna nazwa, dwie zapory. Wykrywanie sluzy juz nie tylko pieniadzom: darmowy test nie ma tez prawa DOPISYWAC DO PRODUKCYJNYCH DANYCH. Zmierz |
 | `WOLNO_WOLAC_MODEL` | `not W_TESCIE` | Test platny albo swiadomy skrypt moze to podniesc: `config.WOLNO_WOLAC_MODEL = True`. |

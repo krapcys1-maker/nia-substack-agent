@@ -2491,6 +2491,26 @@ def _znacznik_klienta(marka: str) -> str:
 # JEDNO MIEJSCE, BO INACZEJ ZARAZ BEDA DWA. `norma.py` szukalo zegara wlasnym
 # kodem, `alarm.py` mial nazwe wpisana w tresc maila; obie potrzeby sa tej
 # samej wielkosci co cztery kopie daty przestawienia konta.
+# --- SEKCJA ZRODEL POD ARTYKULEM --------------------------------------------
+#
+# Naglowek pisze KOD (`stages.save` i sciezka ratunku), a potem rozdziela po nim
+# tresc od odnosnikow WSZYSTKO, co mierzy artykul: akapity dla bramek formy,
+# zdania z liczba, glebokosc akapitu w tekscie, dlugosci w audycie, a takze
+# `browser` szukajacy naglowka w edytorze.
+#
+# BYL WPISANY W OSMIU MIEJSCACH. Gdy jedno przestanie pasowac — a wystarczy
+# zmiana `ARTICLE_LANGUAGE`, ktora JEST polem konfiguracji — pomiary po cichu
+# zaczynaja liczyc takze liste odnosnikow: same adresy i liczby. Bramka liczb
+# dostaje wtedy cyfry z URL-i, akapitow przybywa o cala liste, a „ostatnia
+# trzecia tekstu" przesuwa sie o dlugosc sekcji zrodel. Zaden z osmiu
+# fragmentow nie wyglada przy tym na zepsuty.
+#
+# TYTUL OSOBNO OD NAGLOWKA, bo `browser` szuka w edytorze samego tytulu
+# (element `h2` z tekstem), a nie linii markdownu.
+TYTUL_SEKCJI_ZRODEL = "Sources"
+NAGLOWEK_ZRODEL = "## " + TYTUL_SEKCJI_ZRODEL
+
+
 KATALOG_JEDNOSTEK = AGENT_DIR / "systemd"
 
 

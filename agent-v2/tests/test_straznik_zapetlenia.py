@@ -56,10 +56,16 @@ sys.path.insert(0, "agent-v2")
 import config  # noqa: E402
 
 # KATALOG DANYCH PODMIENIONY PRZED IMPORTEM `alarm`, bo to on decyduje, ktory
-# `dziennik.jsonl` czytamy. Darmowy test nie dotyka produkcyjnych danych — ta
-# sama zasada, co w `test_pochodne_po_konfiguracji.py`.
+# `dziennik.jsonl` czytamy. Darmowy test nie dotyka produkcyjnych danych.
+#
+# PRZEZ `uzyj_katalogu_danych`, NIE PRZEZ GOLE PRZYPISANIE. Pierwsza wersja tego
+# pliku robila `config.DATA_DIR = _KATALOG` i oblala `test_komplet_sciezek.py`
+# sekcja 3 — bramke, ktora ten projekt postawil wlasnie na to: z `DATA_DIR`
+# liczy sie CALY komplet sciezek (`DB_PATH`, `ARTICLES_DIR`, stale w innych
+# modulach), wiec gole przypisanie przestawia jedna z nich, a reszta dalej
+# celuje w produkcje. Bramka zadzialala na swiezym pliku od razu.
 _KATALOG = pathlib.Path(tempfile.mkdtemp(prefix="straznik-"))
-config.DATA_DIR = _KATALOG
+_STARE_SCIEZKI = config.uzyj_katalogu_danych(_KATALOG)
 
 import alarm  # noqa: E402
 
@@ -176,6 +182,7 @@ try:
     (_KATALOG / "dziennik.jsonl").unlink()
     sprawdz("bez dziennika -> cisza", alarm.nadaktywnosc() is None)
 finally:
+    config.przywroc_katalog_danych(_STARE_SCIEZKI)
     shutil.rmtree(_KATALOG, ignore_errors=True)
 
 print()

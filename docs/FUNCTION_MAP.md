@@ -149,7 +149,7 @@ Artykul bierze temat z tej samej puli, co notki.
 | 916 | `_ramka(powod, brak, katalog)` | — | Ostrzezenie, ktore idzie na POCZATEK `.md`, a nie tylko obok niego. | `artykul_z_puli._ratuj_tekst` |
 | 988 | `_zrodla(card)` | — | Sekcja `## Sources` — bez pytania bazy o nazwy zrodel. | `artykul_z_puli._ratuj_tekst` |
 | 1006 | `_ratuj_tekst(run_id, brief, card, draft, etap, exc, raport)` | — | Gotowy tekst na dysk, gdy budzet albo wylacznik przerywa PO pisaniu. | `artykul_z_puli._napisz_i_zapisz` |
-| 1130 | `_napisz_i_zapisz(conn, run_id, brief, card)` | — | Od bramki „warto pisac" do zapisu i grafiki. | `artykul_z_puli._przebieg` |
+| 1131 | `_napisz_i_zapisz(conn, run_id, brief, card)` | — | Od bramki „warto pisac" do zapisu i grafiki. | `artykul_z_puli._przebieg` |
 
 ---
 
@@ -305,29 +305,29 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 | 3469 | `rozbierz_artykul(sciezka)` | — | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. | `browser.wystaw_artykul` |
 | 3552 | `wypelnij_artykul(page, artykul, obraz)` | WWW | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. | `browser.wystaw_artykul` |
 | 3597 | `wstaw_przycisk_subskrypcji(page)` | WWW | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. | `browser.wypelnij_artykul` |
-| 3633 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
-| 3648 | `ustaw_oswiadczenie_ai(wyslij)` | WWW DEAD? | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | — |
-| 3726 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 3840 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser.wystaw_artykul` |
-| 3850 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
-| 3947 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
-| 3980 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
-| 4016 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
-| 4187 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki` |
-| 4308 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
-| 4335 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
-| 4349 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
-| 4394 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
-| 4514 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
-| 4582 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
-| 4620 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
-| 4658 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
-| 4668 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
-| 4701 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
-| 4759 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
-| 4972 | `read_pages(urls)` | WWW | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
-| 5009 | `restackuj_w_kanale(ile, decyzja, wyslij)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
-| 5176 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.restackuj_w_kanale` |
+| 3634 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
+| 3649 | `ustaw_oswiadczenie_ai(wyslij)` | WWW DEAD? | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | — |
+| 3727 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 3841 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser.wystaw_artykul` |
+| 3851 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
+| 3948 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
+| 3981 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
+| 4017 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
+| 4188 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki` |
+| 4309 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
+| 4336 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
+| 4350 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
+| 4395 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
+| 4515 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
+| 4583 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
+| 4621 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
+| 4659 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
+| 4669 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
+| 4702 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
+| 4760 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
+| 4973 | `read_pages(urls)` | WWW | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
+| 5010 | `restackuj_w_kanale(ile, decyzja, wyslij)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
+| 5177 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.restackuj_w_kanale` |
 
 ---
 
@@ -360,19 +360,19 @@ Jedyne miejsce ze stałymi.
 | 1966 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
 | 2418 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._deepseek_pick_from_urls` |
 | 2477 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
-| 2497 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
-| 2520 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
-| 2529 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
-| 2558 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
-| 2613 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
-| 2628 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
-| 2649 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
-| 2677 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
-| 2712 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
-| 2832 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
-| 2840 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
-| 2945 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
-| 3002 | `co_teraz_w_reku(kiedy)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
+| 2517 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
+| 2540 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
+| 2549 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
+| 2578 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
+| 2633 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
+| 2648 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
+| 2669 | `uzyj_katalogu_danych(katalog, utworz)` | DEAD? | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | — |
+| 2697 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
+| 2732 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
+| 2852 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
+| 2860 | `losowa_liczba_paraleli(glebokosc)` | — | Ile paraleli w drugim akcie. | `stages.write` |
+| 2965 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
+| 3022 | `co_teraz_w_reku(kiedy)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
 
 ---
 
@@ -408,27 +408,27 @@ Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 66 | `_digit_tokens(text)` | — | — | `gates._korpus_pobranych`, `gates.deterministic_floors`, `gates.numbers_outside_corpus` |
-| 70 | `_niepobrane(card)` | — | Twierdzenia oznaczone `not_fetched` — dolozone, nie wyciagniete. | `gates.deterministic_floors` |
-| 82 | `_korpus_pobranych(card)` | — | Liczby z materialu, ktory NAPRAWDE pobralismy. | `gates.numbers_outside_corpus` |
-| 123 | `numbers_outside_corpus(body, card)` | — | Liczby w tekście, których nie ma nigdzie w POBRANYM materiale. | `gates.deterministic_floors` |
-| 129 | `deterministic_floors(body, card, poprzednie)` | — | Podłogi bez modelu: 0 USD, milisekundy, zero wywołań. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 226 | `_akapity(body)` | — | — | `gates.niewiadome_na_koncu`, `gates.odcisk_formy`, `gates.zakazane_otwarcie` |
-| 231 | `zastrzezenia(body)` | — | Zastrzezenia w pierwszej osobie. | `gates.deterministic_floors` |
-| 236 | `zakazane_otwarcie(body)` | — | Pierwsze zdanie, jesli kaze czytelnikowi isc cos obejrzec. | `gates.deterministic_floors` |
-| 245 | `statystyki_bez_zrodla(body)` | — | Zdania, ktore niosa liczbe i udaja, ze maja na nia zrodlo. | `gates.deterministic_floors` |
-| 254 | `niewiadome_na_koncu(body)` | — | Zbiorczy akapit o niewiadomych w ostatniej trzeciej tekstu. | `gates.deterministic_floors`, `gates.odcisk_formy` |
-| 282 | `odcisk_formy(body)` | — | Zgrubny szkielet tekstu — do porownania z poprzednimi, nie do oceny. | `gates.powtorzona_forma` |
-| 299 | `odcisk_formy.kubelek(u)` | — | — | `gates.odcisk_formy` |
-| 318 | `powtorzona_forma(body, poprzednie, prog)` | — | Czy ten tekst ma ksztalt ktoregos z poprzednich. | `gates.deterministic_floors` |
-| 349 | `uwagi_z_formy(obserwacja, body)` | — | Zamienia obserwacje modelu w uwagi. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 419 | `pozycja_w_tekscie(cytat, body)` | — | Gdzie w tekście stoi ten cytat, jako ułamek długości. | `run.main` |
-| 431 | `szerokosc_podstawy(card)` | — | Na ilu ODREBNYCH serwisach stoja potwierdzone twierdzenia. | `gates.deterministic_floors` |
-| 467 | `frazy_z_instrukcji(body, dlugosc)` | — | Czy pisarz wklein do tekstu wlasne polecenie. | `gates.deterministic_floors` |
-| 479 | `frazy_z_instrukcji.slowa_z(tekst)` | — | — | `gates.frazy_z_instrukcji` |
-| 482 | `frazy_z_instrukcji.ciagi(slowa)` | — | — | `gates.frazy_z_instrukcji` |
-| 509 | `verdict(findings)` | — | Artykuł powstaje ZAWSZE. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 524 | `zapowiedziany_akapit_granic(body)` | — | Czy akapit o granicach zaczyna sie od zdania o samym sobie. | `gates.deterministic_floors` |
+| 71 | `_digit_tokens(text)` | — | — | `gates._korpus_pobranych`, `gates.deterministic_floors`, `gates.numbers_outside_corpus` |
+| 75 | `_niepobrane(card)` | — | Twierdzenia oznaczone `not_fetched` — dolozone, nie wyciagniete. | `gates.deterministic_floors` |
+| 87 | `_korpus_pobranych(card)` | — | Liczby z materialu, ktory NAPRAWDE pobralismy. | `gates.numbers_outside_corpus` |
+| 128 | `numbers_outside_corpus(body, card)` | — | Liczby w tekście, których nie ma nigdzie w POBRANYM materiale. | `gates.deterministic_floors` |
+| 147 | `deterministic_floors(body, card, poprzednie)` | — | Podłogi bez modelu: 0 USD, milisekundy, zero wywołań. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 244 | `_akapity(body)` | — | — | `gates.niewiadome_na_koncu`, `gates.odcisk_formy`, `gates.zakazane_otwarcie` |
+| 250 | `zastrzezenia(body)` | — | Zastrzezenia w pierwszej osobie. | `gates.deterministic_floors` |
+| 255 | `zakazane_otwarcie(body)` | — | Pierwsze zdanie, jesli kaze czytelnikowi isc cos obejrzec. | `gates.deterministic_floors` |
+| 264 | `statystyki_bez_zrodla(body)` | — | Zdania, ktore niosa liczbe i udaja, ze maja na nia zrodlo. | `gates.deterministic_floors` |
+| 274 | `niewiadome_na_koncu(body)` | — | Zbiorczy akapit o niewiadomych w ostatniej trzeciej tekstu. | `gates.deterministic_floors`, `gates.odcisk_formy` |
+| 302 | `odcisk_formy(body)` | — | Zgrubny szkielet tekstu — do porownania z poprzednimi, nie do oceny. | `gates.powtorzona_forma` |
+| 319 | `odcisk_formy.kubelek(u)` | — | — | `gates.odcisk_formy` |
+| 349 | `powtorzona_forma(body, poprzednie, prog)` | — | Czy ten tekst ma ksztalt ktoregos z poprzednich. | `gates.deterministic_floors` |
+| 380 | `uwagi_z_formy(obserwacja, body)` | — | Zamienia obserwacje modelu w uwagi. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 450 | `pozycja_w_tekscie(cytat, body)` | — | Gdzie w tekście stoi ten cytat, jako ułamek długości. | `run.main` |
+| 462 | `szerokosc_podstawy(card)` | — | Na ilu ODREBNYCH serwisach stoja potwierdzone twierdzenia. | `gates.deterministic_floors` |
+| 498 | `frazy_z_instrukcji(body, dlugosc)` | — | Czy pisarz wklein do tekstu wlasne polecenie. | `gates.deterministic_floors` |
+| 510 | `frazy_z_instrukcji.slowa_z(tekst)` | — | Slowa tekstu — LITERY W SENSIE UNICODE, nie alfabet angielski. | `gates.frazy_z_instrukcji` |
+| 526 | `frazy_z_instrukcji.ciagi(slowa)` | — | — | `gates.frazy_z_instrukcji` |
+| 553 | `verdict(findings)` | — | Artykuł powstaje ZAWSZE. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 568 | `zapowiedziany_akapit_granic(body)` | — | Czy akapit o granicach zaczyna sie od zdania o samym sobie. | `gates.deterministic_floors` |
 
 ---
 
@@ -441,11 +441,11 @@ Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 216 | `_ostrzez(jezyk, czego_brak)` | — | Raz na proces, ale GLOSNO. | `jezyki.frazy`, `jezyki.wzorzec` |
-| 228 | `wzorzec(nazwa, jezyk)` | DEAD? | Skompilowany wzorzec bramki dla tego jezyka. | — |
-| 237 | `frazy(nazwa, jezyk)` | DEAD? | Lista fraz dla tego jezyka. | — |
-| 246 | `znane_jezyki()` | DEAD? | — | — |
-| 250 | `brakujace(jezyk)` | DEAD? | Czego brakuje temu jezykowi wobec angielskiego. | — |
+| 238 | `_ostrzez(jezyk, czego_brak)` | — | Raz na proces, ale GLOSNO. | `jezyki.frazy`, `jezyki.wzorzec` |
+| 250 | `wzorzec(nazwa, jezyk)` | DEAD? | Skompilowany wzorzec bramki dla tego jezyka. | — |
+| 259 | `frazy(nazwa, jezyk)` | DEAD? | Lista fraz dla tego jezyka. | — |
+| 268 | `znane_jezyki()` | DEAD? | — | — |
+| 272 | `brakujace(jezyk)` | DEAD? | Czego brakuje temu jezykowi wobec angielskiego. | — |
 
 ---
 

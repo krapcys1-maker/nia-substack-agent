@@ -60,6 +60,11 @@ NIBY_ZRODLO = jezyki.wzorzec("NIBY_ZRODLO", config.ARTICLE_LANGUAGE)
 # niewiadoma postawiona tam, gdzie powstaje, nie przeszkadza nikomu.
 _SYGNAL_NIEWIADOMEJ = jezyki.frazy("SYGNAL_NIEWIADOMEJ", config.ARTICLE_LANGUAGE)
 
+# Zwrot do czytelnika — CECHA KSZTALTU, nie bramka. `odcisk_formy` pyta o
+# POZYCJE pierwszego trafienia w tekscie i porownuje ja miedzy artykulami.
+ZWROT_DO_CZYTELNIKA = jezyki.wzorzec("ZWROT_DO_CZYTELNIKA",
+                                     config.ARTICLE_LANGUAGE)
+
 DIGITS = re.compile(r"\d[\d.,]*")
 
 
@@ -121,9 +126,22 @@ def _korpus_pobranych(card: dict[str, Any]) -> set[str]:
 
 
 def numbers_outside_corpus(body: str, card: dict[str, Any]) -> list[str]:
-    """Liczby w tekście, których nie ma nigdzie w POBRANYM materiale."""
+    """Liczby w tekście, których nie ma nigdzie w POBRANYM materiale.
+
+    SEKCJA ZRODEL ODPADA, TAK SAMO JAK W POZOSTALYCH BRAMKACH. Trzy sasiednie
+    funkcje (`_akapity`, `statystyki_bez_zrodla`, `niewiadome_na_koncu`) tna
+    tekst na `config.NAGLOWEK_ZRODEL`, a ta jedna brala CALOSC — czyli takze
+    liste odnosnikow, w ktorej cyfry siedza w adresach (`/2026/08/`, numery
+    dokumentow, porty). Na swiezym szkicu roznicy nie ma, bo sekcje doklada
+    dopiero `stages.save`; jest za to wszedzie tam, gdzie ktos poda tresc
+    ZAPISANEGO artykulu — a `stages.poprzednie_teksty` podaje wlasnie takie.
+
+    Kierunek jest bezpieczny: liczb do zgloszenia moze byc mniej, nigdy
+    wiecej, i odpadaja wylacznie te z adresow.
+    """
     corpus = _korpus_pobranych(card)
-    return sorted(t for t in _digit_tokens(body) if t not in corpus)
+    tresc = body.split(config.NAGLOWEK_ZRODEL)[0]
+    return sorted(t for t in _digit_tokens(tresc) if t not in corpus)
 
 
 def deterministic_floors(body: str, card: dict[str, Any],
@@ -224,7 +242,8 @@ def deterministic_floors(body: str, card: dict[str, Any],
 
 
 def _akapity(body: str) -> list[str]:
-    return [a.strip() for a in re.split(r"\n\s*\n", body.split("## Sources")[0])
+    return [a.strip() for a in re.split(r"\n\s*\n",
+                                     body.split(config.NAGLOWEK_ZRODEL)[0])
             if a.strip() and not a.strip().startswith(("#", "*", "-"))]
 
 
@@ -245,7 +264,8 @@ def zakazane_otwarcie(body: str) -> str:
 def statystyki_bez_zrodla(body: str) -> list[str]:
     """Zdania, ktore niosa liczbe i udaja, ze maja na nia zrodlo."""
     znalezione: list[str] = []
-    for zdanie in re.split(r"(?<=[.!?])\s+", body.split("## Sources")[0]):
+    for zdanie in re.split(r"(?<=[.!?])\s+",
+                           body.split(config.NAGLOWEK_ZRODEL)[0]):
         if NIBY_ZRODLO.search(zdanie) and DIGITS.search(zdanie):
             znalezione.append(" ".join(zdanie.split())[:150])
     return znalezione
@@ -263,7 +283,7 @@ def niewiadome_na_koncu(body: str) -> str:
 
     Tamten artykul mial taki akapit na 82% glebokosci, z czterema sygnalami.
     """
-    korpus = body.split("## Sources")[0]
+    korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     akapity = _akapity(body)
     for a in akapity:
         niski = a.lower()
@@ -292,7 +312,7 @@ def odcisk_formy(body: str) -> dict[str, Any]:
     szablon — a to jest ta sama wada, ktora juz raz zrobilismy, naprawiajac
     tresc i zamawiajac przy okazji szkielet.
     """
-    korpus = body.split("## Sources")[0]
+    korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     akapity = _akapity(body)
     slowa = korpus.split()
 
@@ -301,7 +321,18 @@ def odcisk_formy(body: str) -> dict[str, Any]:
             return "brak"
         return ("0-25", "25-50", "50-75", "75-100")[min(3, int(u * 4))]
 
-    ty = re.search(r"\byou(r)?\b", korpus, re.I)
+    # WZORZEC Z REJESTRU, NIE WPISANY. Stalo tu `r"\byou(r)?\b"` — angielszczyzna
+    # na sztywno w module, ktorego wszystkie pozostale wzorce ida przez
+    # `jezyki.wzorzec(..., config.ARTICLE_LANGUAGE)`. Przy innym jezyku ta cecha
+    # przyjmowala „brak" DLA KAZDEGO tekstu, a cecha stala zgadza sie zawsze:
+    # `powtorzona_forma` wymaga pieciu z szesciu wlasnie dlatego, ze „cztery
+    # zdarzaja sie przypadkiem", wiec faktyczny prog spadal do czterech
+    # z pieciu prawdziwych cech.
+    #
+    # `jezyki.brakujace()` nie mialo jak tego zauwazyc: porownuje jezyki
+    # z angielskim SPISEM, a tego wzorca w spisie nie bylo. Straznik dawal
+    # zielone swiatlo o sobie samym.
+    ty = ZWROT_DO_CZYTELNIKA.search(korpus)
     granice = niewiadome_na_koncu(body)
 
     return {
@@ -362,7 +393,7 @@ def uwagi_z_formy(obserwacja: dict[str, Any], body: str) -> list[dict[str, str]]
     zapisujemy jako informacje dla wlasciciela, ale nie jest wada.
     """
     uwagi: list[dict[str, str]] = []
-    korpus = body.split("## Sources")[0]
+    korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     slow = max(1, len(korpus.split()))
 
     przekonania = obserwacja.get("beliefs") or []
@@ -420,7 +451,7 @@ def pozycja_w_tekscie(cytat: str, body: str) -> float | None:
     """Gdzie w tekście stoi ten cytat, jako ułamek długości. Informacja, nie ocena."""
     if not cytat:
         return None
-    korpus = body.split("## Sources")[0]
+    korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     i = korpus.find(cytat[:60].strip())
     if i < 0:
         zwarty = " ".join(cytat.split()[:8])
@@ -477,7 +508,20 @@ def frazy_z_instrukcji(body: str, dlugosc: int = 6) -> list[str]:
     sie utrzymuje, gdy prompt sie zmieni.
     """
     def slowa_z(tekst: str) -> list[str]:
-        return re.findall(r"[a-z]+", tekst.lower())
+        r"""Slowa tekstu — LITERY W SENSIE UNICODE, nie alfabet angielski.
+
+        Stalo tu `[a-z]+`. W jezyku z diakrytykami kazda litera z ogonkiem
+        rozcinala slowo na dwa kawalki — w prompcie i w tekscie w INNYCH
+        miejscach — wiec ciagi szesciu slow przestawaly sie zgadzac i bramka
+        nie zglaszala juz NICZEGO. Ta sama cicha awaria, dla ktorej powstal
+        `jezyki.py`; ten wzorzec siedzial w `re.findall`, wiec ani rejestr,
+        ani straznik wzorcow go nie widzial.
+
+        `[^\W\d_]+` znaczy „ciag liter": bez cyfr, bez podkreslenia, bez
+        interpunkcji, ZE wszystkimi alfabetami. Dla angielskiego po `lower()`
+        daje dokladnie to samo, co `[a-z]+`.
+        """
+        return re.findall(r"[^\W\d_]+", tekst.lower(), re.UNICODE)
 
     def ciagi(slowa: list[str]) -> list[tuple[str, ...]]:
         return [tuple(slowa[i:i + dlugosc])

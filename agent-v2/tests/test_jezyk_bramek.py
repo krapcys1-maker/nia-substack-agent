@@ -148,8 +148,73 @@ for nazwa in ("ZASTRZEZENIE", "ZAKAZANE_OTWARCIA", "NIBY_ZRODLO",
               "POWSCIAGLIWOSC"):
     sprawdz("  %s idzie z jezyki" % nazwa,
             'jezyki.wzorzec("%s"' % nazwa in zrodlo)
-sprawdz("i zaden wzorzec nie zostal na sztywno w gates.py",
-        "re.compile(\n    r\"\\bI\\s+(stood" not in zrodlo)
+# STARA WERSJA TEJ ASERCJI SPRAWDZALA JEDEN NAPIS:
+#
+#     "re.compile(\n    r\"\\bI\\s+(stood" not in zrodlo
+#
+# czyli dokladny tekst JEDNEGO wzorca — tego, ktory kiedys stad wyniesiono.
+# Czytalo sie to jak gwarancja o calym pliku, a kazdy INNY wzorzec wpisany na
+# sztywno przechodzil. I przeszedl: `\byou(r)?\b` w `odcisk_formy` stalo tam
+# caly czas, a ten wiersz swiecil na zielono przez cale zycie pliku.
+#
+# Wersja wyprowadzona szuka KSZTALTU po drzewie skladni: `re.compile(<literal>)`
+# z LITERAMI w srodku. Wzorzec z samych cyfr i klas znakow (`DIGITS`) jest
+# niezalezny od jezyka i zostaje; wzorzec z literami jest z jakiegos jezyka
+# i ma isc przez `jezyki.wzorzec`.
+import ast as _ast   # noqa: E402
+
+def _bez_ucieczek(wzor: str) -> str:
+    """Wzorzec bez sekwencji ucieczki: `\\d`, `\\b`, `\\s`, `\\w`, ...
+
+    BEZ WYRAZENIA REGULARNEGO — celowo. Wzorzec lapiacy odwrotny ukosnik
+    zapisuje sie czterema ukosnikami i to samo w sobie jest pulapka; petla
+    po znakach jest dluzsza o cztery wiersze i nie ma jak sie zepsuc.
+    """
+    out, i = [], 0
+    while i < len(wzor):
+        if wzor[i] == chr(92):
+            i += 2
+            continue
+        out.append(wzor[i])
+        i += 1
+    return "".join(out)
+
+
+def _wzorce_na_sztywno(kod: str) -> list[str]:
+    """`re.compile("...")` z literami w literale — czyli wzorzec jakiegos jezyka."""
+    znalezione = []
+    for w in _ast.walk(_ast.parse(kod)):
+        # NIE TYLKO `re.compile`. `[a-z]+` w bramce przeciekow z promptu
+        # siedzialo w `re.findall` i przezylo pierwsza wersje tego straznika —
+        # a byl to alfabet angielski, wiec bramka po polsku nie zglaszala nic.
+        if not (isinstance(w, _ast.Call) and isinstance(w.func, _ast.Attribute)
+                and w.func.attr in ("compile", "findall", "search", "match",
+                                    "fullmatch", "split", "sub", "subn",
+                                    "finditer")):
+            continue
+        for arg in w.args[:1]:
+            if isinstance(arg, _ast.Constant) and isinstance(arg.value, str):
+                # SEKWENCJE UCIECZKI ODPADAJA PIERWSZE. `\d` niesie znak „d",
+                # ale jest klasa znakow, nie trescia jezykowa — pierwsza wersja
+                # tego straznika zglosila przez to `DIGITS`.
+                goly = _bez_ucieczek(arg.value)
+                if any(c.isalpha() for c in goly):
+                    znalezione.append("linia %d: %r" % (w.lineno, arg.value[:60]))
+    return znalezione
+
+
+_na_sztywno = _wzorce_na_sztywno(zrodlo)
+sprawdz("zaden wzorzec z literami nie jest wpisany na sztywno w gates.py",
+        not _na_sztywno, "; ".join(_na_sztywno))
+
+# KONTRDOWOD: skan musi umiec taki wzorzec zobaczyc, i musi przepuscic ten
+# bez liter. Bez tego cala asercja wyzej moglaby przechodzic dlatego, ze nic
+# nie znajduje NIGDY — a to jest dokladnie wada, ktora zastapila.
+sprawdz("skan lapie wzorzec z literami",
+        _wzorce_na_sztywno('import re\nX = re.compile(r"\\byou\\b")\n'),
+        _wzorce_na_sztywno('import re\nX = re.compile(r"\\byou\\b")\n'))
+sprawdz("i przepuszcza wzorzec bez liter",
+        not _wzorce_na_sztywno('import re\nD = re.compile(r"\\d[\\d.,]*")\n'))
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))

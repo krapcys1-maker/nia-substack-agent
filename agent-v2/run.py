@@ -2708,7 +2708,7 @@ def main() -> int:
             forma = cached(stage, lambda: stages.ocen_forme(conn, run_id, draft),
                            args.use_cache)
             przekonania = forma.get("beliefs") or []
-            slow = len(draft["body"].split("## Sources")[0].split())
+            slow = len(draft["body"].split(config.NAGLOWEK_ZRODEL)[0].split())
             print(f"   przekonania czytelnika: {len(przekonania)}"
                   f"   (samo wsparcie: {len(forma.get('support_only') or [])})"
                   f"   jedno co {slow / max(1, len(przekonania)):.0f} słów",

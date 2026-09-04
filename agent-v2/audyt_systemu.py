@@ -454,7 +454,7 @@ def main() -> int:
     etap(5, "ARTYKUL — dlugosc, uwagi i petla zwrotna")
     art = list(c.execute("SELECT id, title, body, notes, created_at"
                          " FROM articles ORDER BY id"))
-    dlugosci = [len(str(a["body"] or "").split("## Sources")[0].split())
+    dlugosci = [len(str(a["body"] or "").split(config.NAGLOWEK_ZRODEL)[0].split())
                 for a in art]
     if dlugosci:
         print("  artykulow: %d, dlugosc %d-%d slow (srednia %d)"

@@ -177,7 +177,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5203 wierszy, 96 funkcji na poziomie modułu, 0 klas
+5204 wierszy, 96 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -302,7 +302,7 @@
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-555 wierszy, 18 funkcji na poziomie modułu, 0 klas
+599 wierszy, 18 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -345,7 +345,7 @@
 
 ### `jezyki.py` — wzorce bramek zalezne od jezyka; przy jezyku bez wzorcow bramka jest JAWNIE wylaczona zamiast cicho nic nie lapac
 
-257 wierszy, 5 funkcji na poziomie modułu, 0 klas
+279 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -452,7 +452,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3062 wierszy, 32 funkcji na poziomie modułu, 0 klas
+3082 wierszy, 32 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -558,7 +558,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1469 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1470 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

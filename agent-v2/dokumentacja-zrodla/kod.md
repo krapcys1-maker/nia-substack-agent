@@ -1500,7 +1500,7 @@ def uwagi_z_formy(obserwacja: dict[str, Any], body: str) -> list[dict[str, str]]
     zapisujemy jako informacje dla wlasciciela, ale nie jest wada.
     """
     uwagi: list[dict[str, str]] = []
-    korpus = body.split("## Sources")[0]
+    korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     slow = max(1, len(korpus.split()))
 
     przekonania = obserwacja.get("beliefs") or []
@@ -1569,7 +1569,7 @@ def odcisk_formy(body: str) -> dict[str, Any]:
     szablon — a to jest ta sama wada, ktora juz raz zrobilismy, naprawiajac
     tresc i zamawiajac przy okazji szkielet.
     """
-    korpus = body.split("## Sources")[0]
+    korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     akapity = _akapity(body)
     slowa = korpus.split()
 
@@ -1578,7 +1578,18 @@ def odcisk_formy(body: str) -> dict[str, Any]:
             return "brak"
         return ("0-25", "25-50", "50-75", "75-100")[min(3, int(u * 4))]
 
-    ty = re.search(r"\byou(r)?\b", korpus, re.I)
+    # WZORZEC Z REJESTRU, NIE WPISANY. Stalo tu `r"\byou(r)?\b"` — angielszczyzna
+    # na sztywno w module, ktorego wszystkie pozostale wzorce ida przez
+    # `jezyki.wzorzec(..., config.ARTICLE_LANGUAGE)`. Przy innym jezyku ta cecha
+    # przyjmowala „brak" DLA KAZDEGO tekstu, a cecha stala zgadza sie zawsze:
+    # `powtorzona_forma` wymaga pieciu z szesciu wlasnie dlatego, ze „cztery
+    # zdarzaja sie przypadkiem", wiec faktyczny prog spadal do czterech
+    # z pieciu prawdziwych cech.
+    #
+    # `jezyki.brakujace()` nie mialo jak tego zauwazyc: porownuje jezyki
+    # z angielskim SPISEM, a tego wzorca w spisie nie bylo. Straznik dawal
+    # zielone swiatlo o sobie samym.
+    ty = ZWROT_DO_CZYTELNIKA.search(korpus)
     granice = niewiadome_na_koncu(body)
 
     return {
@@ -1676,7 +1687,20 @@ def frazy_z_instrukcji(body: str, dlugosc: int = 6) -> list[str]:
     sie utrzymuje, gdy prompt sie zmieni.
     """
     def slowa_z(tekst: str) -> list[str]:
-        return re.findall(r"[a-z]+", tekst.lower())
+        r"""Slowa tekstu — LITERY W SENSIE UNICODE, nie alfabet angielski.
+
+        Stalo tu `[a-z]+`. W jezyku z diakrytykami kazda litera z ogonkiem
+        rozcinala slowo na dwa kawalki — w prompcie i w tekscie w INNYCH
+        miejscach — wiec ciagi szesciu slow przestawaly sie zgadzac i bramka
+        nie zglaszala juz NICZEGO. Ta sama cicha awaria, dla ktorej powstal
+        `jezyki.py`; ten wzorzec siedzial w `re.findall`, wiec ani rejestr,
+        ani straznik wzorcow go nie widzial.
+
+        `[^\W\d_]+` znaczy „ciag liter": bez cyfr, bez podkreslenia, bez
+        interpunkcji, ZE wszystkimi alfabetami. Dla angielskiego po `lower()`
+        daje dokladnie to samo, co `[a-z]+`.
+        """
+        return re.findall(r"[^\W\d_]+", tekst.lower(), re.UNICODE)
 
     def ciagi(slowa: list[str]) -> list[tuple[str, ...]]:
         return [tuple(slowa[i:i + dlugosc])

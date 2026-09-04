@@ -449,7 +449,7 @@ def save(
     ))
     path.write_text(
         f"# {draft.get('title', '')}\n\n*{draft.get('subtitle', '')}*\n\n"
-        f"{draft['body']}\n\n---\n\n## Sources\n\n"
+        f"{draft['body']}\n\n---\n\n{config.NAGLOWEK_ZRODEL}\n\n"
         + "\n".join(f"- [{_nazwa_zrodla(conn, url)}]({url})" for url in urls)
         + "\n",
         encoding="utf-8",

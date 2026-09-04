@@ -104,5 +104,29 @@ for liczba, skad in (("77", "ocena_ciekawosci"),
 sprawdz("a 5555 nie ma w karcie ani po staremu", "5555" not in _stary_korpus)
 
 print()
+print("=== 5. SEKCJA ZRODEL NIE JEST TRESCIA ===")
+# Trzy sasiednie bramki tna tekst na `config.NAGLOWEK_ZRODEL`, a ta jedna brala
+# CALOSC — czyli takze liste odnosnikow, w ktorej cyfry siedza w adresach.
+# Na swiezym szkicu roznicy nie ma (sekcje doklada dopiero `stages.save`), ale
+# `stages.poprzednie_teksty` podaje tresc ZAPISANYCH artykulow, w ktorych ta
+# sekcja juz jest.
+import config  # noqa: E402
+
+_z_sekcja = "\n\n".join((
+    "Akapit z liczba 12.",
+    config.NAGLOWEK_ZRODEL,
+    "- [a](https://x.example/5555)"))
+sprawdz("liczba z adresu w sekcji zrodel nie jest liczba tekstu",
+        gates.numbers_outside_corpus(_z_sekcja, KARTA) == [],
+        gates.numbers_outside_corpus(_z_sekcja, KARTA))
+# KONTRDOWOD: ta sama liczba W TRESCI ma byc zgloszona.
+sprawdz("ta sama liczba w tresci JEST zgloszona",
+        gates.numbers_outside_corpus("W tekscie stoi 5555.", KARTA) == ["5555"])
+# I naglowek jest jeden dla calego bota, nie osiem literalow.
+sprawdz("naglowek pochodzi z konfiguracji",
+        config.NAGLOWEK_ZRODEL.endswith(config.TYTUL_SEKCJI_ZRODEL),
+        (config.NAGLOWEK_ZRODEL, config.TYTUL_SEKCJI_ZRODEL))
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)

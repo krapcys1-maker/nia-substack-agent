@@ -91,6 +91,18 @@ WZORCE: dict[str, dict[str, tuple[str, str]]] = {
             r"|\bsurveys?\s+(suggest|show|find)\b",
             "zrodlo, ktore nie jest zrodlem — lapane TYLKO w zdaniu z liczba",
         ),
+        # NIE JEST BRAMKA — jest CECHA KSZTALTU. `gates.odcisk_formy` pyta,
+        # w ktorej cwiartce tekstu pada pierwszy zwrot do czytelnika, i porownuje
+        # to miedzy artykulami. Wzorzec stal wpisany po angielsku w `gates.py`,
+        # wiec przy innym jezyku cecha przyjmowala „brak" ZAWSZE — a cecha stala
+        # zgadza sie zawsze i obniza faktyczny prog `powtorzona_forma`
+        # z pieciu cech na cztery, czyli do poziomu, ktory ta funkcja sama
+        # nazywa przypadkiem.
+        "ZWROT_DO_CZYTELNIKA": (
+            r"\byou(r|rs|rself)?\b",
+            "zwrot do czytelnika w drugiej osobie — do POZYCJI w tekscie, "
+            "nie do oceny",
+        ),
     },
 
     # ------------------------------------------------------------------
@@ -164,6 +176,16 @@ WZORCE: dict[str, dict[str, tuple[str, str]]] = {
             r"|\b(szacuje|m[oó]wi|uwa[zż]a)\s+si[eę]\b"
             r"|\bsonda[zż]e\s+(pokazuj[aą]|sugeruj[aą]|wskazuj[aą])\b",
             "zrodlo, ktore nie jest zrodlem — lapane TYLKO w zdaniu z liczba",
+        ),
+        # Polszczyzna nie ma jednego slowa „you". Zwrot do czytelnika idzie
+        # przez zaimki i przez CZASOWNIK w drugiej osobie, wiec wzorzec jest
+        # szerszy — a to nie szkodzi, bo cecha mierzy POZYCJE pierwszego
+        # trafienia, a nie ich liczbe.
+        "ZWROT_DO_CZYTELNIKA": (
+            r"\b(ty|ciebie|tobie|cie|twoj\w*|wasz\w*|wy|was|wam)\b"
+            r"|\b\w+(asz|esz|isz|ysz)\b",
+            "zwrot do czytelnika w drugiej osobie — do POZYCJI w tekscie, "
+            "nie do oceny",
         ),
     },
 }

@@ -151,7 +151,14 @@ print("=== 5. KONTRDOWOD: NIEZNANY JEZYK NADAL KRZYCZY ===")
 w_obcy = jezyki.wzorzec("ZMYSLONE_PRZEZYCIE", "Klingon")
 sprawdz("nieznany jezyk daje wzorzec, ktory nie lapie NICZEGO",
         not w_obcy.search("Widzialem to na wlasne oczy."))
-sprawdz("i zglasza pelny brak", len(jezyki.brakujace("Klingon")) == 8,
+# LICZBA WYPROWADZONA Z REJESTRU, NIE WPISANA. Stalo tu `== 8` — a osiem to
+# byla liczba wpisow w tamtym dniu. Dopisanie dziewiatego wzorca
+# (`ZWROT_DO_CZYTELNIKA`) obleło ten wiersz, mimo ze niczego nie zepsulo:
+# asercja pilnowala LICZNIKA, a miala pilnowac tego, ze nieznany jezyk zglasza
+# BRAK WSZYSTKIEGO. Te sama wade ma kazda inna reczna liczba w tym repo.
+_ile_wpisow = len(jezyki.WZORCE["English"]) + len(jezyki.FRAZY["English"])
+sprawdz("i zglasza pelny brak (%d pozycji)" % _ile_wpisow,
+        len(jezyki.brakujace("Klingon")) == _ile_wpisow,
         jezyki.brakujace("Klingon"))
 
 print()
