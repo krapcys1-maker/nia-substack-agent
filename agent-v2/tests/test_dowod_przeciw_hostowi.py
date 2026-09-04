@@ -74,7 +74,6 @@ import browser  # noqa: E402
 
 # HISTORIA JEST WARUNKIEM TEGO TESTU — patrz `historia.py`.
 import historia   # noqa: E402
-historia.wymaga_historii("e88b456")
 
 KORZEN = pathlib.Path(__file__).resolve().parents[2]
 
@@ -504,6 +503,19 @@ sprawdz("ale dwie prawdziwe odmowy z tego samego dnia — owszem",
         browser.hosty_gdzie_komentarz_nie_wchodzi())
 
 print()
+# HISTORIA JEST WARUNKIEM TYLKO TEGO, CO PONIZEJ.
+#
+# Guard stal w naglowku pliku, wiec w kopii z historia zalozona
+# od nowa gasl CALY test, a nie ten jeden blok, ktory naprawde
+# potrzebuje starej wersji. Policzone 4 wrzesnia 2026: 617
+# asercji w 17 plikach nie wykonywalo sie ani razu — i zestaw
+# wygladal na zdany, bo pominiecie konczy sie kodem 0.
+#
+# `SystemExit` nie dziedziczy po `Exception`, wiec przechodzi
+# przez oslony tego pliku i wykonuje `finally` — sprzatanie
+# po tescie dzieje sie normalnie.
+historia.wymaga_historii("e88b456", zdane=zdane, oblane=oblane)
+
 print("=== 8. KONTRDOWOD: TEN SAM SCENARIUSZ NA `e88b456` ===")
 
 

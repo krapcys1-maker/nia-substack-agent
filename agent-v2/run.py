@@ -388,11 +388,10 @@ def ile_przebiegow_zostalo(conn) -> int:
 
 # --- KRYTERIUM DOBORU CELU ---------------------------------------------------
 #
-# DZIEN, W KTORYM KONTO PRZESTALO PISAC O CZYM INNYM. 25 sierpnia 2026 konto
-# zostalo przestawione na AI. Historia komentarzy `gdzie_komentowalismy.json`
-# pamieta jednak WSZYSTKO, co bylo przedtem — zmierzone 1 wrzesnia 2026:
-# 94 hosty, z czego 53 (58 procent) ma ostatni komentarz sprzed tej daty i sa
-# to blogi o jedzeniu, zdrowiu, modzie i literaturze.
+# DZIEN, W KTORYM KONTO PRZESTALO PISAC O CZYM INNYM. Historia komentarzy
+# `gdzie_komentowalismy.json` pamieta WSZYSTKO, co bylo przed zmiana tematu —
+# zmierzone 1 wrzesnia 2026: 94 hosty, z czego 53 (58 procent) ma ostatni
+# komentarz sprzed tej daty i naleza do zupelnie innych dziedzin.
 #
 # TE 53 NIE SA NEUTRALNYM TLEM PULI. Obserwowanie wysyla im powiadomienie
 # mailem, ktore sciaga ich na nasz profil — a nasza lista obserwowanych jest
@@ -400,7 +399,30 @@ def ile_przebiegow_zostalo(conn) -> int:
 # prywatnosci, obserwacje nie). Losowanie z calosci znaczylo wiec: w 58
 # przypadkach na 100 zapraszamy na wlasny profil kogos, kto czytal u nas
 # o czym innym, i zostawiamy po sobie publiczny slad.
-PRZESTAWIENIE_KONTA_NA_AI = "2026-08-25"
+#
+# TRZECIA KOPIA TEJ SAMEJ DATY — i najgorsza z trzech. Stala nazywala sie
+# `PRZESTAWIENIE_KONTA_NA_AI` i trzymala „2026-08-25" wpisane na sztywno, przy
+# `config.DATA_PRZESTAWIENIA` i `audyt_systemu.PIVOT` z ta sama wartoscia.
+# Nazwa niosla przy tym nazwe niszy, wiec u konta o czymkolwiek innym kod
+# czytalo sie jak zdanie nieprawdziwe — a przy zmianie tematu trzeba by bylo
+# pamietac o zmianie NAZWY, nie tylko wartosci.
+#
+# Nazwa zostaje jako alias, bo czytaja ja testy; wartosc idzie z konfiguracji.
+# Pusty napis znaczy „to konto nie zmienialo tematu" i wtedy CALA historia
+# liczy sie jako biezaca — patrz `_po_zmianie_tematu`.
+PRZESTAWIENIE_KONTA_NA_AI = config.DATA_PRZESTAWIENIA
+
+
+def _po_zmianie_tematu(kiedy) -> bool:
+    """Czy ten wpis jest z obecnej epoki konta.
+
+    Jedno miejsce dla wszystkich pytajacych — ta sama poprawka, co
+    `stages._z_obecnej_epoki`. Pusta data znaczy „nie bylo zmiany tematu",
+    wiec wszystko jest biezace.
+    """
+    if not PRZESTAWIENIE_KONTA_NA_AI:
+        return True
+    return str(kiedy or "")[:10] >= PRZESTAWIENIE_KONTA_NA_AI
 
 # NAJKROTSZY ZMIERZONY ZBIEG NAZWY Z HOSTEM TO `publikacja2` — 7 znakow. Prog 6
 # jest wiec ponizej wszystkiego, co dzis dziala, i odcina wylacznie zbiegi
@@ -823,7 +845,7 @@ def cele_wedlug_pierwszenstwa(historia: dict) -> tuple[list[str], dict]:
     for host, kiedy in (historia or {}).items():
         if not host or host == moj_host:
             continue
-        if str(kiedy or "")[:10] >= PRZESTAWIENIE_KONTA_NA_AI:
+        if _po_zmianie_tematu(kiedy):
             po.append(host)
         else:
             przed.append(host)
@@ -879,7 +901,7 @@ def powod_pustej_puli(rachunek: dict) -> str:
     powstala, tylko o jedno pietro wyzej.
     """
     return ("pula pusta po odsianiu: %d hostow w historii, %d sprzed"
-            " przestawienia konta na AI (%s), %d po nim"
+            " zmiany tematu konta (%s), %d po niej"
             "; reagujacych z uchwytem %d, z tego %d juz nas czyta,"
             " %d ponizej progu %d reakcji (bez odpowiedzi),"
             " %d mlodszych niz %d h, w puli %d"
@@ -910,8 +932,8 @@ def kogo_juz_subskrybujemy() -> set[str]:
     * `udane=True` — subskrypcja weszla. Druga jest bezcelowa.
     * `udane=False` z powodem „nie ma przycisku subskrypcja" — profil
       ODPOWIEDZIAL, tylko nie tym, czego chcielismy. Tak wyglada i konto juz
-      zasubskrybowane (`publikacja-b`), i publikacja bez substackowego
-      przycisku (`newyorker`, `post`). W obu przypadkach kolejne wejscie da
+      zasubskrybowane (`publikacja-b`), i publikacja duzej redakcji, ktora
+      przycisku Substacka nie ma wcale. W obu przypadkach kolejne wejscie da
       dokladnie ten sam wynik.
 
     POWODOW INNYCH NIE BIERZEMY, i to jest cala ostroznosc tej funkcji.

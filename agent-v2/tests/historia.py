@@ -49,11 +49,28 @@ def commit_istnieje(sha: str) -> bool:
     return wynik.returncode == 0
 
 
-def wymaga_historii(*sha: str) -> None:
-    """Konczy przebieg z kodem 0 i jawnym powodem, gdy brakuje ktoregos SHA.
+def wymaga_historii(*sha: str, zdane: int | None = None,
+                   oblane: int | None = None) -> None:
+    """Konczy przebieg z jawnym powodem, gdy brakuje ktoregos SHA.
 
-    Wolane na gorze testu, PRZED pierwsza asercja — zeby pominiecie bylo
-    widoczne w calosci, a nie po polowie zdanych sprawdzen.
+    WOLAC TUZ PRZED BLOKIEM, KTORY SIEGA DO GITA — nie w naglowku pliku.
+
+    Do 4 wrzesnia 2026 wszystkie siedemnascie plikow wolalo te funkcje
+    w naglowku, „zeby pominiecie bylo widoczne w calosci". Skutek byl taki, ze
+    w kopii z historia zalozona od nowa gasl CALY plik, a nie ten jeden blok,
+    ktory naprawde potrzebuje starej wersji. Policzone: 617 asercji z 1174
+    w calym zestawie nie wykonywalo sie ANI RAZU — i wygladalo to na zestaw
+    zdany, bo pominiecie konczy sie kodem 0.
+
+    Zmierzone inaczej, tego samego dnia: zmiana stalej w `run.py` przeszla
+    „bez oblanych testow" w trzech plikach, z ktorych zaden nie wykonal ani
+    jednej linii.
+
+    LICZNIKI SA WYMAGANE PRZY WOLANIU W SRODKU PLIKU. Bez nich pominiecie
+    konczyloby proces kodem 0 takze wtedy, gdy asercja sto linii wyzej wlasnie
+    oblala — czyli test czerwony raportowany jako zielony. Podaj `zdane`
+    i `oblane`, a funkcja wypisze wynik czesci, ktora sie wykonala, i odda
+    kod 1, jesli cokolwiek oblalo.
     """
     brakuje = [s for s in sha if not commit_istnieje(s)]
     if not brakuje:
@@ -67,4 +84,8 @@ def wymaga_historii(*sha: str) -> None:
     print("    materialu do pomiaru.")
     print()
     print("    Zeby go uruchomic, potrzebujesz repozytorium z pelna historia.")
-    sys.exit(0)
+    if zdane is not None or oblane is not None:
+        print()
+        print("=== WYNIK CZESCI, KTORA SIE WYKONALA: %d zdanych, %d oblanych"
+              " ===" % (zdane or 0, oblane or 0))
+    sys.exit(1 if (oblane or 0) else 0)

@@ -207,10 +207,33 @@ earlier. Anything corrected in a comment has to be grepped for there too.
 
 ## 9. What this cost
 
-Twenty tests compared current code against named past commits. Those commits no
-longer exist, so `tests/historia.py` makes them skip cleanly and say why,
-rather than fail. They no longer prove what they used to prove. That is the
-price of a history that begins here, and it is written down rather than hidden.
+Seventeen test files compare current code against named past commits. Those
+commits no longer exist, so `tests/historia.py` makes them skip cleanly and say
+why, rather than fail.
+
+**And that skip was costing far more than the counterproofs.** Every one of
+those files called the guard in its *header*, so the whole file went dark — not
+just the block that needs the old version. Counted on 2026-09-04: **617
+assertions out of 1,174 never executed**, and the suite reported itself as
+passing, because a skip exits 0. Measured the hard way the same day: a constant
+in `run.py` was changed and three test files said "OK" without running a single
+line.
+
+The guard now takes the pass/fail counters and moves down to just above the
+block that actually reaches into git. Six files split cleanly this way and
+**189 assertions came back**, all passing. The remaining eleven load the old
+version during setup and use it throughout, so they cannot be split without
+restructuring — that is written down here rather than hidden, and it is the
+honest size of what a wiped history costs:
+
+| | assertions |
+|---|---:|
+| running before | 557 |
+| recovered by moving the guard | **189** |
+| still dark (old version needed at setup) | 428 |
+
+They no longer prove what they used to prove. That is the price of a history
+that begins here.
 
 **And an honest figure for the rest.** The tree is 70,269 lines of Python:
 29,741 in the agent's 27 modules, 38,422 in 140 test files, 2,106 in the tools.

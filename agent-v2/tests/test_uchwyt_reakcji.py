@@ -75,7 +75,6 @@ import wzajemnosc     # noqa: E402
 
 # HISTORIA JEST WARUNKIEM TEGO TESTU — patrz `historia.py`.
 import historia   # noqa: E402
-historia.wymaga_historii("6ed4e7d")
 
 ODNIESIENIE = "6ed4e7d"        # wersja SPRZED poprawki, przypieta na stale
 
@@ -309,6 +308,19 @@ for zdarzenie, oczekiwane in (("note_like:900",
                 (len(naiwne_kto), len(naiwne_uchwyty)))
 
 print()
+# HISTORIA JEST WARUNKIEM TYLKO TEGO, CO PONIZEJ.
+#
+# Guard stal w naglowku pliku, wiec w kopii z historia zalozona
+# od nowa gasl CALY test, a nie ten jeden blok, ktory naprawde
+# potrzebuje starej wersji. Policzone 4 wrzesnia 2026: 617
+# asercji w 17 plikach nie wykonywalo sie ani razu — i zestaw
+# wygladal na zdany, bo pominiecie konczy sie kodem 0.
+#
+# `SystemExit` nie dziedziczy po `Exception`, wiec przechodzi
+# przez oslony tego pliku i wykonuje `finally` — sprzatanie
+# po tescie dzieje sie normalnie.
+historia.wymaga_historii("6ed4e7d", zdane=zdane, oblane=oblane)
+
 print("=== 4. KONTRDOWOD B: WERSJA Z %s NIE ZAPISUJE UCHWYTU ===" % ODNIESIENIE)
 
 

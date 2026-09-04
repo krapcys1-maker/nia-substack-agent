@@ -75,7 +75,6 @@ import wzajemnosc  # noqa: E402
 # nie ma z czego go odtworzyc. Pominiecie jest wtedy JAWNE, zamiast
 # wywalac sie w polowie pliku na `CalledProcessError`.
 import historia   # noqa: E402
-historia.wymaga_historii("6ed4e7d")
 
 zdane = oblane = 0
 
@@ -463,6 +462,19 @@ try:
             [z["okrojone"] for z in wzajemnosc.zrzuty_czytelnikow()])
 
     print()
+    # HISTORIA JEST WARUNKIEM TYLKO TEGO, CO PONIZEJ.
+    #
+    # Guard stal w naglowku pliku, wiec w kopii z historia zalozona
+    # od nowa gasl CALY test, a nie ten jeden blok, ktory naprawde
+    # potrzebuje starej wersji. Policzone 4 wrzesnia 2026: 617
+    # asercji w 17 plikach nie wykonywalo sie ani razu — i zestaw
+    # wygladal na zdany, bo pominiecie konczy sie kodem 0.
+    #
+    # `SystemExit` nie dziedziczy po `Exception`, wiec przechodzi
+    # przez oslony tego pliku i wykonuje `finally` — sprzatanie
+    # po tescie dzieje sie normalnie.
+    historia.wymaga_historii("6ed4e7d", zdane=zdane, oblane=oblane)
+
     print("=== 5. KONTRDOWOD PRZYPIETY DO 6ed4e7d (NIE DO HEAD) ===")
     SHA = "6ed4e7d"
     brak = subprocess.run(["git", "cat-file", "-e",

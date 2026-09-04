@@ -74,7 +74,6 @@ import run            # noqa: E402
 
 # HISTORIA JEST WARUNKIEM TEGO TESTU — patrz `historia.py`.
 import historia   # noqa: E402
-historia.wymaga_historii("64d881a")
 
 zdane = 0
 oblane = 0
@@ -535,6 +534,15 @@ sprawdz("ale dzien ma slad w dzienniku", dni == 1, dni)
 
 
 print()
+# HISTORIA JEST WARUNKIEM TYLKO TEGO, CO PONIZEJ.
+#
+# Guard stal w naglowku pliku, wiec w kopii z historia zalozona
+# od nowa gasl CALY test — a nie ten jeden blok, ktory naprawde
+# potrzebuje starej wersji pliku. Policzone 4 wrzesnia 2026:
+# 617 asercji w 17 plikach nie wykonywalo sie ani razu, a zestaw
+# wygladal na zdany, bo pominiecie konczy sie kodem 0.
+historia.wymaga_historii("64d881a", zdane=zdane, oblane=oblane)
+
 print("=== 5a. KONTRDOWOD: BLOK Z `64d881a`, DZISIEJSZY `browser` ===")
 # CO DOKLADNIE JEST TU MIERZONE — bo od tego zalezy, czy liczba nizej cokolwiek
 # znaczy. Blok pochodzi z `git show 64d881a:agent-v2/run.py`, a `browser` jest
