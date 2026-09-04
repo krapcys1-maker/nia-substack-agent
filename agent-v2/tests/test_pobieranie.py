@@ -54,7 +54,7 @@ try:
     DLUGI = "Rule text. " * 200
     browser.read_pages = lambda urls: [
         {"url": u, "text": DLUGI, "title": "t", "error": None} for u in urls]
-    zrodlo = {"url": "https://mtf.mastercard.com.au/x", "host": "mtf.mastercard.com.au",
+    zrodlo = {"url": "https://mtf.przyklad-platnosci.example/x", "host": "mtf.przyklad-platnosci.example",
               "class": "PRIMARY", "title": "Rulebook"}
     conn.execute("INSERT INTO sources (run_id, at, url, domain, fetched_ok, fail_reason)"
                  " VALUES (?,?,?,?,?,?)", (1, db.now(), zrodlo["url"], zrodlo["host"],

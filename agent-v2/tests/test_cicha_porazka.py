@@ -410,7 +410,7 @@ print("=== 8. ODPOWIEDZ POD NASZYM ARTYKULEM ===")
 wyczysc()
 podepnij(Strona(evaluate=-1))            # -1 = nie znalazlem przycisku odpowiedzi
 browser.wystaw_odpowiedz_pod_artykulem(
-    "https://nia.substack.com/p/tekst", "Ktos", TEKST, wyslij=True)
+    "https://your-handle.substack.com/p/tekst", "Ktos", TEKST, wyslij=True)
 lista = wpisy()
 sprawdz("porazka zapisana", len(lista) == 1, lista)
 sprawdz("z rodzajem osobnym dla tej sciezki",

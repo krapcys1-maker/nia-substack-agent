@@ -499,7 +499,7 @@ CZEKAJA = [
      "pod_id": 555, "gdzie": "notka", "kontekst": "nasza notka"},
     {"autor": "Inny", "tekst": "Pytanie", "pod_czym": "nasz artykul",
      "pod_id": 0, "gdzie": "artykul", "kontekst": "artykul",
-     "url": "https://nia.substack.com/p/tekst"},
+     "url": "https://your-handle.substack.com/p/tekst"},
 ]
 slad_o, wydruk_o = przebieg(ZRODLO, wyslane=False, czekajace=CZEKAJA,
                             nazwa="run_odpowiedzi_zle")

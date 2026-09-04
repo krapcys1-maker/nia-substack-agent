@@ -679,8 +679,8 @@ def reagujacy_jako_cele() -> tuple[list[str], dict]:
 
     Cala dalsza droga w `obserwuj` i `subskrybuj` bierze HOST i sama wyprowadza
     z niego uchwyt. Wsadzenie golego uchwytu do tej listy weszlo by w
-    `browser.uchwyt_publikacji("hedleyrees")`, ktore dla nazwy bez kropki
-    otwiera sesje przegladarki i pyta `https://hedleyrees/api/v1/posts` —
+    `browser.uchwyt_publikacji("igordziewiaty")`, ktore dla nazwy bez kropki
+    otwiera sesje przegladarki i pyta `https://igordziewiaty/api/v1/posts` —
     czyli adres, ktorego nie ma. Postac `<uchwyt>.substack.com` przechodzi
     natomiast przez cala droge BEZ ANI JEDNEGO ZAPYTANIA:
     `uchwyt_publikacji` skraca ja z powrotem do uchwytu jednym `split`,
@@ -827,8 +827,8 @@ def cele_wedlug_pierwszenstwa(historia: dict) -> tuple[list[str], dict]:
             przed.append(host)
 
     reagujacy, rachunek = reagujacy_jako_cele()
-    # TEN SAM CZLOWIEK NIE MOZE STAC W PULI DWA RAZY. `hedleyrees` jest
-    # jednoczesnie reagujacym i hostem `hedleyrees.substack.com` z historii
+    # TEN SAM CZLOWIEK NIE MOZE STAC W PULI DWA RAZY. `igordziewiaty` jest
+    # jednoczesnie reagujacym i hostem `igordziewiaty.substack.com` z historii
     # komentarzy — bez tego odsiewu poszedlby przez dwa poziomy naraz i zjadl
     # dwa sloty na jednym profilu. Porownujemy slugiem, bo host z historii bywa
     # wlasna domena (`www.ryanpuzycki.com` to `puzycki`... i akurat tam slug

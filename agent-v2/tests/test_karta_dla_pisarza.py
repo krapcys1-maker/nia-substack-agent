@@ -54,7 +54,7 @@ TERAZ = datetime(2026, 8, 30, tzinfo=timezone.utc)
 # KARTA PRZEPISANA Z PRODUKCJI, nie wymyslona — to ta, ktora zabila dwa teksty.
 KARTA_SWIEZA = {
     "working_thesis": "Guardrails were removed because removing them was the test.",
-    "confirmed_claims": [{"claim": "x", "evidence": "y", "url": "https://metr.org/z"}],
+    "confirmed_claims": [{"claim": "x", "evidence": "y", "url": "https://instytut-pomiarowy.example/z"}],
     "source_dates": {
         "newest": "2026-08-26",
         "oldest": "unknown",

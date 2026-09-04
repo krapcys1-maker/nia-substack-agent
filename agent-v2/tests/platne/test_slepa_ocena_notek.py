@@ -64,7 +64,7 @@ MATERIAL = [
      "fakt": "A shopping trolley wheel locks when it crosses a wire buried at the "
              "edge of the car park, not by radio signal, and the wire has to be "
              "physically installed in the ground by the retailer.",
-     "zrodlo": "Gatekeeper Systems", "url": "https://www.gatekeepersystems.com/"},
+     "zrodlo": "Gatekeeper Systems", "url": "https://www.przyklad-firma-b.example/"},
 ]
 
 

@@ -18,7 +18,7 @@ Zmierzone 1 wrzesnia 2026 na produkcyjnym dzienniku serwera
     cele sa bezuzyteczni — juz ich mamy;
   * przez rownosc slugu nazwy ze slugiem hosta z `gdzie_komentowalismy.json`
     (94 hosty) trafia 7 z 69: davidoks.blog, eunnurilee.substack.com,
-    fatemaraja.substack.com, hedleyrees.substack.com, ixcarus.substack.com,
+    fatemaraja.substack.com, igordziewiaty.substack.com, ixcarus.substack.com,
     thenemethreport.substack.com, www.ryanpuzycki.com — z czego po odsianiu
     wszystkiego sprzed przestawienia konta na AI (2026-08-25) zostaja TRZY.
 
@@ -111,7 +111,7 @@ PRZED = {str(p): odcisk(p) for p in PILNOWANE}
 # dobrani, zeby uderzyc w kazdy sposob, w jaki dwie rownolegle listy moga sie
 # rozjechac.
 LUDZIE = [
-    {"id": 1, "name": "Igor Dziewiaty", "handle": "hedleyrees"},
+    {"id": 1, "name": "Igor Dziewiaty", "handle": "igordziewiaty"},
     # NADAWCA BEZ NAZWY. Stary kod wycinal go z `kto`; jesli uchwyty leca
     # osobna petla, to od TEGO miejsca kazda para jest przesunieta.
     {"id": 2, "handle": "duchbeznazwy"},
@@ -214,7 +214,7 @@ po_kluczu = {w["zdarzenie"]: w for w in wpisy}
 lajk = po_kluczu["note_like:900"]
 sprawdz("uchwyty sa w zapisie", "uchwyty" in lajk, sorted(lajk))
 sprawdz("i niosa prawdziwe konta, nie nazwy",
-        lajk["uchwyty"] == ["hedleyrees", "ryanpuzycki"], lajk)
+        lajk["uchwyty"] == ["igordziewiaty", "ryanpuzycki"], lajk)
 
 print()
 print("=== 2. NAZWA I UCHWYT TO TA SAMA OSOBA ===")
@@ -260,7 +260,7 @@ sprawdz("piatka to PIERWSZE piec osob z nazwa, w kolejnosci kanalu",
         restack["kto"] == ["Igor Dziewiaty", "Jan Dziesiaty", "Lech Dwunasty",
                            "Pusty Uchwyt", "Spacja"], restack["kto"])
 sprawdz("a uchwyty stoja przy nich",
-        restack["uchwyty"] == ["hedleyrees", "ryanpuzycki", None, None, None],
+        restack["uchwyty"] == ["igordziewiaty", "ryanpuzycki", None, None, None],
         restack["uchwyty"])
 sprawdz("`ilu` dalej mowi, ilu bylo NAPRAWDE, mimo przyciecia",
         restack["ilu"] == 8, restack["ilu"])
@@ -269,7 +269,7 @@ print()
 print("=== 2c. BRAK UCHWYTU JEST ODROZNIALNY OD BRAKU LUDZI ===")
 odp = po_kluczu["comment_reply:901"]
 sprawdz("konto bez pola `handle` -> None, nie pusty napis",
-        odp["uchwyty"] == [None, "hedleyrees"], odp["uchwyty"])
+        odp["uchwyty"] == [None, "igordziewiaty"], odp["uchwyty"])
 sprawdz("None nie jest pustym napisem",
         odp["uchwyty"][0] is None and odp["uchwyty"][0] != "", odp["uchwyty"])
 puste = po_kluczu["note_reply:902"]
@@ -376,7 +376,7 @@ try:
     sprawdz("run.kogo_juz_dotknelismy nie wywala sie na mieszance",
             isinstance(dotkneli, set) and dotkneli, sorted(dotkneli)[:4])
     sprawdz("i widzi nazwy z OBU polowek",
-            "hedleyrees" in dotkneli and "ryanpuzycki" in dotkneli,
+            "igordziewiaty" in dotkneli and "ryanpuzycki" in dotkneli,
             sorted(dotkneli))
 finally:
     browser.DZIENNIK = o_dz

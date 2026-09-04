@@ -70,7 +70,9 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 | `agent-v2/browser.py` | 507 | comment — harmless, but stale | `# (your-handle.substack.com), a /api/v1/reader/* i /api/v1/user/*` |
 | `agent-v2/browser.py` | 1246 | comment — harmless, but stale | `# `substack.com/@your-handle/following` oddaje 26 uchwytow, a` |
 | `agent-v2/config.py` | 118 | **FIELD** | `SUBSTACK_HANDLE = "your-handle"` |
+| `agent-v2/tests/test_cicha_porazka.py` | 413 | test fixture | `"https://your-handle.substack.com/p/tekst", "Ktos", TEKST, wyslij=True)` |
 | `agent-v2/tests/test_dowod_przeciw_hostowi.py` | 448 | test fixture | `"https://your-handle.substack.com/p/%s" % sciezka,` |
+| `agent-v2/tests/test_komentarz_potwierdzony.py` | 502 | test fixture | `"url": "https://your-handle.substack.com/p/tekst"},` |
 | `agent-v2/tests/test_naprawa_zamiast_ciecia.py` | 302 | test fixture | `LINK = "https://your-handle.substack.com/p/first-remove-the-brakes"` |
 | `agent-v2/tests/test_obserwacje.py` | 330 | test fixture | `Z_LINKIEM = "Pressure panels have a tiny hole. https://your-handle.substack.com/p/x"` |
 | `agent-v2/tests/test_obserwacje.py` | 331 | test fixture | `Z_LINKIEM_2 = "Eggs are refrigerated in America. https://your-handle.substack.com/p/y"` |

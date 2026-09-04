@@ -2092,7 +2092,7 @@ def dopisz_skutki() -> int:
     rozwiazuje 11 nazw z 69 — i sa to dokladnie ci, ktorzy juz nas czytaja,
     wiec jako cele bezuzyteczni; rownosc slugu nazwy ze slugiem hosta z
     historii komentarzy trafia 7 z 69, z czego po odsianiu wszystkiego sprzed
-    przestawienia konta na AI zostaja TRZY (`hedleyrees.substack.com`,
+    przestawienia konta na AI zostaja TRZY (`igordziewiaty.substack.com`,
     `www.ryanpuzycki.com`, `davidoks.blog`). Czyli 62 z 69 osob, ktore same
     dotknely naszej tresci, nie dalo sie zamienic na cel — nie dlatego, ze
     ich nie ma, tylko dlatego, ze uchwyt lezal w reku i nie byl zapisywany.

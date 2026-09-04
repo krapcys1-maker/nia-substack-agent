@@ -4615,7 +4615,7 @@ def _dobierz_przegladarka(conn, run_id: int, brakujace: list[dict[str, Any]],
 
     Polowa zrodel przepadala i to bylo waskie gardlo jakosci: artykul o blokadzie
     na karcie stanal na DWOCH dokumentach z szesciu znalezionych, bo `visa.no`
-    i `mtf.mastercard.com.au` oddaly zero znakow. To nie sa blokady — to strony
+    i `mtf.przyklad-platnosci.example` oddaly zero znakow. To nie sa blokady — to strony
     rysowane JavaScriptem, ktorych klient HTTP nie widzi. Przegladarke mamy
     i uzywamy jej do komentarzy; tutaj jej nie bylo.
 

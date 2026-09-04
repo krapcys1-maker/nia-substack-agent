@@ -26,7 +26,7 @@ Puszczone przez `run.cele_wedlug_pierwszenstwa` na tych DWOCH plikach:
 
     rachunek {'wszystkich': 94, 'sprzed_przestawienia': 53,
               'po_przestawieniu': 41, 'ze_skutkiem': 3}
-    poziom skutku: hedleyrees.substack.com, www.ryanpuzycki.com, davidoks.blog
+    poziom skutku: igordziewiaty.substack.com, www.ryanpuzycki.com, davidoks.blog
     `kogo_juz_subskrybujemy` -> 14 uchwytow
     tanie sito odsiewa 2 z 41: publikacja-b, tiffaniedarke
 
@@ -415,7 +415,7 @@ HISTORIA = {
     "dagmarabeine.substack.com":        "2026-08-16T16:21:21+00:00",
     "writersartistsyearbook.substack.com": "2026-08-23T07:00:00+00:00",
     # od 2026-08-25 wlacznie
-    "hedleyrees.substack.com":     "2026-08-31T10:00:00+00:00",
+    "igordziewiaty.substack.com":     "2026-08-31T10:00:00+00:00",
     "www.a16z.news":               "2026-08-30T09:00:00+00:00",
     "publikacja-b.substack.com": "2026-08-29T20:17:52+00:00",
     "www.ryanpuzycki.com":         "2026-08-28T11:00:00+00:00",
@@ -459,7 +459,7 @@ try:
             not (set(kand) & set(TYLKO_STARE)), kand)
     sprawdz("wszystkie cztery po przestawieniu wchodza", len(kand) == 4, kand)
     sprawdz("host z reakcja na nasza tresc stoi PIERWSZY",
-            kand[0] == "hedleyrees.substack.com", kand)
+            kand[0] == "igordziewiaty.substack.com", kand)
     sprawdz("i jest policzony jako poziom pierwszy",
             rach["ze_skutkiem"] == 1, rach)
 
@@ -529,8 +529,8 @@ konta, wpisy, plik, out = uruchom_blok(
     kolejnosc=tuple(HISTORIA), dziennik_wstepny=DZIENNIK_WSTEPNY)
 print("    odwiedzone profile: %s" % konta.odwiedzone)
 sprawdz("weszlismy na JEDEN profil i to ten z reakcja na nasza tresc",
-        konta.odwiedzone == ["hedleyrees"], konta.odwiedzone)
-sprawdz("obserwacja weszla", "hedleyrees" in konta.obserwowani,
+        konta.odwiedzone == ["igordziewiaty"], konta.odwiedzone)
+sprawdz("obserwacja weszla", "igordziewiaty" in konta.obserwowani,
         konta.obserwowani)
 wyk, nieud, _ = licz_norma(plik, "obserwacja")
 sprawdz("i licznik widzi JEDNA wykonana obserwacje, zero porazek",

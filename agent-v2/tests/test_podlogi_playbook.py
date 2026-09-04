@@ -121,7 +121,7 @@ ARTYKUL = WYCINKI
 
 KARTA = {"confirmed_claims": [
     {"text": "resin code", "url": "https://astm.org/x"},
-    {"text": "68 percent survey", "url": "https://scientificamerican.com/y"},
+    {"text": "68 percent survey", "url": "https://czasopismo-popularne.example/y"},
 ]}
 
 print("=== 0. MATERIAL DOWODOWY ===")

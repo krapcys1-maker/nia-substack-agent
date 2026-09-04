@@ -21,8 +21,8 @@ sprawdzilo, czy autor jest w ogole osiagalny z przycisku „Like":
     0: poziom 1   Genie                        /@publikacja2
     1: poziom 1   LonnieSly                    /@czytelnik5
     2: poziom 1   Ewa Piata  /@czytelnik6
-    3: poziom 1   Robert M. Hamburger          /@hamburgersstand
-    4: poziom 1   Allen R.                     /@allenras
+    3: poziom 1   Roman Osmy          /@czytelnik8
+    4: poziom 1   Alicja Dziewiata                     /@czytelnik9
     ODCZYTANYCH: 5 z 5
 
 Autor stoi jeden poziom nad przyciskiem. Dopiero majac ten pomiar warto bylo

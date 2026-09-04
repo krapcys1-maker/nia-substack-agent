@@ -410,7 +410,7 @@ def z_dziennikiem(wpisy, czytelnicy=(), fn=None):
 HISTORIA = {
     "thebuttergirlfriend.substack.com": "2026-08-16T13:00:00+00:00",
     "publikacja4.substack.com":          "2026-08-16T13:14:10+00:00",
-    "hedleyrees.substack.com":          "2026-08-31T10:00:00+00:00",
+    "igordziewiaty.substack.com":          "2026-08-31T10:00:00+00:00",
     "www.a16z.news":                    "2026-08-30T09:00:00+00:00",
 }
 
@@ -505,7 +505,7 @@ sprawdz("MY SAMI nie jestesmy celem, choc stoimy w kanale aktywnosci",
 sprawdz("rozjazd nazw i uchwytow jest ODRZUCANY, a nie zgadywany",
         "ktosa.substack.com" not in kand, kand)
 sprawdz("stary wpis bez pola `uchwyty` nie wywala doboru celu",
-        "hedleyrees.substack.com" in kand, kand)
+        "igordziewiaty.substack.com" in kand, kand)
 
 print()
 print("=== 4. PRZEPLOT: POZIOM HOSTOW NIE JEST ZAGLODZONY ===")
