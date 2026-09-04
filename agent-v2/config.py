@@ -2879,8 +2879,8 @@ def losowe_generatory(ile: int = 0) -> list[str]:
 
 # --- co czytelnik trzyma w reku W TYM MIESIACU -------------------------------
 # Najtansza dzwignia, jaka mamy, i nie mielismy jej wcale. Zwykla rzecz,
-# ktorej ktos WLASNIE dotyka, bije zwykla rzecz w ogole: artykul o SPF
-# w sierpniu to nie przypadek.
+# ktorej ktos WLASNIE dotyka, bije zwykla rzecz w ogole — dlatego tekst
+# o czyms sezonowym trafia lepiej w swoim sezonie niz poza nim.
 #
 # Miesiace wg polkuli polnocnej, bo tam jest wiekszosc czytelnikow anglojezycznych.
 # RYTM ROKU W TEJ DZIEDZINIE.
@@ -2920,9 +2920,8 @@ W_TYM_MIESIACU = {
         "reports published",
     11: "end-of-year launches, standards ballots closing, annual safety and "
         "transparency reporting",
-    12: "year in review everywhere, December committee meetings, budgets and "
-
-        "compute contracts signed for next year",
+    12: "year in review everywhere, December committee meetings, budgets "
+        "and supply contracts signed for next year",
 }
 
 

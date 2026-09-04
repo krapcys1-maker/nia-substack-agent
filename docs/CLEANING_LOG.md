@@ -245,15 +245,15 @@ rather than a percentage, because a percentage hides which half you got.
 | `stages.py` | 7,401 | **all of it** |
 | `browser.py` | 5,204 | **all of it** |
 | `run.py` | 2,845 | **all of it** |
-| `config.py` | 2,922 | in parts, following the sweeps |
+| `config.py` | 2,985 | **all of it** |
 | `llm.py` | 823 | most |
 | `konfiguracja.py`, `jezyki.py`, `style.py` | ~800 | all — they were rewritten |
 | `audyt_systemu.py`, `audyt_tematow.py` | 980 | the parts touched here |
 | the other 15 modules | ~9,000 | **not yet** |
 | the 140 test files | 38,422 | roughly 30 of them, in the parts touched |
 
-That is 15,450 of the 29,741 lines in the agent's modules — the three largest
-files, and the three that carry every publishing decision.
+That is 18,435 of the 29,741 lines in the agent's modules — 62% — and it is
+the four files that carry every publishing decision and every setting.
 
 The unread part has been through all thirteen sweeps but not through a person's
 eyes. Every one of those sweeps found something the earlier ones could not, and
