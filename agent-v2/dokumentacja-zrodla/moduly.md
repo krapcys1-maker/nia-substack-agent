@@ -376,7 +376,7 @@
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-295 wierszy, 10 funkcji na poziomie modułu, 0 klas
+322 wierszy, 11 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -387,6 +387,7 @@
 | `_za_swiezy(post, widelki)` *(wewn.)* | Czy post jest na tyle swiezy, ze komentarz wygladalby jak czujka bota. |
 | `wartosc_celu(x)` | Klucz sortowania celow: WCZESNIE przed GLOSNO. |
 | `_za_niedawno_u_nich(post)` *(wewn.)* | Czy komentowalismy u tej publikacji w ostatnich dniach. |
+| `nasz_adres(url)` | Czy ten adres wskazuje na NASZA publikacje. |
 | `posty_z_kanalu(ile)` | Ostatnie posty z kanalu czytelnika, z liczba komentarzy i reakcji. |
 | `notki_z_kanalu(ile)` | Cudze notki, pod ktorymi mozna wejsc w dyskusje. |
 | `szukaj_nowych(ile)` | Szuka NOWYCH kont wyszukiwarka Substacka, poza naszym kregiem. |

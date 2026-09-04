@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 25 |
-| functions and methods | 554 |
+| functions and methods | 555 |
 | functions that call a paid model | 25 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 41 |
@@ -48,7 +48,7 @@ For paid calls the verdict comes from
 | [`db.py`](#agent-v2db-py) | 11 | 0 | 0 | 7 | Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK. |
 | [`gates.py`](#agent-v2gates-py) | 21 | 0 | 0 | 0 | Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu. |
 | [`jezyki.py`](#agent-v2jezyki-py) | 5 | 0 | 0 | 0 | Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma. |
-| [`kanal.py`](#agent-v2kanal-py) | 10 | 0 | 3 | 0 | Kanal czytelnika — jedyne zrodlo celow do komentowania. |
+| [`kanal.py`](#agent-v2kanal-py) | 11 | 0 | 3 | 0 | Kanal czytelnika — jedyne zrodlo celow do komentowania. |
 | [`konfiguracja.py`](#agent-v2konfiguracja-py) | 12 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` — jeden plik zamiast polowania po 88 plikach. |
 | [`kopia_subskrybentow.py`](#agent-v2kopia-subskrybentow-py) | 4 | 0 | 1 | 0 | Kopia listy subskrybentow — jedyne aktywo, ktorego nie da sie odtworzyc. |
 | [`korpus_kanalow.py`](#agent-v2korpus-kanalow-py) | 6 | 0 | 0 | 0 | Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja. |
@@ -454,7 +454,7 @@ Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma.
 
 Kanal czytelnika — jedyne zrodlo celow do komentowania.
 
-10 funkcji.
+11 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -465,9 +465,10 @@ Kanal czytelnika — jedyne zrodlo celow do komentowania.
 | 58 | `_za_swiezy(post, widelki)` | — | Czy post jest na tyle swiezy, ze komentarz wygladalby jak czujka bota. | `kanal.notki_z_kanalu`, `kanal.posty_z_kanalu`, `kanal.szukaj_nowych` |
 | 70 | `wartosc_celu(x)` | — | Klucz sortowania celow: WCZESNIE przed GLOSNO. | `kanal.notki_z_kanalu`, `kanal.szukaj_nowych` |
 | 90 | `_za_niedawno_u_nich(post)` | — | Czy komentowalismy u tej publikacji w ostatnich dniach. | `kanal.posty_z_kanalu`, `kanal.szukaj_nowych` |
-| 109 | `posty_z_kanalu(ile)` | WWW | Ostatnie posty z kanalu czytelnika, z liczba komentarzy i reakcji. | `run.dzien`, `run.dzien.komentarze` |
-| 166 | `notki_z_kanalu(ile)` | WWW | Cudze notki, pod ktorymi mozna wejsc w dyskusje. | `run.dzien`, `run.dzien.dyskusje` |
-| 214 | `szukaj_nowych(ile)` | WWW | Szuka NOWYCH kont wyszukiwarka Substacka, poza naszym kregiem. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` |
+| 104 | `nasz_adres(url)` | — | Czy ten adres wskazuje na NASZA publikacje. | `kanal.posty_z_kanalu`, `kanal.szukaj_nowych` |
+| 137 | `posty_z_kanalu(ile)` | WWW | Ostatnie posty z kanalu czytelnika, z liczba komentarzy i reakcji. | `run.dzien`, `run.dzien.komentarze` |
+| 193 | `notki_z_kanalu(ile)` | WWW | Cudze notki, pod ktorymi mozna wejsc w dyskusje. | `run.dzien`, `run.dzien.dyskusje` |
+| 241 | `szukaj_nowych(ile)` | WWW | Szuka NOWYCH kont wyszukiwarka Substacka, poza naszym kregiem. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` |
 
 ---
 

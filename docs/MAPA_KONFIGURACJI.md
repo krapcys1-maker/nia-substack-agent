@@ -19,7 +19,7 @@ Nie opisuje, z czego bot jest zbudowany — to robi `agent-v2/JAK_ZBUDOWANY_JEST
 generowany z kodu i pilnowany testem. Ten plik opisuje, **co się w nim rusza**.
 
 Pełny spis funkcji, z krawędziami wywołań i znacznikami kosztu, leży osobno:
-[FUNCTION_MAP.md](FUNCTION_MAP.md) — 554 funkcji w 25 modułach, generowana
+[FUNCTION_MAP.md](FUNCTION_MAP.md) — 555 funkcji w 25 modułach, generowana
 z drzewa składni. Problemy napotkane po drodze:
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 

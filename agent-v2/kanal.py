@@ -101,9 +101,37 @@ def _za_niedawno_u_nich(post: dict) -> bool:
     return (datetime.now(timezone.utc) - kiedy) < timedelta(
         days=config.ODSTEP_DNI_NA_PUBLIKACJE)
 
-JS_KANAL = """
-() => null
-"""
+def nasz_adres(url: str) -> bool:
+    """Czy ten adres wskazuje na NASZA publikacje.
+
+    PO CZLONIE HOSTA, NIE PO PODNAPISIE. Stalo tu `config.SUBSTACK_HANDLE in
+    adres` — filtr, ktory ma odsiac nasze wlasne teksty z kanalu czytelnika
+    (agent uznal kiedys wlasny artykul za wart skomentowania). Dla uchwytu
+    dlugiego dziala; dla krotkiego albo bedacego zwyklym slowem wycina CUDZE
+    publikacje bez sladu:
+
+        uchwyt „art"  -> odpada `smartinvestor.substack.com`, `chartbook...`
+        uchwyt „news" -> odpada `thenewsletter.substack.com`
+
+    Cena jest niesymetryczna i cicha: odrzucony cel nie zostawia wpisu,
+    a licznik pokazuje po prostu mniejsza liczbe. Uchwyt JEST polem
+    konfiguracji (`konto.uchwyt`), wiec krotki uchwyt to zwykla instalacja,
+    a nie dziwny przypadek.
+
+    Porownujemy PIERWSZY CZLON hosta (`uchwyt.substack.com`) oraz host bez
+    `www.` — to drugie lapie wlasna domene podpieta pod publikacje.
+    """
+    from urllib.parse import urlparse
+
+    uchwyt = (config.SUBSTACK_HANDLE or "").strip().lower()
+    if not uchwyt:
+        return False
+    host = (urlparse(url or "").netloc or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    if not host:
+        return False
+    return host.split(".")[0] == uchwyt or host == uchwyt
 
 
 def posty_z_kanalu(ile: int = 25) -> list[dict[str, Any]]:
@@ -122,8 +150,7 @@ def posty_z_kanalu(ile: int = 25) -> list[dict[str, Any]]:
             # tez nas samych, a wybor celow przy pierwszym uruchomieniu uznal
             # nasz wlasny artykul za wart skomentowania — agent
             # komentowalby sam siebie.
-            adres = x.get("canonical_url") or ""
-            if config.SUBSTACK_HANDLE in adres:
+            if nasz_adres(x.get("canonical_url") or ""):
                 continue
             kandydat = {
                 "tytul": (x.get("title") or "")[:120],
@@ -269,7 +296,7 @@ def szukaj_nowych(ile: int = 20) -> list[dict]:
                 else:
                     continue
 
-                if config.SUBSTACK_HANDLE in (kandydat["url"] or ""):
+                if nasz_adres(kandydat["url"] or ""):
                     odrzucone["nasze"] += 1
                     continue
                 if _za_swiezy(kandydat,
