@@ -2591,8 +2591,22 @@ def main() -> int:
                 f" — powtarzam na {config.CLAUDE}",
                 flush=True,
             )
-            config.MODEL_FOR["write"] = config.CLAUDE
-            draft = stages.write(conn, run_id, card, glebokosc)
+            # NADPISANIE NA CZAS JEDNEGO WYWOLANIA, POTEM Z POWROTEM.
+            # Stalo tu golo `config.MODEL_FOR["write"] = config.CLAUDE`, czyli
+            # globalna zmiana konfiguracji uzyta jako lokalne nadpisanie i nigdy
+            # niecofnieta. Od tej chwili pole klamalo o tym, co jest
+            # skonfigurowane — a linia wyzej drukuje nazwe pisarza WLASNIE
+            # z niego, wiec druga awaria w tym samym procesie meldowalaby, ze
+            # padl Opus. Kazde nastepne `write` szloby przy tym na model
+            # najdrozszy, bez decyzji i bez sladu. Dzis `write` wola sie raz na
+            # proces, wiec nikt tego nie zobaczyl: wlasnosc trzymala sie
+            # przypadkiem, nie z konstrukcji.
+            _pisarz = config.MODEL_FOR["write"]
+            try:
+                config.MODEL_FOR["write"] = config.CLAUDE
+                draft = stages.write(conn, run_id, card, glebokosc)
+            finally:
+                config.MODEL_FOR["write"] = _pisarz
         words = len(draft["body"].split())
         print(f"\n   tytuł: {draft.get('title')}", flush=True)
         print(f"   podtytuł: {draft.get('subtitle', '')}", flush=True)

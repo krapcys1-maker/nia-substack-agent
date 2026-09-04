@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 572 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 613 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -143,7 +143,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2871 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2885 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -700,7 +700,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1442 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1469 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

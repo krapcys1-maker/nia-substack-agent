@@ -379,8 +379,15 @@ def _zrob_miejsce_na_fakt(card: dict) -> None:
     DZIEWIATE TWIERDZENIE. `config.CARD_MAX_CONFIRMED` to 8 i `stages.synthesis`
     przycina do tylu (`claims[: config.CARD_MAX_CONFIRMED]`). Wstrzykniecie
     dokladalo dziewiate, a `audyt_researchu.py:158-161` liczy srednia na karte
-    i przy przekroczeniu sufitu meldowal „UWAGA — karta rozdeta". `config.py`
-    jest zajety przez innego agenta, wiec sufit zostaje, a miejsce robimy tutaj.
+    i przy przekroczeniu sufitu meldowal „UWAGA — karta rozdeta".
+
+    SUFIT ZOSTAJE, MIEJSCE ROBIMY TUTAJ — i powod jest rzeczowy, a nie
+    organizacyjny. Stalo tu „`config.py` jest zajety przez innego agenta",
+    czyli fakt prawdziwy przez kwadrans, zapisany jako uzasadnienie na zawsze.
+    Wlasciwy powod: sufit opisuje, ILE TWIERDZEN UNIESIE KARTA dla pisarza,
+    i jest wspolny dla wszystkich sciezek. Podniesienie go dla jednego
+    wstrzyknietego faktu rozluznialoby go takze tam, gdzie nikt o to nie
+    prosil.
 
     NIE TNIEMY OSTATNIEGO NA SLEPO. Ostatnie twierdzenie bywa jedynym z
     czwartego hosta, a wtedy wycinajac je zwezalibysmy podstawe artykulu i
@@ -830,11 +837,14 @@ NAZWA_SPISU = "CZYTAJ_TO.txt"
 def _katalog_ratunku() -> Path:
     """Katalog OBOK `ARTICLES_DIR`, nigdy w nim.
 
-    Liczony z `ARTICLES_DIR`, a nie wpisany na sztywno w `config` — `config.py`
-    jest zajety przez innego agenta, a przy okazji wychodzi z tego wlasnosc
-    warta wiecej niz jedna stala: test, ktory przestawia katalog artykulow na
-    tymczasowy, przestawia TYM SAMYM katalog ratunku, wiec nie ma jak zapisac
-    niczego do produkcyjnego `data/` przez zapomnienie.
+    Liczony z `ARTICLES_DIR`, a nie wpisany na sztywno w `config` — i to jest
+    wlasnosc warta wiecej niz jedna stala: test, ktory przestawia katalog
+    artykulow na tymczasowy, przestawia TYM SAMYM katalog ratunku, wiec nie ma
+    jak zapisac niczego do produkcyjnego `data/` przez zapomnienie.
+
+    (Stalo tu jeszcze „`config.py` jest zajety przez innego agenta" — fakt
+    prawdziwy przez kwadrans, zapisany jako uzasadnienie na zawsze. Uzasadnienie
+    bez daty waznosci przezywa swoj powod i broni stanu, ktorego juz nie ma.)
     """
     return config.ARTICLES_DIR.parent / NAZWA_KATALOGU_RATUNKU
 
@@ -926,8 +936,9 @@ def _ramka(powod: str, brak: list[str], katalog: Path) -> str:
         "",
         "> %s" % powod,
         "> Kontrole, ktore sie NIE odbyly: %s." % ", ".join(brak),
-        "> Zapisany, bo samo pisanie kosztowalo okolo 0,76 USD, a zapis jest",
-        "> darmowy — wyrzucenie gotowego tekstu bylo strata bez korzysci.",
+        "> Zapisany, bo pisanie jest najdrozszym pojedynczym wywolaniem",
+        "> przebiegu, a zapis jest darmowy — wyrzucenie gotowego tekstu",
+        "> byloby strata bez zadnej korzysci.",
         "> Etykieta: %s. Ten tekst NIE MA wiersza w tabeli `articles` i NIE"
         % STATUS_URATOWANY,
         "> lezy w katalogu artykulow — celowo, zeby nie liczyl sie jako artykul",
@@ -944,9 +955,10 @@ def _ramka(powod: str, brak: list[str], katalog: Path) -> str:
 
 SPIS = """TEKSTY Z PRZEBIEGOW, KTORE SIE NIE DOKONCZYLY
 
-Kazdy plik `.md` w tym katalogu to artykul NAPISANY I OPLACONY (okolo 0,76 USD
-za samo pisanie), ktorego przebieg przerwal budzet albo wylacznik ZANIM odbyla
-sie recenzja, bramki jakosci i sprawdzenie faktow.
+Kazdy plik `.md` w tym katalogu to artykul NAPISANY I OPLACONY, ktorego przebieg
+przerwal budzet albo wylacznik ZANIM odbyla sie recenzja, bramki jakosci
+i sprawdzenie faktow. Pisanie jest najdrozszym pojedynczym wywolaniem calego
+przebiegu — ile dokladnie kosztowalo TWOJE, mowi tabela `calls` w bazie.
 
 ZADEN Z NICH NICZEGO NIE PRZESZEDL. Kazdy zaczyna sie ramka „%s"
 i ta ramka ma tam zostac, dopoki czlowiek nie przeczyta tekstu.
@@ -1232,8 +1244,17 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
         print("  [awaria] pisarz (%s) padl: %s — powtarzam na %s"
               % (config.MODEL_FOR.get("write"), str(exc)[:120], config.CLAUDE),
               flush=True)
-        config.MODEL_FOR["write"] = config.CLAUDE
-        draft = stages.write(conn, run_id, card, glebokosc)
+        # NADPISANIE NA CZAS JEDNEGO WYWOLANIA — patrz ten sam blok
+        # w `run.py`. Globalna zmiana konfiguracji uzyta jako lokalne
+        # nadpisanie i niecofnieta klamie potem o tym, co operator wpisal
+        # w `konfiguracja.toml`, i wysyla kazde nastepne `write` na model
+        # najdrozszy bez decyzji.
+        _pisarz = config.MODEL_FOR["write"]
+        try:
+            config.MODEL_FOR["write"] = config.CLAUDE
+            draft = stages.write(conn, run_id, card, glebokosc)
+        finally:
+            config.MODEL_FOR["write"] = _pisarz
     print()
     print("   tytul: %s" % draft.get("title"), flush=True)
     print("   podtytul: %s" % draft.get("subtitle", ""), flush=True)
@@ -1374,12 +1395,18 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
 
     import browser
 
-    # SPRAWDZENIE FAKTOW PRZED PUBLIKACJA — ta sama bramka, co w `run.py`.
-    # Zapis zostaje, publikacja nie: artykul jest juz na dysku z okladka, wiec
-    # research nie przepada i wlasciciel ma co czytac. Blokujemy wylacznie
-    # wyjscie na zewnatrz, bo tam blad kosztuje wiarygodnosc, a nie pieniadze.
+    # SPRAWDZENIE FAKTOW JEST WPISEM W LOGU, NIE BRAMKA — i ten komentarz
+    # przez chwile twierdzil co innego.
+    #
+    # Stal tu akapit „ta sama bramka, co w `run.py`. (...) Blokujemy wylacznie
+    # wyjscie na zewnatrz", opisujacy zachowanie, ktore usunieto akapit nizej.
+    # Czytajacy od gory dowiadywal sie, ze publikacja jest zablokowana przy
+    # obalonym zdaniu — a nie jest. W miejscu dotyczacym tego, co wychodzi na
+    # zewnatrz, nieaktualny opis kosztuje wiecej niz gdziekolwiek indziej.
+    #
     # `zweryfikuj` przy wlasnej awarii przepuszcza — zepsuta weryfikacja nie
     # jest dowodem falszu.
+    #
     # OBALONE ZDANIE NIE KONCZY PRZEBIEGU — WYPADA I TEKST IDZIE JESZCZE RAZ.
     #
     # Stalo tu `return 0` z komunikatem „do decyzji wlasciciela". To bylo
