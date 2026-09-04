@@ -5507,8 +5507,9 @@ def scout(conn: sqlite3.Connection, run_id: int, count: int = 6) -> list[dict[st
     # Do kosza nie, bo przebieg musi skonczyc sie artykulem — to decyzja
     # wlasciciela i nie wolno jej podwazac cichym filtrem. Ale na koniec tak,
     # bo `pick_topic` bierze z gory, a temat bez przekonania to temat bez luki:
-    # czytelnik nie ma czego zamknac. Tak wlasnie powstal artykul o symbolu
-    # na kosmetykach, ktory wlasciciel pozniej usunal jako za slaby.
+    # czytelnik nie ma czego zamknac. Tak wlasnie powstal jedyny artykul, ktory
+    # wlasciciel pozniej usunal jako za slaby — poprawny, udokumentowany
+    # i o niczym.
     for t in topics:
         wiara = str(t.get("broken_belief") or "").strip()
         # Samo pole nie wystarczy — musi niesc zdanie, nie ozdobnik.
@@ -5761,8 +5762,8 @@ def scout(conn: sqlite3.Connection, run_id: int, count: int = 6) -> list[dict[st
     # czyli 25%. Pozostale pietnascie przyszlo z pamieci modelu — i pamiec dala
     # niemal wylacznie historie sadowe. Wszystkie osiem tematow artykulowych
     # okazalo sie pozwem, nakazem regulatora albo ugoda; ani jeden nie mowil o
-    # tym, co maszyna robi. To sa dwie strony jednej wady, bo kanaly mowia
-    # wlasnie o rzeczy samej: modelach, ukladach, oknach kontekstu, cenach.
+    # tym, co przedmiot tej dziedziny NAPRAWDE robi. To sa dwie strony jednej
+    # wady, bo kanaly mowia wlasnie o rzeczy samej, a nie o sporach wokol niej.
     #
     # DEKLARACJA MODELU TO SYGNAL, NIE DOWOD. Pole `zaczyn` sprawdzamy wobec
     # PRAWDZIWEJ listy tym samym rozmytym porownaniem, ktorego uzywa wykrywacz
@@ -6013,7 +6014,8 @@ _ZAPRZECZENIE = re.compile(
 
 # Prog wynika z teorii, nie z gustu. Zlamane przekonanie jest WARUNKIEM
 # KONIECZNYM: bez niego nie ma luki, wiec nie ma ciekawosci — choćby fakty
-# byly najlepsze. Tak wlasnie padl artykul o symbolu na kosmetykach.
+# byly najlepsze. Tak wlasnie padl jedyny artykul, ktory wlasciciel usunal po
+# publikacji: dobrze udokumentowany, poprawny i bez luki do zamkniecia.
 WYMAGANE_ZLAMANE_PRZEKONANIE = True
 MIN_FILAROW_POZA_PRZEKONANIEM = 2      # z trzech: decydent, liczba, druga dziedzina
 
@@ -6314,11 +6316,10 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
     #
     # OGRANICZENIE NIE MA ROKU Z DEFINICJI. Zmierzone na 173 kandydatach:
     # DWADZIESCIA DZIEWIEC odrzucen „decydent bez daty" dotyczylo faktow, w
-    # ktorych roku nie ma w ZADNYM polu — bo go nie moze byc. Wsrod nich
-    # tokenizacja subwordowa jako powod bledu ze „strawberry", okno kontekstu
-    # gubiace najstarsze tokeny, dostepnosc danych treningowych decydujaca o
-    # tym, ktore z 6900 jezykow model rozumie. To sa najlepsze tematy tego
-    # pisma, odrzucane za to, ze nikt ich nie podpisal.
+    # ktorych roku nie ma w ZADNYM polu — bo go nie moze byc. Byly to
+    # ograniczenia wynikajace z budowy rzeczy albo z matematyki: cos dziala
+    # tak, a nie inaczej, i nikt tego nie postanowil w zadnym dniu. To sa
+    # najlepsze tematy tego pisma, odrzucane za to, ze nikt ich nie podpisal.
     #
     # Odrzucenie jest OSTATECZNE, wiec kazdy taki fakt przepadl na zawsze.
     decyzja = str(k.get("decision") or "").strip()
@@ -6331,11 +6332,11 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
     #     „ustalone przez komitet"          — nikt nienazwany, nic konkretnego
     #     „nikt, tak dziala fizyka"         — wprost brak mechanizmu
     #   PRZECHODZI (12-20 slow, opis):
-    #     „Providers each choose their own serving stack — hardware, precision,
-    #      batching policy, caching"
-    #     „A face-recognition system returns ranked candidates, never a
-    #      certainty, so a false match is a ranking artefact"
-    #     „A named team measured it on 500+ real cases at one hospital"
+    #     „Each supplier picks its own set-up — the parts, the tolerance, the
+    #      batch size, how much is kept in stock"
+    #     „The system returns a ranked list of candidates, never a certainty,
+    #      so a wrong match is an artefact of the ranking"
+    #     „A named team measured it on 500+ real cases at one site"
     #
     # Dlugosc rozdziela je czysto, a lista slow kluczowych nie rozdzielala ich
     # ani razu: probowalem slow decyzyjnych (zlapala „chose" w zaprzeczeniu) i
@@ -6363,13 +6364,12 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
     # odrzucen na 32.
     #
     # PROBOWALEM GO ZWEZIC DWA RAZY I DWA RAZY PRZEGRALEM ZE SLOWNIKIEM:
-    #   - wersja z lista slow decyzyjnych odrzucila „the tokenizer architecture
-    #     forces it; NOBODY CHOSE it", bo zlapala „chose" w zaprzeczeniu,
-    #   - wersja z lista slow niedecyzyjnych odrzucila na ZYWYCH danych trzy z
-    #     pieciu nowych kandydatow: „providers each choose their own serving
-    #     stack", „NEDA traded trained humans for a bot", „a face-recognition
-    #     system returns ranked candidates, never a certainty". Same
-    #     ograniczenia i kompromisy — dokladnie material, na ktorym nam zalezy.
+    #   - wersja z lista slow decyzyjnych odrzucila zdanie „the architecture
+    #     forces it; NOBODY CHOSE it", bo zlapala „chose" W ZAPRZECZENIU,
+    #   - wersja z lista slow niedecyzyjnych odrzucila na ZYWYCH danych trzy
+    #     z pieciu nowych kandydatow — wszystkie trzy byly opisami OGRANICZEN
+    #     albo KOMPROMISOW, czyli dokladnie tym materialem, na ktorym nam
+    #     zalezy najbardziej.
     # Wzorzec slownikowy na tekscie swobodnym zawsze bedzie dziurawy w te
     # strone, w ktora akurat nie patrzylem. To ta sama wada, co `\byour\b`.
     #
@@ -6381,8 +6381,9 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
     # „wiekszosc nie wie" to NIE JEST przekonanie, tylko niewiedza, a niewiedza
     # produkuje ciekawostki. X musi byc twierdzeniem, ktorego czytelnik BRONILBY,
     # gdyby mu zaprzeczyc. Ten sam werdykt trzy razy niezaleznie: ta bramka,
-    # bramka warto_pisac i wlasciciel, ktory usunal artykul o symbolu
-    # na kosmetykach — bo nikt nie ma o tym symbolu zadnego zdania.
+    # bramka `warto_pisac` i wlasciciel, ktory usunal jedyny artykul zdjety po
+    # publikacji — bo o jego temacie nikt nie mial zadnego zdania, wiec nie
+    # bylo czego lamac.
     if len(wiara.split()) < MIN_SLOW_POLOWY:
         return False, "brak przekonania do zlamania — to ciekawostka, nie notka"
     if re.search(r"\b(don'?t know|do not know|never heard|are unaware|not aware|"
@@ -6398,25 +6399,24 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
         return False, "decyzja bez skutku, ktory czytelnik trzyma w reku"
 
     # I MUSI TO BYC ZWYKLY CZLOWIEK, NIE FACHOWIEC. Pierwszy przebieg na
-    # Federal Register wypuscil szesc kandydatow na szesc: kwoty polowowe dla
-    # posiadaczy zezwolen na takle pelagiczne, oplaty karne dla przetworcow
-    # orzechow wloskich, dodatek za wypalanie kontrolowane dla strazakow
-    # lesnych i formatowanie naglowka w samym Federal Register. Kazdy z nich
-    # ma decydenta, date, zlamane przekonanie i skutek — i zaden nie nadaje
+    # rejestrze rozporzadzen wypuscil szesc kandydatow na szesc: cztery zmiany
+    # stawek i oplat dla waskich grup zawodowych, jeden dodatek branzowy i —
+    # najlepszy z nich — zmiana formatowania naglowka w samym rejestrze. Kazdy
+    # mial decydenta, date, zlamane przekonanie i skutek, i zaden nie nadawal
     # sie do publikacji, bo przekonanie trzyma BRANZA, a nie czytelnik.
     #
     # Zero odrzucen na prawdziwych danych bylo zreszta samo w sobie ostrzezeniem:
     # bramka, ktora nigdy nie zagryzla, nie jest bramka.
     # Sprawdzenie jest STRUKTURALNE, nie slownikowe, bo lista slow branzowych
-    # jest z natury dziurawa — przepuscila strazakow lesnych i formatowanie
-    # naglowka w samym Federal Register.
+    # jest z natury dziurawa — przepuscila i dodatek dla waskiej grupy
+    # zawodowej, i zmiane formatowania naglowka w samym rejestrze.
     #
     # Roznica miedzy dobrym a zlym skutkiem jest inna: dobry nazywa RZECZ,
     # ktora czytelnik ma, zly nazywa OSOBE, ktorej dotyczy przepis.
     #   dobrze: rzecz, ktora czytelnik ma pod reka i moze na nia
     #           spojrzec — nazwana konkretnie, nie kategoria
-    #   zle:    „an Atlantic-region pelagic longline permit holder",
-    #           „GS and FWS wildland firefighters assigned to prescribed burns"
+    #   zle:    „the holder of a category-three regional permit",
+    #           „grade-nine seasonal staff assigned to controlled operations"
     #
     # Wymog DRUGIEJ OSOBY wymusza odpowiedz na pytanie CO MA CZYTELNIK zamiast
     # KOGO TO DOTYCZY. Prompt zamawia dokladnie taka forme, wiec to nie jest
@@ -6425,18 +6425,22 @@ def bramka_kandydata(k: dict[str, Any]) -> tuple[bool, str]:
     # SZUKALO SAMEGO „your" I TO BYLA WADA NA JEDNA LITERE. Zmierzone 30
     # sierpnia 2026 na 173 kandydatach z produkcji: SZESNASCIE odrzucen z
     # powodem „brak slowa 'your'" dotyczylo zdan pisanych w drugiej osobie —
-    # rzeczy z wlasnej niszy, nazwane tak, jak czytelnik ich uzywa —
-    # nie kategoria, tylko egzemplarz, ktory ma przed soba. „the
-    # entry-level job you apply for". To jest DOKLADNIE forma, ktorej ta
-    # bramka zada, odrzucana przez brak litery „r".
+    # rzeczy z wlasnej niszy, nazwane tak, jak czytelnik ich uzywa — nie
+    # kategoria, tylko egzemplarz, ktory ma przed soba: „the entry-level job
+    # you apply for". To jest DOKLADNIE forma, ktorej ta bramka zada,
+    # odrzucana przez brak litery „r".
+    #
+    # Slowo w slowo: `\byour\b` nie lapie „you", a rzeczy nazwane przez
+    # czytelnika w drugiej osobie czesto stoja wlasnie z „you". Wzorzec
+    # wymienia teraz wszystkie formy.
     #
     # Zginal na tym najlepszy material, jaki potok znalazl. Odrzucenie jest
     # OSTATECZNE — wpis dostaje status „odrzucony" na zawsze — wiec te fakty
     # nie wracaja nigdy.
     #
     # BRAMKA SIE NIE ROZLUZNIA: oba pierwotne kontrprzyklady, ktore ja
-    # wywolaly („an Atlantic-region pelagic longline permit holder", „GS and
-    # FWS wildland firefighters"), nadal nie zawieraja zadnej drugiej osoby.
+    # wywolaly — „the holder of a category-three regional permit" i „grade-nine
+    # seasonal staff" — nadal nie zawieraja zadnej drugiej osoby.
     if not re.search(r"\byou\b|\byour\b|\byou're\b|\byours\b|\byourself\b",
                      skutek, re.IGNORECASE):
         return False, ("skutek nazywa kogos, nie rzecz czytelnika (brak drugiej"
