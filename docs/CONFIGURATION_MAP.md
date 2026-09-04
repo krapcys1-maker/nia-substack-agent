@@ -156,7 +156,7 @@ touching logic.
 | what | where | size | type |
 |---|---|---|---|
 | the niche, one sentence | `config.NISZA` | — | CONFIG |
-| words the **code** matches on | `config.ZNAKI_NISZY` | 22 | CONFIG |
+| yardstick your **search terms** are graded against (nothing filters posts by them) | `config.ZNAKI_NISZY` | 22 | CONFIG |
 | areas the beat must cover | `config.OBSZARY_REWIRU` | 3 | CONFIG |
 | search phrases | `config.HASLA_SZUKANIA` | 24, **≥19 required** | CONFIG |
 | curiosity domains | `config.DZIEDZINY_CIEKAWOSTEK` | 32, **≥29 required** | TEXT |

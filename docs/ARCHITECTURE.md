@@ -184,7 +184,7 @@ this publication is about:
 | constant | what it is | enforced by |
 |---|---|---|
 | `NISZA` | one sentence, handed to the model verbatim | `test_prompty_o_niszy` checks the prompts name it |
-| `ZNAKI_NISZY` | 22 words the **code** matches on | `test_szukanie_celow` — every search phrase must contain one |
+| `ZNAKI_NISZY` | 22 words your **search terms** are graded against. Nothing in the agent filters posts by them — what counts as on-topic is decided by the model, from `prompts/cele.md` | `test_szukanie_celow` — every search phrase must contain one |
 | `OBSZARY_REWIRU` | three areas the beat must cover | twenty phrases about one thing reach the same handful of accounts as three |
 | `HASLA_SZUKANIA` | search phrases, ≥19 | `test_szukanie_celow` |
 | `DZIEDZINY_CIEKAWOSTEK` | curiosity domains | `test_generatory`: `GENERATORY × DZIEDZINY ≥ 400` |

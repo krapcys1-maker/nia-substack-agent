@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 30 294 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 30 323 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 140 zestawów
-testów, 3649 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 3647 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -597,7 +597,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3195 wierszy, 35 funkcji na poziomie modułu, 0 klas
+3224 wierszy, 35 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -12911,9 +12911,6 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `CARD_MAX_CLAIM_CHARS` | `240` | — |
 | `DLUGOSC_WG_GLEBOKOSCI` | `{ # drugi mechanizm albo ta sama rzecz w kil` | Zmierzone na dziewięciu artykułach: przy „cel 1075, zakres 950-1250" model kotwiczył się przy górnej granicy (średnia 1212). Sufit obniżony, |
 | `KOTWICE_DLUGOSCI` | `{ # ZDANIE, KTORE PISARZ DOSTAJE TUZ PO CELU` | — |
-| `TARGET_WORDS` | `1075` | — |
-| `MIN_WORDS` | `950` | — |
-| `MAX_WORDS` | `1200` | — |
 | `BUDZET_ZASTRZEZEN` | `1` | Ile razy w jednym tekscie wolno powiedziec „moim zdaniem" i pochodne. Znakowanie wnioskowania jest DOBRE — recenzent wprost go chce, bo dzie |
 | `NASYCENIE_OD_ILU` | `2` | Od ilu ZNANYCH ISTNIEJACYCH TEKSTOW temat uznajemy za nasycony. Skaut wymienia, co jego zdaniem juz o danym temacie napisano — i uzywamy jeg |
 | `PRECEDENSOW_NA_ARTYKUL` | `2` | ILE UDOKUMENTOWANYCH AWARII ROBI Z TEMATU ARTYKUL. To jest kryterium, ktorego nie mielismy w ogole, i to przez jego brak wychodzily tematy w |

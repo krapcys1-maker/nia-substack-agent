@@ -24,7 +24,9 @@ To jest rusztowanie i zostaje. Roznica miedzy rusztowaniem a martwym polem
 polega na tym, ze rusztowanie da sie uzasadnic jednym zdaniem — i tu jest
 wymagane.
 """
+import io
 import pathlib
+import tokenize
 import re
 import sys
 
@@ -111,6 +113,16 @@ STALE_ZOSTAJA = {
     "OBSZARY_REWIRU": "czyta to `tests/test_szukanie_celow.py`, nie kod produkcyjny "
                       "— pilnuje, zeby pula hasel dotykala roznych stron niszy, "
                       "a nie dwudziestu wariantow jednego hasla",
+    # ZNALEZIONE 2026-09-03, gdy skan przestal uznawac wczytanie i wzmianke
+    # w komentarzu za uzycie. Cztery miejsca twierdzily, ze ta lista filtruje
+    # cudze posty (`config.py`, `kreator.py`, `ARCHITECTURE.md`,
+    # `CONFIGURATION_MAP.md`) — nie filtruje niczego. Wpis tutaj jest po to,
+    # zeby nikt nie „naprawil" tego z powrotem na zapewnienie.
+    "ZNAKI_NISZY": "RUBRYKA, NIE FILTR — czytaja ja `narzedzia/audyt.py`, "
+                   "`narzedzia/kreator.py` i `tests/test_szukanie_celow.py`, "
+                   "zeby sprawdzic, czy HASLA_SZUKANIA trzymaja sie tematu, "
+                   "ktory operator sam opisal. O tym, czy KONKRETNY post jest "
+                   "na temat, decyduje model wedlug `prompts/cele.md`",
 }
 
 print("=== 1. POLA MODELU, KTORYCH KOD NIE CZYTA ===")
@@ -141,15 +153,89 @@ sprawdz("kazde rusztowanie ma NIEPUSTY powod",
 
 print()
 print("=== 2. STALE, KTORYCH NIE UZYWA ZADEN KOD ===")
-cfg = pathlib.Path("agent-v2/config.py").read_text(encoding="utf-8")
-reszta = "\n".join(p.read_text(encoding="utf-8") for p in KOD_PY
-                   if p.name != "config.py")
+cfg_surowy = pathlib.Path("agent-v2/config.py").read_text(encoding="utf-8")
+
+
+def bez_komentarzy(tekst: str) -> str:
+    """WZMIANKA W PROZIE TO NIE UZYCIE.
+
+    Regula „uzywana wewnatrz samego configu" liczyla wystapienia w SUROWYM
+    tekscie, a w `config.py` prawie kazda stala ma nad soba akapit, ktory ja
+    z nazwy wymienia — wiec jedno zdanie o stalej zwalnialo ja z pytania, czy
+    ktokolwiek ja czyta. Tak przechodzila `ZNAKI_NISZY`.
+
+    Zamazujemy komentarze spacjami, zeby uklad reszty zostal nietkniety.
+    """
+    wiersze = tekst.split(chr(10))
+    try:
+        strumien = tokenize.generate_tokens(io.StringIO(tekst).readline)
+        for typ, _n, (w1, k1), (w2, k2), _l in strumien:
+            if typ != tokenize.COMMENT:
+                continue
+            for nr in range(w1, w2 + 1):
+                if nr - 1 >= len(wiersze):
+                    break
+                linia = wiersze[nr - 1]
+                od = k1 if nr == w1 else 0
+                do = k2 if nr == w2 else len(linia)
+                wiersze[nr - 1] = linia[:od] + " " * max(0, do - od) + linia[do:]
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        return tekst          # w razie watpliwosci nie oskarzamy
+    return chr(10).join(wiersze)
+
+
+# `cfg` ZOSTAJE SUROWY — czyta go reszta pliku, i to celowo: sa tu
+# asercje szukajace w `config.py` ZDAN, nie kodu (naglowek bloku
+# martwych stalych, zdanie „TYLKO ADNOTACJA, nie blokada").
+# Oczyszczona wersja sluzy JEDNEJ regule ponizej.
+cfg = cfg_surowy
+cfg_kod = bez_komentarzy(cfg_surowy)
+def bez_tablicy_pol(sciezka: pathlib.Path, tekst: str) -> str:
+    """WCZYTANIE TO NIE UZYCIE — odejmujemy mape pol od dowodu.
+
+    `konfiguracja.py` trzyma tablice `POLA`: „pole w TOML -> nazwa stalej".
+    Kazda stala, ktora operator moze USTAWIC, jest tam wymieniona z nazwy,
+    wiec dopoki tablica liczyla sie jako dowod uzycia, ten skan nie mogl
+    zobaczyc pola PYTANEGO I PORZUCONEGO — a wlasnie tam siedzialy dwa bledy
+    znalezione 2026-09-03: `KANALY_YOUTUBE` (pytane, zapisywane, nieczytane)
+    i `ZNAKI_NISZY` (czytana wylacznie przez audyt, kreator i test, przy
+    czterech miejscach twierdzacych, ze filtruje cudze posty).
+
+    Plik, ktorego jedynym zadaniem jest „stale, ktorych nikt nie uzywa", nie
+    widzial ani jednej z nich.
+    """
+    if sciezka.name != "konfiguracja.py":
+        return tekst
+    poczatek = tekst.find("POLA")
+    if poczatek < 0:
+        return tekst
+    otwarcie = tekst.find("{", poczatek)
+    if otwarcie < 0:
+        return tekst
+    glebokosc, i = 0, otwarcie
+    while i < len(tekst):
+        if tekst[i] == "{":
+            glebokosc += 1
+        elif tekst[i] == "}":
+            glebokosc -= 1
+            if glebokosc == 0:
+                break
+        i += 1
+    return tekst[:otwarcie] + tekst[i + 1:]
+
+
+reszta = "\n".join(
+    bez_tablicy_pol(p, p.read_text(encoding="utf-8"))
+    for p in KOD_PY if p.name != "config.py")
 martwe_stale = []
 for s in sorted(set(re.findall(r"^([A-Z][A-Z0-9_]{3,})\s*=", cfg, re.M))):
     if re.search(r"\b%s\b" % s, reszta):
         continue
-    if len(re.findall(r"\b%s\b" % s, cfg)) > 1:
-        continue          # uzywana wewnatrz samego configu
+    # WZMIANKA W PROZIE TO NIE UZYCIE — liczymy po tekscie bez komentarzy.
+    # W `config.py` prawie kazda stala ma nad soba akapit, ktory ja z nazwy
+    # wymienia, wiec jedno zdanie zwalnialo ja z pytania, czy ktos ja czyta.
+    if len(re.findall(r"\b%s\b" % s, cfg_kod)) > 1:
+        continue          # uzywana przez KOD samego configu
     if s in STALE_ZOSTAJA:
         continue
     martwe_stale.append(s)

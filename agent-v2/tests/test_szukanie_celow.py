@@ -40,7 +40,9 @@ import pathlib
 import sys
 
 sys.path.insert(0, "agent-v2")
+sys.path.insert(0, "agent-v2/tests")
 import config  # noqa: E402
+import wlasna_konfiguracja  # noqa: E402
 
 zdane = oblane = 0
 
@@ -53,6 +55,11 @@ def sprawdz(nazwa, warunek, szczegol=""):
     else:
         oblane += 1
         print("  BLAD  %s   %s" % (nazwa, szczegol))
+
+
+# ASERCJE O NASZYCH WARTOSCIACH, nie o regulach. Przy wlasnej konfiguracji
+# wypisuja sie z myslnikiem zamiast OK — pominiete sa widoczne, nie ciche.
+sprawdz_nasze = wlasna_konfiguracja.tylko_nasze(sprawdz)
 
 
 print("=== 1. HASLA SZUKANIA MIESZCZA SIE W ZNAKACH NISZY ===")
@@ -103,10 +110,25 @@ print()
 print("=== 2. PULA JEST SZERSZA NIZ JEDNA NISZA ===")
 # Sam rdzen niszy w kazdym hasle nie wystarczy: dwadziescia hasel o tym samym
 # daje te sama garstke kont. Rewir ma obejmowac takze to, co nisza ZMIENIA.
-sprawdz("hasel jest co najmniej 19", len(hasla) > 18, len(hasla))
+# REGULA DLA KAZDEGO JEST STRUKTURALNA, nie liczbowa: przebieg losuje
+# `ILE_HASEL_NA_PRZEBIEG` hasel, wiec pula ma byc od tego istotnie szersza.
+# Rowna albo mniejsza idzie za kazdym razem CALA i przyprowadza te sama
+# garstke kont — czyli dokladnie to, przed czym ta sekcja stoi.
+_minimum = 3 * config.ILE_HASEL_NA_PRZEBIEG
+sprawdz("pula jest szersza niz jeden przebieg (>= %d)" % _minimum,
+        len(hasla) >= _minimum,
+        "%d hasel przy %d losowanych na przebieg"
+        % (len(hasla), config.ILE_HASEL_NA_PRZEBIEG))
+# A DZIEWIETNASCIE TO JUZ NASZA LICZBA, nie regula.
+sprawdz_nasze("hasel jest co najmniej 19", len(hasla) > 18, len(hasla))
+# `OBSZARY_REWIRU` TO NASZA MAPA REWIRU — polskie nazwy, i nie ma jej
+# w kreatorze, wiec operator nie moze jej przestawic. Zadanie od cudzej
+# publikacji, zeby jej hasla pokrywaly „pieniadze i wladza", jest niewykonalne
+# z definicji. Dla nas nadal obowiazuje: dwadziescia hasel o jednym daje te
+# sama garstke kont, co trzy.
 for obszar, slowa in config.OBSZARY_REWIRU.items():
-    sprawdz("  rewir obejmuje: %s" % obszar,
-            any(any(s in h for s in slowa) for h in hasla))
+    sprawdz_nasze("  rewir obejmuje: %s" % obszar,
+                  any(any(s in h for s in slowa) for h in hasla))
 
 print()
 print("=== 3. WIECEJ HASEL NA PRZEBIEG ===")
@@ -169,9 +191,12 @@ POZA_KAZDYM_REWIREM = ("celebrity divorce rumours", "last night's match score",
 sprawdz("nic spoza rewiru nie przechodzi sita niszy",
         not any(w_niszy(h) for h in POZA_KAZDYM_REWIREM),
         [h for h in POZA_KAZDYM_REWIREM if w_niszy(h)])
-sprawdz("a wszystkie nasze hasla przechodza",
-        all(w_niszy(h) for h in hasla),
-        [h for h in hasla if not w_niszy(h)])
+# Druga polowa kontrdowodu — sito nie odrzuca WSZYSTKIEGO. Dla cudzej
+# konfiguracji mowi to samo, co sekcja 1, i tam jest powiedziane z instrukcja,
+# co zrobic; tu wystarczy raz.
+sprawdz_nasze("a wszystkie nasze hasla przechodza",
+              all(w_niszy(h) for h in hasla),
+              [h for h in hasla if not w_niszy(h)])
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))

@@ -775,9 +775,18 @@ def dlugosc_dla(glebokosc: str) -> dict[str, int]:
         (glebokosc or "").upper(), DLUGOSC_WG_GLEBOKOSCI["SINGLE"])
 
 
-TARGET_WORDS = 1075
-MIN_WORDS = 950
-MAX_WORDS = 1200
+# TU STALY `TARGET_WORDS = 1075`, `MIN_WORDS = 950`, `MAX_WORDS = 1200`.
+# Nie czytal ich zaden modul agenta — dlugosc ustala
+# `DLUGOSC_WG_GLEBOKOSCI` (wyzej), osobno dla RICH / SINGLE / THIN.
+# Byly przy tym ROZBIEZNE z tym, co obowiazuje: 950-1200 wobec
+# faktycznych 900-1250 dla RICH.
+#
+# Usuniete, bo galka niepodlaczona jest gorsza od jej braku: nazywa sie
+# dokladnie tak, jak trzeba, wiec operator szukajacy dlugosci artykulu
+# znajdzie wlasnie ja. Ten sam blad juz raz kosztowal: log pisal
+# „cel 1075, zakres 950-1200" o tekscie, ktory mial dostac 650 slow
+# (opisane w JAK_ZBUDOWANY_JEST_BOT.md), wiec poprawny artykul
+# wygladal w logu na o polowe za krotki.
 
 # Ile razy w jednym tekscie wolno powiedziec „moim zdaniem" i pochodne.
 # Znakowanie wnioskowania jest DOBRE — recenzent wprost go chce, bo dzieki
@@ -953,8 +962,13 @@ MAX_TOKENS = {
         + CARD_MAX_NUMBERS * 200
         + 4000
     ),
-    # artykuł plus zapas na myślenie
-    "write": _tokens_for(MAX_WORDS * 7) + 6000,
+    # ARTYKUL PLUS ZAPAS NA MYSLENIE — z NAJDLUZSZEJ formy, jaka potok
+    # potrafi zamowic. Stalo tu `MAX_WORDS * 7`, czyli druga kopia dlugosci
+    # artykulu, i ta kopia zdazyla sie rozjechac: 1200 wobec 1250 dla RICH.
+    # Sufit byl liczony na tekst o 50 slow krotszy niz najdluzszy mozliwy.
+    # Dwie kopie jednej liczby zawsze sie rozjezdzaja — liczymy ze zrodla.
+    "write": _tokens_for(
+        max(d["max"] for d in DLUGOSC_WG_GLEBOKOSCI.values()) * 7) + 6000,
     # Recenzja rozlicza KAŻDE zdanie i jest najdroższa w tokenach wyjścia:
     # DeepSeek dawał tu 19-22 tys. tokenów, a przy 28 764 ucięło go na żywo
     # i straciliśmy główny sygnał jakości. Sufit nic nie kosztuje, dopóki nie
@@ -2236,10 +2250,25 @@ ODSTEP_DNI_NA_PUBLIKACJE = 4
 # ktore mialy ja wpisana w cialo. Zmiana tematu oblewala wiec szesc testow
 # z powodu, ktory nie mial nic wspolnego z kodem.
 #
-# NISZA jest zdaniem podawanym modelowi. ZNAKI_NISZY to slowa, po ktorych
-# KOD rozpoznaje, ze cudzy post albo wlasne haslo naleza do naszego rewiru.
-# Lista jest jawna i krotka celowo: ma sie dac przeczytac i zakwestionowac,
-# a nie zgadywac, co system uznaje za „na temat".
+# NISZA jest zdaniem podawanym modelowi.
+#
+# ZNAKI_NISZY TO RUBRYKA, NIE FILTR. Stalo tu, ze sa to „slowa, po ktorych KOD
+# rozpoznaje, ze cudzy post (...) nalezy do naszego rewiru" — i to samo mowily
+# kreator oraz dwa pliki dokumentacji. Nieprawda: komplet czytelnikow tej
+# stalej to `konfiguracja.py` (wczytanie), `narzedzia/audyt.py`,
+# `narzedzia/kreator.py`, `tests/test_szukanie_celow.py` i dokumentacja.
+# Zaden modul agenta nie odsiewa po niej ani jednego posta.
+#
+# Sluzy do JEDNEGO: sprawdzenia, czy HASLA_SZUKANIA trzymaja sie tematu,
+# ktory operator sam opisal. Zlamanie tej spojnosci ma zmierzony skutek —
+# agent szuka po haslach, dostaje posty, a `prompts/cele.md` odrzuca je co do
+# jednego jako spoza rewiru; w logu wyglada to na wybrednosc modelu.
+#
+# O TYM, CZY KONKRETNY POST JEST „NA TEMAT", DECYDUJE MODEL wedlug
+# `prompts/cele.md`. Przestawienie tej listy nie zmieni tego wyboru ani o krok;
+# zmieni to, czy audyt i test spojnosci przechodza.
+#
+# Lista jest jawna i krotka celowo: ma sie dac przeczytac i zakwestionowac.
 #
 # PRZYKLAD — przestaw pod wlasna publikacje razem z HASLA_SZUKANIA
 # i DZIEDZINY_CIEKAWOSTEK.

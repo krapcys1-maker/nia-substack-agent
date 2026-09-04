@@ -220,11 +220,33 @@ def zbierz(o: Odpowiadacz) -> dict:
     pole("temat.znaki_niszy", "Words that mark a post as being in your subject",
          list(config.ZNAKI_NISZY),
          "Comma separated, stems are fine ('regulat' catches regulation,\n"
-         "regulatory, regulated). Code uses these, not the model.")
+         "regulatory, regulated). These do NOT filter anything the bot\n"
+         "reads: what counts as on-topic is decided by the model,\n"
+         "from prompts/cele.md. They are the yardstick your own\n"
+         "search terms below are measured against, so you find out\n"
+         "here — and not from an empty run — that the two drifted.")
+    # „AT LEAST 19" BYLO NASZA LICZBA, I NIKT JEJ NIE SPRAWDZAL. Napis, ktory
+    # stawia wymaganie i go nie egzekwuje, to ta sama wada, co kontrola
+    # wygladajaca na zywa: mozna bylo wpisac trzy hasla, przejsc dalej bez
+    # slowa i dowiedziec sie o tym dopiero z audytu — albo z pustego przebiegu.
+    #
+    # Regula niezalezna od NASZEJ niszy jest strukturalna: kazdy przebieg
+    # losuje `ILE_HASEL_NA_PRZEBIEG` hasel, wiec pula musi byc od tego
+    # istotnie szersza — inaczej za kazdym razem idzie cala i wraca po tych
+    # samych kontach.
+    _minimum = 3 * config.ILE_HASEL_NA_PRZEBIEG
     pole("temat.hasla_szukania", "Search terms for finding people to talk to",
          list(config.HASLA_SZUKANIA),
-         "At least 19, covering three different sides of the subject.\n"
-         "A narrow pool means the same handful of accounts every day.")
+         "At least %d — the bot draws %d at random every run, and a pool\n"
+         "that small is drawn whole, bringing back the same accounts\n"
+         "daily. Cover three different sides of the subject."
+         % (_minimum, config.ILE_HASEL_NA_PRZEBIEG))
+    _ile = len(dane.get("temat.hasla_szukania") or ())
+    if _ile < _minimum:
+        print("    ! %d hasel to za waska pula przy %d losowanych na przebieg."
+              % (_ile, config.ILE_HASEL_NA_PRZEBIEG))
+        print("      Zapisuje, bo szerokosc puli jest twoja decyzja — ale")
+        print("      kazdy przebieg wezmie ja w calosci. Audyt tez to zglosi.")
     pole("temat.dziedziny", "Areas to look through for facts",
          list(config.DZIEDZINY_CIEKAWOSTEK),
          "The lens, not the destination. Rotated every run.")

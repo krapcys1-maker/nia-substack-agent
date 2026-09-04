@@ -120,6 +120,22 @@ NIGDY_NIE_PASUJE = r"(?!x)x"
 
 POMIN_SUFIKSY = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".db", ".pyc"}
 zdane = oblane = 0
+uwagi: list[str] = []
+
+
+def uwaga(nazwa: str, szczegol: object = "") -> None:
+    """Trzeci glos: nie awaria, tylko dwa pola operatora, ktore sie rozjechaly.
+
+    Audyt umial dotad powiedziec wylacznie OK albo BLAD, wiec kazde
+    niedopasowanie CUDZEJ konfiguracji szlo jako BLAD i kod wyjscia 1 — czyli
+    narzedzie oblewalo na poprawnej instalacji. To jest najkrotsza droga do
+    tego, ze operator przestaje je uruchamiac.
+
+    UWAGA JEST WIDOCZNA I POLICZONA — nie zmienia tylko kodu wyjscia. Cicha
+    byla by gorsza od oblanej: udawalaby dowod.
+    """
+    uwagi.append(nazwa)
+    print("  UWAGA %s   %s" % (nazwa, szczegol))
 
 
 def sprawdz(nazwa: str, warunek: bool, szczegol: object = "") -> None:
@@ -459,8 +475,24 @@ def main() -> int:
 
     print()
     print("=== 8. SPOJNOSC: PROGI PILNOWANE PRZEZ TESTY ===")
-    sprawdz("hasel szukania jest >= 19", len(config.HASLA_SZUKANIA) >= 19,
-            len(config.HASLA_SZUKANIA))
+    # PROG 19 TO NASZA LICZBA, NIE REGULA. Asercja PONIZEJ (siatka wzorcow)
+    # zostala juz na to naprawiona; ta zostala pominieta i cudza instalacja
+    # z trzema haslami dostawala BLAD za stan calkowicie poprawny.
+    #
+    # Prog niezalezny od konfiguracji jest strukturalny: pula ma byc istotnie
+    # szersza niz to, co losujemy na przebieg (`ILE_HASEL_NA_PRZEBIEG`),
+    # inaczej kazdy przebieg bierze cala pule i wraca po tych samych kontach.
+    _min_hasel = 3 * config.ILE_HASEL_NA_PRZEBIEG
+    if (KORZEN / "agent-v2" / "konfiguracja.toml").exists():
+        sprawdz("pula hasel jest szersza niz jeden przebieg",
+                len(config.HASLA_SZUKANIA) >= _min_hasel,
+                "%d hasel przy %d losowanych na przebieg — dopisz do %d, "
+                "inaczej kazdy przebieg bierze cala pule"
+                % (len(config.HASLA_SZUKANIA), config.ILE_HASEL_NA_PRZEBIEG,
+                   _min_hasel))
+    else:
+        sprawdz("hasel szukania jest >= 19", len(config.HASLA_SZUKANIA) >= 19,
+                len(config.HASLA_SZUKANIA))
     # SIATKA ZALEZY OD LICZBY DZIEDZIN, KTORA PODAJE OPERATOR. Prog 400
     # opisuje NASZA pule (14 wzorcow x 46 dziedzin). Przy czterech wlasnych
     # dziedzinach wychodzi 56 i audyt oblewal, nie zglaszajac zadnej awarii —
@@ -478,9 +510,20 @@ def main() -> int:
                 % (komorki, na_dobe))
     else:
         sprawdz("siatka wzorce x dziedziny >= 400", komorki >= 400, komorki)
+    # NIEDOPASOWANIE DWOCH POL OPERATORA TO NIE JEST USTERKA INSTALACJI.
+    # Stal tu nagi `BLAD` z lista trafien. `test_szukanie_celow.py` przy tym
+    # samym trafieniu mowi, KTOREGO znaku brakuje i co z tym zrobic; audyt
+    # ma odsylac tam, a nie zglaszac awarie tam, gdzie jej nie ma.
     poza = [h for h in config.HASLA_SZUKANIA
             if not any(z in h.lower() for z in config.ZNAKI_NISZY)]
-    sprawdz("kazde haslo miesci sie w niszy", not poza, poza)
+    if poza and (KORZEN / "agent-v2" / "konfiguracja.toml").exists():
+        uwaga("hasla zgadzaja sie ze znakami niszy",
+                "%d hasel bez zadnego znaku (%s) — to dwa TWOJE pola, ktore"
+                " sie rozjechaly; `python agent-v2/tests/test_szukanie_celow.py`"
+                " mowi, ktorego znaku dopisac"
+                % (len(poza), ", ".join(poza[:3])))
+    else:
+        sprawdz("kazde haslo miesci sie w niszy", not poza, poza)
 
     print()
     print("=== 9. KONTRDOWOD: CZY TEN AUDYT W OGOLE COKOLWIEK LAPIE ===")
@@ -575,7 +618,11 @@ def main() -> int:
                     "%d plikow, np. %s" % (len(traf), traf[:2]) if traf else "")
 
     print()
-    print("=== WYNIK AUDYTU: %d zdanych, %d oblanych ===" % (zdane, oblane))
+    print("=== WYNIK AUDYTU: %d zdanych, %d oblanych%s ===" %
+          (zdane, oblane,
+           (", %d z uwaga" % len(uwagi)) if uwagi else ""))
+    for _u in uwagi:
+        print("    uwaga: %s" % _u)
     return 1 if oblane else 0
 
 

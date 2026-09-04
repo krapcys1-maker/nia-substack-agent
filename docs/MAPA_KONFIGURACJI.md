@@ -306,7 +306,7 @@ Te są w całości konfigurowalne i **żadne nie wymaga tknięcia kodu**:
 | sufit dzienny 5–10 USD, miesięczny **40 USD**, na przebieg 1,60 USD | `DAILY_LIMIT_USD`, `MONTHLY_LIMIT_USD`, `RUN_LIMIT_USD` |
 | 3 notki promujące artykuł, okno 7 dni | `NOTEK_PROMUJACYCH`, `OKNO_PROMOCJI_DNI` |
 | miks form i typów notek, ruchy końcowe artykułu | `NOTE_FORMS`, `NOTE_TYPES`, `NOTE_MIX_*`, `RUCHY_KONCOWE` |
-| długości: artykuł 950–1200 słów, notka 33–64 | `MIN_WORDS`, `MAX_WORDS`, `NOTE_MIN_WORDS`, `NOTE_MAX_WORDS` |
+| długości: artykuł zależnie od głębokości tematu (RICH 900–1250, SINGLE 480–820), notka 33–64 | `DLUGOSC_WG_GLEBOKOSCI`, `NOTE_MIN_WORDS`, `NOTE_MAX_WORDS` |
 
 `PUBLISH_TIMEZONE = "America/New_York"` jest strefą **czytelnika**, nie serwera.
 Przy innej publiczności to jedna z pierwszych rzeczy do zmiany, i jest to

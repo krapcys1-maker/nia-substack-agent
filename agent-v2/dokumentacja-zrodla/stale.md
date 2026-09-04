@@ -77,9 +77,6 @@
 | `CARD_MAX_CLAIM_CHARS` | `240` | — |
 | `DLUGOSC_WG_GLEBOKOSCI` | `{ # drugi mechanizm albo ta sama rzecz w kil` | Zmierzone na dziewięciu artykułach: przy „cel 1075, zakres 950-1250" model kotwiczył się przy górnej granicy (średnia 1212). Sufit obniżony, |
 | `KOTWICE_DLUGOSCI` | `{ # ZDANIE, KTORE PISARZ DOSTAJE TUZ PO CELU` | — |
-| `TARGET_WORDS` | `1075` | — |
-| `MIN_WORDS` | `950` | — |
-| `MAX_WORDS` | `1200` | — |
 | `BUDZET_ZASTRZEZEN` | `1` | Ile razy w jednym tekscie wolno powiedziec „moim zdaniem" i pochodne. Znakowanie wnioskowania jest DOBRE — recenzent wprost go chce, bo dzie |
 | `NASYCENIE_OD_ILU` | `2` | Od ilu ZNANYCH ISTNIEJACYCH TEKSTOW temat uznajemy za nasycony. Skaut wymienia, co jego zdaniem juz o danym temacie napisano — i uzywamy jeg |
 | `PRECEDENSOW_NA_ARTYKUL` | `2` | ILE UDOKUMENTOWANYCH AWARII ROBI Z TEMATU ARTYKUL. To jest kryterium, ktorego nie mielismy w ogole, i to przez jego brak wychodzily tematy w |
