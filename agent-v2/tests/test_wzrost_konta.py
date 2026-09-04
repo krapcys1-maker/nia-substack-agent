@@ -50,7 +50,7 @@ def sprawdz(nazwa, warunek, szczegol=""):
 
 # ODPOWIEDZ PRZEPISANA Z ZYWEGO PROFILU, nie wymyslona.
 PROFIL = {
-    "id": 528224862,
+    "id": 900000005,
     "handle": "your-handle",
     "subscriberCountNumber": 7,
     "rough_num_free_subscribers_int": 1,

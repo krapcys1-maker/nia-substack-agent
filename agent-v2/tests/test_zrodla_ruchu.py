@@ -17,8 +17,8 @@ z 2 wrzesnia 2026, okno 2026-08-03 -> 2026-09-02:
 
     ruch    direct to app 640 wysw / 39 osob, substack app 184/46,
             direct 14/5, email opens 12/6      -> razem 850 wyswietlen, 96 osob
-    zapisy  6, w tym 5 z NOTEK: c-323761132 dwa, c-320809275, c-322556153
-            i c-322757850 po jednym; 1 z „substack other"
+    zapisy  6, w tym 5 z NOTEK: c-900000012 dwa, c-900000009, c-900000010
+            i c-900000011 po jednym; 1 z „substack other"
 
 Obie tabele mowia o zapisach TO SAMO (6 i 6) — i to jest jedyna kontrola,
 jaka ten odczyt ma z siebie samego.
@@ -138,8 +138,8 @@ ZAPISY = {
               "category": "Substack", "metrics": miary(0, 0), "children": []},
              {"source": "notes", "sourceName": "Notes", "category": "Substack",
               "metrics": miary(0, 5),
-              "children": [notka("320809275", 1), notka("322556153", 1),
-                           notka("322757850", 1), notka("323761132", 2)]},
+              "children": [notka("900000009", 1), notka("900000010", 1),
+                           notka("900000011", 1), notka("900000012", 2)]},
          ]},
         {"source": "direct", "sourceName": "Direct", "category": "Direct",
          "metrics": miary(2, 0), "children": []},
@@ -205,8 +205,8 @@ try:
     sprawdz("zapisy z drzewa wzrostu 6", p.get("zapisy_ze_wzrostu") == 6, p)
     sprawdz("i oba adresy mowia to samo", p.get("zapisy_zgodne") is True, p)
     sprawdz("piec zapisow rozbite na CZTERY notki",
-            p.get("zapisy_per_notka") == {"320809275": 1, "322556153": 1,
-                                          "322757850": 1, "323761132": 2},
+            p.get("zapisy_per_notka") == {"900000009": 1, "900000010": 1,
+                                          "900000011": 1, "900000012": 2},
             p.get("zapisy_per_notka"))
     # 64 wobec 850 — panel liczy tu cos innego niz `visitor_sources`. Nie wiemy
     # czego i nie zgadujemy; zapisujemy obie, bo rozjazd sam w sobie informuje.

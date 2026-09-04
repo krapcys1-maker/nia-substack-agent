@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Obalone zdanie ma byc POPRAWIONE, nie wyciete i nie zablokowane.
 
-CO BYLO ZLE, zmierzone na produkcji 1 wrzesnia 2026 o 19:46. Notka 327559609
+CO BYLO ZLE, zmierzone na produkcji 1 wrzesnia 2026 o 19:46. Notka 900000013
 poszla w swiat po tym, jak nasze WLASNE sprawdzenie faktow ja obalilo:
 
     ! OBALONE: FirmaA logged thirty times the takeovers of FirmaB under the

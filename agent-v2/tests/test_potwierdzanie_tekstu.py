@@ -5,9 +5,9 @@ CO SIE DZIALO. Dwanascie komentarzy na sto i dwanascie odpowiedzi na
 piecdziesiat trzy konczylo sie w dzienniku jako „Substack nie potwierdzil,
 ze wyszlo". Sprawdzone NA ZYWO 31 sierpnia 2026 — trzy takie odpowiedzi:
 
-    note 326237724  NASZA ODPOWIEDZ JEST: TAK
-    note 326230402  NASZA ODPOWIEDZ JEST: TAK
-    note 325184756  NASZA ODPOWIEDZ JEST: TAK
+    note 900000014  NASZA ODPOWIEDZ JEST: TAK
+    note 900000015  NASZA ODPOWIEDZ JEST: TAK
+    note 900000016  NASZA ODPOWIEDZ JEST: TAK
 
 Wszystkie trzy BYLY na Substacku. Nie zawodzilo wystawianie, tylko
 POTWIERDZANIE.

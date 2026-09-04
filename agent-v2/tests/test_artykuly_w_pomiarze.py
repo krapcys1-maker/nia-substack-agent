@@ -58,19 +58,19 @@ def sprawdz(nazwa, warunek, szczegol=""):
 # Ksztalty przepisane z prawdziwej odpowiedzi, nie wymyslone: archiwum oddalo
 # liste piatki postow, kanal profilu — pozycje z zagniezdzonym `comment`.
 # Liczby przepisane z odpowiedzi ZYWEGO konta z 30 sierpnia, nie wymyslone.
-PANEL = [{"id": 212759416, "title": "Example Article One",
+PANEL = [{"id": 900000002, "title": "Example Article One",
           "reaction_count": 1, "comment_count": 0, "child_comment_count": 0,
           "stats": {"views": 8, "sent": 4, "delivered": 4, "opened": 2,
                     "clicks": 0, "shares": 0, "signups_within_1_day": 3}},
-         {"id": 211331575, "title": "Example Article Three",
+         {"id": 900000003, "title": "Example Article Three",
           "reaction_count": 3, "comment_count": 2, "child_comment_count": 2,
           "stats": {"views": 32, "sent": 4, "delivered": 4, "opened": 1,
                     "clicks": 3, "shares": 0, "signups_within_1_day": 0}}]
 # Archiwum niesie restacki, ktorych panel NIE ma — i nie sa tym samym co
-# `shares`: dla wpisu 212759416 archiwum mowi 1 restack, panel 0 udostepnien.
-ARCHIWUM = [{"id": 212759416, "title": "Example Article One",
+# `shares`: dla wpisu 900000002 archiwum mowi 1 restack, panel 0 udostepnien.
+ARCHIWUM = [{"id": 900000002, "title": "Example Article One",
              "restacks": 1},
-            {"id": 211331575, "title": "Example Article Three",
+            {"id": 900000003, "title": "Example Article Three",
              "restacks": 0}]
 ARTYKULY = PANEL
 
@@ -123,19 +123,19 @@ try:
     # Cala poprzednia droga (`note_stats/p-`) oddawala rekordy z samymi zerami.
     # Test musi wiec pytac o WARTOSCI, nie o to, ze rekord istnieje.
     w = {x["id"]: x["statystyki"] for x in art}
-    sprawdz("wyswietlenia z panelu", w["212759416"]["wyswietlenia"] == 8,
-            w["212759416"]["wyswietlenia"])
-    sprawdz("zapisy przypisane do wpisu", w["212759416"]["subskrypcje"] == 3,
-            w["212759416"]["subskrypcje"])
-    sprawdz("klikniecia w link", w["211331575"]["klikniecia_w_link"] == 3,
-            w["211331575"]["klikniecia_w_link"])
+    sprawdz("wyswietlenia z panelu", w["900000002"]["wyswietlenia"] == 8,
+            w["900000002"]["wyswietlenia"])
+    sprawdz("zapisy przypisane do wpisu", w["900000002"]["subskrypcje"] == 3,
+            w["900000002"]["subskrypcje"])
+    sprawdz("klikniecia w link", w["900000003"]["klikniecia_w_link"] == 3,
+            w["900000003"]["klikniecia_w_link"])
     sprawdz("odpowiedzi licza CALY watek, nie sam pierwszy poziom",
-            w["211331575"]["odpowiedzi"] == 4, w["211331575"]["odpowiedzi"])
+            w["900000003"]["odpowiedzi"] == 4, w["900000003"]["odpowiedzi"])
     sprawdz("restacki wziete z archiwum, nie z `shares`",
-            w["212759416"]["restacki"] == 1 and w["212759416"]["udostepnienia"] == 0,
-            (w["212759416"]["restacki"], w["212759416"]["udostepnienia"]))
+            w["900000002"]["restacki"] == 1 and w["900000002"]["udostepnienia"] == 0,
+            (w["900000002"]["restacki"], w["900000002"]["udostepnienia"]))
     sprawdz("poczta zmierzona (notka jej nie ma)",
-            w["212759416"]["wyslane"] == 4 and w["212759416"]["otwarcia"] == 2)
+            w["900000002"]["wyslane"] == 4 and w["900000002"]["otwarcia"] == 2)
 
     print()
     print("=== 2. LIMIT ICH NIE WYCINA — TO JEST TA WADA ===")

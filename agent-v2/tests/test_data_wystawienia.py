@@ -41,13 +41,13 @@ def sprawdz(nazwa, warunek, szczegol=""):
         print("  BLAD  %s   %s" % (nazwa, szczegol))
 
 
-# KSZTALT PRZEPISANY Z ZYWEJ ODPOWIEDZI dla notki c-325184756, nie wymyslony.
+# KSZTALT PRZEPISANY Z ZYWEJ ODPOWIEDZI dla notki c-900000016, nie wymyslony.
 KARTA = {
     "lastUpdatedAt": "2026-08-31T03:00:00.000Z",
     "cards": [
         {"type": "note", "cardId": "note",
          "note": {"type": "note",
-                  "note": {"id": "c-325184756",
+                  "note": {"id": "c-900000016",
                            "timestamp": "2026-08-29T13:13:58.963Z",
                            "author": {"name": "Your Publication"}}}},
         {"type": "graphCard", "cardId": "impressions",

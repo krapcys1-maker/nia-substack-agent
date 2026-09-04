@@ -7,7 +7,7 @@ konczy pomoc. Odpowiedz jest w `/api/v1/note_stats/c-{ID}`, w karcie
 `interactions`: opis endpointu wprost wymienia subscribes i follows jako
 interakcje.
 
-ZMIERZONE NA ZYWO, notka 321505067 (ta sama probka stoi w tescie):
+ZMIERZONE NA ZYWO, notka 900000001 (ta sama probka stoi w tescie):
 
     wyswietlenia 17
     powierzchnie  Feed 8, Other 5, Permalinks 3, Profile page 1   (razem 17)
@@ -36,7 +36,7 @@ Statystyki rosna w czasie; nadpisywanie ostatniej wartosci kasuje jedyna rzecz,
 ktora mowi, czy notka zbiera dalej, czy umarla po godzinie.
 
 W tym pliku nie ma ani jednej funkcji chodzacej do sieci — celowo. JSON-a
-pobiera `browser.api_json(page, "/api/v1/note_stats/c-321505067")`, a wszystko
+pobiera `browser.api_json(page, "/api/v1/note_stats/c-900000001")`, a wszystko
 ponizej dziala bez przegladarki, wiec test jest darmowy, szybki i nie dotyka
 konta.
 """
@@ -53,7 +53,7 @@ NAZWA_PLIKU = "statystyki.jsonl"
 # Tytul interakcji -> stale pole rekordu. Klucze male, bo o wielkosci liter ani
 # o liczbie mnogiej w tych tytulach nie decydujemy my.
 #
-# ZMIERZONE sa tylko "Like" i "Reply" (notka 321505067, 4 i 2). Reszta pochodzi
+# ZMIERZONE sa tylko "Like" i "Reply" (notka 900000001, 4 i 2). Reszta pochodzi
 # z opisu endpointu, a formy mnogie dopisane sa dlatego, ze kosztuja jedna
 # linijke, a brak mapowania nie wyglada jak blad: raport pokazalby po prostu
 # zero subskrypcji, czyli tez liczbe — i nikt by jej nie zakwestionowal.
@@ -174,7 +174,7 @@ def _suma(karta) -> int:
     miejsca, ktore w tym API wystepuja; dla karty `interactions` suma stoi w
     `headers[0]["value"]` i wynosila 6.
 
-    Ostatnia deska: suma pozycji. Dla probki 321505067 zgadza sie z naglowkiem
+    Ostatnia deska: suma pozycji. Dla probki 900000001 zgadza sie z naglowkiem
     (Like 4 + Reply 2 = 6), wiec nie jest to inna liczba, tylko ta sama liczona
     inaczej.
     """

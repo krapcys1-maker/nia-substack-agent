@@ -386,13 +386,13 @@ podepnij(Strona(wyjatek_goto=RuntimeError("Timeout 15000ms")))
 # NUMER naszej odpowiedzi albo `None`. Atrapa oddajaca `False` opisywala
 # funkcje, ktorej juz nie ma.
 browser.potwierdz_odpowiedz = lambda page, nid, tekst: None
-browser.wystaw_odpowiedz(315876268, TEKST, wyslij=True)
+browser.wystaw_odpowiedz(900000007, TEKST, wyslij=True)
 lista = wpisy()
 sprawdz("nieudana odpowiedz jest w dzienniku", len(lista) == 1, lista)
 sprawdz("pod rodzajem `odpowiedz`",
         bool(lista) and lista[0].get("rodzaj") == "odpowiedz", lista)
 sprawdz("z adresem notki",
-        bool(lista) and lista[0].get("gdzie") == "note/c-315876268", lista)
+        bool(lista) and lista[0].get("gdzie") == "note/c-900000007", lista)
 
 # Ta sama funkcja obsluguje wejscie w CUDZA dyskusje i wtedy jest komentarzem
 # dla licznika wolumenow — porazka musi trafic do tej samej kategorii.

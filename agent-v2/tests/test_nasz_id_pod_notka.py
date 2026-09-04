@@ -74,7 +74,7 @@ browser.api_json = lambda page, sciezka, **kw: watek(
     {"id": 4718, "body": NASZ},
     {"id": 222, "body": "And a third voice."},
 )
-wynik = browser.potwierdz_odpowiedz(Strona(), 315876268, NASZ)
+wynik = browser.potwierdz_odpowiedz(Strona(), 900000007, NASZ)
 sprawdz("oddaje NUMER naszej odpowiedzi", wynik == 4718, repr(wynik))
 sprawdz("a nie samo `True`", wynik is not True, repr(wynik))
 
@@ -82,7 +82,7 @@ print()
 print("=== 2. NASZEGO TEKSTU NIE MA -> None ===")
 browser.api_json = lambda page, sciezka, **kw: watek(
     {"id": 111, "body": "Someone else entirely."})
-wynik = browser.potwierdz_odpowiedz(Strona(), 315876268, NASZ)
+wynik = browser.potwierdz_odpowiedz(Strona(), 900000007, NASZ)
 sprawdz("brak w watku to None", wynik is None, repr(wynik))
 
 print()
@@ -90,7 +90,7 @@ print("=== 3. JEST, ALE BEZ NUMERU -> -1, NIGDY None ===")
 # Najwazniejszy przypadek w tym pliku. `None` znaczy „host nie pokazuje
 # komentarza" i po dwoch takich wpisach host znika z listy celow na zawsze.
 browser.api_json = lambda page, sciezka, **kw: watek({"body": NASZ})
-wynik = browser.potwierdz_odpowiedz(Strona(), 315876268, NASZ)
+wynik = browser.potwierdz_odpowiedz(Strona(), 900000007, NASZ)
 sprawdz("potwierdzone mimo braku numeru", wynik == -1, repr(wynik))
 sprawdz("czyli NIE wyglada jak odmowa hosta", wynik is not None, repr(wynik))
 
@@ -100,7 +100,7 @@ print("=== 4. WATEK ZAGNIEZDZONY — ODPOWIEDZ NA ODPOWIEDZ ===")
 browser.api_json = lambda page, sciezka, **kw: {"commentBranches": [
     {"comment": {"id": 111, "body": "Root comment."},
      "children": [{"comment": {"id": 9001, "body": NASZ}, "children": []}]}]}
-wynik = browser.potwierdz_odpowiedz(Strona(), 315876268, NASZ)
+wynik = browser.potwierdz_odpowiedz(Strona(), 900000007, NASZ)
 sprawdz("numer z glebi watku tez wraca", wynik == 9001, repr(wynik))
 
 print()

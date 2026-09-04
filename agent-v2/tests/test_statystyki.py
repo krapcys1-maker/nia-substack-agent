@@ -1,6 +1,6 @@
 """Statystyki pozycji: czy parser czyta prawdziwa odpowiedz i czy raport nie klamie.
 
-Probka nizej to ZMIERZONA odpowiedz `/api/v1/note_stats/c-321505067`, nie
+Probka nizej to ZMIERZONA odpowiedz `/api/v1/note_stats/c-900000001`, nie
 wymyslony ksztalt: 17 wyswietlen, Feed 8, Other 5, Permalinks 3, Profile page 1,
 odbiorcy Unconnected 8 / Subscribers 1 / Followers 0, interakcje 6 = Like 4 +
 Reply 2. Test na wymyslonym JSON-ie dowodzilby tylko tego, ze parser zgadza sie
@@ -44,7 +44,7 @@ def sprawdz(nazwa, warunek, szczegol=""):
         print("  BLAD  %s   %s" % (nazwa, szczegol))
 
 
-# ZMIERZONA odpowiedz dla notki 321505067.
+# ZMIERZONA odpowiedz dla notki 900000001.
 PROBKA = {
     "lastUpdatedAt": "2026-08-25T09:41:00.000Z",
     "cards": [
@@ -252,7 +252,7 @@ print("=== 4. ZAPIS I ODCZYT HISTORII ===")
 
 
 def _zapis_i_odczyt(_):
-    statystyki.zapisz("notka", "321505067", statystyki.z_kart(PROBKA),
+    statystyki.zapisz("notka", "900000001", statystyki.z_kart(PROBKA),
                       tekst="The jar stays open.")
     statystyki.zapisz("artykul", "p-160", {"wyswietlenia": 300, "subskrypcje": 4})
     return (statystyki.wczytaj(), statystyki.wczytaj("notka"),
@@ -334,16 +334,16 @@ print("=== 5. NAJNOWSZY POMIAR WYGRYWA, NIE OSTATNIA LINIA ===")
 # Ta sama notka zmierzona dwa razy: rano 17 wyswietlen, poludniem 40.
 # W pliku NOWSZY LEZY PIERWSZY — tak wyglada plik, do ktorego dwa nakladajace
 # sie przebiegi dopisaly pomiary w innej kolejnosci, niz je zrobily.
-pary = [_linia("321505067", "2026-08-25T12:00:00+00:00", wyswietlenia=40, subskrypcje=1),
-        _linia("321505067", "2026-08-25T09:00:00+00:00", wyswietlenia=17, subskrypcje=0)]
+pary = [_linia("900000001", "2026-08-25T12:00:00+00:00", wyswietlenia=40, subskrypcje=1),
+        _linia("900000001", "2026-08-25T09:00:00+00:00", wyswietlenia=17, subskrypcje=0)]
 n = _z_liniami(pary, statystyki.najnowsze_per_pozycja)
 sprawdz("jedna pozycja mimo dwoch pomiarow", len(n) == 1, sorted(n))
 # KONTRDOWOD: implementacja „wygrywa ostatnia linia" da tu 17.
 sprawdz("zwraca pomiar NOWSZY, nie ostatni w pliku",
-        n["321505067"]["wyswietlenia"] == 40, n["321505067"]["wyswietlenia"])
+        n["900000001"]["wyswietlenia"] == 40, n["900000001"]["wyswietlenia"])
 n = _z_liniami(list(reversed(pary)), statystyki.najnowsze_per_pozycja)
 sprawdz("kolejnosc w pliku nie zmienia wyniku",
-        n["321505067"]["wyswietlenia"] == 40, n["321505067"]["wyswietlenia"])
+        n["900000001"]["wyswietlenia"] == 40, n["900000001"]["wyswietlenia"])
 sprawdz("filtr rodzaju dziala takze tutaj",
         _z_liniami(pary, lambda: statystyki.najnowsze_per_pozycja("artykul")) == {})
 

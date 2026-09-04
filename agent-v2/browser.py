@@ -937,7 +937,7 @@ def statystyki_pozycji(pozycje: list[dict[str, Any]] | None = None) -> list[dict
 
     Zrodlo: `/api/v1/note_stats/c-<id>` — ten sam adres, ktorego uzywa przycisk
     „View stats" pod nasza notka. Sprawdzone na zywym koncie 25 sierpnia:
-    notka 321505067 miala 17 wyswietlen, z tego feed 8, permalinki 3, profil 1;
+    notka 900000001 miala 17 wyswietlen, z tego feed 8, permalinki 3, profil 1;
     odbiorcy: niezwiazani 8, subskrybenci 1, obserwujacy 0; interakcje 6, czyli
     4 polubienia i 2 odpowiedzi. Opis karty interakcji wprost wymienia wsrod
     nich subskrypcje i obserwacje, wiec przypisanie subskrybenta do KONKRETNEJ
@@ -1641,8 +1641,8 @@ def zapisz_zrodla_ruchu(page=None, dni: int = 30) -> dict[str, Any] | None:
     ZMIERZONE 2 wrzesnia 2026, okno 2026-08-03 -> 2026-09-02 (30 dni):
         ruch    direct to app 640 wysw / 39 osob, substack app 184/46,
                 direct 14/5, email opens 12/6 — razem 850 wyswietlen, 96 osob
-        zapisy  6, w tym 5 z NOTEK (c-323761132 dwa, c-320809275,
-                c-322556153 i c-322757850 po jednym) i 1 z „substack other"
+        zapisy  6, w tym 5 z NOTEK (c-900000012 dwa, c-900000009,
+                c-900000010 i c-900000011 po jednym) i 1 z „substack other"
     Liczba zapisow zgadza sie CO DO SZTUKI miedzy oboma adresami — dlatego
     bierzemy oba i zapisujemy `zapisy_zgodne`: rozejscie sie tych dwoch liczb
     jest sygnalem, ze cos w odczycie przestalo dzialac.
@@ -2475,7 +2475,7 @@ def id_z_odpowiedzi(odpowiedzi: list) -> str:
     """Identyfikator notki, ktory Substack oddal przy zapisie.
 
     BRAKOWALO GO I TO ROZRYWALO POMIAR NA POL. Dziennik zapisywal osobno
-    „wystawilismy notke o trybie samolotowym" i osobno „notka 315733831
+    „wystawilismy notke o trybie samolotowym" i osobno „notka 900000006
     zebrala trzy polubienia" — bez zadnego pola, po ktorym da sie stwierdzic,
     czy to ta sama. Wiedzielismy, ze publikujemy, i nie wiedzielismy, co
     z tego dziala.
@@ -4719,8 +4719,8 @@ def potwierdz_komentarz(page, url: str, tekst: str) -> int | None:
     probka = plaski(tekst)[:60]
 
     # NOTKA TO NIE ARTYKUL i nie ma jej pod adresem artykulow. Ostatni czlon
-    # adresu notki wyglada jak slug (`c-315876268`), wiec pytanie szlo do
-    # /api/v1/posts/c-315876268 i wracalo bledem HTTP. Skutek: komentarz pod
+    # adresu notki wyglada jak slug (`c-900000007`), wiec pytanie szlo do
+    # /api/v1/posts/c-900000007 i wracalo bledem HTTP. Skutek: komentarz pod
     # notka NIGDY nie zostawal potwierdzony, nawet gdy poszedl. `juz_sie_odezwalismy`
     # rozroznialo te dwa przypadki od poczatku — tutaj tego zabraklo.
     if "/note/c-" in url:

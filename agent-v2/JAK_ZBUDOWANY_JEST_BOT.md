@@ -3712,7 +3712,7 @@ Notka ma jeszcze szybszą ścieżkę — nasłuch `POST /api/v1/comment/feed` (�
 ```
 
 Trzy rzeczy naraz:
-1. **Notka to nie artykuł.** Ostatni człon adresu notki wygląda jak slug (`c-315876268`), więc pytanie szło do `/api/v1/posts/c-315876268` i wracało błędem — komentarz pod notką NIGDY nie był potwierdzany, nawet gdy poszedł.
+1. **Notka to nie artykuł.** Ostatni człon adresu notki wygląda jak slug (`c-900000007`), więc pytanie szło do `/api/v1/posts/c-900000007` i wracało błędem — komentarz pod notką NIGDY nie był potwierdzany, nawet gdy poszedł.
 2. **`-1` zamiast `None`**, gdy komentarz jest, ale odpowiedź nie podaje numeru: `None` znaczyłoby „nie ma" i agent dopisałby kolejny komentarz.
 3. **Numer jest potrzebny do dziennika** — kanał aktywności mówi o polubieniach i odpowiedziach właśnie numerami komentarzy, więc bez niego wiemy tylko, że coś napisaliśmy, a nie czy ktokolwiek to zauważył.
 

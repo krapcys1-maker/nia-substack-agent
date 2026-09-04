@@ -15,7 +15,7 @@ przebiegu, drukowal sie na koncu i ginal razem z nim. Norma bez pomiaru jest
 zyczeniem.
 
 Osobno: `id_z_odpowiedzi`. Dziennik zapisywal „wystawilismy notke o trybie
-samolotowym" i — osobno — „notka 315733831 zebrala trzy polubienia", bez pola,
+samolotowym" i — osobno — „notka 900000006 zebrala trzy polubienia", bez pola,
 po ktorym da sie stwierdzic, czy to ta sama. Braklo jednej rzeczy: z odpowiedzi
 Substacka bralismy WYLACZNIE kod HTTP, a tresc z identyfikatorem szla do kosza.
 """
@@ -172,8 +172,8 @@ class Odp:
         return self._dane
 
 
-sprawdz("czyta id z korzenia", browser.id_z_odpowiedzi([Odp(200, {"id": 318233860})])
-        == "318233860")
+sprawdz("czyta id z korzenia", browser.id_z_odpowiedzi([Odp(200, {"id": 900000008})])
+        == "900000008")
 sprawdz("i z zagniezdzenia `comment`",
         browser.id_z_odpowiedzi([Odp(200, {"comment": {"id": 7}})]) == "7")
 sprawdz("i z `item`", browser.id_z_odpowiedzi([Odp(200, {"item": {"id": 9}})]) == "9")

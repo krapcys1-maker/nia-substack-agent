@@ -419,7 +419,7 @@ def odpowiedz(modul, note_id, *, wyjatek=None, wchodzi=False):
 
 
 wyczysc(browser)
-w, s = odpowiedz(browser, 315876268, wyjatek=ZAMKNIETY)
+w, s = odpowiedz(browser, 900000007, wyjatek=ZAMKNIETY)
 lista = wpisy()
 sprawdz("odpowiedz doszla do klikniecia", w.get("klikniete") is True, w)
 sprawdz("porazka zapisana", len(lista) == 1 and lista[0].get("udane") is False,
@@ -428,12 +428,12 @@ sprawdz("wyjatek po klknieciu NIE jest dowodem o hoscie",
         o_hoscie() == [False], lista)
 
 wyczysc(browser)
-odpowiedz(browser, 315876268)
+odpowiedz(browser, 900000007)
 sprawdz("a `kliknelismy, nie ma tego w watku` — jest",
         o_hoscie() == [True], wpisy())
 
 wyczysc(browser)
-w, s = odpowiedz(browser, 315876268, wchodzi=True)
+w, s = odpowiedz(browser, 900000007, wchodzi=True)
 sprawdz("udana odpowiedz nadal sie potwierdza",
         w.get("wyslane") is True and wpisy()[0].get("udane") is True, w)
 

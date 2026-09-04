@@ -431,7 +431,7 @@ DZIENNIK_WSTEPNY = [
     # Osoba, ktora zareagowala na nasza tresc. Uchwytu tu NIE MA — jest tylko
     # nazwa, i to jest cala slabosc tego poziomu.
     {"kiedy": "2026-08-31T11:38:09+00:00", "rodzaj": "skutek", "udane": True,
-     "zdarzenie": "note_like:327008677", "typ": "note_like", "czego": 327008677,
+     "zdarzenie": "note_like:900000017", "typ": "note_like", "czego": 900000017,
      "ilu": 1, "kto": ["Igor Dziewiaty"], "kiedy_zdarzenia": "2026-08-31T02:04:35"},
 ]
 

@@ -73,13 +73,13 @@ try:
     })
     pytania.clear()
     wynik = browser.potwierdz_komentarz(
-        FalszywaStrona(), "https://substack.com/note/c-315876268", NASZ)
+        FalszywaStrona(), "https://substack.com/note/c-900000007", NASZ)
     sprawdz("komentarz pod notka POTWIERDZONY", bool(wynik), wynik)
     sprawdz("oddaje numer komentarza, nie samo tak", wynik == -1, wynik)
     sprawdz("nie pyta juz o /api/v1/posts/ (to bylo zrodlo bledu)",
             not any("/api/v1/posts/" in s for s, _ in pytania), pytania)
     sprawdz("pyta wlasciwy endpoint watku",
-            any("/reader/comment/315876268/replies" in s for s, _ in pytania), pytania)
+            any("/reader/comment/900000007/replies" in s for s, _ in pytania), pytania)
 
     # Kontrdowod: gdyby w watku nie bylo naszego tekstu, ma zwrocic False.
     browser.api_json = podstaw_api({"/replies": {"commentBranches": []}})
@@ -189,32 +189,32 @@ KANAL = {
     "activityItems": [
         {"type": "comment_reply", "comment_id": 900, "target_comment_id": 100,
          "target_post_id": 7, "created_at": "2026-08-16T14:22:21.000Z",
-         "recent_sender_ids": [391226009]},
+         "recent_sender_ids": [900000004]},
         {"type": "comment_reply", "comment_id": 901, "target_comment_id": 101,
          "target_post_id": 7, "created_at": "2026-08-16T10:00:00.000Z",
-         "recent_sender_ids": [391226009]},
+         "recent_sender_ids": [900000004]},
         {"type": "note_reply", "comment_id": 902, "target_comment_id": 102,
          "created_at": "2026-08-16T12:09:28.000Z", "recent_sender_ids": [5]},
         # Nasza odpowiedz w tym watku jest STARSZA od ich pytania — czyli
         # odpowiadalismy komus innemu, a to pytanie nadal wisi.
         {"type": "comment_reply", "comment_id": 903, "target_comment_id": 100,
          "target_post_id": 7, "created_at": "2026-08-16T16:00:00.000Z",
-         "recent_sender_ids": [391226009]},
+         "recent_sender_ids": [900000004]},
         {"type": "note_like", "comment_id": None, "target_comment_id": 103,
          "created_at": "2026-08-16T09:00:00.000Z"},
         {"type": "follow", "created_at": "2026-08-16T21:27:27.000Z"},
     ],
     "comments": [
         {"id": 100, "body": "Morris wanted workers to reconnect with craft",
-         "user_id": 528224862},
-        {"id": 101, "body": "nasz drugi komentarz", "user_id": 528224862},
+         "user_id": 900000005},
+        {"id": 101, "body": "nasz drugi komentarz", "user_id": 900000005},
         {"id": 900, "body": "Yes, exactly! There was an inherent disconnect",
-         "name": "Designer", "language": "en", "user_id": 391226009},
-        {"id": 901, "body": "a tu juz odpisalismy", "name": "Ktos", "user_id": 391226009},
+         "name": "Designer", "language": "en", "user_id": 900000004},
+        {"id": 901, "body": "a tu juz odpisalismy", "name": "Ktos", "user_id": 900000004},
         {"id": 903, "body": "a to pytanie nadal wisi", "name": "Inny",
-         "language": "en", "user_id": 391226009},
+         "language": "en", "user_id": 900000004},
     ],
-    "users": [{"id": 391226009, "name": "Designer"}],
+    "users": [{"id": 900000004, "name": "Designer"}],
     "posts": [{"id": 7, "title": "Design Study #4",
                "canonical_url": "https://publikacja9.substack.com/p/design-study-4"}],
 }
@@ -226,12 +226,12 @@ WATKI = {
     # `body` jest KONIECZNE: _plaskie pomija wpisy bez tresci, wiec bez niego
     # test udawalby, ze odpowiedzi nie ma, i sprawdzalby nie to co trzeba.
     "/reader/comment/901/replies": {"commentBranches": [
-        {"comment": {"user_id": 528224862, "body": "nasza odpowiedz",
+        {"comment": {"user_id": 900000005, "body": "nasza odpowiedz",
                      "date": "2026-08-16T11:00:00.000Z"}}]},
     # 902: ktos odpisal PRZED nasza ostatnia wypowiedzia w innym watku —
     # nasza starsza odpowiedz NIE moze zaliczyc nowszego pytania.
     "/reader/comment/903/replies": {"commentBranches": [
-        {"comment": {"user_id": 528224862, "body": "stara nasza odpowiedz",
+        {"comment": {"user_id": 900000005, "body": "stara nasza odpowiedz",
                      "date": "2026-08-15T09:00:00.000Z"}}]},
 }
 
@@ -240,7 +240,7 @@ try:
 
     def api_kanalu(page, sciezka, baza=None):
         if "public_profile" in sciezka:
-            return {"id": 528224862}
+            return {"id": 900000005}
         if "activity-feed-web" in sciezka:
             return KANAL
         for wzor, wynik in WATKI.items():
@@ -277,7 +277,7 @@ try:
     # Kontrdowod: gdyby kanal nie mial zdarzen, ma byc pusto — nie wymyslac.
     KANAL_PUSTY = dict(KANAL, activityItems=[])
     browser.api_json = lambda page, sciezka, baza=None: (
-        {"id": 528224862} if "public_profile" in sciezka
+        {"id": 900000005} if "public_profile" in sciezka
         else KANAL_PUSTY if "activity-feed-web" in sciezka else None)
     sprawdz("pusty kanal -> pusta lista", browser.odpowiedzi_na_nasze_komentarze() == [])
 
