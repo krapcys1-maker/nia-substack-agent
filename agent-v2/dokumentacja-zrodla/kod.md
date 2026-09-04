@@ -213,7 +213,21 @@ def _cost(model: str, tokens_in: int, tokens_out: int, web_searches: int,
     # Osobna opłata za wyszukiwanie jest cennikiem Anthropic. U DeepSeeka
     # wyszukiwanie mieści się w tokenach — doliczanie tu $10/1000 zawyżałoby
     # zapis finansowy, a zmyślonej kwoty w księgach być nie może.
-    if model in (config.CLAUDE, config.SONNET):
+    #
+    # PO DOSTAWCY, NIE PO DWOCH IDENTYFIKATORACH. Stalo tu
+    # `model in (config.CLAUDE, config.SONNET)` — czyli dokladnie ten sam
+    # ksztalt, ktory `_preflight` naprawil kilkadziesiat linii wyzej, pod
+    # naglowkiem „KONTROLA PO DOSTAWCY, NIE PO IDENTYFIKATORZE MODELU".
+    # Poprawka objela kontrole kluczy i zatrzymala sie przed wycena.
+    #
+    # Zdanie w komentarzu mowi „cennikiem Anthropic", a warunek wymienial dwa
+    # modele z trzech: `FABLE` (claude-fable-5-1, etap `write`) wypadal. Dzis
+    # zaden etap Anthropic nie wola z wyszukiwaniem, wiec galaz nie klamie —
+    # ale wybor modelu jest POLEM KONFIGURACJI (`modele.*`). Konto, ktore
+    # ustawi `discovery` na Claude, dostaje wyszukiwanie NIEDOLICZONE do
+    # kosztu: zapis finansowy zanizony, a sufity dzienny i miesieczny licza
+    # z tego zanizonego zapisu.
+    if _dostawca(model) == "anthropic":
         usd += web_searches / 1_000 * config.WEB_SEARCH_USD_PER_1K
     return round(usd, 6), bool(price["verified"])
 ```

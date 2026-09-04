@@ -212,7 +212,21 @@ def _cost(model: str, tokens_in: int, tokens_out: int, web_searches: int,
     # Osobna opłata za wyszukiwanie jest cennikiem Anthropic. U DeepSeeka
     # wyszukiwanie mieści się w tokenach — doliczanie tu $10/1000 zawyżałoby
     # zapis finansowy, a zmyślonej kwoty w księgach być nie może.
-    if model in (config.CLAUDE, config.SONNET):
+    #
+    # PO DOSTAWCY, NIE PO DWOCH IDENTYFIKATORACH. Stalo tu
+    # `model in (config.CLAUDE, config.SONNET)` — czyli dokladnie ten sam
+    # ksztalt, ktory `_preflight` naprawil kilkadziesiat linii wyzej, pod
+    # naglowkiem „KONTROLA PO DOSTAWCY, NIE PO IDENTYFIKATORZE MODELU".
+    # Poprawka objela kontrole kluczy i zatrzymala sie przed wycena.
+    #
+    # Zdanie w komentarzu mowi „cennikiem Anthropic", a warunek wymienial dwa
+    # modele z trzech: `FABLE` (claude-fable-5-1, etap `write`) wypadal. Dzis
+    # zaden etap Anthropic nie wola z wyszukiwaniem, wiec galaz nie klamie —
+    # ale wybor modelu jest POLEM KONFIGURACJI (`modele.*`). Konto, ktore
+    # ustawi `discovery` na Claude, dostaje wyszukiwanie NIEDOLICZONE do
+    # kosztu: zapis finansowy zanizony, a sufity dzienny i miesieczny licza
+    # z tego zanizonego zapisu.
+    if _dostawca(model) == "anthropic":
         usd += web_searches / 1_000 * config.WEB_SEARCH_USD_PER_1K
     return round(usd, 6), bool(price["verified"])
 
@@ -798,9 +812,10 @@ def parse_json(text: str) -> Any:
     JSON, czasem jeszcze komentarz na koncu — a kazdy nawias w tej prozie
     przesuwal granice wycinka. Wystarczyl jeden, zeby caly etap przepadl.
 
-    Teraz szukamy ZBILANSOWANYCH obiektow i bierzemy pierwszy, ktory sie
-    parsuje. Gdyby zaden — probujemy najdluzszego, bo model bywa ucina wczesny
-    fragment przykladu ze swojego wlasnego promptu.
+    Teraz szukamy ZBILANSOWANYCH obiektow i bierzemy PIERWSZY, ktory sie
+    parsuje. Gdy zaden — rzucamy `ValueError` z poczatkiem odpowiedzi, bo
+    wolajacy ma wtedy do wyboru `ratuj_json` albo rezygnacje, i obie te decyzje
+    naleza do niego.
     """
     cleaned = text.strip()
     if cleaned.startswith("```"):
@@ -813,11 +828,21 @@ def parse_json(text: str) -> Any:
             return json.loads(k)
         except ValueError:
             continue
-    # Najdluzszy jako ostatnia szansa: krotkie obiekty na poczatku bywaja
-    # fragmentem instrukcji, ktory model przepisal, zanim odpowiedzial.
-    for k in sorted(kandydaci, key=len, reverse=True):
-        try:
-            return json.loads(k)
-        except ValueError:
-            continue
+    # STALA TU DRUGA PETLA I NIE MOGLA ZWROCIC NICZEGO. Probowala tych samych
+    # kandydatow, tylko posortowanych po dlugosci — a do tego miejsca dochodzi
+    # sie wylacznie wtedy, gdy ZADEN sie nie sparsowal. Kolejnosc nie zmienia
+    # wyniku parsowania.
+    #
+    # Jej komentarz opisywal przy tym zachowanie, ktorego ten kod NIE MA:
+    # „krotkie obiekty na poczatku bywaja fragmentem instrukcji, ktory model
+    # przepisal" — czyli argument za braniem NAJDLUZSZEGO. Bierzemy PIERWSZY:
+    #
+    #     '{"krotki": 1} i {"dluzszy": {"x": 2, "y": 3}}'  ->  {"krotki": 1}
+    #
+    # CELOWO TEGO NIE PRZESTAWIAM. Roznica ujawnia sie tylko wtedy, gdy parsuja
+    # sie DWA obiekty, a wtedy istnieje przypadek przeciwny: poprawna odpowiedz,
+    # po ktorej idzie dluzszy blok przykladu. Ktory zdarza sie czesciej,
+    # rozstrzyga pomiar na prawdziwych odpowiedziach — nie przeczucie.
+    # Pytanie zapisane w POPRAWKI-DO-PRODUKCJI.md; `tests/test_parse_json.py`
+    # przypina dzisiejsze zachowanie, zeby zmiana nie przeszla po cichu.
     raise ValueError(f"brak JSON w odpowiedzi: {text[:200]!r}")

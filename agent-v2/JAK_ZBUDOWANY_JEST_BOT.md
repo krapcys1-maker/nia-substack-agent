@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 547 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 572 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 133 zestawów
-testów, 3565 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 134 zestawów
+testów, 3579 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -422,7 +422,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-823 wierszy, 15 funkcji na poziomie modułu, 3 klas
+848 wierszy, 15 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6526,7 +6526,21 @@ def _cost(model: str, tokens_in: int, tokens_out: int, web_searches: int,
     # Osobna opłata za wyszukiwanie jest cennikiem Anthropic. U DeepSeeka
     # wyszukiwanie mieści się w tokenach — doliczanie tu $10/1000 zawyżałoby
     # zapis finansowy, a zmyślonej kwoty w księgach być nie może.
-    if model in (config.CLAUDE, config.SONNET):
+    #
+    # PO DOSTAWCY, NIE PO DWOCH IDENTYFIKATORACH. Stalo tu
+    # `model in (config.CLAUDE, config.SONNET)` — czyli dokladnie ten sam
+    # ksztalt, ktory `_preflight` naprawil kilkadziesiat linii wyzej, pod
+    # naglowkiem „KONTROLA PO DOSTAWCY, NIE PO IDENTYFIKATORZE MODELU".
+    # Poprawka objela kontrole kluczy i zatrzymala sie przed wycena.
+    #
+    # Zdanie w komentarzu mowi „cennikiem Anthropic", a warunek wymienial dwa
+    # modele z trzech: `FABLE` (claude-fable-5-1, etap `write`) wypadal. Dzis
+    # zaden etap Anthropic nie wola z wyszukiwaniem, wiec galaz nie klamie —
+    # ale wybor modelu jest POLEM KONFIGURACJI (`modele.*`). Konto, ktore
+    # ustawi `discovery` na Claude, dostaje wyszukiwanie NIEDOLICZONE do
+    # kosztu: zapis finansowy zanizony, a sufity dzienny i miesieczny licza
+    # z tego zanizonego zapisu.
+    if _dostawca(model) == "anthropic":
         usd += web_searches / 1_000 * config.WEB_SEARCH_USD_PER_1K
     return round(usd, 6), bool(price["verified"])
 ```
