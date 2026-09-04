@@ -955,7 +955,7 @@ NOTE_CANDIDATES = 1
 # KROK PIERWSZY: prompt mial na sztywno piec obszarow — lotniska, supermarkety,
 # subskrypcje, miasta, codzienna technika. Lista zuzytych faktow blokowala
 # powtorzenie konkretu, ale nie blokowala krazenia po tym samym terytorium, i
-# widac to w dwunastu pierwszych notkach: jajka, mleko, bankomat, banknoty,
+# widac to w dwunastu pierwszych notkach: temat pierwszy, mleko, bankomat, banknoty,
 # winda, znak stop, dlugopis, hydrant. Amerykanska infrastruktura i przepisy
 # konsumenckie w kolko. Komentarze rotowaly osiemnascie hasel od poczatku;
 # notki nie rotowaly nic. Stad rotacja i druga os (GENERATORY).
@@ -1055,7 +1055,7 @@ CURIOSITY_MEMORY = 60
 # Czy to kosztuje falszywe alarmy — ZMIERZONE 2026-08-25 na 29 wystawionych
 # notkach (`stages.pamiec_wystawionych` niesie caly rachunek):
 #     okno 8, 12, 20, 40 oraz PAMIEC PELNA  ->  5 blokad, te same piec.
-# Zero roznicy. Wszystkie 5 to prawdziwe powtorki (3x jajka, 3x kod zywicy,
+# Zero roznicy. Wszystkie 5 to prawdziwe powtorki (3x temat pierwszy, 3x jeden z tematow,
 # 2x szampon), zero falszywych. Z 399 par o ROZNYCH tematach prog miedzy
 # dniami nie przepuscil ani jednej.
 #
@@ -1517,7 +1517,7 @@ NOTEK_PROMUJACYCH = 3
 # niewybranym dniem czekal w kolejce w nieskonczonosc.
 #
 # Zmierzone 26 sierpnia na produkcji: w kolejce lezaly cztery teksty z epoki
-# przedmiotow codziennych (jajka, okno w samolocie, szampon, kod na butelce),
+# przedmiotow codziennych (temat pierwszy, okno w samolocie, szampon, kod na butelce),
 # dwa z nich z niewybranymi dniami. Po wyczerpaniu biezacego artykulu kanal
 # wystawilby notke promujaca artykul o szamponie sprzed tygodnia.
 #

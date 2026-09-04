@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 28 964 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 28 967 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -176,7 +176,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7321 wierszy, 133 funkcji na poziomie modułu, 0 klas
+7324 wierszy, 133 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -2903,7 +2903,7 @@ Wpięcie w dzień:
     return None
 ```
 
-`_o_tym_samym` porównuje rdzenie słów obcięte do 6 znaków, po odsianiu `_PUSTE_SLOWA` (pół korpusu to amerykańskie przepisy, więc „federal rules require" łączyłoby dowolne dwa fakty). Wymaga DWÓCH warunków naraz: ≥2 wspólnych słów znaczących i ≥15% udziału. Powód konkretny: 17 sierpnia poszły dwie notki o jajkach w odstępie trzynastu minut, bo `zapas.pop(0)` brał pierwszy z brzegu, a promowany artykuł też był o jajkach.
+`_o_tym_samym` porównuje rdzenie słów obcięte do 6 znaków, po odsianiu `_PUSTE_SLOWA` (pół korpusu to amerykańskie przepisy, więc „federal rules require" łączyłoby dowolne dwa fakty). Wymaga DWÓCH warunków naraz: ≥2 wspólnych słów znaczących i ≥15% udziału. Powód konkretny: 17 sierpnia poszły dwie notki o jednym z tematow w odstępie trzynastu minut, bo `zapas.pop(0)` brał pierwszy z brzegu, a promowany artykuł też był o jednym z tematow.
 
 #### 6.4 Pisanie jednej notki — `stages.note` (stages.py:808)
 

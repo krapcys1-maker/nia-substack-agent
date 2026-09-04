@@ -138,14 +138,58 @@ in the code.
 | nine git tags | `archive/stary-agent-*`, `prototyp-gpt-2026-08`, `v1`, `v2` — every one pointing into the old history |
 | six documents about one installation | moved out of the product |
 
-## 8. What this cost
+## 8. What seven sweeps could not see, and one reading found
+
+Sections 1–7 were written after the identity scan came back green. Everything
+below was found **afterwards**, and each item was invisible to every sweep that
+preceded it. The order is the order they were found in, because that order is
+the point: each sweep was designed against the previous one's blind spot, and
+each still had a new one.
+
+| sweep | what it looks for | what it found that the earlier ones could not |
+|---|---|---|
+| 1 | capitalised word-pairs in `.py` | **10 real people's names** in test fixtures, 11 other publications, 20 article titles |
+| 2 | the same in `.md` | the name of the journalist whose columns were the style corpus — **in two configuration maps at once** |
+| 3 | URLs, handles, emails, paths | a person's name glued into a subdomain — it survived the name sweep because a URL has no spaces or capitals |
+| 4 | English prose inside Polish comments | a named researcher and their university, quoted as an example of a good mechanism description |
+| 5 | four-digit article numbers | the number was a **filename prefix**, and the filename carried the title — two full directory listings |
+| 6 | eight-to-ten-digit ids | **17 real Substack note ids.** A number does not look like identity until you paste it: `.../note/c-<id>` opens one specific note on one specific account |
+| 7 | reading, line by line | everything below |
+
+**What only reading found.** Three system messages — `CURIOSITY_SYSTEM`,
+`BANK_SYSTEM`, `FEDREG_SYSTEM` — had the niche written into them literally. This
+is a configuration defect, not a hygiene one: a system message outranks the user
+prompt, so those stages were given two contradictory instructions at once. The
+comment sitting directly above `CURIOSITY_SYSTEM` describes exactly this bug and
+ends "the audit found it" — and the fix after it swapped one niche for another
+instead of reaching for `config.NISZA`. The fault was documented and not fixed.
+
+**And one thing that made a whole sweep lie.** One pattern — a short model name
+from the previous era — had been on the audit's list from the start and had
+never matched anything. The line in the file held that name **wrapped in
+backspace characters**, which arrived with a paste. It compiled, it sat on the
+list, it was counted in the summary, and no source file contains a backspace.
+The audit reported that pattern as absent, in green, over **eleven files that
+contained it**. The audit now refuses any pattern carrying a control character
+and names the line it is on.
+
+That is the same class of fault this project hunts everywhere else — a check
+that looks alive and does nothing — committed inside the tool that hunts it.
+
+## 9. What this cost
 
 Twenty tests compared current code against named past commits. Those commits no
 longer exist, so `tests/historia.py` makes them skip cleanly and say why,
 rather than fail. They no longer prove what they used to prove. That is the
 price of a history that begins here, and it is written down rather than hidden.
 
-## 9. How to check the claim rather than believe it
+**And an honest figure for the rest.** At the time of writing, 21% of the code
+has been read line by line; the remaining 79% has been through the seven sweeps
+above but not through a person's eyes. Every one of those sweeps found something
+the earlier ones missed, so the reading continues. Any claim stronger than that
+would be a guess dressed as a measurement.
+
+## 10. How to check the claim rather than believe it
 
 ```bash
 python narzedzia/audyt.py --historia

@@ -2100,14 +2100,17 @@ def swiezosc_faktu(fakt: dict[str, Any], teraz=None) -> tuple[bool, str]:
     # nieprzeczytanych. Swiezosc byla sprawdzana slownikiem trzydziestu slow,
     # nie data.
     #
-    # Trzy wady, ktore to wypuscilo, i wszystkie trzy mialy dobra kotwice:
-    #   - Kenia: liczby zgodne ze sledztwem TIME, ale Sama zerwala kontrakt w
-    #     lutym 2022 i wyszla z moderacji w 2023. Uklad nie istnieje.
-    #   - Japonia: art. 30-4 nadal obowiazuje, ale „zero pozwolen" zaciera szesc
-    #     warunkow, a porownanie „ani USA, ani UE" jest falszywe — art. 4
-    #     dyrektywy DSM to tez wyjatek bez pozwolenia.
-    #   - Microsoft: liczba z 10-K prawdziwa, ale uklad zmienila umowa
-    #     restrukturyzacyjna STARSZA od raportu.
+    # Trzy wady, ktore to wypuscilo, i wszystkie trzy mialy dobra kotwice.
+    # Ksztalt jest w kazdej ten sam: zrodlo prawdziwe, uklad juz nie
+    # istnieje albo nigdy nie byl taki, jak brzmial skrot.
+    #   - kontrakt opisany w glosnym sledztwie, zerwany rok pozniej przez
+    #     jedna ze stron; liczby zgadzaly sie co do centa, uklad nie
+    #     istnial;
+    #   - przepis nadal obowiazujacy, ale skrot „zero pozwolen" zacieral
+    #     szesc warunkow, a porownanie z innymi jurysdykcjami bylo
+    #     falszywe, bo tam istnial rownowazny wyjatek;
+    #   - liczba ze sprawozdania finansowego prawdziwa, ale uklad zmienila
+    #     umowa STARSZA od tego sprawozdania.
     #
     # Stad dwie rzeczy naraz: dokument kontrolny NIE MUSI byc nowszy od zrodla
     # (ma RZADZIC, nie byc swiezy), a wiek kotwicy przestaje byc powodem
@@ -2119,15 +2122,15 @@ def swiezosc_faktu(fakt: dict[str, Any], teraz=None) -> tuple[bool, str]:
     # warunkiem: notka ma powiedziec, czym rzecz jest DZISIAJ.
     #
     # Pierwsza wersja tej bramki odrzucala ENDS wprost — i wlasciciel zatrzymal
-    # mnie tego samego dnia: „odnoszenie sie do historii jest ok, jesli pozniej
-    # piszemy o terazniejszosci, tego nie mozemy zakazywac". Mial racje, a moja
-    # wersja zakazywalaby notki o kenijskich kontraktach z 2021 — napisanej w
-    # czasie przeszlym, z data, czyli bez zadnego bledu.
+    # mnie tego samego dnia: „odnoszenie sie do historii jest ok, jesli
+    # pozniej piszemy o terazniejszosci, tego nie mozemy zakazywac". Mial
+    # racje, a moja wersja zakazywalaby notki o kontraktach sprzed kilku
+    # lat — napisanej w czasie przeszlym, z data, czyli bez zadnego bledu.
     #
-    # „Sama zerwala kontrakt w lutym 2022 i wyszla z moderacji w 2023" nie psuje
+    # Zdanie „strona zerwala ten kontrakt rok pozniej" nie psuje
     # takiej notki. Domyka ja i czyni CIEKAWSZA, bo pokazuje, co sie z tym
-    # ukladem stalo. Wiec ENDS i MODIFIES traktujemy tak samo: przechodza, ale
-    # tylko z trescia, ktora pisarz ma obowiazek powiedziec.
+    # ukladem stalo. Wiec ENDS i MODIFIES traktujemy tak samo: przechodza,
+    # ale tylko z trescia, ktora pisarz ma obowiazek powiedziec.
     if werdykt in ("ENDS", "MODIFIES"):
         # Zastrzezenie bez tresci jest gorsze niz brak zastrzezenia: wyglada na
         # sprawdzone, a nie niesie niczego, co pisarz moglby powiedziec.
@@ -2158,7 +2161,7 @@ def swiezosc_faktu(fakt: dict[str, Any], teraz=None) -> tuple[bool, str]:
         #
         # Wiec prog zostaje tam, gdzie ma sens: przy twierdzeniu, ktore MOWI O
         # STANIE DZIS albo nazywa wersje. Tam stary dokument naprawde nie jest
-        # sprawdzeniem — uklad z Kenii wygladal dobrze pod stara kontrola.
+        # sprawdzeniem — zerwany kontrakt wygladal dobrze pod stara kontrola.
         # Przy fakcie bezczasowym prog nie chronil przed niczym.
         moze_sie_zestarzec = bool(wersja or o_teraz)
 
@@ -2222,8 +2225,8 @@ def ostatnie_notki(ile: int = 12) -> list[str]:
     Rozne od `ostatnie_otwarcia`, ktore pilnuje tylko PIERWSZEGO SLOWA. Tu chodzi
     o temat calej notki.
 
-    Wpadka, ktora to wymusila: 23 i 24 sierpnia poszly dwie notki o tym samym
-    symbolu otwartego sloika na butelce szamponu. Ten sam fakt, inne zdania.
+    Wpadka, ktora to wymusila: dwa dni z rzedu poszly dwie notki o tym
+    samym oznaczeniu na tym samym produkcie. Ten sam fakt, inne zdania.
 
     Ochrona miedzy dniami byla wtedy jedna — `_klucz_faktu`, czyli posortowany
     zbior slow faktu. Odcisk DOKLADNY: ten sam fakt powiedziany innymi slowami
@@ -2357,17 +2360,17 @@ def pamiec_wystawionych() -> list[frozenset[str]]:
         okno 40     -> 5 blokad
         PAMIEC PELNA-> 5 blokad   TE SAME PIEC
     Czyli: pamiec permanentna nie zablokowala ANI JEDNEJ notki wiecej niz okno
-    dwunastu. Wszystkie 5 to prawdziwe powtorki (3x jajka, 3x kod zywicy,
-    2x szampon).
+    dwunastu. Wszystkie 5 to prawdziwe powtorki: trzy pary o jednym temacie,
+    trzy o drugim i dwie o trzecim.
     Z 406 par: 6 kolidujacych i wszystkie 6 to naprawde ten sam temat.
     Z 399 par o ROZNYCH tematach prog miedzy dniami przepuscil 0 (zero).
-    Najblizej progu podeszla para „kod zywicy" - „szampon": 4 wspolne rdzenie,
+    Najblizej progu podeszla para dwoch ROZNYCH tematow: 4 wspolne rdzenie,
     ale udzial 0.16 przy wymaganych 0.30 — to DRUGI warunek `_zderzenie` niesie
     tu caly zapas, nie liczba wspolnych slow.
     Dlaczego wiec NIE podnosimy progu wraz z wielkoscia pamieci, choc szansa
     zderzenia rosnie z N: kazde podniesienie kosztuje od razu, a kupuje zero.
     Zmierzone na tych samych 29 notkach:
-        min_wspolnych 4->5   traci 1 z 6 prawdziwych powtorek (jajka, 4/0.31)
+        min_wspolnych 4->5   traci 1 z 6 prawdziwych powtorek (4/0.31)
         prog 0.30->0.35      traci te sama powtorke
         oba naraz            0 falszywych bylo i 0 falszywych zostaje
     Podnoszenie progu wymienia zmierzona strate na urojony zysk. Rozklad ogona
@@ -2981,7 +2984,7 @@ def _slowa(tekst: str) -> set[str]:
     # a z linku wpadaly do puli „https", „substack" i nazwa publikacji — wiec
     # dwie notki z linkiem mialy trzy wspolne slowa, zanim ktokolwiek spojrzal
     # na ich temat. Zmierzone: notka o okienku w samolocie zderzala sie z notka
-    # o jajkach wylacznie na tych trzech.
+    # o jednym z tematow wylacznie na tych trzech.
     bez_adresow = " ".join(s for s in (tekst or "").split()
                            if not s.lower().startswith("http"))
     return {s[:6] for s in re.findall(r"[a-z]{4,}", bez_adresow.lower())
@@ -3104,7 +3107,7 @@ def _o_tym_samym(a: str, b: str, min_wspolnych: int = 2,
 #
 # Powod jest zmierzony na 29 wystawionych notkach. Przy progu dziennym (2 slowa,
 # 0.15) okno dwunastu poprzednich notek blokowalo dziewiec z nich — ale tylko
-# piec bylo prawdziwymi powtorkami (trzy razy jajka, trzy razy kod zywicy, dwa
+# piec bylo prawdziwymi powtorkami (trzy pary o jednym temacie, trzy o drugim, dwie
 # razy szampon). Cztery byly falszywe: notka o cenach w UE „zderzala sie" z
 # notka o filtrach UV na slowach `nothing`, `number`, `whole`.
 #
@@ -3183,8 +3186,8 @@ def wybierz_material(zapas: list[dict[str, Any]],
     Poprzednio bylo `zapas.pop(0)` — pierwszy z brzegu. W przebiegu z 17 sierpnia
     wyszukiwanie oddalo osiem faktow: okna w samolotach, napiwki, symbol
     zasilania, kabiny w toaletach, sygnalizacja dla pieszych, etykiety
-    energetyczne, rekawy lotniskowe — i jajka. Pierwszy z listy byl o jajkach,
-    a notka promujaca artykul tego dnia tez byla o jajkach. Poszly dwie notki
+    energetyczne, rekawy lotniskowe — i temat pierwszy. Pierwszy z listy byl o jednym z tematow,
+    a notka promujaca artykul tego dnia tez byla o jednym z tematow. Poszly dwie notki
     o tym samym w odstepie trzynastu minut.
 
     Roznorodnosc byla w puli. Zabraklo jej dopiero w wyborze.
@@ -3355,7 +3358,7 @@ def notki_dnia(
     zapas = list(ciekawostki)
     dzien: list[dict[str, Any]] = []
     # O czym juz dzis mowimy. Promowany artykul liczy sie od razu — to od niego
-    # zaczela sie wpadka z dwiema notkami o jajkach w odstepie trzynastu minut.
+    # zaczela sie wpadka z dwiema notkami o jednym z tematow w odstepie trzynastu minut.
     juz_o_tym: list[str] = []
     # Co poszlo w swiat w poprzednich dniach — WSZYSTKO, od pierwszej notki.
     # Trzymane OSOBNO od `juz_o_tym`, bo porownuje sie ostrzejszym progiem —

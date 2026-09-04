@@ -303,7 +303,7 @@ try:
 
         stages.INDEKS_KANDYDATOW.write_text(_js2.dumps([
             _kand("Stary temat o szamponie", "2026-08-22"),
-            _kand("Stary temat o jajkach", "2026-08-24"),
+            _kand("Stary temat o jednym z tematow", "2026-08-24"),
             _kand("Nowy temat o modelach", config.DATA_PRZESTAWIENIA),
             _kand("Nowszy temat o tokenach", "2026-08-28"),
         ], ensure_ascii=False), encoding="utf-8")

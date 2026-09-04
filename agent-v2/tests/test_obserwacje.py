@@ -246,14 +246,14 @@ zapas = list(PULA)
 wybrany = stages.wybierz_material(zapas, [ARTYKUL])
 print("    artykul dnia: eggs / refrigeration")
 print("    wybrano:      %s" % (wybrany or {}).get("domain"))
-sprawdz("NIE wybiera faktu o jajkach, gdy artykuł jest o jajkach",
+sprawdz("NIE wybiera faktu o jednym z tematow, gdy artykuł jest o jednym z tematow",
         wybrany is not None and "egg" not in wybrany["fact"].lower(), wybrany)
 sprawdz("wybiera pierwszy NIEKOLIDUJACY", wybrany["domain"] == "Sealed enclosures",
         wybrany["domain"])
 sprawdz("zdjety z zapasu", len(zapas) == 2, len(zapas))
 
-# KONTRDOWOD: stary sposob wzialby pierwszy z brzegu, czyli jajka.
-sprawdz("STARY sposob wzialby fakt o jajkach (test rozroznia)",
+# KONTRDOWOD: stary sposob wzialby pierwszy z brzegu, czyli temat pierwszy.
+sprawdz("STARY sposob wzialby fakt o jednym z tematow (test rozroznia)",
         "egg" in PULA[0]["fact"].lower())
 
 # Druga notka w tym samym przebiegu tez nie moze byc o tym samym.

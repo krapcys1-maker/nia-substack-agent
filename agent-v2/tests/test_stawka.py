@@ -98,7 +98,7 @@ KOD_ZYWICY = dict(
     named_decider={"present": True, "evidence": "Society of the Plastics Industry, 1988"},
     felt_number={"present": True, "evidence": "9% of plastics ever recycled"},
     second_domain={"present": True, "evidence": "milk carton date"},
-    # Kluczowe: kod zywicy JEST rozstrzygniety. To, czego nie wiemy — co sie
+    # Kluczowe: jeden z tematow JEST rozstrzygniety. To, czego nie wiemy — co sie
     # dzieje z konkretnym pojemnikiem — to luka w NASZEJ wiedzy, nie stawka.
     unsettled_outcome={"present": False, "the_question": "", "the_situation": "",
                        "governed_by": "nothing in the card leaves an outcome open; "

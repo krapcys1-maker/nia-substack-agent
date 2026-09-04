@@ -120,7 +120,7 @@ def posty_z_kanalu(ile: int = 25) -> list[dict[str, Any]]:
                 continue
             # NASZE wlasne teksty wypadaja od razu. Kanal czytelnika pokazuje
             # tez nas samych, a wybor celow przy pierwszym uruchomieniu uznal
-            # nasz artykul o jajkach za wart skomentowania — agent
+            # nasz artykul o jednym z tematow za wart skomentowania — agent
             # komentowalby sam siebie.
             adres = x.get("canonical_url") or ""
             if config.SUBSTACK_HANDLE in adres:
