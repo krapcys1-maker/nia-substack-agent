@@ -177,7 +177,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5204 wierszy, 96 funkcji na poziomie modułu, 0 klas
+5212 wierszy, 96 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -444,7 +444,7 @@
 
 ### `kopia_subskrybentow.py` — kopia jedynego aktywa, którego nie da się odtworzyć
 
-203 wierszy, 4 funkcji na poziomie modułu, 0 klas
+209 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -455,7 +455,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3138 wierszy, 33 funkcji na poziomie modułu, 0 klas
+3179 wierszy, 35 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -479,6 +479,8 @@
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
+| `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku. Cicho przechodzi tam, gdzie ich nie ma. |
+| `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. |
 | `pytanie_o_stan_dziedziny()` | O co pytamy, sprawdzajac stan dziedziny. |
 | `usluga_agenta()` | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. |
 | `zegar_agenta()` | Sciezka do jednostki zegara agenta albo None. |

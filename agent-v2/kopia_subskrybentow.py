@@ -119,7 +119,10 @@ def pobierz_z_panelu() -> tuple[bool, str]:
     PRZYCHODZACE.mkdir(parents=True, exist_ok=True)
     cel = PRZYCHODZACE / ("z-panelu-%s.csv"
                           % datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M%S"))
-    with open(cel, "w", encoding="utf-8", newline="") as f:
+    # TE SAME PRAWA CO PRZY KOPII — to jest ten sam material. Plik lezy
+    # w `przychodzace/` tylko do nastepnego uruchomienia, ale „tylko do"
+    # znaczy tez „przez caly ten czas".
+    with config.otworz_tylko_dla_wlasciciela(cel) as f:
         w = csv.writer(f)
         w.writerow(["Email", "Type", "Start date"])
         for r in wiersze:
@@ -164,17 +167,20 @@ def main() -> int:
         ile = _wierszy(tekst)
         dzis = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         cel = KATALOG / ("subskrybenci-%s.csv" % dzis)
-        cel.write_text(tekst, encoding="utf-8")
-        # TYLKO WLASCICIEL. To sa cudze adresy e-mail, a domyslne prawa na
-        # serwerze to 0664 — czytelne dla kazdego konta na maszynie. Ta sama
-        # klasa niedopatrzenia co sesja przegladarki zapisana z 0644.
-        # Ustawiamy przy KAZDYM zapisie, nie raz recznie, bo recznie znaczy
-        # „przy pierwszej kopii", a kopii ma byc trzydziesci.
-        try:
-            cel.chmod(0o600)
-        except OSError:
-            # Windows nie ma tych praw i to nie jest powod, zeby stracic kopie.
-            pass
+        # TYLKO WLASCICIEL, JUZ PRZY TWORZENIU PLIKU. To sa cudze adresy
+        # e-mail, a domyslne prawa na serwerze to 0664 — czytelne dla kazdego
+        # konta na maszynie.
+        #
+        # BYLO: `cel.write_text(...)` i `cel.chmod(0o600)` LINIJKE POZNIEJ.
+        # Miedzy jednym a drugim istnialo okno, w ktorym plik z cudzymi
+        # adresami byl czytelny dla wszystkich. Komentarz stojacy tu wczesniej
+        # sam nazywal te klase („ta sama, co sesja przegladarki zapisana
+        # z 0644") — i zamykal jej polowe.
+        #
+        # `config.otworz_tylko_dla_wlasciciela` daje prawa przy `os.open`,
+        # wiec okna nie ma.
+        with config.otworz_tylko_dla_wlasciciela(cel) as f:
+            f.write(tekst)
         plik.unlink()
         print("  ZAPISANE: %s   %d subskrybentow" % (cel.name, ile))
         if ostatnia is not None:

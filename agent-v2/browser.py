@@ -647,6 +647,12 @@ def sprawdz_sesje() -> None:
         if zalogowany:
             SESSION_FILE.parent.mkdir(parents=True, exist_ok=True)
             context.storage_state(path=str(SESSION_FILE))
+            # PRAWA 0600 NATYCHMIAST PO ZAPISIE. Ten plik to CIASTKO SESJI —
+            # czyli prawo do publikowania jako to konto. Playwright tworzy go
+            # sam, z prawami domyslnymi (0644 na serwerze), wiec okna nie da
+            # sie zamknac do zera; da sie je zamknac natychmiast. W calym
+            # repozytorium byl DOKLADNIE JEDEN `chmod` i dotyczyl czego innego.
+            config.tylko_dla_wlasciciela(SESSION_FILE)
             dni = dni_do_wygasniecia()
             print(f"  stan sesji zapisany: {SESSION_FILE}")
             if dni is not None:
@@ -755,6 +761,7 @@ def zaloguj() -> None:
                 print("   Dokończ logowanie w oknie i naciśnij Enter jeszcze raz.")
         SESSION_FILE.parent.mkdir(parents=True, exist_ok=True)
         context.storage_state(path=str(SESSION_FILE))
+        config.tylko_dla_wlasciciela(SESSION_FILE)
         context.close()
         browser.close()
     print(f"\nSesja zapisana: {SESSION_FILE}")
@@ -814,6 +821,7 @@ def rozpoznanie() -> None:
         # Zapisujemy stan po każdej pracy: Substack odświeża ciasteczko przy
         # aktywności, więc regularne używanie konta samo przesuwa datę ważności.
         context.storage_state(path=str(SESSION_FILE))
+        config.tylko_dla_wlasciciela(SESSION_FILE)
         context.close()
         browser.close()
 

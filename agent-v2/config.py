@@ -17,6 +17,7 @@ jest w gicie, czyli jest identyczny na tym komputerze i na serwerze.
 from __future__ import annotations
 
 import os
+import os as _os
 import sys
 from pathlib import Path
 
@@ -2491,6 +2492,46 @@ def _znacznik_klienta(marka: str) -> str:
 # JEDNO MIEJSCE, BO INACZEJ ZARAZ BEDA DWA. `norma.py` szukalo zegara wlasnym
 # kodem, `alarm.py` mial nazwe wpisana w tresc maila; obie potrzeby sa tej
 # samej wielkosci co cztery kopie daty przestawienia konta.
+# --- PLIKI, KTORE MA CZYTAC TYLKO WLASCICIEL --------------------------------
+#
+# Dwa pliki w `data/` niosa cudze albo krytyczne dane: kopia listy subskrybentow
+# (cudze adresy e-mail) i `storage-state.json` (ciastko sesji, czyli prawo do
+# publikowania jako to konto). Domyslne prawa na serwerze to 0644 albo 0664 —
+# czytelne dla KAZDEGO konta na maszynie.
+#
+# W calym repozytorium byl DOKLADNIE JEDEN `chmod`, przy kopii subskrybentow,
+# i to LINIJKE PO zapisaniu pliku — czyli po otwarciu okna, w ktorym plik jest
+# czytelny dla wszystkich. Sesja przegladarki nie miala go wcale.
+def tylko_dla_wlasciciela(sciezka) -> None:
+    """Prawa 0600 na tym pliku. Cicho przechodzi tam, gdzie ich nie ma.
+
+    Windows nie ma tych praw i to nie jest powod, zeby stracic plik — wiec
+    bledy zmiany praw sa polykane. Na serwerze, gdzie to ma znaczenie, dzialaja.
+    """
+    try:
+        _os.chmod(str(sciezka), 0o600)
+    except OSError:
+        pass
+
+
+def otworz_tylko_dla_wlasciciela(sciezka, tryb: str = "w"):
+    """Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600.
+
+    `write_text` tworzy plik z prawami domyslnymi i dopiero potem mozna je
+    zwezic — miedzy jednym a drugim istnieje okno, w ktorym cudze adresy
+    e-mail sa czytelne dla kazdego konta na maszynie. Tutaj okna nie ma:
+    `os.open` dostaje prawa przy TWORZENIU.
+    """
+    flagi = _os.O_WRONLY | _os.O_CREAT | _os.O_TRUNC
+    if hasattr(_os, "O_BINARY") and "b" in tryb:
+        flagi |= _os.O_BINARY
+    fd = _os.open(str(sciezka), flagi, 0o600)
+    # Na plikach juz istniejacych `os.open` praw NIE zmienia — stad drugi krok.
+    tylko_dla_wlasciciela(sciezka)
+    return _os.fdopen(fd, tryb, encoding=None if "b" in tryb else "utf-8",
+                      newline=None if "b" in tryb else "")
+
+
 # --- STAN DZIEDZINY: CO JEST AKTUALNE DZISIAJ -------------------------------
 #
 # Model nie ma jak zauwazyc, ze fakt sie przeterminowal: jego wiedza konczy sie
