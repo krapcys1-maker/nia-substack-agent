@@ -52,22 +52,22 @@ def sprawdz(nazwa, warunek, szczegol=""):
 
 
 KORPUS = [
-    {"temat": "openai custom inference chip built with broadcom", "kanal": "a",
+    {"temat": "wytwornia zamawia wlasny uklad u zewnetrznego producenta", "kanal": "a",
      "data": "2026-08-30"},
-    {"temat": "context window benchmark contamination found in evaluation set",
+    {"temat": "wynik testu porownawczego zanieczyszczony wlasnymi danymi",
      "kanal": "b", "data": "2026-08-30"},
-    {"temat": "minimax model feels fast and cheap on long documents",
+    {"temat": "tani wariant sprawia wrazenie szybszego na dlugich zadaniach",
      "kanal": "c", "data": "2026-08-29"},
 ]
 
 # Temat oparty o pierwsza pozycje korpusu.
 Z_KANALU = {
     "title": "Example Article Eighteen in Nine Months",
-    "question": "What did the custom inference chip built with Broadcom change "
-                "about who sets the price of a token?",
+    "question": "What did the custom part ordered from an outside maker change "
+                "about who sets the price?",
     "kind": "BROKEN_BELIEF", "scale": "AN_INDUSTRY",
-    "zaczyn": "openai custom inference chip built with broadcom",
-    "broken_belief": "Everyone assumes the chip changes what the model can do.",
+    "zaczyn": "wytwornia zamawia wlasny uklad u zewnetrznego producenta",
+    "broken_belief": "Everyone assumes the custom part changes what the thing can do.",
     "precedents": [], "threads": [], "already_written": [],
 }
 # Temat z pamieci — nic wspolnego z korpusem.

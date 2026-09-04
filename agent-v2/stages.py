@@ -6597,8 +6597,8 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
     # ODSIEW PO ZNACZENIU, NIE PO NAPISIE. `_klucz_faktu` porownuje tekst, wiec
     # ten sam fakt opowiedziany innymi slowami wchodzil do banku jako nowy.
     # Zmierzone na produkcji 2 wrzesnia 2026: 37 wolnych pozycji to 24 rozne
-    # tematy, a chip SkladnikA lezal tam w SIEDMIU wariantach („unveiled with
-    # Broadcom", „built with Broadcom and fabricated…", „a 700-watt part…").
+    # tematy, a JEDEN produkt lezal tam w SIEDMIU wariantach — raz zapowiedziany,
+    # raz opisany od strony budowy, raz od strony poboru mocy, i tak dalej.
     # Prog dobrany pomiarem na tym samym banku, nie na oko: przy
     # min_wspolnych=2/prog=0,12 podobnych par jest 117 (kasowaloby material
     # naprawde rozny), przy 5/0,45 tylko 15 (przepuszcza bliskie warianty).
@@ -6606,10 +6606,11 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
     #
     # SAMO PODOBIENSTWO SLOW NIE WYSTARCZY — potrzebna jest WSPOLNA KOTWICA.
     # Zdania zbudowane z tej samej ramki („Documented: X — Y, according to the
-    # published standard") dziela cztery slowa z samego szablonu i wygladaja
-    # na to samo, nie bedac tym samym. Dwa opisy TEGO SAMEGO faktu dziela
-    # natomiast NAZWE albo LICZBE: siedem wariantow chipu mowi „SkladnikA",
-    # „OpenAI" i „Broadcom", a dwa o FirmaD — „Anthropic" i „100".
+    # record") dziela cztery slowa z samego szablonu i wygladaja na to samo,
+    # nie bedac tym samym. Dwa opisy TEGO SAMEGO faktu dziela natomiast NAZWE
+    # albo LICZBE, ktorej przepisac sie nie da: siedem wariantow jednego
+    # produktu powtarzalo jego nazwe i nazwe producenta, a dwa opisy innego —
+    # nazwe firmy i te sama liczbe.
     PODOBIENSTWO = {"min_wspolnych": 4, "prog": 0.35}
     fakty_w_banku = [str(k.get("fact") or "") for k in indeks]
     licznik = {"przyjete": 0, "odrzucone": 0, "znane": 0, "podobne": 0}
@@ -6700,14 +6701,15 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     indeks = wczytaj_indeks()
     # SPIZARNIA Z POPRZEDNIEGO PISMA SIE NIE LICZY.
     #
-    # 30 sierpnia podlaczylem indeks do notek — i o malo nie cofnalem konta o
-    # tydzien. Zmierzone tego samego wieczora: ze 119 wolnych kandydatow tylko
-    # 47 dotyczylo AI. Rozdzial jest ostry i idzie po dacie przestawienia:
+    # 30 sierpnia podlaczylem indeks do notek — i o malo nie cofnalem konta
+    # o tydzien. Zmierzone tego samego wieczora: ze 119 wolnych kandydatow
+    # tylko 47 nalezalo do dzisiejszej niszy. Rozdzial jest OSTRY i idzie
+    # dokladnie po dacie zmiany tematu:
     #     przed zmiana tematu   65 kandydatow, z tego 1 z nowej niszy
     #     po zmianie tematu     54 kandydatow, z tego 46 z nowej niszy
-    # Bez tego filtru sześćdziesiąt jeden procent notek wracaloby do jajek,
-    # tematow poprzedniej epoki — dokladnie ta sama wada, co jej artykul
-    # czekajacy w kolejce promocyjnej.
+    # Bez tego filtru szescdziesiat jeden procent notek wracaloby do tematow
+    # poprzedniej epoki — dokladnie ta sama wada, co jej artykul czekajacy
+    # w kolejce promocyjnej.
     #
     # DATA, NIE SLOWNIK. Filtr po slowach niszy przepuszczalby wszystko, co
     # przypadkiem uzywa jej slownictwa w innym znaczeniu, i odrzucalby dobry
@@ -6772,10 +6774,9 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     # BLIZNIAKI W JEDNEJ PARTII. Ranking ustawia kandydatow wzgledem siebie, ale
     # nie pyta, czy dwaj sasiedzi nie mowia tego samego — i nie zapyta, bo to
     # jest praca dla kodu, nie dla modelu. Zywy przebieg 30 sierpnia oddal bank,
-    # w ktorym pozycje #7 i #8 obie tlumaczyly, czemu odpowiedz plynie slowo po
-    # slowie. Wziete razem daja dwie notki o jednej rzeczy w jednym dniu —
-    # dokladnie wpadke z 23 i 24 sierpnia, gdy dwa razy poszedl symbol otwartego
-    # sloika.
+    # w ktorym pozycje #7 i #8 tlumaczyly DOKLADNIE TO SAMO, innymi slowami.
+    # Wziete razem daja dwie notki o jednej rzeczy w jednym dniu — dokladnie
+    # wpadke z 23 i 24 sierpnia, gdy ten sam fakt poszedl dwa razy.
     #
     # Rozmyty wykrywacz `_o_tym_samym` istnial od dawna i bank go NIE WOLAL.
     # To ten sam ksztalt wady, co reszta tego audytu: sygnal wytworzony i
@@ -6788,21 +6789,22 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     # porownaniu dwoch tekstow notkowej dlugosci.
     # RZADKIE SLOWO JAKO DRUGI SYGNAL BLIZNIACTWA.
     #
-    # Zmierzone na zywym banku 30 sierpnia: dwie kandydatury o tym samym
-    # frameworku DeepSeek FrameworkA przeszly obok siebie. Wspolnych rdzeni szesc na
+    # Zmierzone na zywym banku 30 sierpnia: dwie kandydatury o TYM SAMYM
+    # nazwanym przedmiocie przeszly obok siebie. Wspolnych rdzeni szesc na
     # dwadziescia piec, udzial 0,240 przy progu 0,30 — o wlos za malo, bo jedna
-    # opisywala publikacje z uczelnia, druga numer arXiv, wiec RESZTA slow byla
-    # inna. Trzy inne pary tego samego przebiegu zostaly zlapane poprawnie.
+    # powolywala sie na publikacje naukowa, a druga na zapis w repozytorium,
+    # wiec RESZTA slow byla inna. Trzy inne pary tego samego przebiegu zostaly
+    # zlapane poprawnie.
     #
-    # Ale wsrod tych szesciu wspolnych stalo `frameworka` — nazwa wlasna, ktora nie
-    # wystepuje NIGDZIE INDZIEJ w banku. Dwa fakty dzielace rzadki identyfikator
-    # sa tym samym tematem niezaleznie od proporcji, i to jest sygnal, ktory kod
-    # potrafi policzyc sam: liczymy, w ilu kandydaturach dany rdzen w ogole
-    # wystepuje.
+    # Ale wsrod tych szesciu wspolnych stala NAZWA WLASNA tego przedmiotu —
+    # rdzen, ktory nie wystepuje NIGDZIE INDZIEJ w banku. Dwa fakty dzielace
+    # rzadki identyfikator sa tym samym tematem niezaleznie od proporcji, i to
+    # jest sygnal, ktory kod potrafi policzyc sam: liczymy, w ilu kandydaturach
+    # dany rdzen w ogole wystepuje.
     #
     # Prog dwoch: skoro obaj blizniacy go maja, „nie wiecej niz dwa" znaczy
-    # „tylko ta para". Slowa pospolite w rodzaju `model` czy `tokens` siedza w
-    # kilkunastu wpisach i nie strzela.
+    # „tylko ta para". Slowa pospolite dla danej dziedziny siedza w kilkunastu
+    # wpisach i nie strzela.
     _czestosc: dict[str, int] = {}
     for k, _ in swiezi:
         for slowo in _slowa(str(k.get("fact") or "")):
@@ -6811,28 +6813,28 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     def _dzielą_rzadkie(a: str, b: str) -> str:
         """Rzadkie slowo LUZUJE PROPORCJE, ale nie liczbe wspolnych rdzeni.
 
-        Pierwsza wersja wymagala tylko rzadkiego slowa i byla katastrofalna —
-        zywy test na banku pietnastu kandydatur uznal uklad SkladnikA za
-        blizniaka wlamania na PortalModeli, a framework FrameworkA za blizniaka
-        kosztow inferencji. Powod prosty: przy pietnastu wpisach mnostwo
-        ZWYKLYCH slow trafia sie dokladnie w dwoch, wiec „rzadkie" nie znaczylo
-        „charakterystyczne".
+        Pierwsza wersja wymagala TYLKO rzadkiego slowa i byla katastrofalna:
+        zywy test na banku pietnastu kandydatur uznal za blizniaki dwie pary,
+        ktore nie mialy ze soba nic wspolnego poza jednym zwyklym wyrazem.
+        Powod prosty — przy pietnastu wpisach mnostwo ZWYKLYCH slow trafia sie
+        dokladnie w dwoch, wiec „rzadkie" nie znaczylo „charakterystyczne".
 
-        Prawdziwy ksztalt tej wady byl inny. Para FrameworkA miala SZESC wspolnych
-        rdzeni — czyli powyzej progu liczbowego — i odpadla wylacznie na
-        PROPORCJI (0,240 przy 0,30), bo jedna kandydatura opisywala publikacje z
-        uczelnia, a druga numer arXiv, wiec reszta slow byla inna. Wiec luzujemy
-        dokladnie to, co zawiodlo, i nic wiecej.
+        Prawdziwy ksztalt tej wady byl inny. Para, o ktora chodzilo, miala
+        SZESC wspolnych rdzeni — czyli POWYZEJ progu liczbowego — i odpadla
+        wylacznie na PROPORCJI (0,240 przy 0,30), bo jedna kandydatura
+        powolywala sie na publikacje naukowa, a druga na zapis w repozytorium,
+        wiec reszta slow byla inna. Luzujemy wiec dokladnie to, co zawiodlo,
+        i nic wiecej.
         """
         wspolne = _slowa(a) & _slowa(b)
         if len(wspolne) < POROWNANIE_MIEDZY_DNIAMI["min_wspolnych"]:
             return ""
         # NAZWA WLASNA, NIE ZWYKLE SLOWO. Sam prog czestosci nadal dawal
-        # falszywe trafienia — „FrameworkA" zderzal sie z dokumentami inwestorskimi,
-        # bo dzielily cztery pospolite rdzenie, z ktorych jeden trafil sie
-        # akurat dwa razy. Rdzen, ktory ma odroznic JEDNA RZECZ od innej, musi
-        # wygladac jak nazwa: wielka litera albo cyfra w oryginalnym tekscie.
-        # „FrameworkA", „SkladnikA", „GB300" tak; „report", „august", „single" nie.
+        # falszywe trafienia: dwa zupelnie rozne dokumenty dzielily cztery
+        # pospolite rdzenie, z ktorych jeden trafil sie akurat dwa razy. Rdzen,
+        # ktory ma odroznic JEDNA RZECZ od innej, musi wygladac jak nazwa:
+        # wielka litera albo cyfra w oryginalnym tekscie. „SkladnikA",
+        # „GB300", „ACME-5.3" tak; „report", „august", „single" nie.
         nazwy = {w.lower()[:6] for tekst in (a, b)
                  for w in re.findall(r"[A-Za-z][A-Za-z0-9'’-]*", tekst)
                  if (w[:1].isupper() and len(w) > 3) or any(c.isdigit() for c in w)}

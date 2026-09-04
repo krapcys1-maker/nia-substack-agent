@@ -22,9 +22,9 @@ DOSLOWNIE token `acme-5.3-flash`.
 BANK BYL PELEN BLIZNIAKOW, co to napedzalo. Zmierzone tego samego dnia na
 53 wpisach po przestawieniu konta:
 
-    ACME-5.3        8 wpisow        Ox Alpha        4
-    Papryczka       7               Spirit Airlines 3
-    PortalModeli   5               FirmaD     3
+    ACME-5.3        8 wpisow        Ox Alpha       4
+    Papryczka       7               PrzewoznikB    3
+    PortalModeli    5               FirmaD         3
 
 Wykrywacz bliźniakow W PARTII istnial i dzialal (`_dzielą_rzadkie`), ale byl
 funkcja LOKALNA w `wez_kandydatow` — sciezka notek go nie widziala, a
