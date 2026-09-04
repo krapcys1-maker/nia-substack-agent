@@ -1120,7 +1120,7 @@ def kto_nas_czyta(page=None) -> dict[str, Any]:
     zdarzenie `follow` z 2026-08-31T06:25:10 (a wiec obserwuje), licznik
     `followerCount` podskoczyl wtedy z 8 na 9 i juz nie spadl — a na zakladce
     „Followers" nie ma go w ZADNYM z szesciu pozniejszych zrzutow, za to jako
-    `leonard896188` stoi na zakladce „Subscribers" tej samej strony. Uchwyt
+    `publikacja11` stoi na zakladce „Subscribers" tej samej strony. Uchwyt
     ma, konta nie skasowal, nasz filtr go nie tyka. Kto obserwuje I
     subskrybuje, tego Substack pokazuje wylacznie w „Subscribers" — obie
     listy sa w kazdym zrzucie ROZLACZNE (10 + 9 osob, zero czesci wspolnej).
@@ -1257,7 +1257,7 @@ def zapisz_czytelnikow(page=None) -> dict[str, Any] | None:
 # obserwowanych. Historia komentarzy miala tego dnia 92 hosty; osiem z nich
 # pokrywalo sie z ta lista juz po samym TANIM mapowaniu `host.split(".")[0]`,
 # a naprawde wiecej (`www.wlasnadomena.example` -> `autor1`,
-# `moneywithkatie.substack.com` -> `katiegattitassin`). Przy budzecie okolo
+# `publikacja8.substack.com` -> `katiegattitassin`). Przy budzecie okolo
 # 0,43 obserwacji na dobe i pokryciu 8 z 92 hostow oznacza to mniej wiecej
 # jedna zbedna probe na 27 dni — do 1 wrzesnia zapisywana jako PORAZKA.
 #

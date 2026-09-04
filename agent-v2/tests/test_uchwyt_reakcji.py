@@ -17,8 +17,8 @@ Zmierzone 1 wrzesnia 2026 na produkcyjnym dzienniku serwera
     Halina Osma, Publikacja Drogowa: Founder, sidharth chandra), wiec jako
     cele sa bezuzyteczni — juz ich mamy;
   * przez rownosc slugu nazwy ze slugiem hosta z `gdzie_komentowalismy.json`
-    (94 hosty) trafia 7 z 69: annanowak.blog, eunnurilee.substack.com,
-    fatemaraja.substack.com, igordziewiaty.substack.com, ixcarus.substack.com,
+    (94 hosty) trafia 7 z 69: annanowak.blog, publikacja13.substack.com,
+    publikacja12.substack.com, igordziewiaty.substack.com, publikacja2.substack.com,
     raportbranzowy.substack.com, www.jankowalski.com — z czego po odsianiu
     wszystkiego sprzed przestawienia konta na AI (2026-08-25) zostaja TRZY.
 

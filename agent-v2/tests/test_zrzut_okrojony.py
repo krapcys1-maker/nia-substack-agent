@@ -39,7 +39,7 @@ strony (limit dawalby stala DLUGOSC, nie stala roznice).
 Rozstrzyga jeden przypadek. „Leonard" ma w produkcyjnym dzienniku zdarzenie
 `follow` z 2026-08-31T06:25:10, `followerCount` podskoczyl wtedy z 8 na 9
 i juz nie spadl — a na zakladce „Followers" nie ma go w ZADNYM z szesciu
-pozniejszych zrzutow, za to jako `leonard896188` stoi na zakladce
+pozniejszych zrzutow, za to jako `publikacja11` stoi na zakladce
 „Subscribers" tej samej strony. Uchwyt ma, konta nie skasowal, nasz filtr go
 nie tyka. Kto obserwuje I subskrybuje, tego Substack pokazuje wylacznie
 w „Subscribers": obie listy sa w kazdym z siedmiu zrzutow ROZLACZNE
@@ -185,10 +185,10 @@ def link(uchwyt, nazwa=None):
 
 
 OBSERWUJACY = [link("czytelnik2", "Publikacja Drogowa: Founder"),
-               link("petrosbountis", "Halina Osma"),
+               link("publikacja7", "Halina Osma"),
                link("czytelnik3", "Publikacja Lustrzana AI")]
-SUBSKRYBENCI = [link("leonard896188", "Leonard"),
-                link("chaosengine2026", "Publikacja Chaosu")]
+SUBSKRYBENCI = [link("publikacja11", "Leonard"),
+                link("publikacja3", "Publikacja Chaosu")]
 NAWIGACJA = [Odnosnik("/@explore", "Explore"),
              Odnosnik("/@dashboard", "Dashboard")]
 
@@ -306,12 +306,12 @@ sprawdz("a nawigacja dalej wypada",
         not {"explore", "dashboard"} & {x["uchwyt"] for x in ludzie})
 # I druga polowa dowodu: NASZ kod nie zna reguly „subskrybenta nie pokazuj
 # wsrod obserwujacych". Ta sama osoba na obu zakladkach wychodzi na obu.
-obie = Strona(NAWIGACJA + [link("leonard896188", "Leonard")],
-              NAWIGACJA + [link("leonard896188", "Leonard")])
+obie = Strona(NAWIGACJA + [link("publikacja11", "Leonard")],
+              NAWIGACJA + [link("publikacja11", "Leonard")])
 kto6 = browser.kto_nas_czyta(obie)
 sprawdz("ta sama osoba na obu zakladkach jest w obu listach",
-        [x["uchwyt"] for x in kto6["obserwujacy"]] == ["leonard896188"]
-        and [x["uchwyt"] for x in kto6["subskrybenci"]] == ["leonard896188"],
+        [x["uchwyt"] for x in kto6["obserwujacy"]] == ["publikacja11"]
+        and [x["uchwyt"] for x in kto6["subskrybenci"]] == ["publikacja11"],
         kto6)
 
 print()
@@ -375,11 +375,11 @@ with (UDAWANA / "czytelnicy.jsonl").open("w", encoding="utf-8") as f:
     okrojony["kiedy"] = "2026-08-31T04:24:28+00:00"
     f.write(json.dumps(okrojony, ensure_ascii=False) + "\n")
     f.write(json.dumps({"kiedy": "2026-08-31T11:38:23+00:00",
-                        "obserwujacy": [{"uchwyt": "petrosbountis",
+                        "obserwujacy": [{"uchwyt": "publikacja7",
                                          "nazwa": "Halina Osma"}],
-                        "subskrybenci": [{"uchwyt": "leonard896188",
+                        "subskrybenci": [{"uchwyt": "publikacja11",
                                           "nazwa": "Leonard"},
-                                         {"uchwyt": "chaosengine2026",
+                                         {"uchwyt": "publikacja3",
                                           "nazwa": "Publikacja Chaosu"}]},
                        ensure_ascii=False) + "\n")
 _zdjecie_data = wzajemnosc.config.uzyj_katalogu_danych(UDAWANA)
@@ -412,10 +412,10 @@ with (STARE / "czytelnicy.jsonl").open("w", encoding="utf-8") as f:
                                "2026-09-01T11:38:25+00:00")):
         f.write(json.dumps({
             "kiedy": kiedy,
-            "obserwujacy": [{"uchwyt": "petrosbountis", "nazwa": "Halina Osma"},
+            "obserwujacy": [{"uchwyt": "publikacja7", "nazwa": "Halina Osma"},
                             {"uchwyt": "czytelnik3", "nazwa": "Publikacja Lustrzana AI"}],
-            "subskrybenci": [{"uchwyt": "chaosengine2026", "nazwa": "Publikacja Chaosu"}]
-            + ([{"uchwyt": "leonard896188", "nazwa": "Leonard"}] if i else []),
+            "subskrybenci": [{"uchwyt": "publikacja3", "nazwa": "Publikacja Chaosu"}]
+            + ([{"uchwyt": "publikacja11", "nazwa": "Leonard"}] if i else []),
         }, ensure_ascii=False) + "\n")
 _zdjecie_data = wzajemnosc.config.uzyj_katalogu_danych(STARE)
 try:
@@ -423,8 +423,8 @@ try:
     sprawdz("stary ksztalt czyta sie bez wyjatku i bez ubytku",
             len(starzy) == 4, sorted(starzy))
     sprawdz("i dalej daje te sama odpowiedz o dacie pojawienia sie",
-            starzy["leonard896188"]["pierwszy_zrzut"] == 1
-            and starzy["chaosengine2026"]["pierwszy_zrzut"] == 0, starzy)
+            starzy["publikacja11"]["pierwszy_zrzut"] == 1
+            and starzy["publikacja3"]["pierwszy_zrzut"] == 0, starzy)
     if hasattr(wzajemnosc, "zrzuty_czytelnikow"):
         oceny = wzajemnosc.zrzuty_czytelnikow()
         sprawdz("i ocena zrzutow tez przezywa brak pola",

@@ -172,10 +172,10 @@ def dziennik_produkcyjny():
     w = []
 
     # DWIE PROBY OBSERWACJI, OBIE NIEUDANE, OBIE SPRZED PRZESTAWIENIA NA AI.
-    w.append(zaczepienie("obserwacja", "writersartistsyearbook",
+    w.append(zaczepienie("obserwacja", "publikacja6",
                          "2026-08-23T07:56:16+00:00", False,
                          "nie ma przycisku obserwacja"))
-    w.append(zaczepienie("obserwacja", "thebuttergirlfriend",
+    w.append(zaczepienie("obserwacja", "publikacja5",
                          "2026-08-23T11:50:03+00:00", False,
                          "nie ma przycisku obserwacja"))
 

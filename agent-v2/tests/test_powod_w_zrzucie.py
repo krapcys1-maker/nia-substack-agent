@@ -88,7 +88,7 @@ PRZED = {str(p): odcisk(p) for p in PILNOWANE}
 
 
 # --- TRZY ODPOWIEDZI PROFILU, ODWZOROWANE Z `kto_nas_czyta` ------------------
-LUDZIE = [{"uchwyt": "leonard896188", "nazwa": "Leonard"}]
+LUDZIE = [{"uchwyt": "publikacja11", "nazwa": "Leonard"}]
 
 PELNY = {"obserwujacy": LUDZIE, "subskrybenci": LUDZIE,
          "odczytane": ["obserwujacy", "subskrybenci"], "blad": None}

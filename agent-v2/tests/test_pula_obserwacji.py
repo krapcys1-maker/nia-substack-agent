@@ -29,7 +29,7 @@ obserwowac" i `_ludzie_z_zakladki` czyta z niej sama liste obserwowanych.
     agent-v2/data/gdzie_komentowalismy.json  -> 92 hosty (24 wlasne domeny)
     czesc wspolna po samym `host.split(".")[0]` -> 8 hostow:
       publikacja9, autor3, howfinanceworks, newyorker,
-      publikacja1, thebuttergirlfriend, tiffaniedarke, writersartistsyearbook
+      publikacja1, publikacja5, tiffaniedarke, publikacja6
 
 Naprawde wiecej, bo tanie mapowanie nie widzi wlasnych domen
 (`www.wlasnadomena.example` -> `autor1`) ani rozjazdow nazw
@@ -358,7 +358,7 @@ def licz_norma(plik_dziennika):
 
 # Pula z pomiaru: dwa konta, ktore JUZ obserwujemy (jedno przez wlasna domene,
 # tak jak `www.wlasnadomena.example`), i jedno wolne.
-PULA = ["publikacja1.substack.com", "www.wlasnadomena.example", "ixcarus.substack.com"]
+PULA = ["publikacja1.substack.com", "www.wlasnadomena.example", "publikacja2.substack.com"]
 NA_SUBSTACKU = {"publikacja1", "autor1"}
 BLOK_TERAZ = wytnij(zrodlo_run(), "obserwuj")
 
@@ -386,7 +386,7 @@ try:
                                         {"uchwyty": {"publikacja1": "x"},
                                          "hosty": {}}) is True)
     sprawdz("nieznany host: przy watpliwosci probujemy",
-            browser.czy_juz_obserwujemy("ixcarus.substack.com") is False)
+            browser.czy_juz_obserwujemy("publikacja2.substack.com") is False)
 
     # ZRZUT ZE STRONY `/following` — ta sama funkcja, ktora czyta zakladke
     # obserwujacych. 26 uchwytow zmierzonych na zywo; tu trzy, zeby dalo sie
@@ -460,20 +460,20 @@ pamiec_pelna = {"zrzut": "2026-09-01T00:00:00+00:00",
 konta, wpisy, pam, plik, out = uruchom_blok(
     browser, BLOK_TERAZ, PULA, NA_SUBSTACKU, pamiec=pamiec_pelna,
     kolejnosc=("publikacja1.substack.com", "www.wlasnadomena.example",
-               "ixcarus.substack.com"))
+               "publikacja2.substack.com"))
 print("    odwiedzone profile: %s" % konta.odwiedzone)
 print("    klikniete: %s" % konta.klikniete)
 sprawdz("weszlismy na JEDEN profil i to ten wolny",
-        konta.odwiedzone == ["ixcarus"], konta.odwiedzone)
-sprawdz("obserwacja weszla", "ixcarus" in konta.obserwowani, konta.obserwowani)
+        konta.odwiedzone == ["publikacja2"], konta.odwiedzone)
+sprawdz("obserwacja weszla", "publikacja2" in konta.obserwowani, konta.obserwowani)
 sprawdz("nikt nie zostal odobserwowany",
         {"publikacja1", "autor1"} <= konta.obserwowani, konta.obserwowani)
 sprawdz("jeden wpis w dzienniku i jest udana obserwacja",
         len(wpisy) == 1 and wpisy[0]["rodzaj"] == "obserwacja"
         and wpisy[0]["udane"] is True, wpisy)
 sprawdz("zaobserwowany trafil do pamieci razem ze swoim hostem",
-        pam["uchwyty"].get("ixcarus")
-        and pam["hosty"].get("ixcarus.substack.com") == "ixcarus", pam)
+        pam["uchwyty"].get("publikacja2")
+        and pam["hosty"].get("publikacja2.substack.com") == "publikacja2", pam)
 
 
 print()
@@ -484,7 +484,7 @@ print("=== 3. PAMIEC MOZE BYC PUSTA — SLOT I TAK NIE PRZEPADA ===")
 konta, wpisy, pam, plik, out = uruchom_blok(
     browser, BLOK_TERAZ, PULA, NA_SUBSTACKU, pamiec=None,
     kolejnosc=("publikacja1.substack.com", "www.wlasnadomena.example",
-               "ixcarus.substack.com"))
+               "publikacja2.substack.com"))
 print("    odwiedzone profile: %s" % konta.odwiedzone)
 print("    wpisy: %s" % [(w["rodzaj"], w.get("udane")) for w in wpisy])
 sprawdz("weszlismy na obserwowanego, ale nie klikneli nic poza kolkiem",
@@ -493,7 +493,7 @@ sprawdz("weszlismy na obserwowanego, ale nie klikneli nic poza kolkiem",
 sprawdz("nikt nie zostal odobserwowany",
         {"publikacja1", "autor1"} <= konta.obserwowani, konta.obserwowani)
 sprawdz("DZIEN NIE PRZEPADL: wolny profil zostal zaobserwowany",
-        "ixcarus" in konta.obserwowani, konta.obserwowani)
+        "publikacja2" in konta.obserwowani, konta.obserwowani)
 sprawdz("budzet 1 nadal znaczy JEDNA obserwacje",
         len([w for w in wpisy
              if w["rodzaj"] == "obserwacja" and w["udane"]]) == 1, wpisy)
@@ -545,7 +545,7 @@ BLOK_STARY = wytnij(zrodlo_run("64d881a"), "obserwuj")
 s_konta, s_wpisy, s_pam, s_plik, s_out = uruchom_blok(
     browser, BLOK_STARY, PULA, NA_SUBSTACKU, pamiec=None,
     kolejnosc=("publikacja1.substack.com", "www.wlasnadomena.example",
-               "ixcarus.substack.com"))
+               "publikacja2.substack.com"))
 print("    STARY BLOK: odwiedzone=%s wpisy=%s"
       % (s_konta.odwiedzone, [(w["rodzaj"], w.get("udane")) for w in s_wpisy]))
 s_wykonane, s_nieudane, s_dni = licz_norma(s_plik)
@@ -554,7 +554,7 @@ print("    STARY BLOK: norma -> wykonane=%d nieudane=%d"
 sprawdz("KONTRDOWOD: stary blok konczyl na pierwszym wylosowanym",
         s_konta.odwiedzone == ["publikacja1"], s_konta.odwiedzone)
 sprawdz("KONTRDOWOD: i nie zaobserwowal NIKOGO tego dnia",
-        "ixcarus" not in s_konta.obserwowani, s_konta.obserwowani)
+        "publikacja2" not in s_konta.obserwowani, s_konta.obserwowani)
 sprawdz("KONTRDOWOD: licznik widzial ZERO obserwacji", s_wykonane == 0,
         s_wykonane)
 sprawdz("a ten sam dzien z dzisiejszym blokiem dal JEDNA (sekcja 3)",

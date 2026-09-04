@@ -410,10 +410,10 @@ def licz_norma(plik_dziennika, rodzaj):
 # domenie — bo te dwa lapia sie na dwoch ROZNYCH etapach odsiewu.
 HISTORIA = {
     # sprzed 2026-08-25 — jedzenie, zdrowie, moda, literatura
-    "thebuttergirlfriend.substack.com": "2026-08-16T13:00:00+00:00",
+    "publikacja5.substack.com": "2026-08-16T13:00:00+00:00",
     "publikacja4.substack.com":          "2026-08-16T13:14:10+00:00",
-    "dagmarabeine.substack.com":        "2026-08-16T16:21:21+00:00",
-    "writersartistsyearbook.substack.com": "2026-08-23T07:00:00+00:00",
+    "publikacja14.substack.com":        "2026-08-16T16:21:21+00:00",
+    "publikacja6.substack.com": "2026-08-23T07:00:00+00:00",
     # od 2026-08-25 wlacznie
     "igordziewiaty.substack.com":     "2026-08-31T10:00:00+00:00",
     "www.funduszx.news":               "2026-08-30T09:00:00+00:00",

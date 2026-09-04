@@ -402,7 +402,7 @@ def ile_przebiegow_zostalo(conn) -> int:
 # o czym innym, i zostawiamy po sobie publiczny slad.
 PRZESTAWIENIE_KONTA_NA_AI = "2026-08-25"
 
-# NAJKROTSZY ZMIERZONY ZBIEG NAZWY Z HOSTEM TO `ixcarus` — 7 znakow. Prog 6
+# NAJKROTSZY ZMIERZONY ZBIEG NAZWY Z HOSTEM TO `publikacja2` — 7 znakow. Prog 6
 # jest wiec ponizej wszystkiego, co dzis dziala, i odcina wylacznie zbiegi
 # tak krotkie, ze byly by przypadkiem (np. osoba „Post" i host `post.substack.com`,
 # ktory naprawde jest w naszej historii).
@@ -502,7 +502,7 @@ def _reakcje_z_dziennika() -> tuple[set[str], dict[str, dict]]:
         miare wplywu komentarzy, cytuje slepote tego sita. Zmierzone
         2 wrzesnia 2026: na 10 parach (nazwa, uchwyt), ktore znamy z pola
         `uchwyty`, rownosc slug(nazwa) == slug(hosta) trafia 5 razy na 10
-        (`chaosengine2026` to „Publikacja Chaosu", `theaioperators` to „Norbert
+        (`publikacja3` to „Publikacja Chaosu", `theaioperators` to „Norbert
         Saad", „Thor" wypada na progu dlugosci). Porownanie nazwy reagujacego
         z polem `publikacja` z dziennika — ktore trzyma NAZWE publikacji,
         a nie host — daje 26 z 73. Najwiekszy reagujacy, „Publikacja Chaosu"

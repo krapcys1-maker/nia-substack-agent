@@ -157,6 +157,8 @@ each still had a new one.
 | 7 | reading, line by line | three system messages with the subject written into them; the owner's own words quoted verbatim, twice, with the swearing left in; seven topics of *other people's* posts the bot had commented under |
 | 8 | letters that are neither ASCII nor Polish | a word in which one letter was **Cyrillic** where its Latin twin belongs. The character itself cannot be written here — the audit refuses the file, which is the check working. It reads as an ordinary word and no search for its Latin spelling can find it. The same sweep surfaced two real people's names — one with hangul in brackets, one pasted into a domain |
 | 9 | the shape `note/c-<digits>` | **four more real note ids.** Sweep 6 looked for eight-to-ten-digit numbers and replaced seventeen; searching by the shape of the URL instead of the length of the number has no false positives, and found the four that sweep had walked past |
+| 10 | every domain in the source, counted | **three people's personal websites**, eighty occurrences across five files. Sweep 3 hunted a name glued into a *subdomain*; here the name was the *whole* domain, `www.<firstnamesurname>.com` |
+| 11 | the shape `<something>.substack.com` | **eleven real accounts.** A handle can be one lower-case word with no dot and no capital, so no sweep looking for names, addresses or numbers could ever see one |
 
 **What only reading found.** Three system messages — `CURIOSITY_SYSTEM`,
 `BANK_SYSTEM`, `FEDREG_SYSTEM` — had the niche written into them literally. This
@@ -184,6 +186,12 @@ normally and cannot be matched. The audit now refuses source carrying Greek,
 Cyrillic, Hebrew, Arabic, Devanagari, Thai, kana, hanzi or hangul, and prints
 extended-Latin letters for a person to look at — because that range holds both
 `Veröffentlichen` from Substack's German interface and surnames.
+
+**The lesson sweeps 9, 10 and 11 keep repeating.** Search for the *shape of
+the thing you are hunting*, not for a property it happens to have. Numbers,
+capital letters and dots are properties; `note/c-<digits>`, `<name>.com` and
+`<handle>.substack.com` are shapes. Every sweep built on a property drowned in
+false positives and was skimmed; every sweep built on a shape had none.
 
 **And a lesson about how to search.** Sweep 6 hunted eight-to-ten-digit numbers
 and drowned in token ceilings and file sizes, so it was skimmed. Sweep 9 hunts

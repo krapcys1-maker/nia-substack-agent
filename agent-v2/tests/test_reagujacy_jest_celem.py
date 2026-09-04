@@ -70,8 +70,8 @@ KONTRDOWODY SA ODTWARZANE, NIE OPISANE, i sa dwa, bo sa dwie rozne wady:
     `cele_wedlug_pierwszenstwa` nie ma tam wcale, wiec kontrdowod nie moze byc
     porownaniem rachunkow — jest porownaniem tego, KOGO oba bloki naprawde
     odwiedzily na tych samych danych. Zmierzone: stary idzie do
-    `thebuttergirlfriend` (blog o jedzeniu sprzed przestawienia konta na AI),
-    dzisiejszy do `chaosengine2026` (osoba, ktora dwa razy zareagowala
+    `publikacja5` (blog o jedzeniu sprzed przestawienia konta na AI),
+    dzisiejszy do `publikacja3` (osoba, ktora dwa razy zareagowala
     na nasza tresc), a jej uchwyt lezal w dzienniku przez caly czas;
   * sekcja 8 odtwarza wersje BEZ HAMULCOW (odstep 0 h, prog 1 reakcji, pusty
     plik czytelnikow) na dzisiejszym kodzie i pokazuje, ze wtedy konto
@@ -408,7 +408,7 @@ def z_dziennikiem(wpisy, czytelnicy=(), fn=None):
 # Zadnego z nich nie ma wsrod reagujacych — o to wlasnie chodzi, bo produkcyjne
 # 62 z 69 osob tez nie maja w tej historii nic.
 HISTORIA = {
-    "thebuttergirlfriend.substack.com": "2026-08-16T13:00:00+00:00",
+    "publikacja5.substack.com": "2026-08-16T13:00:00+00:00",
     "publikacja4.substack.com":          "2026-08-16T13:14:10+00:00",
     "igordziewiaty.substack.com":          "2026-08-31T10:00:00+00:00",
     "www.funduszx.news":                    "2026-08-30T09:00:00+00:00",
@@ -419,28 +419,28 @@ def dziennik_pelny():
     return [
         # PRZECHODZI: dwie reakcje, obie dawno, nie ma jej w historii hostow.
         skutek("note_like:1", "note_like", ["Publikacja Chaosu"],
-               ["chaosengine2026"], DAWNO()),
+               ["publikacja3"], DAWNO()),
         skutek("note_like:2", "note_like", ["Publikacja Chaosu"],
-               ["chaosengine2026"], DAWNO()),
+               ["publikacja3"], DAWNO()),
         # PRZECHODZI: jedna reakcja, ale to ODPOWIEDZ — czyli ktos pisal.
         skutek("note_reply:3", "note_reply", ["Lech Dwunasty"],
                ["annanowak"], DAWNO()),
         # ODPADA: jedno polubienie i nic wiecej (43 z 69 osob na produkcji).
         skutek("note_like:4", "note_like", ["Publikacja Lustrzana AI"],
-               ["mirrormindai"], DAWNO()),
+               ["publikacja10"], DAWNO()),
         # ODPADA: dwie reakcje, ale najswiezsza sprzed pieciu minut.
         skutek("note_like:5", "note_like", ["Swiezak"], ["swiezak"], DAWNO()),
         skutek("note_like:6", "note_like", ["Swiezak"], ["swiezak"],
                PRZED_CHWILA()),
         # ODPADA: juz nas obserwuje — wpis `follow` mowi to wprost.
-        skutek("note_like:7", "note_like", ["Leonard"], ["leonard896188"],
+        skutek("note_like:7", "note_like", ["Leonard"], ["publikacja11"],
                DAWNO()),
-        skutek("follow:8", "follow", ["Leonard"], ["leonard896188"], DAWNO()),
+        skutek("follow:8", "follow", ["Leonard"], ["publikacja11"], DAWNO()),
         # ODPADA: dwie reakcje, ale stoi w `czytelnicy.jsonl`.
         skutek("note_like:9", "note_like", ["Halina Osma"],
-               ["petrosbountis"], DAWNO()),
+               ["publikacja7"], DAWNO()),
         skutek("note_like:10", "note_like", ["Halina Osma"],
-               ["petrosbountis"], DAWNO()),
+               ["publikacja7"], DAWNO()),
         # ODPADA: to MY. Substack melduje w tym samym kanale, ze nasza
         # zaplanowana notka poszla — 9 takich zdarzen na produkcji.
         skutek("sched:11", "scheduled_note_sent", ["Your Publication"],
@@ -460,9 +460,9 @@ def dziennik_pelny():
 
 CZYTELNICY = [{"kiedy": "2026-09-01T11:38:25+00:00",
                "odczytane": ["obserwujacy", "subskrybenci"], "blad": None,
-               "obserwujacy": [{"uchwyt": "petrosbountis",
+               "obserwujacy": [{"uchwyt": "publikacja7",
                                 "nazwa": "Halina Osma"}],
-               "subskrybenci": [{"uchwyt": "chaosengine2026x",
+               "subskrybenci": [{"uchwyt": "publikacja3x",
                                  "nazwa": "ktos inny"}]}]
 
 BLOK_OBSERWUJ = wytnij(zrodlo_run(), "obserwuj")
@@ -477,7 +477,7 @@ print("    kandydaci: %s" % kand)
 sprawdz("dwoje reagujacych weszlo do puli mimo braku w historii hostow",
         rach["reagujacy"] == 2, rach)
 sprawdz("i to sa ci dwoje, ktorzy mieli przejsc",
-        {"chaosengine2026.substack.com", "annanowak.substack.com"} <= set(kand),
+        {"publikacja3.substack.com", "annanowak.substack.com"} <= set(kand),
         kand)
 # Szesc, nie osiem: nasz wlasny uchwyt i uchwyt z rozjazdu list NIE licza sie
 # nawet jako kandydaci — nie sa odsiani, tylko nie sa ludzmi do zaczepienia.
@@ -487,13 +487,13 @@ sprawdz("szesc uchwytow rozpoznanych z dziennika (bez nas i bez rozjazdu)",
 print()
 print("=== 2. HAMULCE: KTO NIE WCHODZI I DLACZEGO ===")
 sprawdz("jedno polubienie nie wystarcza — prog to dwie reakcje",
-        "mirrormindai.substack.com" not in kand, kand)
+        "publikacja10.substack.com" not in kand, kand)
 sprawdz("reakcja sprzed pieciu minut CZEKA na odstep",
         "swiezak.substack.com" not in kand, kand)
 sprawdz("kto juz nas obserwuje, tego nie zaczepiamy",
-        "leonard896188.substack.com" not in kand, kand)
+        "publikacja11.substack.com" not in kand, kand)
 sprawdz("kto stoi w czytelnicy.jsonl, tego tez nie",
-        "petrosbountis.substack.com" not in kand, kand)
+        "publikacja7.substack.com" not in kand, kand)
 sprawdz("rachunek liczy KAZDY hamulec osobno, a nie jednym workiem",
         (rach["reagujacy_slabi"], rach["reagujacy_swiezy"],
          rach["reagujacy_juz_czyta"]) == (1, 1, 2), rach)
@@ -513,12 +513,12 @@ print("=== 4. PRZEPLOT: POZIOM HOSTOW NIE JEST ZAGLODZONY ===")
 # 0,93 dzialania na dobe i naplywie 1,1 reagujacego na dobe host nie zostalby
 # osiagniety nigdy.
 pozycje_reakcji = [i for i, h in enumerate(kand)
-                   if h in ("chaosengine2026.substack.com",
+                   if h in ("publikacja3.substack.com",
                             "annanowak.substack.com")]
 print("    kolejnosc: %s" % kand)
 sprawdz("pierwszy slot nalezy do reagujacego", pozycje_reakcji[:1] == [0], kand)
 sprawdz("ale drugi juz do hosta z historii czytania",
-        kand[1] not in ("chaosengine2026.substack.com",
+        kand[1] not in ("publikacja3.substack.com",
                         "annanowak.substack.com"), kand)
 sprawdz("host, ktory jest JEDNOCZESNIE reagujacym, nie stoi w puli dwa razy",
         len(kand) == len(set(kand)), kand)
@@ -527,22 +527,22 @@ print()
 print("=== 5. ZACHOWANIE BLOKU: KOGO NAPRAWDE ODWIEDZONO ===")
 konta, wpisy, plik, out = uruchom_blok(
     BLOK_OBSERWUJ, "obserwuj", HISTORIA, Substack(),
-    kolejnosc=("chaosengine2026.substack.com",),
+    kolejnosc=("publikacja3.substack.com",),
     dziennik_wstepny=dziennik_pelny(), czytelnicy=CZYTELNICY)
 print("    odwiedzone profile: %s" % konta.odwiedzone)
 print("    zaobserwowani: %s" % sorted(konta.obserwowani))
 sprawdz("blok wszedl na profil reagujacego, a nie na host z historii",
-        konta.odwiedzone == ["chaosengine2026"], konta.odwiedzone)
+        konta.odwiedzone == ["publikacja3"], konta.odwiedzone)
 sprawdz("i naprawde go zaobserwowal",
-        konta.obserwowani == {"chaosengine2026"}, konta.obserwowani)
+        konta.obserwowani == {"publikacja3"}, konta.obserwowani)
 sprawdz("JEDNA sesja przegladarki — adres `<uchwyt>.substack.com` nie kosztuje"
         " zapytania o uchwyt", konta.sesje == 1, konta.sesje)
 nowe = [w for w in wpisy if w["rodzaj"] == "obserwacja"]
 sprawdz("dziennik ma wpis obserwacji na uchwyt, nie na adres",
-        len(nowe) == 1 and nowe[0].get("komu") == "chaosengine2026", nowe)
+        len(nowe) == 1 and nowe[0].get("komu") == "publikacja3", nowe)
 sprawdz("nikt spoza puli nie zostal odwiedzony",
         "swiezak" not in konta.odwiedzone
-        and "leonard896188" not in konta.odwiedzone, konta.odwiedzone)
+        and "publikacja11" not in konta.odwiedzone, konta.odwiedzone)
 
 print()
 print("=== 6. PUSTA PULA NADAL MOWI, ILU BYLO NA KAZDYM POZIOMIE ===")
@@ -578,21 +578,21 @@ print("=== 7. KONTRDOWOD: WERSJA Z %s NIE WIDZI REAGUJACEGO ===" % ODNIESIENIE)
 # z tymi samymi uchwytami lezy tam bezuzyteczny.
 konta_st, wpisy_st, _, _ = uruchom_blok(
     wytnij(zrodlo_run(ODNIESIENIE), "obserwuj"), "obserwuj", HISTORIA,
-    Substack(), kolejnosc=("thebuttergirlfriend.substack.com",),
+    Substack(), kolejnosc=("publikacja5.substack.com",),
     dziennik_wstepny=dziennik_pelny(), czytelnicy=CZYTELNICY)
 print("    STARY blok odwiedzil: %s" % konta_st.odwiedzone)
 sprawdz("KONTRDOWOD: stary blok nie wszedl do zadnego reagujacego",
-        "chaosengine2026" not in konta_st.odwiedzone
+        "publikacja3" not in konta_st.odwiedzone
         and "annanowak" not in konta_st.odwiedzone, konta_st.odwiedzone)
 sprawdz("KONTRDOWOD: poszedl za to do bloga sprzed przestawienia konta na AI",
-        konta_st.odwiedzone == ["thebuttergirlfriend"], konta_st.odwiedzone)
+        konta_st.odwiedzone == ["publikacja5"], konta_st.odwiedzone)
 konta_dz, _, _, _ = uruchom_blok(
     BLOK_OBSERWUJ, "obserwuj", HISTORIA, Substack(),
-    kolejnosc=("thebuttergirlfriend.substack.com",),
+    kolejnosc=("publikacja5.substack.com",),
     dziennik_wstepny=dziennik_pelny(), czytelnicy=CZYTELNICY)
 print("    DZISIEJSZY blok na tych samych danych: %s" % konta_dz.odwiedzone)
 sprawdz("a dzisiejszy na tych samych danych idzie do reagujacego",
-        konta_dz.odwiedzone in (["chaosengine2026"], ["annanowak"]),
+        konta_dz.odwiedzone in (["publikacja3"], ["annanowak"]),
         konta_dz.odwiedzone)
 
 print()
@@ -646,15 +646,15 @@ try:
     browser.podlacz_sie = _nie_wolno
     browser.wymagaj_sesji = lambda: None
     sprawdz("uchwyt_publikacji skraca adres do uchwytu bez zapytania",
-            browser.uchwyt_publikacji("chaosengine2026.substack.com")
-            == "chaosengine2026")
+            browser.uchwyt_publikacji("publikacja3.substack.com")
+            == "publikacja3")
     sprawdz("czy_juz_obserwujemy porownuje uchwyt z uchwytem",
             browser.czy_juz_obserwujemy(
-                "chaosengine2026.substack.com",
-                {"uchwyty": {"chaosengine2026": "kiedys"}, "hosty": {}}) is True)
+                "publikacja3.substack.com",
+                {"uchwyty": {"publikacja3": "kiedys"}, "hosty": {}}) is True)
     sprawdz("czy_juz_subskrybujemy tak samo",
-            run.czy_juz_subskrybujemy("chaosengine2026.substack.com",
-                                      {"chaosengine2026"}) is True)
+            run.czy_juz_subskrybujemy("publikacja3.substack.com",
+                                      {"publikacja3"}) is True)
 finally:
     browser.podlacz_sie = _stare_podlacz
     browser.wymagaj_sesji = _stare_wymagaj
