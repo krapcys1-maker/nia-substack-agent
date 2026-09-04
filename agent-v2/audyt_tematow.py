@@ -112,10 +112,17 @@ def main() -> int:
                 "%d > %d" % (len(k2), len(k1)))
     # `k2` istnieje tylko w galezi ze skonfigurowanymi kanalami — bez nich
     # pytanie „ile kanalow dalo material" nie ma podmiotu.
+    # PROG Z LICZBY SKONFIGURTOWANYCH KANALOW, NIE WPISANY. Stalo tu
+    # `zywe_kanaly >= 8` — liczba z konta, ktore mialo ich trzynascie. Konto
+    # z czterema kanalami dostawaloby UWAGA kazdego dnia swojego zycia, nawet
+    # gdy wszystkie cztery odpowiedzialy. Pytanie brzmi „czy KANALY, ktore
+    # podales, w ogole zyja", a to jest udzial, nie liczba bezwzgledna.
     zywe_kanaly = len({w.get("kanal") for w in k2})
-    werdykt("ile kanalow dalo material",
-            "OK" if zywe_kanaly >= 8 else "UWAGA",
-            "%d z %d" % (zywe_kanaly, len(korpus_kanalow.KANALY)))
+    if korpus_kanalow.KANALY:
+        werdykt("ile kanalow dalo material",
+                "OK" if zywe_kanaly * 2 >= len(korpus_kanalow.KANALY)
+                else "UWAGA",
+                "%d z %d" % (zywe_kanaly, len(korpus_kanalow.KANALY)))
 
     # ---------------------------------------------------------------
     etap(2, "PAS PIERWSZENSTWA — wielkie wydarzenia")
