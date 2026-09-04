@@ -18,10 +18,16 @@ its setting, with enough around it to tell the reader where they are.
 
 This replaces the old rule, and the old rule is worth naming so nobody restores
 it. It said: one object, isolated, resting on grey paper, no scene. That was
-built for a publication about everyday things, where a shampoo bottle lying on
-a seamless ground read as a specimen under examination. Applied to this subject it produced a laptop on grey paper with a blank white screen — an
-object with no place, no situation and nothing at stake. Correct to the letter
-of the brief and completely dead.
+written for a publication whose subject WAS the object — where a single thing
+on a seamless ground reads as a specimen under examination, which was the
+point. Carried over to a subject whose object is ordinary and tells you
+nothing on its own, the same rule produced a piece of equipment on grey paper
+with nothing happening to it: no place, no situation, nothing at stake.
+Correct to the letter of the brief and completely dead.
+
+That is the failure to watch for. A composition rule is written against one
+kind of subject and keeps working right up until the subject changes, at which
+point it keeps being obeyed and stops meaning anything.
 
 A scene answers three questions the specimen could not: where is this, who was
 just here, and what is about to happen or has just happened.

@@ -153,13 +153,19 @@ SPRZED_PRZESTAWIENIA = [
 # pliku promptu albo `config.py:NOTE_FORMS[...]`), wartosc to fragmenty linii,
 # ktore wolno przepuscic.
 WYJATKI = {
-    # Stara regula grafiki, nazwana po to, zeby jej nikt nie przywrocil.
-    # Trzy wpisy zdjete po recznym przeczytaniu `grafika.md`: obie wpadki sa
-    # nadal opisane, ale bez nazw przedmiotow z poprzedniej niszy. Zapis
-    # porazki nie potrzebuje nazwy produktu, zeby uczyc.
-    "grafika.md": ("built for a publication about everyday things",),
-    # Zakaz, nie wzorzec: „paralela z butelki szamponu jest poza tematem".
-    "restack.md": ("is off the subject",),
+    # WYJATEK GRAFIKI ZDJETY W CALOSCI 4 wrzesnia. `grafika.md` opisuje stara
+    # regule dalej — i ma opisywac, zeby jej nikt nie przywrocil — ale robi to
+    # przez RODZAJ tematu („publikacja, ktorej tematem BYL sam przedmiot")
+    # zamiast przez nazwe poprzedniej niszy. Zapis porazki nie potrzebuje nazwy
+    # produktu, zeby uczyc; potrzebuje powodu, dla ktorego regula przestala
+    # dzialac. To jest ten sam ruch, co przy `wykonalnosc.md` nizej.
+    #
+    # WYJATEK RESTACKA ZDJETY TEGO SAMEGO DNIA i to byla powazniejsza sprawa.
+    # Stalo tam „a parallel drawn from shampoo bottles or insurance policies is
+    # off the subject" — czyli prompt wymienial z nazwy dziedziny, z ktorych
+    # NIE WOLNO brac paraleli. Dla konta o ubezpieczeniach ten sam prompt
+    # zakazywalby dokladnie wlasciwych paraleli. Akapit sklada sie teraz
+    # z `{nisza}`, `{kat_redakcyjny}` i przykladow z konfiguracji.
     # Zapisy wlasnej porazki — artykul, ktory trzeba bylo skasowac.
     "synteza.md": ("A piece that failed had none of this",),
     "warto_pisac.md": ("was dull, and the diagnosis was",),

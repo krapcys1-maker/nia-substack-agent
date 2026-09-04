@@ -4780,15 +4780,15 @@ def fetch(
                 # BLOKADA (403/401/429/503) — ZLAPANE ZYWYM PRZEBIEGIEM 30
                 # sierpnia i to jest wazniejsza polowa. Odkad dyskoveria
                 # przestala dopychac liste omowieniami i oddaje SAME DOKUMENTY,
-                # trafia prosto w hosty, ktore blokuja najostrzej: repozytoria prawnicze i
-                # uczelniane. Przebieg oddal cztery zrodla, same
+                # trafia prosto w hosty, ktore blokuja najostrzej: repozytoria
+                # prawnicze i uczelniane. Przebieg oddal cztery zrodla, same
                 # pierwotne — i wszystkie cztery padly, trzy na 403. Poprawiajac
                 # JAKOSC zrodel, pogorszylem SKUTECZNOSC pobierania.
                 #
                 # Zmierzone wczesniej na 28 archiwalnych blokadach: przegladarka
                 # odzyskuje 7%. Malo — ale odlozylem te poprawke wlasnie na tej
                 # liczbie, a teraz widac, ze liczylem ja na zlym materiale.
-                # Tamte hosty byly z epoki przedmiotow; te sa tym, po co research
+                # Tamte hosty byly z epoki poprzedniego tematu; te sa tym, po co research
                 # w ogole istnieje, a jedno odzyskane orzeczenie (283 tys. znakow)
                 # ratuje caly przebieg. Koszt jest bliski zeru: to TA SAMA sesja
                 # przegladarki, ktora i tak sie odpala.
@@ -4847,8 +4847,8 @@ def hosty_ktore_nigdy_nie_dzialaly(
 
     Historia porazek byla zapisywana w `sources` od poczatku i nigdy nie
     wracala do dyskoverii — wiec model proponowal te same martwe adresy
-    w kolko. `fda.gov` przepadl 3 razy na 3, `easa.europa.eu` 2 na 2,
-    a artykul o SPF dotyczyl wlasnie przepisow FDA: najwazniejsze zrodlo
+    w kolko. Jeden urzad przepadl 3 razy na 3, drugi 2 na 2 — a pisany wtedy
+    artykul dotyczyl wlasnie przepisow tego pierwszego: najwazniejsze zrodlo
     bylo systemowo nieosiagalne, a slot w limicie dziesieciu adresow i tak
     zostal na nie wydany.
 
@@ -4859,9 +4859,9 @@ def hosty_ktore_nigdy_nie_dzialaly(
     """
     # PORAZKI NA PUSTEJ TRESCI SIE NIE LICZA. Byly to niemal wylacznie PDF-y,
     # ktorych wtedy nie umielismy czytac — a nie hosty, ktore nas odrzucaja.
-    # `easa.europa.eu` wypadl 2 na 2 wlasnie tak i trafil na te liste; po
-    # dodaniu obslugi PDF-ow oddal 94 tys. znakow specyfikacji certyfikacyjnych,
-    # czyli zrodlo pierwotne najwyzszej proby. Lista ma pamietac, kto nas nie
+    # Jeden urzad wypadl 2 na 2 wlasnie tak i trafil na te liste; po dodaniu
+    # obslugi PDF-ow oddal 94 tys. znakow specyfikacji technicznych, czyli
+    # zrodlo pierwotne najwyzszej proby. Lista ma pamietac, kto nas nie
     # wpuszcza, a nie czego kiedys nie umielismy przeczytac.
     try:
         wiersze = conn.execute(
@@ -4986,10 +4986,11 @@ def discovery(
         #
         # Filtr porownywal HOSTY i przez to blokowal dokladnie te zrodla, po
         # ktore prompt kaze siegac. Zlapane na przebiegu 25 sierpnia: model
-        # oddal oryginalne sledztwo TIME o kenijskich anotatorach, artykul
-        # Guardiana, dwa raporty Fairwork, dokument ONZ i propozycje opieki
-        # psychologicznej dla anotatorow — wszystkie SZESC odrzucone, bo akurat
-        # to wyszukiwanie nie zwrocilo niczego z tych domen.
+        # oddal oryginalne sledztwo duzej redakcji, tekst drugiej, dwa raporty
+        # organizacji badawczej, dokument organizacji miedzynarodowej i jeden
+        # dokument branzowy — wszystkie SZESC odrzucone, bo akurat to
+        # wyszukiwanie nie zwrocilo niczego z tych domen. Same dokumenty
+        # pierwotne, czyli dokladnie to, po co ten etap istnieje.
         #
         # Powod filtru jest realny i zostaje: raz przepuscil dziesiec zmyslonych
         # adresow. Ale test byl nie ten. Pytal "czy wyszukiwarka to zwrocila",
@@ -5320,11 +5321,11 @@ def pick_topic(
 
         TO JEST PIATY KLUCZ: po niepowtorzeniu, nosnosci, artykulowosci i
         rankingu modelu. To takze powod, dla ktorego ranking w ogole przepisano.
-        Temat oklepany ma z definicji NAJOSTRZEJSZE
-        „wszyscy zakladaja" — bo dokladnie dlatego zostal oklepany. Ranking
-        oparty na sile zlamanego przekonania wybieral wiec kanon internetowego
-        mythbustingu: zraszacze, chusteczki, mydlo antybakteryjne, data na
-        lekach. Kazdy z nich to tysiace istniejacych tekstow.
+        Temat oklepany ma z definicji NAJOSTRZEJSZE „wszyscy zakladaja" — bo
+        dokladnie dlatego zostal oklepany. Ranking oparty na sile zlamanego
+        przekonania wybieral wiec KANON obalania mitow w danej dziedzinie:
+        te cztery czy piec rzeczy, o ktorych napisano juz tysiac tekstow
+        i ktore kazdy zna wlasnie z nich.
         """
         return int(not temat(a).get("nasycony", False))
 
@@ -5357,9 +5358,10 @@ def pick_topic(
         """Czy tego tematu nie opisalismy juz pod inna nazwa.
 
         Sprawdzenie W KODZIE, bo prosba w prompcie zawiodla w sposob mozliwy
-        do zmierzenia: 25 sierpnia rano poszedl artykul „artykul o automatycznym naliczeniu dlugu", a po poludniu ten sam skaut — z tym tytulem na liscie
-        zakazanych — zaproponowal „Example Article Six" i wygral
-        ranking. Ten sam Robodebt, te same zrodla, przemianowany tytul.
+        do zmierzenia: 25 sierpnia rano poszedl artykul o pewnej sprawie,
+        a po poludniu ten sam skaut — z tym tytulem na liscie zakazanych —
+        zaproponowal „Example Article Six" i wygral ranking. TA SAMA sprawa,
+        te same zrodla, przemianowany tytul.
 
         Porownujemy TYTUL RAZEM Z PYTANIEM, bo tytul bywa metafora („Convicted
         by Deadline"), a pytanie nazywa rzecz wprost. Prog ostry, ten sam co
@@ -5383,7 +5385,7 @@ def pick_topic(
         #
         # Bylo odwrotnie, wiec temat juz opisany wygrywal z nowym, jesli tylko
         # mial stawke. Odtworzone na prawdziwym artykule z bazy: agent po raz
-        # drugi napisalby o sprawie Robodebt, a w uwagach zobaczylbys "nosny:
+        # DRUGI napisalby o tej samej sprawie, a w uwagach zobaczylbys "nosny:
         # 0 wobec 1" — bo powod przegranej zatrzymuje sie na pierwszej roznicy
         # i o powtorce nie bylo ani slowa.
         #
@@ -5534,12 +5536,12 @@ def scout(conn: sqlite3.Connection, run_id: int, count: int = 6) -> list[dict[st
         t["nosny"] = bool(t["ma_przekonanie"] or t["ma_stawke"])
 
         # NASYCENIE. Model wymienia, co jego zdaniem juz o tym napisano —
-        # i uzywamy jego pamieci PRZECIW niemu. „Wszyscy wierza X o zwyklym
-        # przedmiocie, a X jest nieprawda" to nie jest rzadki wglad, tylko
-        # GATUNEK z kanonem: zraszacze, chusteczki flushable, karta hotelowa,
-        # mydlo antybakteryjne, data na lekach, maszyna z pluszakami. Model
-        # podaje je pierwsze, bo sa najczesciej opisane, czyli najlatwiej
-        # dostepne — a dostepnosc jest odwrotnoscia sygnalu, ktorego szukamy.
+        # i uzywamy jego pamieci PRZECIW niemu. „Wszyscy wierza X, a X jest
+        # nieprawda" to nie jest rzadki wglad, tylko GATUNEK, i kazda dziedzina
+        # ma w nim swoj kanon — te kilkanascie rzeczy, o ktorych napisano juz
+        # tysiac tekstow. Model podaje je pierwsze, bo sa najczesciej opisane,
+        # czyli najlatwiej dostepne — a dostepnosc jest odwrotnoscia sygnalu,
+        # ktorego szukamy.
         juz = t.get("already_written")
         t["ile_juz_napisano"] = len(juz) if isinstance(juz, list) else 0
         t["nasycony"] = t["ile_juz_napisano"] >= config.NASYCENIE_OD_ILU

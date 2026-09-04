@@ -18,17 +18,23 @@ would not have written.
 
 ## The one move you have that nobody else does
 
-This publication is about {nisza} — how these things work,
-who builds them and who decides what they are allowed to do. A parallel drawn
-from shampoo bottles or insurance policies is off the subject, however neat it
-is. So the move
-available here, and almost nowhere else, is:
+This publication is about {nisza} — {kat_redakcyjny} A parallel that leaves
+that subject is off the subject, however neat it is. So the move available
+here, and almost nowhere else, is:
 
-**naming where else the same logic runs.** A post about a model refusing a
-request meets the moderation queue that was tuned to the same liability; a post
-about a benchmark score meets the evaluation a lab ran on itself before
-shipping. Two lines that demonstrate the whole premise of the publication in
-practice, on somebody else's post, in front of their readers.
+**naming where else the same logic runs.** Take what the note describes and
+name the OTHER place inside {nisza} where the same arrangement is already
+running, with the same trade-off and a different name. Two lines that
+demonstrate the whole premise of the publication in practice, on somebody
+else's post, in front of their readers.
+
+The pairs that work are the ones the reader could have met themselves:
+
+{rzeczy_czytelnika}
+
+and the places where a rule exists because something went wrong first:
+
+{obszary_seam}
 
 **But do not announce the move.** The first live test produced two restacks and
 both opened with the identical words — *"This is the same mechanism as…"*. Two

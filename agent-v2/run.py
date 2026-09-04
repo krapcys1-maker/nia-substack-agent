@@ -2306,10 +2306,10 @@ def main() -> int:
             topics, assessments, run_id,
             # ARTYKULY *I* NOTKI. Konto ma jednego czytelnika, nie dwoch —
             # notka i artykul o tym samym w jeden dzien to dla niego po prostu
-            # dwa razy to samo. 25 sierpnia poszla notka o kenijskich
-            # anotatorach, a po poludniu ten sam temat wygral wybor artykulu
-            # przy 53% wspolnych rdzeni wobec progu 20%, bo straznik pytal
-            # wylacznie o poprzednie artykuly.
+            # dwa razy to samo. 25 sierpnia rano poszla notka, a po poludniu
+            # TEN SAM temat wygral wybor artykulu przy 53% wspolnych rdzeni
+            # wobec progu 20% — bo straznik pytal wylacznie o poprzednie
+            # artykuly i notki byly dla niego niewidoczne.
             wczesniejsze=(stages.tematy_do_porownania(conn)
                           + stages.ostatnie_notki(1000)))
         print("\n-- odsiew wykonalności --", flush=True)

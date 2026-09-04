@@ -204,13 +204,18 @@ sprawdz("pamieta wpadke z paralela z obcej branzy",
         "belongs to a different trade" in _g)
 
 # NOWA DOKTRYNA, od 26 sierpnia. Eksponat na szarym papierze byl regula dla
-# konta o przedmiotach codziennych; przy AI dawal laptop z pustym bialym ekranem
-# lezacy na tle — poprawny wzgledem briefu i zupelnie martwy. Wlasciciel:
-# „to nie musi byc przedmiot, kontekst, wiecej kreatywnosci".
+# konta, ktorego tematem BYL sam przedmiot. Przeniesiona na temat, w ktorym
+# przedmiot jest zwyczajny i sam z siebie nic nie mowi, ta sama regula dawala
+# sprzet lezacy na tle, z niczym, co by sie z nim dzialo — poprawny wzgledem
+# briefu i zupelnie martwy. Decyzja wlasciciela: ma byc kontekst, nie eksponat.
 sprawdz("zada SCENY, nie wyizolowanego przedmiotu",
         "scene, not a specimen" in _g or ("scene" in _g and "specimen" in _g))
+# ASERCJA PO WLASNOSCI, NIE PO NAZWIE PRZEDMIOTU. Stalo tu `"laptop" in _g`,
+# czyli test wymagal, zeby w promptcie lezala nazwa sprzetu z poprzedniej niszy
+# — i przy zmianie tematu kazalby ja tam trzymac. Pilnujemy tego, co ten zapis
+# ma robic: nazwac stara regule i powiedziec, DLACZEGO przestala dzialac.
 sprawdz("zapisuje, czemu stara regula odpadla",
-        "laptop" in _g and "grey paper" in _g)
+        "grey paper" in _g and "nothing at stake" in _g)
 sprawdz("wymaga konkretu, ktory osadza miejsce w czasie",
         "could only be this place" in _g)
 sprawdz("nadal zakazuje tekstu i logo w kadrze",

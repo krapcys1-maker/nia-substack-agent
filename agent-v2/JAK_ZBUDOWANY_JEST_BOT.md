@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 29 096 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 29 099 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -176,7 +176,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7364 wierszy, 134 funkcji na poziomie modułu, 0 klas
+7366 wierszy, 134 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -590,7 +590,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-2922 wierszy, 27 funkcji na poziomie modułu, 0 klas
+2923 wierszy, 27 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6793,10 +6793,11 @@ def discovery(
         #
         # Filtr porownywal HOSTY i przez to blokowal dokladnie te zrodla, po
         # ktore prompt kaze siegac. Zlapane na przebiegu 25 sierpnia: model
-        # oddal oryginalne sledztwo TIME o kenijskich anotatorach, artykul
-        # Guardiana, dwa raporty Fairwork, dokument ONZ i propozycje opieki
-        # psychologicznej dla anotatorow — wszystkie SZESC odrzucone, bo akurat
-        # to wyszukiwanie nie zwrocilo niczego z tych domen.
+        # oddal oryginalne sledztwo duzej redakcji, tekst drugiej, dwa raporty
+        # organizacji badawczej, dokument organizacji miedzynarodowej i jeden
+        # dokument branzowy — wszystkie SZESC odrzucone, bo akurat to
+        # wyszukiwanie nie zwrocilo niczego z tych domen. Same dokumenty
+        # pierwotne, czyli dokladnie to, po co ten etap istnieje.
         #
         # Powod filtru jest realny i zostaje: raz przepuscil dziesiec zmyslonych
         # adresow. Ale test byl nie ten. Pytal "czy wyszukiwarka to zwrocila",
@@ -6868,11 +6869,11 @@ def pick_topic(
 
         TO JEST PIATY KLUCZ: po niepowtorzeniu, nosnosci, artykulowosci i
         rankingu modelu. To takze powod, dla ktorego ranking w ogole przepisano.
-        Temat oklepany ma z definicji NAJOSTRZEJSZE
-        „wszyscy zakladaja" — bo dokladnie dlatego zostal oklepany. Ranking
-        oparty na sile zlamanego przekonania wybieral wiec kanon internetowego
-        mythbustingu: zraszacze, chusteczki, mydlo antybakteryjne, data na
-        lekach. Kazdy z nich to tysiace istniejacych tekstow.
+        Temat oklepany ma z definicji NAJOSTRZEJSZE „wszyscy zakladaja" — bo
+        dokladnie dlatego zostal oklepany. Ranking oparty na sile zlamanego
+        przekonania wybieral wiec KANON obalania mitow w danej dziedzinie:
+        te cztery czy piec rzeczy, o ktorych napisano juz tysiac tekstow
+        i ktore kazdy zna wlasnie z nich.
         """
         return int(not temat(a).get("nasycony", False))
 
@@ -6905,9 +6906,10 @@ def pick_topic(
         """Czy tego tematu nie opisalismy juz pod inna nazwa.
 
         Sprawdzenie W KODZIE, bo prosba w prompcie zawiodla w sposob mozliwy
-        do zmierzenia: 25 sierpnia rano poszedl artykul „artykul o automatycznym naliczeniu dlugu", a po poludniu ten sam skaut — z tym tytulem na liscie
-        zakazanych — zaproponowal „Example Article Six" i wygral
-        ranking. Ten sam Robodebt, te same zrodla, przemianowany tytul.
+        do zmierzenia: 25 sierpnia rano poszedl artykul o pewnej sprawie,
+        a po poludniu ten sam skaut — z tym tytulem na liscie zakazanych —
+        zaproponowal „Example Article Six" i wygral ranking. TA SAMA sprawa,
+        te same zrodla, przemianowany tytul.
 
         Porownujemy TYTUL RAZEM Z PYTANIEM, bo tytul bywa metafora („Convicted
         by Deadline"), a pytanie nazywa rzecz wprost. Prog ostry, ten sam co
@@ -6931,7 +6933,7 @@ def pick_topic(
         #
         # Bylo odwrotnie, wiec temat juz opisany wygrywal z nowym, jesli tylko
         # mial stawke. Odtworzone na prawdziwym artykule z bazy: agent po raz
-        # drugi napisalby o sprawie Robodebt, a w uwagach zobaczylbys "nosny:
+        # DRUGI napisalby o tej samej sprawie, a w uwagach zobaczylbys "nosny:
         # 0 wobec 1" — bo powod przegranej zatrzymuje sie na pierwszej roznicy
         # i o powtorce nie bylo ani slowa.
         #
@@ -9686,7 +9688,7 @@ point at an entry in `beliefs`.
 
 #### `prompts/grafika.md`
 
-**110 wierszy.** Pola wejsciowe: `body`, `nisza`, `title`
+**116 wierszy.** Pola wejsciowe: `body`, `nisza`, `title`
 
 ````markdown
 Write the image brief for the header illustration of this article.
@@ -9709,10 +9711,16 @@ its setting, with enough around it to tell the reader where they are.
 
 This replaces the old rule, and the old rule is worth naming so nobody restores
 it. It said: one object, isolated, resting on grey paper, no scene. That was
-built for a publication about everyday things, where a shampoo bottle lying on
-a seamless ground read as a specimen under examination. Applied to this subject it produced a laptop on grey paper with a blank white screen — an
-object with no place, no situation and nothing at stake. Correct to the letter
-of the brief and completely dead.
+written for a publication whose subject WAS the object — where a single thing
+on a seamless ground reads as a specimen under examination, which was the
+point. Carried over to a subject whose object is ordinary and tells you
+nothing on its own, the same rule produced a piece of equipment on grey paper
+with nothing happening to it: no place, no situation, nothing at stake.
+Correct to the letter of the brief and completely dead.
+
+That is the failure to watch for. A composition rule is written against one
+kind of subject and keeps working right up until the subject changes, at which
+point it keeps being obeyed and stops meaning anything.
 
 A scene answers three questions the specimen could not: where is this, who was
 just here, and what is about to happen or has just happened.
@@ -11393,7 +11401,7 @@ Include every sentence in `sentences`. Repeat only the failing ones in
 
 #### `prompts/restack.md`
 
-**83 wierszy.** Pola wejsciowe: `autor`, `nisza`, `tekst`
+**89 wierszy.** Pola wejsciowe: `autor`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
 
 ````markdown
 Somebody else wrote the note below. You are deciding whether to pass it on to
@@ -11416,17 +11424,23 @@ would not have written.
 
 ## The one move you have that nobody else does
 
-This publication is about {nisza} — how these things work,
-who builds them and who decides what they are allowed to do. A parallel drawn
-from shampoo bottles or insurance policies is off the subject, however neat it
-is. So the move
-available here, and almost nowhere else, is:
+This publication is about {nisza} — {kat_redakcyjny} A parallel that leaves
+that subject is off the subject, however neat it is. So the move available
+here, and almost nowhere else, is:
 
-**naming where else the same logic runs.** A post about a model refusing a
-request meets the moderation queue that was tuned to the same liability; a post
-about a benchmark score meets the evaluation a lab ran on itself before
-shipping. Two lines that demonstrate the whole premise of the publication in
-practice, on somebody else's post, in front of their readers.
+**naming where else the same logic runs.** Take what the note describes and
+name the OTHER place inside {nisza} where the same arrangement is already
+running, with the same trade-off and a different name. Two lines that
+demonstrate the whole premise of the publication in practice, on somebody
+else's post, in front of their readers.
+
+The pairs that work are the ones the reader could have met themselves:
+
+{rzeczy_czytelnika}
+
+and the places where a rule exists because something went wrong first:
+
+{obszary_seam}
 
 **But do not announce the move.** The first live test produced two restacks and
 both opened with the identical words — *"This is the same mechanism as…"*. Two

@@ -42,7 +42,7 @@ def _dane():
     tematy = [{"title": "Wieza przestaje odpowiadac"},
               {"title": "Nazwisko zmarlego na karcie"},
               {"title": "Karta hotelowa"},
-              {"title": "Zraszacze"}]
+              {"title": "Temat kanoniczny"}]
     oceny = [
         {"index": 0, "feasible": True, "depth": "RICH", "confidence": 0.9,
          "expected_primary_sources": 4},

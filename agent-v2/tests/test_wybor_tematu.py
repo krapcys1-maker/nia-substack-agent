@@ -1,10 +1,9 @@
 """Caly lancuch wyboru tematu: skaut -> nasycenie -> watki -> pick_topic.
 
-DLACZEGO. Skaut oddal dwanascie tematow i siedem z nich bylo kanonem
-internetowego mythbustingu: zraszacze, ktore nie odpalaja wszystkie naraz,
-chusteczki „flushable", karta hotelowa przy telefonie, mydlo antybakteryjne,
-maszyna z pluszakami, data waznosci na lekach, wodoodpornosc telefonu.
-O kazdym z nich sa tysiace tekstow.
+DLACZEGO. Skaut oddal dwanascie tematow i SIEDEM z nich nalezalo do kanonu
+obalania mitow tej dziedziny — tych kilkunastu rzeczy, o ktorych napisano juz
+tysiac tekstow i ktore kazdy zna wlasnie z nich. Kanon ma kazda dziedzina
+i jest w kazdej inny; wspolne jest to, ze model podaje go pierwszy.
 
 AUDYT WYKAZAL TRZY PRZYCZYNY, wszystkie w kodzie, nie w modelu:
 

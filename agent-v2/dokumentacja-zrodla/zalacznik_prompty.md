@@ -1133,7 +1133,7 @@ point at an entry in `beliefs`.
 
 #### `prompts/grafika.md`
 
-**110 wierszy.** Pola wejsciowe: `body`, `nisza`, `title`
+**116 wierszy.** Pola wejsciowe: `body`, `nisza`, `title`
 
 ````markdown
 Write the image brief for the header illustration of this article.
@@ -1156,10 +1156,16 @@ its setting, with enough around it to tell the reader where they are.
 
 This replaces the old rule, and the old rule is worth naming so nobody restores
 it. It said: one object, isolated, resting on grey paper, no scene. That was
-built for a publication about everyday things, where a shampoo bottle lying on
-a seamless ground read as a specimen under examination. Applied to this subject it produced a laptop on grey paper with a blank white screen — an
-object with no place, no situation and nothing at stake. Correct to the letter
-of the brief and completely dead.
+written for a publication whose subject WAS the object — where a single thing
+on a seamless ground reads as a specimen under examination, which was the
+point. Carried over to a subject whose object is ordinary and tells you
+nothing on its own, the same rule produced a piece of equipment on grey paper
+with nothing happening to it: no place, no situation, nothing at stake.
+Correct to the letter of the brief and completely dead.
+
+That is the failure to watch for. A composition rule is written against one
+kind of subject and keeps working right up until the subject changes, at which
+point it keeps being obeyed and stops meaning anything.
 
 A scene answers three questions the specimen could not: where is this, who was
 just here, and what is about to happen or has just happened.
@@ -2840,7 +2846,7 @@ Include every sentence in `sentences`. Repeat only the failing ones in
 
 #### `prompts/restack.md`
 
-**83 wierszy.** Pola wejsciowe: `autor`, `nisza`, `tekst`
+**89 wierszy.** Pola wejsciowe: `autor`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
 
 ````markdown
 Somebody else wrote the note below. You are deciding whether to pass it on to
@@ -2863,17 +2869,23 @@ would not have written.
 
 ## The one move you have that nobody else does
 
-This publication is about {nisza} — how these things work,
-who builds them and who decides what they are allowed to do. A parallel drawn
-from shampoo bottles or insurance policies is off the subject, however neat it
-is. So the move
-available here, and almost nowhere else, is:
+This publication is about {nisza} — {kat_redakcyjny} A parallel that leaves
+that subject is off the subject, however neat it is. So the move available
+here, and almost nowhere else, is:
 
-**naming where else the same logic runs.** A post about a model refusing a
-request meets the moderation queue that was tuned to the same liability; a post
-about a benchmark score meets the evaluation a lab ran on itself before
-shipping. Two lines that demonstrate the whole premise of the publication in
-practice, on somebody else's post, in front of their readers.
+**naming where else the same logic runs.** Take what the note describes and
+name the OTHER place inside {nisza} where the same arrangement is already
+running, with the same trade-off and a different name. Two lines that
+demonstrate the whole premise of the publication in practice, on somebody
+else's post, in front of their readers.
+
+The pairs that work are the ones the reader could have met themselves:
+
+{rzeczy_czytelnika}
+
+and the places where a rule exists because something went wrong first:
+
+{obszary_seam}
 
 **But do not announce the move.** The first live test produced two restacks and
 both opened with the identical words — *"This is the same mechanism as…"*. Two

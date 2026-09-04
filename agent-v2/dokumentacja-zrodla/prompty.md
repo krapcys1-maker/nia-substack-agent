@@ -73,7 +73,7 @@
 {{"beliefs": [{{"belief": "<in your own words, one sentence>", "first_stated": "<verbatim sentence from the article>"}}], "support_only": [{{"quote": "<verbatim sentence>", "supports": <index into beliefs>}}], "hardest_fact": {{"quote": "<verbatim>", "why": "<one clause>"}}, "procedural_nearby": {{"quote": "<verbatim>"}}, "same_register": true|false, "reader_moment": {{"quote": "<verbatim>", "object": "<the one thing out of the reader's own life that is named>"}}, "opening_claim": {{"quote": "<verbatim>", "already_familiar": true|false}}, "summary": "<one sentence>"}}
 ```
 
-#### `grafika.md` (110 wierszy)
+#### `grafika.md` (116 wierszy)
 
 **Pola wejściowe:** `body`, `nisza`, `title`
 
@@ -163,9 +163,9 @@
 {{"sentences": [{{"text": "<the sentence, verbatim>", "class": "FACT"|"INFERENCE"|"PROSE", "supported": true|false, "why": "<only when class is FACT and supported is false: what is asserted and what the card lacks>"}}], "unsupported_facts": [{{"text": "...", "why": "..."}}], "summary": "<one sentence>"}}
 ```
 
-#### `restack.md` (83 wierszy)
+#### `restack.md` (89 wierszy)
 
-**Pola wejściowe:** `autor`, `nisza`, `tekst`
+**Pola wejściowe:** `autor`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
 
 **Kontrakt wyjścia:**
 

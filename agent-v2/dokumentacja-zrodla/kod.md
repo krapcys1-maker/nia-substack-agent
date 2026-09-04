@@ -490,10 +490,11 @@ def discovery(
         #
         # Filtr porownywal HOSTY i przez to blokowal dokladnie te zrodla, po
         # ktore prompt kaze siegac. Zlapane na przebiegu 25 sierpnia: model
-        # oddal oryginalne sledztwo TIME o kenijskich anotatorach, artykul
-        # Guardiana, dwa raporty Fairwork, dokument ONZ i propozycje opieki
-        # psychologicznej dla anotatorow — wszystkie SZESC odrzucone, bo akurat
-        # to wyszukiwanie nie zwrocilo niczego z tych domen.
+        # oddal oryginalne sledztwo duzej redakcji, tekst drugiej, dwa raporty
+        # organizacji badawczej, dokument organizacji miedzynarodowej i jeden
+        # dokument branzowy — wszystkie SZESC odrzucone, bo akurat to
+        # wyszukiwanie nie zwrocilo niczego z tych domen. Same dokumenty
+        # pierwotne, czyli dokladnie to, po co ten etap istnieje.
         #
         # Powod filtru jest realny i zostaje: raz przepuscil dziesiec zmyslonych
         # adresow. Ale test byl nie ten. Pytal "czy wyszukiwarka to zwrocila",
@@ -565,11 +566,11 @@ def pick_topic(
 
         TO JEST PIATY KLUCZ: po niepowtorzeniu, nosnosci, artykulowosci i
         rankingu modelu. To takze powod, dla ktorego ranking w ogole przepisano.
-        Temat oklepany ma z definicji NAJOSTRZEJSZE
-        „wszyscy zakladaja" — bo dokladnie dlatego zostal oklepany. Ranking
-        oparty na sile zlamanego przekonania wybieral wiec kanon internetowego
-        mythbustingu: zraszacze, chusteczki, mydlo antybakteryjne, data na
-        lekach. Kazdy z nich to tysiace istniejacych tekstow.
+        Temat oklepany ma z definicji NAJOSTRZEJSZE „wszyscy zakladaja" — bo
+        dokladnie dlatego zostal oklepany. Ranking oparty na sile zlamanego
+        przekonania wybieral wiec KANON obalania mitow w danej dziedzinie:
+        te cztery czy piec rzeczy, o ktorych napisano juz tysiac tekstow
+        i ktore kazdy zna wlasnie z nich.
         """
         return int(not temat(a).get("nasycony", False))
 
@@ -602,9 +603,10 @@ def pick_topic(
         """Czy tego tematu nie opisalismy juz pod inna nazwa.
 
         Sprawdzenie W KODZIE, bo prosba w prompcie zawiodla w sposob mozliwy
-        do zmierzenia: 25 sierpnia rano poszedl artykul „artykul o automatycznym naliczeniu dlugu", a po poludniu ten sam skaut — z tym tytulem na liscie
-        zakazanych — zaproponowal „Example Article Six" i wygral
-        ranking. Ten sam Robodebt, te same zrodla, przemianowany tytul.
+        do zmierzenia: 25 sierpnia rano poszedl artykul o pewnej sprawie,
+        a po poludniu ten sam skaut — z tym tytulem na liscie zakazanych —
+        zaproponowal „Example Article Six" i wygral ranking. TA SAMA sprawa,
+        te same zrodla, przemianowany tytul.
 
         Porownujemy TYTUL RAZEM Z PYTANIEM, bo tytul bywa metafora („Convicted
         by Deadline"), a pytanie nazywa rzecz wprost. Prog ostry, ten sam co
@@ -628,7 +630,7 @@ def pick_topic(
         #
         # Bylo odwrotnie, wiec temat juz opisany wygrywal z nowym, jesli tylko
         # mial stawke. Odtworzone na prawdziwym artykule z bazy: agent po raz
-        # drugi napisalby o sprawie Robodebt, a w uwagach zobaczylbys "nosny:
+        # DRUGI napisalby o tej samej sprawie, a w uwagach zobaczylbys "nosny:
         # 0 wobec 1" — bo powod przegranej zatrzymuje sie na pierwszej roznicy
         # i o powtorce nie bylo ani slowa.
         #

@@ -65,9 +65,10 @@ def wolno(**kw):
 
 print("=== 1. WIEK NICZEGO NIE ODRZUCA — ANI NAWET ZERWANY UKLAD ===")
 # Pierwsza wersja tej bramki odrzucala ENDS wprost. Wlasciciel zatrzymal to tego
-# samego dnia: „odnoszenie sie do historii jest ok, jesli pozniej piszemy o
-# terazniejszosci, tego nie mozemy zakazywac". Notka o kenijskich kontraktach z
-# 2021 — w czasie przeszlym, z data — nie ma zadnego bledu. Ma miec ciag dalszy.
+# samego dnia i mial racje: odnoszenie sie do historii jest w porzadku, o ile
+# pozniej piszemy o terazniejszosci — tego zakazywac nie wolno. Notka o umowie
+# zerwanej w 2021, napisana w czasie przeszlym i z data, nie ma zadnego bledu.
+# Ma miec ciag dalszy.
 ok, powod = wolno(control_verdict="ENDS",
                   control_fact="Sama zerwala kontrakt w lutym 2022")
 sprawdz("fakt o zerwanym ukladzie PRZECHODZI", ok, powod)

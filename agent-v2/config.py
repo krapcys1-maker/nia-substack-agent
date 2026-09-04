@@ -738,13 +738,14 @@ BUDZET_ZASTRZEZEN = 1
 # Od ilu ZNANYCH ISTNIEJACYCH TEKSTOW temat uznajemy za nasycony.
 #
 # Skaut wymienia, co jego zdaniem juz o danym temacie napisano — i uzywamy jego
-# pamieci PRZECIW niemu. „Wszyscy wierza X o zwyklym przedmiocie, a X jest
-# nieprawda" to nie jest rzadki wglad, tylko GATUNEK z kanonem, ktory model ma
-# wyuczony: zraszacze, chusteczki flushable, karta hotelowa przy telefonie,
-# mydlo antybakteryjne, data na lekach, maszyna z pluszakami, wodoodpornosc
-# telefonu. Model podaje je pierwsze, bo sa najczesciej opisane, czyli
-# najlatwiej dostepne — a DOSTEPNOSC JEST ODWROTNOSCIA sygnalu, ktorego
-# szukamy.
+# pamieci PRZECIW niemu. „Wszyscy wierza X, a X jest nieprawda" to nie jest
+# rzadki wglad, tylko GATUNEK, i kazda dziedzina ma w nim swoj KANON: te
+# kilkanascie rzeczy, o ktorych napisano juz tysiac tekstow. Model podaje je
+# pierwsze, bo sa najczesciej opisane, czyli najlatwiej dostepne — a DOSTEPNOSC
+# JEST ODWROTNOSCIA sygnalu, ktorego szukamy.
+#
+# Kanon wlasnej dziedziny wpisuje sie w `PRZYKLADY_NISZY["kanon"]`; ten prog
+# dziala takze bez niego, bo liczy TEKSTY, a nie tematy z listy.
 #
 # Prog dwa, nie jeden: jeden przypomniany tekst zdarza sie przy kazdym temacie,
 # ktory w ogole istnieje. Dwa znaczy, ze czytelnik juz to czytal.
