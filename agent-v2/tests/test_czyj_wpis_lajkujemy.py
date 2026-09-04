@@ -9,7 +9,8 @@ ZMIERZONE W DZIENNIKU 31 sierpnia 2026: polubienia zapisywaly sie jako
 
 To nasze NAJCZESTSZE dzialanie i jedyne, o ktorym nie wiedzielismy zupelnie
 nic poza tym, ze bylo. Ma to takie samo znaczenie, co przy komentarzach:
-konto o AI, ktore lajkuje pod rezerwa paliwowa, wydaje najczestszy gest na
+konto, ktore lajkuje pod tekstem z zupelnie innej dziedziny, wydaje swoj
+najczestszy gest na
 publicznosc bez powodu, zeby nas obserwowac.
 
 I gorzej: bez zapisu nie dalo sie tego nawet ZMIERZYC. Audyt „czy nie

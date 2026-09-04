@@ -349,7 +349,7 @@ def zapisz(rodzaj: str, identyfikator: str, rekord: dict, tekst: str = "") -> No
             "rodzaj": str(rodzaj),
             "id": str(identyfikator),
             # Skrot, nie tresc: to pole sluzy rozpoznaniu pozycji w raporcie
-            # („ta o sloiku szamponu"), a pelny tekst i tak lezy w dzienniku
+            # („ta o symbolu na opakowaniu"), a pelny tekst i tak lezy w dzienniku
             # dzialan. Bez skrotu plik rosnie o notke na kazdy odczyt.
             "tekst": (tekst or "")[:200],
         })

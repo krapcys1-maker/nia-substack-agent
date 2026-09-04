@@ -34,10 +34,20 @@ import statystyki  # noqa: E402
 
 WERDYKTY: list[tuple[str, str]] = []
 
-# DZIEN PRZESTAWIENIA KONTA NA AI. Wszystko starsze opisuje inna publikacje
-# i mieszanie tego z dzisiejszym stanem juz raz doprowadzilo do zlej decyzji
-# (sedzia banku dostal do oceny notki o szamponie).
-PIVOT = "2026-08-25"
+# DZIEN, W KTORYM KONTO OSTATNI RAZ ZMIENILO TEMAT. Wszystko starsze opisuje
+# inna publikacje, a mieszanie tego z dzisiejszym stanem juz raz doprowadzilo
+# do zlej decyzji: sedzia banku dostal do oceny notki sprzed zmiany i uczyl sie
+# na tym, „co dziala na tym koncie", z materialu innej publikacji.
+#
+# STALA DATA STALA TU DRUGI RAZ. Ten sam dzien byl wpisany takze
+# w `config.DATA_PRZESTAWIENIA` — dwie kopie jednej wartosci w dwoch plikach,
+# ta sama wada, co uchwyt konta w dwoch stalych. Audyt sprawdza tamta pare
+# przez `is`; tej pary nie sprawdzalo nic, wiec przy zmianie jednej strony
+# druga tnie dalej po dacie, ktorej juz nikt nie pamieta.
+#
+# PUSTY NAPIS znaczy „to konto nie zmienialo tematu" i wtedy podzial na
+# „przed" i „po" nie ma sensu — bierzemy wszystko.
+PIVOT = config.DATA_PRZESTAWIENIA
 
 # CO MA WYCHODZIC NA ZEWNATRZ — JEDNA LISTA, DWOCH CZYTELNIKOW (etap 1 i 2).
 #
@@ -199,7 +209,11 @@ def dzien(w: dict) -> str:
 
 def main() -> int:
     wpisy = dziennik()
-    po_pivocie = [w for w in wpisy if dzien(w) >= PIVOT]
+    # Pusty PIVOT — konto, ktore nie zmienialo tematu — bierze wszystko.
+    # Warunek dzialalby i bez tego (kazdy napis jest >= ""), ale czytelnik
+    # musialby to wywiesc z reguly porownywania napisow w Pythonie.
+    po_pivocie = ([w for w in wpisy if dzien(w) >= PIVOT] if PIVOT
+                  else list(wpisy))
     c = sqlite3.connect(str(config.DB_PATH))
     c.row_factory = sqlite3.Row
 
@@ -208,8 +222,11 @@ def main() -> int:
     if not wpisy:
         werdykt("dziennik istnieje", "BLAD", str(browser.DZIENNIK))
         return 1
-    print("  wpisow w dzienniku: %d, po przestawieniu na AI (%s): %d"
-          % (len(wpisy), PIVOT, len(po_pivocie)))
+    print("  wpisow w dzienniku: %d, %s: %d"
+          % (len(wpisy),
+             ("po zmianie tematu (%s)" % PIVOT) if PIVOT
+             else "bez odcinania (konto nie zmienialo tematu)",
+             len(po_pivocie)))
     udane, nieudane, pominiete = policz_rodzaje(po_pivocie)
     for rodzaj in sorted(set(udane) | set(nieudane)):
         print("    %-12s udane %3d, nieudane %2d"
@@ -244,7 +261,8 @@ def main() -> int:
     for rodzaj in RODZAJE_WYCHODZACE:
         werdykt("wychodzi: %s" % rodzaj,
                 "OK" if udane.get(rodzaj) else "UWAGA",
-                "%d od %s" % (udane.get(rodzaj, 0), PIVOT))
+                "%d %s" % (udane.get(rodzaj, 0),
+                           ("od %s" % PIVOT) if PIVOT else "lacznie"))
     if nieudane:
         naj = nieudane.most_common(3)
         # MIANOWNIK TO PROBY, NIE WPISY. `sum(udane.values())` bralo wszystko,
@@ -603,8 +621,8 @@ def main() -> int:
     # zle postawione: nie ma takiego ustawienia. Mierzymy wiec SKUTEK, czyli
     # to, o co naprawde chodzi — czy w produkcji leza powtorki.
     #
-    # Powod: 23 i 24 sierpnia poszly dwie notki o tym samym symbolu na
-    # butelce szamponu, bo ochrona konczyla sie o polnocy.
+    # Powod: 23 i 24 sierpnia poszly dwie notki o TYM SAMYM fakcie, napisane
+    # innymi zdaniami, bo ochrona przed powtorka konczyla sie o polnocy.
     import stages
     teksty = [(dzien(w), " ".join(str(w.get("tekst") or "").split()))
               for w in po_pivocie

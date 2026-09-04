@@ -13,7 +13,8 @@ chciec polecic". Z tych dziesieciu JEDNA dotykala AI:
 Substack liczy je z historii czytania konta, a ta pochodzi sprzed
 przestawienia na AI — ta sama skaza, co w banku tematow i w dziewieciu
 promptach, tylko po stronie Substacka, gdzie nie da sie jej wyczyscic inaczej
-niz czytajac nowe rzeczy. Publikacja o AI polecajaca newsletter o masle to
+niz czytajac nowe rzeczy. Publikacja polecajaca newsletter z zupelnie innej
+dziedziny to
 dokladnie ten „wyglad bota", ktorego wlasciciel nie chce.
 
 DLACZEGO NIE „PO PROSTU NIE KLIKAJMY PROPOZYCJI". Bo okno „Dodaj

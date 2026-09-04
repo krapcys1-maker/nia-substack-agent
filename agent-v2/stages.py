@@ -3001,8 +3001,8 @@ def _slowa(tekst: str) -> set[str]:
     # Adresy WYLATUJA przed liczeniem slow. Notka promujaca artykul niesie link,
     # a z linku wpadaly do puli „https", „substack" i nazwa publikacji — wiec
     # dwie notki z linkiem mialy trzy wspolne slowa, zanim ktokolwiek spojrzal
-    # na ich temat. Zmierzone: notka o okienku w samolocie zderzala sie z notka
-    # o czym innym wylacznie na tych trzech.
+    # na ich temat. Zmierzone: dwie notki o zupelnie roznych rzeczach
+    # zderzaly sie wylacznie na tych trzech slowach z adresu.
     bez_adresow = " ".join(s for s in (tekst or "").split()
                            if not s.lower().startswith("http"))
     return {s[:6] for s in re.findall(r"[a-z]{4,}", bez_adresow.lower())
@@ -6699,15 +6699,16 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     # 30 sierpnia podlaczylem indeks do notek — i o malo nie cofnalem konta o
     # tydzien. Zmierzone tego samego wieczora: ze 119 wolnych kandydatow tylko
     # 47 dotyczylo AI. Rozdzial jest ostry i idzie po dacie przestawienia:
-    #     do 24 sierpnia   65 kandydatow, z tego 1 o AI
-    #     od 25 sierpnia   54 kandydatow, z tego 46 o AI
+    #     przed zmiana tematu   65 kandydatow, z tego 1 z nowej niszy
+    #     po zmianie tematu     54 kandydatow, z tego 46 z nowej niszy
     # Bez tego filtru sześćdziesiąt jeden procent notek wracaloby do jajek,
-    # szamponu i kodow na butelkach — dokladnie ta sama wada, co artykul o
-    # szamponie czekajacy w kolejce promocyjnej.
+    # tematow poprzedniej epoki — dokladnie ta sama wada, co jej artykul
+    # czekajacy w kolejce promocyjnej.
     #
-    # Data, nie slownik: filtr slownikowy na slowa o AI przepuscilby wszystko,
-    # co przypadkiem wspomina "model" albo "training", a odrzucil dobry temat
-    # o prawie autorskim. Dzien przestawienia konta jest faktem, nie heurystyka.
+    # DATA, NIE SLOWNIK. Filtr po slowach niszy przepuszczalby wszystko, co
+    # przypadkiem uzywa jej slownictwa w innym znaczeniu, i odrzucalby dobry
+    # temat, ktory jej slownictwa nie uzywa wcale. Dzien zmiany tematu jest
+    # faktem, nie heurystyka — i dlatego tniemy po nim.
     # Pusty `DATA_PRZESTAWIENIA` znaczy „to konto nie zmienialo tematu" i ma
     # przepuscic cala spizarnie. Bez tego warunku porownanie i tak by dzialalo
     # — kazdy napis jest >= "" — ale czytelnik musialby to wywiesc z reguly

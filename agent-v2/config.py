@@ -1056,9 +1056,9 @@ CURIOSITY_MEMORY = 60
 # Czy to kosztuje falszywe alarmy — ZMIERZONE 2026-08-25 na 29 wystawionych
 # notkach (`stages.pamiec_wystawionych` niesie caly rachunek):
 #     okno 8, 12, 20, 40 oraz PAMIEC PELNA  ->  5 blokad, te same piec.
-# Zero roznicy. Wszystkie 5 to prawdziwe powtorki (3x temat pierwszy, 3x jeden z tematow,
-# 2x szampon), zero falszywych. Z 399 par o ROZNYCH tematach prog miedzy
-# dniami nie przepuscil ani jednej.
+# Zero roznicy. Wszystkie 5 to PRAWDZIWE powtorki — trzy pary o jednym temacie,
+# trzy o drugim i dwie o trzecim — zero falszywych. Z 399 par o ROZNYCH tematach
+# prog miedzy dniami nie przepuscil ani jednej.
 #
 # Ta stala zostaje jako JEDYNA dzwignia odwrotu: wpisanie tu liczby wraca do
 # okna, bez ruszania kodu. Tak samo jak `FOLLOW_MIESIECZNIE` przy obserwacjach
@@ -2647,15 +2647,14 @@ NAPRAW_NA_PRZEBIEG = 4
 
 
 # --- ruch koncowy i szerokosc drugiego aktu --------------------------------
-# Dwa artykuly napisane PO naprawie szamponu (jeden "Example Article Ten",
-# drugi "Example Article Eleven...") wyszly z identycznym szkieletem: ten sam
+# Dwa artykuly napisane zaraz PO poprzedniej poprawce (jeden "Example Article
+# Ten", drugi "Example Article Eleven") wyszly z identycznym szkieletem: ten sam
 # drogowskaz przed paralelami ("once you see this shape, it turns up
 # everywhere"), dokladnie trzy paralele, akapit o granicach zapowiedziany
 # meta-zdaniem, zamkniecie "sprawdz to u siebie". Zaden z tych ruchow nie jest
 # bledem osobno; bledem jest to, ze wypadaja za kazdym razem tak samo, bo
-# pisarz.md je zamowil. Powtarzalna forma jest sygnalem maszyny dokladnie tak
-# samo jak powtarzany mechanizm w szamponie. Wiec losujemy — tak jak przy
-# notkach z NOTE_FORM.
+# pisarz.md je zamowil. Powtarzalna FORMA jest sygnalem maszyny dokladnie tak
+# samo jak powtarzana TRESC. Wiec losujemy — tak jak przy notkach z NOTE_FORM.
 RUCHY_KONCOWE = {
     "DO_SPRAWDZENIA": (
         "Close by handing the reader something observable in their own life — "
@@ -2838,10 +2837,10 @@ def losowe_generatory(ile: int = 0) -> list[str]:
 # Miesiace wg polkuli polnocnej, bo tam jest wiekszosc czytelnikow anglojezycznych.
 # RYTM ROKU W TEJ DZIEDZINIE.
 #
-# Bylo tu dwanascie hasel konsumenckich: opony zimowe, filtry UV, rozliczenie
-# podatku. Pod publikacje o innej niszy to martwy balast — czytelnik nie
-# „trzyma w reku"
-# niczego, co zalezy od pory roku.
+# Stalo tu dwanascie hasel konsumenckich z poprzedniej niszy — rzeczy, ktore
+# czytelnik kupuje albo zalatwia w okreslonej porze roku. Pod publikacje o innej
+# dziedzinie to martwy balast: jej czytelnik nie trzyma w reku niczego, co
+# zalezy od miesiaca.
 #
 # Ale rok w tej dziedzinie MA rytm i jest on realny: konferencje, kwartalne
 # wyniki producentow sprzetu, terminy w przepisach, cykl akademicki. To sa

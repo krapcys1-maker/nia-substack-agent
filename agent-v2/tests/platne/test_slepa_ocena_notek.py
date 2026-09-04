@@ -44,9 +44,9 @@ MATERIAL = [
              "minutes behind.",
      "zrodlo": "ENTSO-E", "url": "https://www.entsoe.eu/news/2018/03/06/"},
     {"forma": "KONTRAST",
-     "fakt": "United States packers wash eggs before sale, which removes the "
+     "fakt": "One market requires produce to be washed before sale, which removes the "
              "cuticle sealing the shell, so refrigeration becomes necessary. "
-             "European Union marketing standards forbid washing Class A eggs and "
+             "another market's marketing standards forbid that washing and "
              "advise against refrigeration before sale.",
      "zrodlo": "EUR-Lex 589/2008", "url": "https://eur-lex.europa.eu/eli/reg/2008/589"},
     {"forma": "ODWROCENIE",

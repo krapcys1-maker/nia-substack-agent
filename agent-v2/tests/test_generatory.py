@@ -203,7 +203,8 @@ if _pyt:
     # KONTRDOWOD, I TO ON JEST TU NAJWAZNIEJSZY: sama zacheta do wielkich pytan
     # bez ograniczenia zamienia trzecia os w KONTYNGENT, a kontyngent na forme
     # jest podpisem maszyny — ta sama wpadka co dwa artykuly o identycznym
-    # szkielecie po naprawie szamponu (19 sierpnia). Sekcja musi mowic wprost,
+    # szkielecie napisane zaraz po poprzedniej poprawce (19 sierpnia). Sekcja
+    # musi mowic wprost,
     # ze caly przebieg pod wielkimi pytaniami jest wada, nie sukcesem.
     _limit = ("not the batch", "as narrow as a run", "One or two in a batch")
     sprawdz("  os NIE jest kontyngentem na caly przebieg",

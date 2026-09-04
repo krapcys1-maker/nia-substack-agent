@@ -35,9 +35,9 @@ MATERIAL = [
      "url": "https://www.entsoe.eu/news/2018/03/06/press-release-continuing-frequency-deviation-in-the-continental-european-power-system/",
      "zrodlo": "ENTSO-E"},
     {"forma": "KONTRAST",
-     "fakt": "United States packers wash eggs before sale, which removes the "
+     "fakt": "One market requires produce to be washed before sale, which removes the "
              "cuticle sealing the shell, so refrigeration becomes necessary. "
-             "European Union marketing standards forbid washing Class A eggs and "
+             "another market's marketing standards forbid that washing and "
              "advise against refrigeration before sale.",
      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32008R0589",
      "zrodlo": "EUR-Lex, Regulation 589/2008"},

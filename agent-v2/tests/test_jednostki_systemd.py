@@ -100,13 +100,13 @@ print("=== 4. ZEGAR WSKAZUJE NA SCIEZKE, KTORA NAPRAWDE UZYWAMY ===")
 # `artykul_z_puli.py` powstal 25 sierpnia 2026, zeby ZASTAPIC sciezke skauta:
 # skaut wymaga dwoch udokumentowanych precedensow, a pod AI takie tematy sa
 # tylko trzy — zasilki, auta autonomiczne, gielda — wiec trzy artykuly z rzedu
-# wyszly o zautomatyzowanej biurokracji zamiast o AI.
+# wyszly o czym innym niz dzisiejsza nisza konta.
 #
 # Zastepnik napisano, uzywano RECZNIE i przez piec dni NIE WPIETO W ZEGAR.
 # `nia-artykul.service` wskazywal caly czas na sciezke zastapiona, wiec gdyby
 # timer wystartowal, produkowalby te sama monokulture i pomijal bramke
 # „uniesie artykul", podpytania do researchu, glebokosc z pieciu filarow oraz
-# spizarnie kandydatow. Ta sama klasa zaniedbania, co szampon w kolejce
+# spizarnie kandydatow. Ta sama klasa zaniedbania, co stary artykul w kolejce
 # promocyjnej: zmiana zrobiona, resztka po niej nie sprzatnieta.
 _artykul = [u for u in uslugi if "artykul" in u.name]
 sprawdz("jednostka artykulu istnieje", bool(_artykul), [u.name for u in uslugi])

@@ -77,7 +77,7 @@ oryg_promocja = stages.PROMOCJA
 try:
     stages.PROMOCJA = kat / "promocja.json"
     stages.PROMOCJA.write_text(json.dumps([
-        {"url": "https://x/p/egg", "tytul": "Example Article Three",
+        {"url": "https://x/p/trzeci", "tytul": "Example Article Three",
          "tekst": "...", "wystawione": 2, "ostatnia": "2026-08-17"}
     ]), encoding="utf-8")
     conn = db.connect(kat / "t.db")

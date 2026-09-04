@@ -41,7 +41,7 @@ def sprawdz(nazwa, warunek, szczegol=""):
 def _dane():
     tematy = [{"title": "Wieza przestaje odpowiadac"},
               {"title": "Nazwisko zmarlego na karcie"},
-              {"title": "Karta hotelowa"},
+              {"title": "Temat bez artykulu"},
               {"title": "Temat kanoniczny"}]
     oceny = [
         {"index": 0, "feasible": True, "depth": "RICH", "confidence": 0.9,
@@ -82,8 +82,8 @@ with tempfile.TemporaryDirectory() as tmp:
             all(w["tytul"] != wybrany["title"] for w in wpisy))
     powody = {w["tytul"]: w["powod"] for w in wpisy}
     sprawdz("temat nieartykulowy przegral na `artykulowy`",
-            powody.get("Karta hotelowa", "").startswith("artykulowy:"),
-            powody.get("Karta hotelowa"))
+            powody.get("Temat bez artykulu", "").startswith("artykulowy:"),
+            powody.get("Temat bez artykulu"))
     sprawdz("a artykulowy o nizszej pewnosci — na `confidence`",
             powody.get("Nazwisko zmarlego na karcie", "").startswith("confidence:"),
             powody.get("Nazwisko zmarlego na karcie"))
@@ -131,7 +131,7 @@ sprawdz("zapis jest jedynym miejscem, ktore go dotyka",
         and _src.count("PRZEGRANE_TEMATY.read_text") == 1)
 # KONTRDOWOD: ten sam temat podany drugi raz musi nadal moc WYGRAC.
 with tempfile.TemporaryDirectory() as tmp:
-    _przebieg(tmp)                       # runda 1 — „Karta hotelowa" przegrywa
+    _przebieg(tmp)                       # runda 1 — „Temat bez artykulu" przegrywa
     t, o = _dane()
     tylko_karta = [t[2]]
     ocena = [dict(o[2], index=0)]
@@ -142,7 +142,7 @@ with tempfile.TemporaryDirectory() as tmp:
     finally:
         stages.PRZEGRANE_TEMATY = stary
     sprawdz("temat, ktory raz przegral, moze pozniej wygrac",
-            wybrany2["title"] == "Karta hotelowa", wybrany2["title"])
+            wybrany2["title"] == "Temat bez artykulu", wybrany2["title"])
 
 print()
 print("=== 4. DZIENNIK NIE MOZE ZATRZYMAC PRZEBIEGU ===")

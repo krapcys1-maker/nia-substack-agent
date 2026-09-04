@@ -80,16 +80,16 @@ def przetworz(topics, ranking=None):
 # --- PRAWDZIWE tematy z przebiegu 20 sierpnia, nie wymyslone -----------------
 CLICHE = {
     "title": "Example Article Eight", "kind": "BROKEN_BELIEF",
-    "broken_belief": "Everyone assumes wipes labelled flushable break down in "
-                     "water the way toilet paper does.",
-    "already_written": ["utility companies on fatbergs",
-                        "consumer testing of flushable claims",
-                        "city sewer department warnings"],
+    "broken_belief": "Everyone assumes a product labelled for a purpose has "
+                     "been tested against that purpose.",
+    "already_written": ["trade bodies on the same label",
+                        "consumer testing of the same claim",
+                        "regulator warnings about it"],
     "threads": ["what the label legally means"],
 }
 CLICHE2 = {
     "title": "Example Article Seven", "kind": "BROKEN_BELIEF",
-    "broken_belief": "Everyone assumes antibacterial soap kills more germs than plain.",
+    "broken_belief": "Everyone assumes the premium version does more than the plain one.",
     "already_written": ["regulator ban coverage", "handwashing guidance pieces"],
     "threads": ["what the regulator actually banned"],
 }
@@ -328,8 +328,8 @@ print()
 print("=== 6. SKAUT WIE, ZE PIERWSZY POMYSL JEST NAJGORSZY ===")
 sprawdz("prompt nazywa gatunek po imieniu", "It is a **genre**" in plaski)
 # ZASADA, NIE PRZYKLADY — i to przez dwa przestawienia tematu z rzedu.
-# Stalo tu najpierw ("sprinklers", "flushable", "antibacterial"), potem lista
-# oklepanych tez o AI. Za kazdym razem test trzymal w sobie temat konta, wiec
+# Stalo tu najpierw wyliczenie oklepanych tez jednej niszy, potem drugiej.
+# Za kazdym razem test trzymal w sobie temat konta, wiec
 # zmiana niszy oblewala go z powodu, ktory nie mial nic wspolnego z kodem —
 # dokladnie ta wada, ktora ten projekt usuwa.
 #

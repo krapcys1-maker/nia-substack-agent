@@ -193,11 +193,16 @@ finally:
 print()
 print("=== 5. CZY NASZE DOTYCHCZASOWE NOTKI BY TO ZLAPALY ===")
 
-NASZE = ["American eggs must be", "American rules make eggs", "The hole in a pen",
-         "An AM station can", "Every US paper bill", "The stop sign is",
-         "In most US elevators", "Federal ADA rules require",
-         "The four-digit ATM PIN", "US law forces eggs", "The date on your",
-         "Unpopular truth about Substack"]
+# ATRAPY, ALE Z ZACHOWANYM ROZKLADEM PIERWSZYCH SLOW — bo to jedyne, co ten
+# test z nich czyta (`pierwsze = [t.split()[0] ...]` trzy linie nizej). Stalo
+# tu dwanascie POCZATKOW PRAWDZIWYCH, WYSTAWIONYCH NOTEK, przepisanych slowo
+# w slowo; reszta zdania nie brala udzialu w niczym.
+NASZE = ["American practice differs here", "American rules say otherwise",
+         "The hole in a pen", "An older standard allowed",
+         "Every printed copy carries", "The stop sign is",
+         "In most modern lifts", "Federal accessibility rules require",
+         "The four-digit code on", "US law forces disclosure",
+         "The date on your", "Unpopular truth about this"]
 pierwsze = [t.split()[0].lower() for t in NASZE]
 import collections  # noqa: E402
 licz = collections.Counter(pierwsze)

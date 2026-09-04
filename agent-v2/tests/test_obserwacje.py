@@ -229,45 +229,48 @@ sprawdz("KONTRDOWOD: tempo obserwacji sprzed naprawy by tego nie przeszlo",
 print()
 print("=== 3. NOTKI NIE POWTARZAJA TEMATU ===")
 
-ARTYKUL = ("Example Article Three  American rules make eggs cold. "
-           "European rules forbid chilling Class A eggs. Refrigeration is "
-           "regulation, not habit.")
+ARTYKUL = ("Example Article Three  Sorting machines read a fluorescent "
+           "barcode sprayed onto the envelope, never the printed address. "
+           "The printed address is there for people, not for machines.")
 PULA = [
-    {"domain": "Grocery and food safety",
-     "fact": "American eggs must be refrigerated because US federal rules require "
-             "that shell eggs be washed and sanitized, stripping the cuticle."},
+    {"domain": "Postal handling",
+     "fact": "A fluorescent barcode sprayed onto every envelope is what the "
+             "sorting machines actually read; the printed address is for the "
+             "person carrying it the last few metres."},
     {"domain": "Sealed enclosures", "fact": "The tiny hole in the middle pane of a "
      "pressure panel is a bleed hole that equalises the gap."},
-    {"domain": "Restaurants", "fact": "Under the tip credit, US employers can pay "
-     "tipped staff a lower base wage if tips make up the difference."},
+    {"domain": "Vending", "fact": "A coin mechanism weighs and measures the "
+     "conductivity of what you drop in, so a washer of the right alloy passes."},
 ]
 
 zapas = list(PULA)
 wybrany = stages.wybierz_material(zapas, [ARTYKUL])
-print("    artykul dnia: eggs / refrigeration")
+print("    artykul dnia: sortowanie przesylek / kod fluorescencyjny")
 print("    wybrano:      %s" % (wybrany or {}).get("domain"))
-sprawdz("NIE wybiera faktu o jednym z tematow, gdy artykuł jest o jednym z tematow",
-        wybrany is not None and "egg" not in wybrany["fact"].lower(), wybrany)
+sprawdz("NIE wybiera faktu o tym samym, o czym jest artykul dnia",
+        wybrany is not None and "fluorescent" not in wybrany["fact"].lower(),
+        wybrany)
 sprawdz("wybiera pierwszy NIEKOLIDUJACY", wybrany["domain"] == "Sealed enclosures",
         wybrany["domain"])
 sprawdz("zdjety z zapasu", len(zapas) == 2, len(zapas))
 
-# KONTRDOWOD: stary sposob wzialby pierwszy z brzegu, czyli temat pierwszy.
-sprawdz("STARY sposob wzialby fakt o jednym z tematow (test rozroznia)",
-        "egg" in PULA[0]["fact"].lower())
+# KONTRDOWOD: stary sposob bral pierwszy z brzegu — a pierwszy z brzegu jest
+# tu wlasnie tym, ktory koliduje z artykulem dnia.
+sprawdz("STARY sposob wzialby fakt o tym samym (test rozroznia)",
+        "fluorescent" in PULA[0]["fact"].lower())
 
 # Druga notka w tym samym przebiegu tez nie moze byc o tym samym.
 juz = [ARTYKUL, "%s %s" % (wybrany["domain"], wybrany["fact"])]
 drugi = stages.wybierz_material(zapas, juz)
 sprawdz("druga notka to znowu inny temat",
-        drugi is not None and drugi["domain"] == "Restaurants", drugi)
+        drugi is not None and drugi["domain"] == "Vending", drugi)
 
 # Gdy zostaje juz tylko materiał o tym samym — lepiej mniej niz powtorka.
 sprawdz("gdy wszystko koliduje -> None, zamiast powtorzyc",
         stages.wybierz_material([dict(PULA[0])], [ARTYKUL]) is None)
 sprawdz("pusty zapas -> None", stages.wybierz_material([], [ARTYKUL]) is None)
 sprawdz("brak czego unikac -> bierze pierwszy",
-        stages.wybierz_material(list(PULA), [])["domain"] == "Grocery and food safety")
+        stages.wybierz_material(list(PULA), [])["domain"] == "Postal handling")
 
 print()
 print("=== 4. MIARA PODOBIENSTWA ===")
@@ -277,24 +280,23 @@ sprawdz("ten sam temat rozpoznany",
 sprawdz("inny temat NIE jest mylony",
         stages._o_tym_samym(ARTYKUL, PULA[1]["fact"]) is False)
 sprawdz("krotkie teksty nie sa oceniane (za malo slow)",
-        stages._o_tym_samym("eggs", "eggs") is False)
+        stages._o_tym_samym("post", "post") is False)
 
 print()
 print("=== 4b. PAMIEC NIE KONCZY SIE O POLNOCY ===")
-# 23 i 24 sierpnia poszly dwie notki o tym samym symbolu otwartego sloika na
-# butelce szamponu. Ten sam fakt, inne zdania. Ochrona istniala i dzialala —
-# tylko `juz_o_tym` zaczynalo KAZDY DZIEN puste, wiec pytala wylacznie o to,
-# co wystawiamy dzisiaj. Miedzy dniami zostawal `_klucz_faktu`, odcisk
-# DOKLADNY, ktory na przeformulowaniu puszcza.
-WCZORAJ = ("Open-jar symbol on a shampoo bottle means the product carries no "
-           "expiry date at all. The number beside it counts months from the day "
-           "the lid first comes off. Under 30 months of unopened durability, the "
-           "law requires a printed best-before instead.")
-DZIS = {"domain": "Cosmetics labelling",
-        "fact": ("Your shampoo bottle carries that little open jar instead of an "
-                 "expiry date, not alongside one. Under cosmetics law, anything "
-                 "lasting more than 30 months unopened is excused from printing a "
-                 "best-before at all.")}
+# 23 i 24 sierpnia poszly dwie notki o TYM SAMYM fakcie, napisane innymi
+# zdaniami. Ochrona istniala i dzialala — tylko `juz_o_tym` zaczynalo KAZDY
+# DZIEN puste, wiec pytala wylacznie o to, co wystawiamy dzisiaj. Miedzy dniami
+# zostawal `_klucz_faktu`, odcisk DOKLADNY, ktory na przeformulowaniu puszcza.
+WCZORAJ = ("The four-figure code moulded into the sidewall of a tyre gives the "
+           "week and the year it was manufactured, and nothing else. It is not "
+           "a use-by date. No rule obliges anyone to print an expiry on a tyre, "
+           "so the manufacturer publishes that advice separately instead.")
+DZIS = {"domain": "Tyre labelling",
+        "fact": ("That stamp of four figures on the side of your tyre is a "
+                 "manufacturing date, week first and year second — not a "
+                 "use-by. Nothing in the rules requires an expiry to appear on "
+                 "the tyre itself, so the advice lives in a leaflet instead.")}
 
 sprawdz("dokladny odcisk faktu NIE lapie przeformulowania",
         stages._klucz_faktu(WCZORAJ) != stages._klucz_faktu(DZIS["fact"]))
@@ -306,11 +308,11 @@ sprawdz("wiec material z wczoraj zostaje odrzucony",
 # KONTRDOWOD: bez pamieci poprzednich dni ten sam material przechodzi — czyli
 # test naprawde mierzy TE zmiane, a nie cokolwiek innego.
 sprawdz("a bez tej pamieci przeszedlby (tak powstala wpadka)",
-        stages.wybierz_material([dict(DZIS)], [])["domain"] == "Cosmetics labelling")
+        stages.wybierz_material([dict(DZIS)], [])["domain"] == "Tyre labelling")
 
 # Prog miedzy dniami MUSI byc ostrzejszy od dziennego, inaczej blokuje notki
-# na przypadkowych slowach. Zmierzone: przy progu dziennym notka o cenach w UE
-# zderzala sie z notka o filtrach UV na `nothing`, `number`, `whole`.
+# na przypadkowych slowach. Zmierzone: przy progu dziennym dwie notki o zupelnie
+# roznych rzeczach zderzaly sie na `nothing`, `number`, `whole`.
 LUZNE_A = ("Sticker price in the EU is the whole price. VAT and every other tax "
            "are already inside the number on the shelf, so nothing is added at "
            "the till.")
@@ -328,7 +330,7 @@ sprawdz("i luzne zderzenie NIE blokuje notki",
 # wspolne slowa — `https`, `substack`, nazwa publikacji — zanim ktokolwiek
 # spojrzal, o czym sa.
 Z_LINKIEM = "Pressure panels have a tiny hole. https://your-handle.substack.com/p/x"
-Z_LINKIEM_2 = "Eggs are refrigerated in America. https://your-handle.substack.com/p/y"
+Z_LINKIEM_2 = "Sorting machines read the barcode. https://your-handle.substack.com/p/y"
 sprawdz("adres nie wpada do slow tematu",
         not ({"https", "substa"} & stages._slowa(Z_LINKIEM)),
         sorted(stages._slowa(Z_LINKIEM)))
@@ -372,7 +374,7 @@ with tempfile.TemporaryDirectory() as tmp:
     try:
         stages.PAMIEC_NOTEK_PLIK = tmp / "wystawione_notki.json"
 
-        # Notka o szamponie idzie na SAM POCZATEK, 119 notek przed dzisiejsza.
+        # Wczorajsza notka idzie na SAM POCZATEK, 119 notek przed dzisiejsza.
         dziennik_z_notek(tmp, [WCZORAJ] + WYPELNIACZ)
         pamiec = stages.pamiec_wystawionych()
         print("    notek w dzienniku: 120, odciskow w pamieci: %d" % len(pamiec))
@@ -382,7 +384,7 @@ with tempfile.TemporaryDirectory() as tmp:
                 stages.wybierz_material([dict(DZIS)], [], pamiec) is None)
 
         # KONTRDOWOD: to samo z oknem dwunastu, czyli kodem sprzed zmiany.
-        # Notka o szamponie wypada z okna i powtorka przechodzi jak gdyby nigdy nic.
+        # Wczorajsza notka wypada z okna i powtorka przechodzi jak gdyby nigdy nic.
         config.PAMIEC_NOTEK = 12
         okno = stages.pamiec_wystawionych()
         sprawdz("KONTRDOWOD: okno 12 pamieta tylko 12 ostatnich", len(okno) == 12,

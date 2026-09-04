@@ -174,15 +174,15 @@ try:
 
     print()
     print("=== 7. OKNO WAZNOSCI: STARY ARTYKUL PRZESTAJE BYC PROMOWANY ===")
-    # Zmierzone 26 sierpnia na produkcji. Konto przestawiono na AI, ale w
-    # kolejce zostaly cztery teksty z epoki przedmiotow codziennych, dwa z
-    # niewybranymi dniami. Nic ich nie usuwalo, bo jedynym warunkiem wyjscia
-    # bylo wybranie trzech notek. Po wyczerpaniu biezacego artykulu kanal o AI
-    # wystawilby notke promujaca artykul o szamponie sprzed tygodnia.
+    # Zmierzone 26 sierpnia na produkcji. Konto zmienilo temat, ale w kolejce
+    # zostaly cztery teksty z poprzedniej epoki, dwa z niewybranymi dniami.
+    # Nic ich nie usuwalo, bo jedynym warunkiem wyjscia bylo wybranie trzech
+    # notek. Po wyczerpaniu biezacego artykulu kanal wystawilby notke
+    # promujaca tekst sprzed tygodnia, o czym innym niz pisze dzisiaj.
     sprawdz_nasze("OKNO_PROMOCJI_DNI istnieje", config.OKNO_PROMOCJI_DNI == 7,
             getattr(config, "OKNO_PROMOCJI_DNI", "brak"))
 
-    ustaw(wpis("Szampon", wystawione=1,
+    ustaw(wpis("Stary artykul", wystawione=1,
                dodane=_dzis(-config.OKNO_PROMOCJI_DNI - 1)))
     sprawdz("artykul spoza okna nie jest promowany",
             stages.artykul_do_promocji() is None,
@@ -193,8 +193,8 @@ try:
     po_staremu = next((a for a in reversed(stages.wczytaj_promocje())
                        if a.get("wystawione", 0) < config.NOTEK_PROMUJACYCH),
                       None)
-    sprawdz("stary sposob wystawilby szampon (test rozroznia)",
-            po_staremu and po_staremu["tytul"] == "Szampon",
+    sprawdz("stary sposob wystawilby stary artykul (test rozroznia)",
+            po_staremu and po_staremu["tytul"] == "Stary artykul",
             po_staremu and po_staremu["tytul"])
 
     # GRANICA JEST WLACZAJACA: ostatni dzien okna jeszcze promuje.

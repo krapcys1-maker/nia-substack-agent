@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Agent ma szukac celow o AI i szukac ich, AZ ZNAJDZIE.
+"""Agent ma szukac celow WE WLASNEJ NISZY i szukac ich, AZ ZNAJDZIE.
 
 DWIE WADY, JEDNA UKRYTA POD DRUGA.
 
@@ -58,7 +58,7 @@ def sprawdz(nazwa, warunek, szczegol=""):
 print("=== 1. HASLA SZUKANIA MIESZCZA SIE W ZNAKACH NISZY ===")
 hasla = [h.lower() for h in config.HASLA_SZUKANIA]
 # Lista slow, po ktorych poznajemy nasz rewir. Jawna i krotka, zeby dalo sie
-# ja przeczytac i zakwestionowac — a nie zgadywac, co test uznaje za „o AI".
+# ja przeczytac i zakwestionowac — a nie zgadywac, co test uznaje za „w niszy".
 # ZNAKI NISZY IDA Z CONFIGU, nie z ciala testu. Do 2026-09-03 stala tu
 # wpisana lista slow o jednej konkretnej niszy — czyli test, ktory mial
 # pilnowac SPOJNOSCI rewiru z nisza, w rzeczywistosci betonowal nisze.

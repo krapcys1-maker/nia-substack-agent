@@ -332,10 +332,10 @@ try:
     # 30 sierpnia 2026 podlaczylem indeks do notek i o malo nie cofnalem konta
     # o tydzien. Indeks przetrwal przeprowadzke i trzyma material obu pism naraz.
     # Zmierzone na 119 wolnych kandydatach:
-    #     do 24 sierpnia   65 pozycji, z tego 1 o AI
-    #     od 25 sierpnia   54 pozycje, z tego 46 o AI
-    # Bez filtru 61 procent notek wracaloby do jajek i szamponu — ta sama wada,
-    # co artykul o szamponie czekajacy w kolejce promocyjnej.
+    #     przed zmiana tematu   65 pozycji, z tego 1 z nowej niszy
+    #     po zmianie tematu     54 pozycje, z tego 46 z nowej niszy
+    # Bez filtru 61 procent notek wracaloby do poprzedniego tematu — ta sama
+    # wada, co jego artykul czekajacy w kolejce promocyjnej.
     import tempfile as _tmp2   # noqa: E402
     import json as _js2        # noqa: E402
 

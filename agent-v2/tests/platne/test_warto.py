@@ -60,7 +60,7 @@ for rid, tytul, w in wyniki:
 print()
 d = dict((rid, w) for rid, _, w in wyniki)
 print("KONTRDOWOD:")
-print("  0016 szampon (nudny wg wlasciciela) -> %s   %s" % (
+print("  temat uznany przez wlasciciela za nudny -> %s   %s" % (
     d.get(16), "OK — odrzucony" if d.get(16) in ("ODLOZ", "DOLOZ") else "PORAZKA: przepuszczony"))
 print("  0020 autobus (najlepszy w serii)    -> %s   %s" % (
     d.get(20), "OK — przepuszczony" if d.get(20) == "PISZ" else "PORAZKA: odrzucony"))
