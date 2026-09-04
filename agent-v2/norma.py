@@ -241,42 +241,16 @@ MIN_PLAN_W_OKNIE_DO_ALARMU_O_POLOWIE = 3
 # `run.py:265-268` nazywa te zasade wprost („powtorzenie ich tutaj zlamaloby
 # zasade jednej liczby w jednym miejscu"), a `tests/test_rytm.py:132` juz ten
 # plik czyta z Pythona.
-KATALOG_JEDNOSTEK = Path(__file__).resolve().parent / "systemd"
-
-
-def _zegar_agenta() -> Path | None:
-    """Plik `.timer` agenta — znaleziony po TRESCI, nie po nazwie.
-
-    Stalo tu `systemd/nia-agent.timer` wpisane wprost. NAZWA JEDNOSTKI NALEZY
-    DO INSTALACJI: kto wdrozy bota pod wlasna marka, nazwie ja inaczej —
-    i wtedy ten modul po cichu przechodzil na oszacowanie, bo `except` nizej
-    lapie takze brak pliku.
-
-    Pytamy wiec o to, CO JEDNOSTKA URUCHAMIA. Usluga agenta to ta, ktorej
-    `ExecStart` wola `run.py`; jej zegar ma te sama nazwe z innym
-    rozszerzeniem — to zwiazek wymuszany przez samego systemd, wiec nie jest
-    kolejna nasza umowa do zapamietania. `tests/test_jednostki_systemd.py`
-    pilnuje, ze kazda usluga oneshot ma swoj zegar.
-    """
-    try:
-        uslugi = sorted(KATALOG_JEDNOSTEK.glob("*.service"))
-    except OSError:
-        return None
-    for usluga in uslugi:
-        try:
-            tresc = usluga.read_text(encoding="utf-8")
-        except OSError:
-            continue
-        wiersze = [w for w in tresc.splitlines() if w.startswith("ExecStart=")]
-        if not any("run.py" in w for w in wiersze):
-            continue
-        zegar = usluga.with_suffix(".timer")
-        if zegar.exists():
-            return zegar
-    return None
-
-
-ZEGAR = _zegar_agenta()
+# JEDNO WYSZUKIWANIE JEDNOSTKI DLA CALEGO BOTA. Stalo tu `nia-agent.timer`
+# wpisane wprost, a nazwa jednostki nalezy do INSTALACJI: kto wdrozy bota pod
+# wlasna marka, nazwie ja inaczej — i wtedy ten modul po cichu przechodzil na
+# oszacowanie, bo `except` nizej lapie takze brak pliku.
+#
+# Pierwsza poprawka dopisala wlasne szukanie TUTAJ, a `alarm.py` w tym samym
+# czasie podawal nazwe z pamieci w tresci maila. Dwie potrzeby, dwie kopie —
+# czyli poczatek dokladnie tej historii, ktora skonczyla sie piecioma kopiami
+# daty przestawienia konta. Wspolna wersja mieszka w `config.zegar_agenta()`.
+ZEGAR = config.zegar_agenta()
 
 # CZY ROZKLAD DOBY JEST POMIAREM, CZY ZGADYWANIEM. Ustawiane przez
 # `godziny_przebiegow()`; czytane na dole raportu. Patrz tam po powod.

@@ -3,7 +3,7 @@
 
 CO PRZYSZLO MAILEM 31 sierpnia 2026, 07:08 UTC:
 
-    [agent NIA] Przebiegi wisialy w RUNNING
+    [<nazwa marki>] Przebiegi wisialy w RUNNING
     4 przebiegow wisialo w stanie RUNNING ponad trzy godziny —
     zamkniete jako STALE (id: 85, 94, 95, 96).
 

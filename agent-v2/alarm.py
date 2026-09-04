@@ -92,7 +92,14 @@ def wyslij(klucz: str, temat: str, tresc: str) -> bool:
         return False
 
     wiadomosc = EmailMessage()
-    wiadomosc["Subject"] = f"[agent NIA] {temat}"
+    # MARKA Z KONFIGURACJI, NIE WPISANA. Stalo tu „[agent NIA]" — nazwa
+    # projektu w TEMACIE MAILA, czyli w napisie, ktory wlasciciel widzi
+    # najczesciej ze wszystkich napisow tego bota, i po ktorym filtruje pocztę.
+    # Konto o wlasnej nazwie dostawalo alarmy podpisane cudza.
+    #
+    # Prefiks zostaje w nawiasie kwadratowym, bo po nim robi sie regule
+    # w skrzynce; zmienia sie tylko to, co w nawiasie stoi.
+    wiadomosc["Subject"] = f"[{config.NAZWA_MARKI}] {temat}"
     wiadomosc["From"] = u["user"]
     wiadomosc["To"] = u["do"]
     wiadomosc.set_content(
@@ -184,7 +191,8 @@ def sprawdz_przebiegi_i_ostrzez(ile: int = 3) -> None:
                f"Agent padl {ile} razy pod rzad",
                f"Ostatnie {ile} przebiegow zakonczylo sie bledem:\n\n{szczegoly}\n\n"
                "Zajrzyj na serwer:\n"
-               "  journalctl -u nia-agent.service -n 60 --no-pager")
+               "  journalctl -u %s -n 60 --no-pager"
+               % (config.usluga_agenta() or "<jednostka agenta>"))
 
 
 # Ile godzin ciszy uznajemy za awarie. Agent chodzi piec razy dziennie, wiec
@@ -209,10 +217,34 @@ DYSK_ALARM = 92
 # ignorowac. A realne ryzyko — 60 opublikowanych dzialan — nie bylo mierzone
 # wcale.
 #
-# Suma norm dziennych z configu to okolo 39,5 dzialania. Sufit 60 jest wiec
-# okolo 1,52-krotnoscia planu: nadal ma zapas na dobry dzien, a pozostaje
-# dostatecznie ciasny, zeby zlapac zapetlenie.
-MAX_DZIALAN_DZIENNIE = 60
+# SUFIT JEST POCHODNA NORM, NIE WPISANA LICZBA. Komentarz powyzej sam podawal
+# rachunek: „suma norm dziennych to okolo 39,5, sufit 60 jest wiec okolo
+# 1,52-krotnoscia planu". Czyli stala BYLA pochodna — policzona raz, przez
+# czlowieka, dla jednego zestawu widelek. Konto z wieksza norma dostawaloby
+# alarm o zapetleniu kazdego dobrego dnia; konto z mniejsza nie dostaloby go
+# nigdy, bo przy normie 12 dzialan trzeba by pieciokrotnosci planu.
+#
+# To ta sama wada, co prog `DAILY_LIMIT_USD <= 5.0` w audycie systemu: liczba
+# wpisana obok pola konfiguracji, ktore mowi to samo.
+MNOZNIK_SUFITU_DZIALAN = 1.5
+
+# PODLOGA, ZEBY MALE KONTO NIE ALARMOWALO O JEDNYM DOBRYM DNIU. Przy sumie norm
+# 6 dzialan poltorakrotnosc to 9 — a dziewiec dzialan na dobe nie jest
+# zapetleniem w zadnym sensie. Ponizej tego progu zapetlenie i tak rozpozna
+# sie po innych liczbach, a falszywy alarm kosztuje wiecej niz przeoczony:
+# alarm, ktory wyje bez powodu, przestaje byc czytany.
+MIN_SUFIT_DZIALAN = 20
+
+
+def max_dzialan_dziennie() -> int:
+    """Ile dzialan na dobe uznajemy jeszcze za normalne.
+
+    LICZYMY TO, CO WYSZLO W SWIAT, nie wywolania modelu — patrz komentarz
+    wyzej. Wartosc idzie z BIEZACYCH norm, wiec konto z innymi widelkami ma
+    inny sufit i nikt nie musi o tym pamietac.
+    """
+    suma = sum(config.normy_dzienne().values())
+    return max(MIN_SUFIT_DZIALAN, int(round(suma * MNOZNIK_SUFITU_DZIALAN)))
 
 
 def _polaczenie() -> sqlite3.Connection:
@@ -301,7 +333,7 @@ def nadaktywnosc() -> str | None:
 
     granica = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
     # DZIENNIK, NIE BAZA WYWOLAN. Tu stoi to, co naprawde wyszlo na Substacka —
-    # patrz uzasadnienie przy MAX_DZIALAN_DZIENNIE.
+    # patrz uzasadnienie przy `max_dzialan_dziennie`.
     plik = config.DATA_DIR / "dziennik.jsonl"
     n = 0
     try:
@@ -321,9 +353,10 @@ def nadaktywnosc() -> str | None:
                 n += 1
     except OSError:
         return None
-    if n > MAX_DZIALAN_DZIENNIE:
+    sufit = max_dzialan_dziennie()
+    if n > sufit:
         return (f"W ostatnich 24 godzinach {n} wywolan tworzacych tresc przy "
-                f"suficie {MAX_DZIALAN_DZIENNIE}. Cos sie zapetlilo.")
+                f"suficie {sufit}. Cos sie zapetlilo.")
     return None
 
 

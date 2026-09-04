@@ -2480,6 +2480,52 @@ def _znacznik_klienta(marka: str) -> str:
     return czyste or "EditorialBot"
 
 
+# --- JEDNOSTKI SYSTEMD ------------------------------------------------------
+#
+# NAZWA JEDNOSTKI NALEZY DO INSTALACJI, nie do bota: kto postawi go pod wlasna
+# marka, nazwie pliki inaczej (`narzedzia/jednostki.py` buduje je z szablonow).
+# Kod, ktory podaje nazwe z pamieci, wypisuje wtedy rade, ktora po wklejeniu
+# nie zadziala — a rada nieaktualna w mailu alarmowym uczy, ze maile alarmowe
+# sa nieaktualne.
+#
+# JEDNO MIEJSCE, BO INACZEJ ZARAZ BEDA DWA. `norma.py` szukalo zegara wlasnym
+# kodem, `alarm.py` mial nazwe wpisana w tresc maila; obie potrzeby sa tej
+# samej wielkosci co cztery kopie daty przestawienia konta.
+KATALOG_JEDNOSTEK = AGENT_DIR / "systemd"
+
+
+def usluga_agenta() -> str:
+    """Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie.
+
+    Pytamy o to, CO JEDNOSTKA URUCHAMIA: usluga agenta to ta, ktorej
+    `ExecStart` wola `run.py`. Gdy nie da sie tego rozstrzygnac, oddajemy pusty
+    napis, a wolajacy ma powiedziec „sprawdz jednostke agenta" zamiast podac
+    zla nazwe.
+    """
+    try:
+        pliki = sorted(KATALOG_JEDNOSTEK.glob("*.service"))
+    except OSError:
+        return ""
+    for p in pliki:
+        try:
+            tresc = p.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for linia in tresc.splitlines():
+            if linia.startswith("ExecStart=") and "run.py" in linia:
+                return p.name
+    return ""
+
+
+def zegar_agenta():
+    """Sciezka do jednostki zegara agenta albo None."""
+    nazwa = usluga_agenta()
+    if not nazwa:
+        return None
+    zegar = KATALOG_JEDNOSTEK / (nazwa[: -len(".service")] + ".timer")
+    return zegar if zegar.exists() else None
+
+
 def _naglowek_klienta() -> str:
     """Naglowek User-Agent zlozony z BIEZACEJ nazwy marki.
 

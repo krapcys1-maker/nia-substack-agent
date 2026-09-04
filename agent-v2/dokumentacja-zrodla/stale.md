@@ -179,6 +179,7 @@
 | `REFUSAL_PHRASES` | `( "you have been blocked", "access denied", ` | — |
 | `FETCH_TIMEOUT_S` | `30.0` | — |
 | `FETCH_MIN_CHARS` | `1500` | ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO. Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu. Zmierzone  |
+| `KATALOG_JEDNOSTEK` | `AGENT_DIR / "systemd"` | --- JEDNOSTKI SYSTEMD ------------------------------------------------------ NAZWA JEDNOSTKI NALEZY DO INSTALACJI, nie do bota: kto postawi  |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | Wartosc domyslna; przeliczana po wczytaniu konfiguracji. |
 | `W_TESCIE` | `_w_darmowym_tescie()` | Jedna nazwa, dwie zapory. Wykrywanie sluzy juz nie tylko pieniadzom: darmowy test nie ma tez prawa DOPISYWAC DO PRODUKCYJNYCH DANYCH. Zmierz |
 | `WOLNO_WOLAC_MODEL` | `not W_TESCIE` | Test platny albo swiadomy skrypt moze to podniesc: `config.WOLNO_WOLAC_MODEL = True`. |

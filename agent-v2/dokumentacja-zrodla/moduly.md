@@ -393,7 +393,7 @@
 
 ### `alarm.py` — kontrola sesji, zdrowia i alarm do właściciela
 
-983 wierszy, 23 funkcji na poziomie modułu, 0 klas
+1016 wierszy, 24 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -405,6 +405,7 @@
 | `artykul_zalegly()` | Czy gotowy artykul lezy na dysku niewystawiony dluzej niz dobe. |
 | `sprawdz_sesje_i_ostrzez()` | Pilnuje jedynej rzeczy, która zatrzymuje agenta bez żadnego błędu. |
 | `sprawdz_przebiegi_i_ostrzez(ile)` | Alarmuje, gdy agent pada raz za razem. |
+| `max_dzialan_dziennie()` | Ile dzialan na dobe uznajemy jeszcze za normalne. |
 | `_polaczenie()` *(wewn.)* | — |
 | `cisza()` | Czy agent w ogole cos ostatnio zrobil. |
 | `zawieszone()` | Przebiegi, ktore zostaly w stanie RUNNING na zawsze. |
@@ -450,7 +451,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3016 wierszy, 30 funkcji na poziomie modułu, 0 klas
+3062 wierszy, 32 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -474,6 +475,8 @@
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
+| `usluga_agenta()` | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. |
+| `zegar_agenta()` | Sciezka do jednostki zegara agenta albo None. |
 | `_naglowek_klienta()` *(wewn.)* | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. |
 | `_w_darmowym_tescie()` *(wewn.)* | Czy uruchomiony program to test, ktory NIE MA prawa placic. |
 | `pod_produkcyjnymi_danymi(sciezka)` | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). |
@@ -575,11 +578,10 @@
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1178 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1152 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
-| `_zegar_agenta()` *(wewn.)* | Plik `.timer` agenta — znaleziony po TRESCI, nie po nazwie. |
 | `budzety_dzienne()` | Ile agent SOBIE ZALOZYL kazdego dnia — z pliku, nie z dzisiejszej konfiguracji. |
 | `_data(dzien)` *(wewn.)* | „2026-08-30" -> datetime w UTC. `cichy_dzien` pyta o obiekt, nie napis. |
 | `_poprawna_data(dzien)` *(wewn.)* | Czy da sie z tego zrobic date. Zepsuty wpis ma znikac, nie zabijac raport. |
