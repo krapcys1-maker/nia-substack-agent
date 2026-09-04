@@ -289,9 +289,10 @@ publishing is "what is in the history", and it needs a different command.
 ## 2.7 Every number in the original README was out of date
 
 **Symptom.** It claimed 11 Python files (there were 23), 11,231 lines (28,000),
-43 test suites (122). Two documents in the same repository gave different totals
-for spend, because both were measurements from different days with no date next
-to the number.
+43 test suites (122) — the figures in brackets being the source repository as
+measured on 2026-08-31, not this one today. Two documents in the same
+repository gave different totals for spend, because both were measurements from
+different days with no date next to the number.
 
 **Meaning.** Exactly the class of error the project warns about elsewhere: a
 figure typed in by hand to show scale stops being true at the first change, and
@@ -301,11 +302,29 @@ The same project solved this properly for the big document:
 `JAK_ZBUDOWANY_JEST_BOT.md` is generated and guarded by `test_dokumentacja_zywa`,
 which fails when a rebuild changes anything. The README stood outside that.
 
-**The fix.** [FUNCTION_MAP.md](FUNCTION_MAP.md) and
-[IDENTITY_MAP.md](IDENTITY_MAP.md) are generated. Numbers in hand-written docs
-are checked against the files before release — every count in
-[REPO_MAP.md](REPO_MAP.md) was verified against `wc -l` rather than remembered,
-and the first pass of that check found six of them wrong.
+**The fix, first attempt — and why it did not hold.**
+[FUNCTION_MAP.md](FUNCTION_MAP.md) and [IDENTITY_MAP.md](IDENTITY_MAP.md) are
+generated. Numbers in hand-written docs were to be "checked against the files
+before release" — a promise kept by a person, on a day, once.
+
+On 2026-09-04 the counts in this repository were measured again. **The number
+of functions stood in six documents in five different versions** — 548, 548,
+535, 529, 519, 519 — while the tree held 549. The count of modules stood at
+23, 24, 25 and 27; the count of tests at 122, 123, 129 and 140. This section,
+the one warning that nothing watches such numbers, was itself one of the
+documents nothing watched.
+
+Two of those disagreements were **not** errors: "27 modules" counted
+`dokumentacja-zrodla/` as well, and "140 test files" counted `platne/` and the
+helpers. Both definitions are defensible — but no document said which one it
+used, so a stale figure and a different measurement looked identical.
+
+**The fix that holds.** `agent-v2/tests/test_liczby_w_dokumentach.py` derives
+every count from the tree (functions from the same AST pass that builds
+FUNCTION_MAP.md) and checks each document against it, with the measuring rule
+written next to each number. A pattern that stops matching fails the test as
+loudly as a wrong number, so rewording a sentence cannot quietly remove it from
+the check.
 
 ---
 

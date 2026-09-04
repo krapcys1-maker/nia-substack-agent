@@ -159,6 +159,7 @@ each still had a new one.
 | 9 | the shape `note/c-<digits>` | **four more real note ids.** Sweep 6 looked for eight-to-ten-digit numbers and replaced seventeen; searching by the shape of the URL instead of the length of the number has no false positives, and found the four that sweep had walked past |
 | 10 | every domain in the source, counted | **three people's personal websites**, eighty occurrences across five files. Sweep 3 hunted a name glued into a *subdomain*; here the name was the *whole* domain, `www.<firstnamesurname>.com` |
 | 11 | the shape `<something>.substack.com` | **eleven real accounts.** A handle can be one lower-case word with no dot and no capital, so no sweep looking for names, addresses or numbers could ever see one |
+| 12 | every count claimed in a document, against the tree | **the number of functions stood in six documents in five versions** (548, 548, 535, 529, 519, 519) while the tree held 549 — and one of those documents is the chapter titled *"Every number in the original README was out of date"*. Two of the disagreements were not errors at all but different counting rules nobody had written down |
 
 **What only reading found.** Three system messages — `CURIOSITY_SYSTEM`,
 `BANK_SYSTEM`, `FEDREG_SYSTEM` — had the niche written into them literally. This
@@ -235,8 +236,13 @@ honest size of what a wiped history costs:
 They no longer prove what they used to prove. That is the price of a history
 that begins here.
 
-**And an honest figure for the rest.** The tree is 70,269 lines of Python:
-29,741 in the agent's 27 modules, 38,422 in 140 test files, 2,106 in the tools.
+**And an honest figure for the rest.** Measured 2026-09-04, with the counting
+rule spelled out because two documents in this repository once disagreed on the
+number of modules purely by counting different things: `find agent-v2 -name
+'*.py' -not -path '*/tests/*'` gives **27 files, 29,844 lines** (the 25 modules
+plus `dokumentacja-zrodla/sklej.py` and `prompts/`' helper); the tests are
+**143 files, 39,086 lines**; the tools 2,106. Total 71,036 lines of Python.
+
 This is where the line-by-line reading stands, and it is deliberately a table
 rather than a percentage, because a percentage hides which half you got.
 
@@ -250,9 +256,9 @@ rather than a percentage, because a percentage hides which half you got.
 | `konfiguracja.py`, `jezyki.py`, `style.py` | ~800 | all — they were rewritten |
 | `audyt_systemu.py`, `audyt_tematow.py` | 980 | the parts touched here |
 | the other 15 modules | ~9,000 | **not yet** |
-| the 140 test files | 38,422 | roughly 30 of them, in the parts touched |
+| the 143 test files | 39,086 | roughly 35 of them, in the parts touched |
 
-That is 18,435 of the 29,741 lines in the agent's modules — 62% — and it is
+That is 18,435 of the 29,844 lines in the agent's modules — 62% — and it is
 the four files that carry every publishing decision and every setting.
 
 The unread part has been through all thirteen sweeps but not through a person's

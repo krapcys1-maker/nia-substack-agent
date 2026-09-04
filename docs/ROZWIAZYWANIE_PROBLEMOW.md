@@ -292,6 +292,10 @@ sam `agent-v2/`. W konfiguratorze ta ścieżka ma być polem, nie stałą.
 
 **Objaw.** README repozytorium źródłowego opisywał system, którego już nie ma:
 
+(kolumna druga to **repozytorium źródłowe zmierzone 31 sierpnia 2026**, nie
+to repozytorium dzisiaj — bez daty przy liczbie ta tabela za miesiąc byłaby
+kolejnym przykładem błędu, który opisuje)
+
 | README mówił | jest naprawdę | ile razy więcej |
 |---|---|---|
 | 11 plików `.py` | **23** | 2,1× |
@@ -313,6 +317,24 @@ Ten sam projekt rozwiązał ten problem gdzie indziej i dobrze:
 `JAK_ZBUDOWANY_JEST_BOT.md` jest **generowany** przez `dokumentacja-zrodla/sklej.py`
 i pilnowany przez `test_dokumentacja_zywa`, który oblewa się, gdy przebudowa
 cokolwiek zmienia. README stało poza tym mechanizmem.
+
+**Ciąg dalszy, 4 września 2026 — ta sekcja miała chorobę, którą opisuje.**
+Policzono liczby w TYM repozytorium. Sama liczba funkcji stała w **sześciu
+dokumentach w pięciu wersjach** (548, 548, 535, 529, 519, 519), a w drzewie
+było 549. Liczba modułów: 23 / 24 / 25 / 27. Liczba testów: 122 / 123 / 129 /
+140. Recepta zapisana wyżej — „liczby w dokumentach pisanych ręcznie sprawdza
+się przed wydaniem" — jest obietnicą człowieka na jeden dzień i tyle wytrzymała.
+
+Dwie z tych rozbieżności **nie były błędem**: „27 modułów" liczyło też
+`dokumentacja-zrodla/`, a „140 plików testowych" liczyło `platne/` i pomocników.
+Obie definicje są sensowne — tyle że żaden dokument nie mówił, której używa,
+więc pomiar nieaktualny wyglądał identycznie jak pomiar innej rzeczy.
+
+Naprawa: `agent-v2/tests/test_liczby_w_dokumentach.py` wyprowadza każdą liczbę
+z drzewa (funkcje z tego samego przejścia po AST, z którego powstaje
+`FUNCTION_MAP.md`) i porównuje z dokumentami, a **regułę pomiaru trzyma obok
+wartości**. Wzorzec, który przestał trafiać, oblewa tak samo jak zła liczba —
+przepisane zdanie nie zabierze wpisu spod kontroli po cichu.
 
 **Obejście.** Nowy README ma liczby przeliczone na dzień 3 września 2026.
 Trwałe rozwiązanie: albo wciągnąć nagłówkową tabelę README do generatora, albo
