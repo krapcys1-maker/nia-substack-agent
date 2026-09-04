@@ -108,8 +108,19 @@ for md in dokumenty():
         sciezka = cel.split("#")[0].split(" ")[0].strip()
         if not sciezka:
             continue
+        # CEL WYCHODZACY POZA KORZEN REPOZYTORIUM NIE JEST SCIEZKA DO PLIKU.
+        # GitHub rozwiazuje `../../actions/...` wzgledem ADRESU repozytorium,
+        # nie systemu plikow — to udokumentowany sposob na odznake, ktora
+        # przezywa fork. Zlapal to ten test na odznace CI dodanej w tym samym
+        # dniu; oskarzenie bylo poprawne wedlug wzorca i falszywe co do rzeczy.
+        pelna = (md.parent / sciezka).resolve()
+        try:
+            pelna.relative_to(KORZEN)
+        except ValueError:
+            zewnetrzne += 1
+            continue
         zbadane += 1
-        if not (md.parent / sciezka).resolve().exists():
+        if not pelna.exists():
             martwe.append("%s -> %s" % (md.relative_to(KORZEN).as_posix(), cel))
 
 print("    odnosnikow lokalnych: %d, sieciowych (pominietych): %d"
@@ -145,6 +156,20 @@ sprawdz("a zywy jako zywy", (KORZEN / "docs/INSTALL.md").exists())
 # przyklady kodu o martwe linki (`[...]({url})` w f-stringu).
 _z_blokiem = ("tekst [zywy](docs/INSTALL.md)" + chr(10)
               + "```" + chr(10) + "[x]({url})" + chr(10) + "```")
+# I ze cel wychodzacy poza repozytorium jest pomijany, a nie oskarzany.
+_poza = (pathlib.Path("README.md").parent
+         / "../../actions/workflows/testy.yml/badge.svg").resolve()
+_wyszedl = True
+try:
+    _poza.relative_to(KORZEN)
+    _wyszedl = False
+except ValueError:
+    pass
+sprawdz("cel `../../` jest widziany jako spoza repozytorium", _wyszedl, _poza)
+sprawdz("a zwykly cel lokalny NIE jest",
+        (pathlib.Path("README.md").parent / "docs/INSTALL.md")
+        .resolve().is_relative_to(KORZEN))
+
 sprawdz("odnosnik w bloku kodu NIE jest liczony",
         [m.group(1) for m in ODNOSNIK.finditer(
             bez_blokow_kodu(_z_blokiem))] == ["docs/INSTALL.md"])

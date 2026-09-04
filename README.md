@@ -92,6 +92,20 @@ The bot's own design documents are in `agent-v2/` and are in Polish:
 (architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 13,083 lines,
 **generated from the code** and guarded by a test so it cannot drift.
 
+**A word on the language, before you open a file.** Everything written *for
+you* is in English: this README, the ten documents above, the example
+configuration and the setup program's questions. Everything written *for the
+machine* is in Polish — identifiers, comments, test names, and two directories
+you will see at the root (`narzedzia/` is "tools", `konfiguracja.example.toml`
+is the example configuration). That is not an oversight and it is not going to
+be translated: the comments in this codebase carry the *reasons* behind
+decisions — measured numbers, the bug that forced a rule, what was tried and
+rejected — and a translation pass over 30,294 lines would quietly lose exactly
+that. The English documents are written to stand on their own, so you can run
+and configure the bot without reading a line of Polish; you need it only if you
+want to know *why* a particular line is the way it is.
+
+
 ---
 
 ## Quick start
