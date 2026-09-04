@@ -161,8 +161,8 @@ print("=== 3. NAZWA PUBLIKACJI Z WLASNEJ DOMENY (stary kod dawal 'www') ===")
 try:
     podstaw_przegladarke()
     browser.api_json = podstaw_api({"/api/v1/posts": [
-        {"publishedBylines": [{"handle": "mattstoller"}]}]})
-    for host, oczekiwane in (("www.publikacja-d.example", "mattstoller"),
+        {"publishedBylines": [{"handle": "publikacja15"}]}]})
+    for host, oczekiwane in (("www.publikacja-d.example", "publikacja15"),
                              ("publikacja9.substack.com", "publikacja9"),
                              ("foo.substack.com", "foo")):
         wynik = browser.uchwyt_publikacji(host)

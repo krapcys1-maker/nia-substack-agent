@@ -619,7 +619,7 @@ def nasi_czytelnicy() -> set[str]:
     SUMA ZE WSZYSTKICH ZRZUTOW, NIE OSTATNI. Kto raz nas czytal, ten nas zna;
     zniknieciecie z ostatniego zrzutu znaczy najczesciej, ze przeszedl miedzy
     zakladkami (Substack pokazuje osobe obserwujaca I subskrybujaca wylacznie
-    w „Subscribers" — zmierzone na przypadku „Leonard", patrz
+    w „Subscribers" — zmierzone na przypadku „Jedenasty", patrz
     `browser.kto_nas_czyta`), a nie ze przestal nas czytac.
 
     ZRZUT OKROJONY NIE JEST DOWODEM NA NIEOBECNOSC, ale nam to nie szkodzi:

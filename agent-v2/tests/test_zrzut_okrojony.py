@@ -36,7 +36,7 @@ zakladka jako taka dziala. Niedobor jest wylacznie po stronie obserwujacych
 i stoi na 2, podczas gdy lista rosnie swobodnie 7 -> 10 — to wyklucza limit
 strony (limit dawalby stala DLUGOSC, nie stala roznice).
 
-Rozstrzyga jeden przypadek. „Leonard" ma w produkcyjnym dzienniku zdarzenie
+Rozstrzyga jeden przypadek. „Jedenasty" ma w produkcyjnym dzienniku zdarzenie
 `follow` z 2026-08-31T06:25:10, `followerCount` podskoczyl wtedy z 8 na 9
 i juz nie spadl — a na zakladce „Followers" nie ma go w ZADNYM z szesciu
 pozniejszych zrzutow, za to jako `publikacja11` stoi na zakladce
@@ -187,7 +187,7 @@ def link(uchwyt, nazwa=None):
 OBSERWUJACY = [link("czytelnik2", "Publikacja Drogowa: Founder"),
                link("publikacja7", "Halina Osma"),
                link("czytelnik3", "Publikacja Lustrzana AI")]
-SUBSKRYBENCI = [link("publikacja11", "Leonard"),
+SUBSKRYBENCI = [link("publikacja11", "Jedenasty"),
                 link("publikacja3", "Publikacja Chaosu")]
 NAWIGACJA = [Odnosnik("/@explore", "Explore"),
              Odnosnik("/@dashboard", "Dashboard")]
@@ -306,8 +306,8 @@ sprawdz("a nawigacja dalej wypada",
         not {"explore", "dashboard"} & {x["uchwyt"] for x in ludzie})
 # I druga polowa dowodu: NASZ kod nie zna reguly „subskrybenta nie pokazuj
 # wsrod obserwujacych". Ta sama osoba na obu zakladkach wychodzi na obu.
-obie = Strona(NAWIGACJA + [link("publikacja11", "Leonard")],
-              NAWIGACJA + [link("publikacja11", "Leonard")])
+obie = Strona(NAWIGACJA + [link("publikacja11", "Jedenasty")],
+              NAWIGACJA + [link("publikacja11", "Jedenasty")])
 kto6 = browser.kto_nas_czyta(obie)
 sprawdz("ta sama osoba na obu zakladkach jest w obu listach",
         [x["uchwyt"] for x in kto6["obserwujacy"]] == ["publikacja11"]
@@ -378,7 +378,7 @@ with (UDAWANA / "czytelnicy.jsonl").open("w", encoding="utf-8") as f:
                         "obserwujacy": [{"uchwyt": "publikacja7",
                                          "nazwa": "Halina Osma"}],
                         "subskrybenci": [{"uchwyt": "publikacja11",
-                                          "nazwa": "Leonard"},
+                                          "nazwa": "Jedenasty"},
                                          {"uchwyt": "publikacja3",
                                           "nazwa": "Publikacja Chaosu"}]},
                        ensure_ascii=False) + "\n")
@@ -415,7 +415,7 @@ with (STARE / "czytelnicy.jsonl").open("w", encoding="utf-8") as f:
             "obserwujacy": [{"uchwyt": "publikacja7", "nazwa": "Halina Osma"},
                             {"uchwyt": "czytelnik3", "nazwa": "Publikacja Lustrzana AI"}],
             "subskrybenci": [{"uchwyt": "publikacja3", "nazwa": "Publikacja Chaosu"}]
-            + ([{"uchwyt": "publikacja11", "nazwa": "Leonard"}] if i else []),
+            + ([{"uchwyt": "publikacja11", "nazwa": "Jedenasty"}] if i else []),
         }, ensure_ascii=False) + "\n")
 _zdjecie_data = wzajemnosc.config.uzyj_katalogu_danych(STARE)
 try:

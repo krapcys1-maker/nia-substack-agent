@@ -13,7 +13,7 @@ Zmierzone 1 wrzesnia 2026 na produkcyjnym dzienniku serwera
   * przez `czytelnicy.jsonl` — jedyna mapa nazwa -> uchwyt, jaka mamy —
     rozwiazuje sie 11 nazw z 69, i sa to DOKLADNIE nasi obecni czytelnicy
     (Maria Trzynasta, Publikacja Podrozna, Publikacja Chaosu, CourseManagement System,
-    Grzegorz Siodmy, Filip Szosty, Leonard, Publikacja Lustrzana AI,
+    Grzegorz Siodmy, Filip Szosty, Jedenasty, Publikacja Lustrzana AI,
     Halina Osma, Publikacja Drogowa: Founder, sidharth chandra), wiec jako
     cele sa bezuzyteczni — juz ich mamy;
   * przez rownosc slugu nazwy ze slugiem hosta z `gdzie_komentowalismy.json`

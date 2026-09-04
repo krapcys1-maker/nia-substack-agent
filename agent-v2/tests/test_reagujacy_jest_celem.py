@@ -433,9 +433,9 @@ def dziennik_pelny():
         skutek("note_like:6", "note_like", ["Swiezak"], ["swiezak"],
                PRZED_CHWILA()),
         # ODPADA: juz nas obserwuje — wpis `follow` mowi to wprost.
-        skutek("note_like:7", "note_like", ["Leonard"], ["publikacja11"],
+        skutek("note_like:7", "note_like", ["Jedenasty"], ["publikacja11"],
                DAWNO()),
-        skutek("follow:8", "follow", ["Leonard"], ["publikacja11"], DAWNO()),
+        skutek("follow:8", "follow", ["Jedenasty"], ["publikacja11"], DAWNO()),
         # ODPADA: dwie reakcje, ale stoi w `czytelnicy.jsonl`.
         skutek("note_like:9", "note_like", ["Halina Osma"],
                ["publikacja7"], DAWNO()),
@@ -550,7 +550,7 @@ print("=== 6. PUSTA PULA NADAL MOWI, ILU BYLO NA KAZDYM POZIOMIE ===")
 # wpadli w hamulce. Poprawny wynik to zero Z POWODEM.
 TYLKO_STARE = {h: k for h, k in HISTORIA.items() if k[:10] < "2026-08-25"}
 SAMI_ODRZUCENI = [w for w in dziennik_pelny()
-                  if w["kto"][0] in ("Publikacja Lustrzana AI", "Swiezak", "Leonard")]
+                  if w["kto"][0] in ("Publikacja Lustrzana AI", "Swiezak", "Jedenasty")]
 konta2, wpisy2, plik2, out2 = uruchom_blok(
     BLOK_OBSERWUJ, "obserwuj", TYLKO_STARE, Substack(),
     dziennik_wstepny=SAMI_ODRZUCENI, czytelnicy=CZYTELNICY)

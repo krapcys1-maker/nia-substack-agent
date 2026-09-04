@@ -1116,7 +1116,7 @@ def kto_nas_czyta(page=None) -> dict[str, Any]:
     Zmierzone 1 wrzesnia 2026 na siedmiu parach zrzutow: subskrybenci zgadzaja
     sie z `subscriberCountNumber` co do jednego we WSZYSTKICH siedmiu parach,
     a obserwujacy sa krotsi o 1, potem stale o 2 (8/7, 9/7, 11/9, 11/9, 11/9,
-    11/9, 12/10). Rozstrzyga to jeden przypadek: „Leonard" ma w dzienniku
+    11/9, 12/10). Rozstrzyga to jeden przypadek: „Jedenasty" ma w dzienniku
     zdarzenie `follow` z 2026-08-31T06:25:10 (a wiec obserwuje), licznik
     `followerCount` podskoczyl wtedy z 8 na 9 i juz nie spadl — a na zakladce
     „Followers" nie ma go w ZADNYM z szesciu pozniejszych zrzutow, za to jako
@@ -1257,7 +1257,7 @@ def zapisz_czytelnikow(page=None) -> dict[str, Any] | None:
 # obserwowanych. Historia komentarzy miala tego dnia 92 hosty; osiem z nich
 # pokrywalo sie z ta lista juz po samym TANIM mapowaniu `host.split(".")[0]`,
 # a naprawde wiecej (`www.wlasnadomena.example` -> `autor1`,
-# `publikacja8.substack.com` -> `katiegattitassin`). Przy budzecie okolo
+# `publikacja8.substack.com` -> `publikacja8`). Przy budzecie okolo
 # 0,43 obserwacji na dobe i pokryciu 8 z 92 hostow oznacza to mniej wiecej
 # jedna zbedna probe na 27 dni — do 1 wrzesnia zapisywana jako PORAZKA.
 #
