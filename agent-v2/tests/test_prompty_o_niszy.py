@@ -110,44 +110,21 @@ def sprawdz(nazwa, warunek, szczegol=""):
         print("  BLAD  %s   %s" % (nazwa, szczegol))
 
 
-# Slownictwo epoki przedmiotow. Nie jest to lista slow zakazanych w tresci —
-# to lista slow, ktore w PROMPCIE znacza, ze uczymy modelu innego zawodu.
-SPRZED_PRZESTAWIENIA = [
-    "petrol station", "school bus", "school-bus", "tuna", "lighthouse",
-    "conclave", "papal", "cardinals", "runway", "boil-water", "shampoo",
-    "sunscreen", "traffic light", "crew rest", "airliner", "open-jar",
-    "cosmetics", "fuel pump", "fuel-pump", "period-after-opening",
-    "airline overbooking", "hotel overbooking", "sacrificial anode",
-    "crumple zone", "ship's hull", "aircraft window", "vent hole",
-    "bridge weight limit", "supermarket",
-    # Dopisane 1 wrzesnia. Kazde z nich stalo w KANONICZNYM PRZYKLADZIE do
-    # reguly, nie w zakazie: zegar w piekarniku ilustrowal „fakt zywy",
-    # posiadacz zezwolenia i strazak ilustrowali obowiazkowe pole
-    # `consequence`, karton na polce w drzwiach lodowki byl jedynym wzorcem
-    # „momentu czytelnika", a butelka w lazience i swiatlo na skrzyzowaniu
-    # byly wzorcem w `NOTE_FORMS`.
-    # `clock`, NIE „mains clock". Fraza dwuwyrazowa przepuszczala gole slowo, a
-    # to wlasnie gole `clock` stalo w `warto_pisac.md` jako wzorzec dobrej
-    # paraleli. Fraza byla podzbiorem tego slowa, wiec nic nie tracimy.
-    "oven", "clock", "your ticket", "call-out", "permit holder",
-    "firefighter", "carton", "shelf", "bottle", "junction", "faa",
-    # Dopisane 1 wrzesnia wieczorem, po niezaleznym odczycie kodu.
-    # TE NIE SA RZECZOWNIKAMI, tylko FRAZAMI RAMUJACYMI — i wlasnie dlatego
-    # przelezly przez liste zbudowana ze slownictwa przedmiotow. Nie byly
-    # nieaktualnym komentarzem: `synteza.md` definiowala przez „hidden system"
-    # pole `main_mechanism`, ktore idzie do promptu pisarza przy KAZDYM
-    # artykule, a `ciekawostki.md` i `fedreg.md` kazaly modelowi klasyfikowac
-    # kazdy fakt do „everyday area". Instrukcja z poprzedniej epoki dzialala
-    # wiec dalej, a ten test swiecil na zielono.
-    "hidden system", "everyday area", "everyday object", "ordinary object",
-    # Dopisane po RECZNYM przeczytaniu `pisarz.md` od gory do dolu. Ta lista
-    # zbudowana jest ze slow, ktore PAMIETALEM z usuwania — wiec przepuszczala
-    # to, czego nie usuwalem. `SPF` stalo w kanonicznym przykladzie dobrego
-    # pierwszego zdania akapitu o ograniczeniach, czyli w miejscu, ktore model
-    # czyta przy KAZDYM artykule, a test swiecil na zielono.
-    "spf", "sunscreen bottle", "system card", "held-out set",
-    "training data", "stochastic parrot", "context window", "chatbot",
-]
+# SLOWNICTWO POPRZEDNIEJ EPOKI — JEDNO ZRODLO DLA DWOCH KONTROLI.
+#
+# Lista stala tutaj i DRUGA, wlasna, stala w `audyt_tematow.py`. Ta miala sto
+# pozycji, tamta osiem. Audyt tematow przepuszczal wiec dziedzine, ktora ten
+# test by zatrzymal — a obie kontrole swiecily na zielono niezaleznie od
+# siebie, wiec nic tego nie pokazywalo. To ta sama wada, co uchwyt konta
+# w dwoch stalych: dwie kopie jednej rzeczy rozjezdzaja sie zawsze.
+#
+# Lista mieszka teraz w `narzedzia/dawne_slownictwo.py`, razem z powodem
+# istnienia kazdej pozycji. `wszystkie()` doklada do niej opcjonalny plik
+# operatora, wiec konto z INNA poprzednia epoka moze podac swoja.
+sys.path.insert(0, "narzedzia")
+import dawne_slownictwo                                          # noqa: E402
+
+SPRZED_PRZESTAWIENIA = list(dawne_slownictwo.wszystkie())
 
 # Miejsca, gdzie takie slowo stoi CELOWO. Klucz to etykieta zrodla (nazwa
 # pliku promptu albo `config.py:NOTE_FORMS[...]`), wartosc to fragmenty linii,

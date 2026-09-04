@@ -57,7 +57,14 @@ def zbierz() -> dict[str, dict[str, set[str]]]:
     # ktory testy importuja po nazwie — zostal zgloszony jako BRAKUJACY PAKIET
     # z PyPI. Narzedzie majace pilnowac listy zaleznosci samo dopisalo do niej
     # rzecz, ktorej nie da sie zainstalowac.
-    wlasne = {p.stem for p in KOD.rglob("*.py")}
+    #
+    # I TO SAMO RAZ JESZCZE, Z `narzedzia/`. Modul `dawne_slownictwo` lezy tam
+    # i jest importowany po nazwie przez `audyt_tematow.py` (ktory dopisuje ten
+    # katalog do `sys.path`) oraz przez test promptow. Zgloszony zostal jako
+    # brakujacy pakiet — ten sam blad, ta sama poprawka, tylko inny katalog.
+    # Dlatego liczymy WSZYSTKIE moduly repozytorium, a nie liste katalogow.
+    wlasne = ({p.stem for p in KOD.rglob("*.py")}
+              | {p.stem for p in (KORZEN / "narzedzia").rglob("*.py")})
     std = set(sys.stdlib_module_names)
     zew: dict[str, dict[str, set[str]]] = {}
     for p in sorted(KOD.rglob("*.py")):

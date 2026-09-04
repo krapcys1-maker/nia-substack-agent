@@ -25,17 +25,26 @@ def sprawdz(nazwa, warunek, szczegol=""):
 
 
 print("=== 1. KAZDY IMPORT MA POKRYCIE — takze te w srodku funkcji ===")
-wlasne = {p.stem for p in pathlib.Path("agent-v2").glob("*.py")}
-moduly = set()
-for f in pathlib.Path("agent-v2").glob("*.py"):
-    for w in ast.walk(ast.parse(f.read_text(encoding="utf-8"))):
-        if isinstance(w, ast.Import):
-            for a in w.names:
-                moduly.add(a.name.split(".")[0])
-        elif isinstance(w, ast.ImportFrom) and w.module and w.level == 0:
-            moduly.add(w.module.split(".")[0])
-zewnetrzne = sorted(m for m in moduly
-                    if m not in wlasne and m not in sys.stdlib_module_names)
+# PYTAMY NARZEDZIE, NIE LICZYMY PO RAZ TRZECI.
+#
+# Stalo tu wlasne przejscie po `agent-v2/*.py` z wlasna definicja tego, co
+# jest „modulem zewnetrznym" — trzecia kopia tej samej reguly w repozytorium.
+# Rozjechaly sie dokladnie tak, jak takie kopie sie rozjezdzaja: modul lezacy
+# w `narzedzia/` byl lokalny wedlug `zaleznosci.py` i „brakujacym pakietem
+# z PyPI" wedlug tego testu.
+#
+# `zaleznosci.py` opisuje te sama wade w swoim komentarzu — „narzedzie majace
+# pilnowac listy zaleznosci samo dopisalo do niej rzecz, ktorej nie da sie
+# zainstalowac". Trzymanie obok niego drugiej implementacji tej reguly bylo
+# powtorzeniem tamtego bledu, tylko o pietro wyzej.
+sys.path.insert(0, "narzedzia")
+import zaleznosci                                          # noqa: E402
+
+# TYLKO PRODUKCYJNE. `zbierz()` oddaje takze moduly uzywane wylacznie przez
+# testy (dzis `pytest`), a te mieszkaja w `requirements-dev.txt` — sprawdzanie
+# ich wobec `requirements.txt` zglaszaloby brak, ktorego nie ma.
+_zaleznosci = zaleznosci.zbierz()
+zewnetrzne = sorted(m for m, gdzie in _zaleznosci.items() if gdzie["prod"])
 print("    zewnetrznych modulow: %s -> %s" % (len(zewnetrzne), zewnetrzne))
 brak = [m for m in zewnetrzne if importlib.util.find_spec(m) is None]
 sprawdz("wszystkie zewnetrzne moduly sa zainstalowane", not brak, brak)

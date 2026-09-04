@@ -590,7 +590,7 @@
 
 ### `audyt_tematow.py` — audyt segmentu tematow na zywych danych: jedenascie etapow, od kanalow po zwrot do puli
 
-313 wierszy, 4 funkcji na poziomie modułu, 0 klas
+326 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

@@ -145,3 +145,9 @@ narzedzia/dawne-tozsamosci.txt
 agent-v2/prompts/styl/*.txt
 agent-v2/prompts/styl/przypiecia.json
 !agent-v2/prompts/styl/README.md
+
+# Slownictwo POPRZEDNIEJ EPOKI tego konkretnego konta — dokladane do listy
+# wbudowanej w `narzedzia/dawne_slownictwo.py`. Wbudowana lista zostaje w git
+# (to pospolite rzeczowniki, dzialajacy przyklad dla kazdego, kto forkuje);
+# lokalna nie, bo opisuje, o czym pisalo TO konto.
+narzedzia/dawne-slownictwo.txt

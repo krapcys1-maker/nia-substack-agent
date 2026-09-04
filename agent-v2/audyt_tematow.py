@@ -123,12 +123,19 @@ def main() -> int:
     print("  dziedzin %d, generatorow %d, na przebieg %d"
           % (len(config.DZIEDZINY_CIEKAWOSTEK), len(config.GENERATORY),
              config.ILE_GENERATOROW_NA_PRZEBIEG))
+    # TA SAMA LISTA, CO W `tests/test_prompty_o_niszy.py`. Stalo tu wlasne
+    # osiem slow przy stu tamtych, wiec ta kontrola przepuszczala dziedzine,
+    # ktora tamta by zatrzymala — i obie swiecily na zielono niezaleznie.
+    sys.path.insert(0, str(KATALOG.parent / "narzedzia"))
+    import dawne_slownictwo
+    slownik = dawne_slownictwo.wszystkie()
     sprzed = [d for d in config.DZIEDZINY_CIEKAWOSTEK
-              if any(s in d.lower() for s in
-                     ("shampoo", "cosmetic", "traffic light", "petrol",
-                      "school bus", "tuna", "aviation", "hotel"))]
-    werdykt("zadna dziedzina nie jest z epoki przedmiotow",
+              if any(s in d.lower() for s in slownik)]
+    werdykt("zadna dziedzina nie jest z poprzedniej epoki",
             "OK" if not sprzed else "BLAD", str(sprzed[:3]))
+    werdykt("i lista, ktora to sprawdza, nie jest pusta",
+            "OK" if len(slownik) >= 20 else "BLAD",
+            "%d hasel" % len(slownik))
     werdykt("dziedzin wystarczy na rotacje",
             "OK" if len(config.DZIEDZINY_CIEKAWOSTEK) >= 30 else "UWAGA",
             str(len(config.DZIEDZINY_CIEKAWOSTEK)))
@@ -283,9 +290,15 @@ def main() -> int:
     werdykt("sedzia dostaje prawdziwe pomiary",
             "OK" if "likes" in dowody and "THESE DID NOT" in dowody else "UWAGA",
             dowody[:40])
-    werdykt("i sa one z epoki AI",
-            "OK" if "shampoo" not in dowody.lower() else "BLAD",
-            "szampon w dowodach" if "shampoo" in dowody.lower() else "")
+    # DOWODY DLA SEDZIEGO BANKU TEZ MUSZA BYC Z OBECNEJ EPOKI. Stalo tu jedno
+    # slowo wpisane na sztywno; teraz pyta ta sama liste, co dwie kontrole
+    # wyzej — inaczej wystarczylo, ze stara notka mowila o czym innym niz
+    # akurat to jedno slowo, i przechodzila jako dowod „co dziala na tym
+    # koncie".
+    stare_w_dowodach = [s for s in slownik if s in dowody.lower()]
+    werdykt("i sa one z obecnej epoki konta",
+            "OK" if not stare_w_dowodach else "BLAD",
+            ", ".join(stare_w_dowodach[:3]))
 
     # ---------------------------------------------------------------
     etap(12, "PROMPTY")
