@@ -607,7 +607,7 @@
 
 ### `audyt_tematow.py` — audyt segmentu tematow na zywych danych: jedenascie etapow, od kanalow po zwrot do puli
 
-326 wierszy, 4 funkcji na poziomie modułu, 0 klas
+361 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -618,7 +618,7 @@
 
 ### `audyt_researchu.py` — audyt segmentu researchu na zywych danych: dyskoveria, pobieranie, martwe hosty, karta dowodowa
 
-196 wierszy, 3 funkcji na poziomie modułu, 0 klas
+206 wierszy, 3 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -628,7 +628,7 @@
 
 ### `audyt_systemu.py` — audyt CALEGO systemu na zywych danych: publikowanie, normy, komentarze, statystyki, artykul, pieniadze, pamiec
 
-664 wierszy, 7 funkcji na poziomie modułu, 0 klas
+674 wierszy, 7 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

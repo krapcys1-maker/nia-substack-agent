@@ -85,12 +85,33 @@ def main() -> int:
     etap(1, "ZRODLA — korpus kanalow i jego zapas")
     korpus_kanalow._ZAPAS["wpisy"] = None
     korpus_kanalow._ZAPAS["kiedy"] = 0.0
-    k1 = korpus_kanalow.korpus_kanalow(26)
-    k2 = korpus_kanalow.korpus_kanalow(200)
-    print("  pierwsze wywolanie oddalo %d, drugie %d" % (len(k1), len(k2)))
-    werdykt("kanaly odpowiadaja", "OK" if k1 else "BLAD", "%d tematow" % len(k1))
-    werdykt("zapas oddaje PELNA liste drugiemu wolajacemu",
-            "OK" if len(k2) > len(k1) else "BLAD", "%d > %d" % (len(k2), len(k1)))
+    # BRAK KANALOW TO DECYZJA, NIE AWARIA — i to jest cala roznica miedzy
+    # „nie ma czego pobrac" a „jest co pobrac i nie idzie".
+    #
+    # `zrodla.kanaly_youtube` jest domyslnie PUSTE, wiec swieza instalacja
+    # dostawala tu DWA BLEDY i kod wyjscia 1 za stan calkowicie poprawny.
+    # Pierwszy audyt, jaki widzi nowy operator, meldowal awarie swojej wlasnej
+    # konfiguracji domyslnej — a ten plik ostrzega przed falszywym alarmem
+    # w trzech miejscach („falszywy alarm uczy ignorowac alarmy").
+    k1: list = []
+    k2: list = []
+    if not korpus_kanalow.KANALY:
+        print("  (zadnego kanalu nie skonfigurowano —"
+              " `zrodla.kanaly_youtube` w konfiguracji)")
+        werdykt("korpus kanalow: skonfigurowany", "UWAGA",
+                "brak kanalow. To DECYZJA, nie awaria: notki stana na siatce"
+                " dziedzin, bez zaczynu z dnia")
+    else:
+        k1 = korpus_kanalow.korpus_kanalow(26)
+        k2 = korpus_kanalow.korpus_kanalow(200)
+        print("  pierwsze wywolanie oddalo %d, drugie %d" % (len(k1), len(k2)))
+        werdykt("kanaly odpowiadaja", "OK" if k1 else "BLAD",
+                "%d tematow z %d kanalow" % (len(k1), len(korpus_kanalow.KANALY)))
+        werdykt("zapas oddaje PELNA liste drugiemu wolajacemu",
+                "OK" if len(k2) > len(k1) else "BLAD",
+                "%d > %d" % (len(k2), len(k1)))
+    # `k2` istnieje tylko w galezi ze skonfigurowanymi kanalami — bez nich
+    # pytanie „ile kanalow dalo material" nie ma podmiotu.
     zywe_kanaly = len({w.get("kanal") for w in k2})
     werdykt("ile kanalow dalo material",
             "OK" if zywe_kanaly >= 8 else "UWAGA",
@@ -156,9 +177,22 @@ def main() -> int:
     print("  z %d w banku nadal swiezych: %d" % (len(po_pivocie), przeszlo))
     for p, n in powody.most_common(5):
         print("    %2dx %s" % (n, p))
-    werdykt("material w banku nie zgnil",
-            "OK" if przeszlo / max(1, len(po_pivocie)) > 0.5 else "BLAD",
-            "%d%% swiezych" % round(100 * przeszlo / max(1, len(po_pivocie))))
+    # PUSTY BANK TO NIE JEST ZGNILY MATERIAL. `max(1, len(...))` chronilo przed
+    # dzieleniem przez zero i przy okazji KLAMALO: 0/1 = „0% swiezych" i BLAD
+    # przy banku, w ktorym nie ma ani jednej pozycji. Swieza instalacja
+    # dostawala wiec BLAD i kod wyjscia 1 za stan poprawny.
+    #
+    # Ten projekt rozstrzygnal to poprawnie w czterech innych miejscach —
+    # `wzajemnosc.odwzajemnienie` („mianownik zerowy nie daje zera procent,
+    # tylko brak odpowiedzi"), `norma._srednia`, `statystyki.podsumowanie`,
+    # `alarm.wolumeny`.
+    if not po_pivocie:
+        werdykt("material w banku nie zgnil", "UWAGA",
+                "bank pusty — nie ma czego mierzyc, i to NIE jest 0% swiezych")
+    else:
+        werdykt("material w banku nie zgnil",
+                "OK" if przeszlo / len(po_pivocie) > 0.5 else "BLAD",
+                "%d%% swiezych" % round(100 * przeszlo / len(po_pivocie)))
 
     # ---------------------------------------------------------------
     etap(5, "BRAMKA KANDYDATA na materiale w banku")
@@ -173,8 +207,9 @@ def main() -> int:
     for p, n in odrzuty.most_common(5):
         print("    %2dx %s" % (n, p))
     werdykt("bank nie trzyma materialu, ktorego bramka nie przepuszcza",
-            "OK" if zdane / max(1, len(po_pivocie)) > 0.8 else "UWAGA",
-            "%d%%" % round(100 * zdane / max(1, len(po_pivocie))))
+            "OK" if po_pivocie and zdane / len(po_pivocie) > 0.8 else "UWAGA",
+            ("%d%%" % round(100 * zdane / len(po_pivocie))) if po_pivocie
+            else "bank pusty — nie ma czego mierzyc")
 
     # ---------------------------------------------------------------
     etap(6, "TERMIN PRZYDATNOSCI I SUFIT")

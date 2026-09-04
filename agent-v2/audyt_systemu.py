@@ -220,8 +220,18 @@ def main() -> int:
     # ---------------------------------------------------------------
     etap(1, "PUBLIKOWANIE — co naprawde wychodzi na zewnatrz")
     if not wpisy:
-        werdykt("dziennik istnieje", "BLAD", str(browser.DZIENNIK))
-        return 1
+        # PUSTY DZIENNIK NA SWIEZEJ INSTALACJI TO NIE JEST AWARIA. Bot jeszcze
+        # nie chodzil — a audyt konczacy sie BLEDEM i kodem 1 przy pierwszym
+        # uruchomieniu uczy, ze jego wynik nic nie znaczy. To ta sama klasa, co
+        # „0% swiezych" przy pustym banku: brak pomiaru czytany jako zly wynik.
+        #
+        # AWARIA WYGLADA INACZEJ I MA WLASNY ALARM: `alarm.cisza` pyta, czy
+        # przebiegi w ogole sie odbywaja, i budzi po 26 godzinach milczenia.
+        werdykt("dziennik dzialan istnieje", "UWAGA",
+                "pusty albo go nie ma (%s) — bot jeszcze nic nie zapisal;"
+                " o milczeniu DZIALAJACEGO agenta mowi `alarm.cisza`"
+                % browser.DZIENNIK.name)
+        return 0
     print("  wpisow w dzienniku: %d, %s: %d"
           % (len(wpisy),
              ("po zmianie tematu (%s)" % PIVOT) if PIVOT

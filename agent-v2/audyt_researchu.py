@@ -102,9 +102,15 @@ def main() -> int:
     for powod, ile in Counter(str(r["fail_reason"] or "?")[:44]
                               for r in zrodla if not r["fetched_ok"]).most_common(6):
         print("    %3dx %s" % (ile, powod))
-    udzial = ok / max(1, len(zrodla))
-    werdykt("skutecznosc pobierania", "OK" if udzial >= 0.7 else "UWAGA",
-            "%d%%" % round(100 * udzial))
+    # BRAK ZRODEL TO NIE JEST ZEROWA SKUTECZNOSC. `max(1, ...)` dawalo tu
+    # „0%" i UWAGA przy pustej bazie — czyli przy pierwszym uruchomieniu.
+    if not zrodla:
+        werdykt("skutecznosc pobierania", "UWAGA",
+                "zadnego zrodla w bazie — nie ma czego mierzyc")
+    else:
+        udzial = ok / len(zrodla)
+        werdykt("skutecznosc pobierania", "OK" if udzial >= 0.7 else "UWAGA",
+                "%d%%" % round(100 * udzial))
     odzyskane = sum(1 for r in zrodla
                     if r["fetched_ok"] and "przegląd" in str(r["fail_reason"] or ""))
     werdykt("ponowienie w przegladarce cos odzyskuje",
@@ -154,11 +160,15 @@ def main() -> int:
             "%d bez" % bez_cytatu)
     werdykt("kazde twierdzenie ma adres", "OK" if not bez_url else "BLAD",
             "%d bez" % bez_url)
-    sr = tw / max(1, len(karty))
-    werdykt("karta nie jest pusta ani rozdeta",
-            "OK" if 4 <= sr <= config.CARD_MAX_CONFIRMED else "UWAGA",
-            "srednio %.1f twierdzen przy sufcie %d"
-            % (sr, config.CARD_MAX_CONFIRMED))
+    if not karty:
+        werdykt("karta nie jest pusta ani rozdeta", "UWAGA",
+                "zadnej karty dowodowej — nie ma czego mierzyc")
+    else:
+        sr = tw / len(karty)
+        werdykt("karta nie jest pusta ani rozdeta",
+                "OK" if 4 <= sr <= config.CARD_MAX_CONFIRMED else "UWAGA",
+                "srednio %.1f twierdzen przy sufcie %d"
+                % (sr, config.CARD_MAX_CONFIRMED))
     synt = " ".join(
         (KATALOG / "prompts" / "synteza.md").read_text(encoding="utf-8").split())
     werdykt("prompt zada, by cytat niosl CALE twierdzenie",
