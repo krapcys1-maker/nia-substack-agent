@@ -281,11 +281,12 @@ figure had reached 137:
 |---|---|
 | `pip install -r requirements-dev.txt` | four — `playwright` browser not downloaded, Windows has no POSIX signals, empty `data/`, no `.env` |
 | `+ playwright install chromium` | the last three |
-| `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_zapora_platnych_wywolan` needs a real `ANTHROPIC_API_KEY` to prove the paid-call firewall refuses it |
+| `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_jednostki_systemd` needs systemd |
 
-Measured on this copy: of 147 test files, **137 pass, 2 skip themselves and 2
-fail**. Both remaining failures are impossible to fix on a fresh Windows install
-and neither says anything about the code. Each is listed with its cause in
+Measured on this copy (2026-09-05): of 147 test files, **145 pass and 2 fail**;
+five of the passing ones skip part of their work and say so, line by line. Both
+failures are impossible to fix on a Windows install and neither says anything
+about the code. Each is listed with its cause in
 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The count of files is
 checked against the tree on every run by `test_liczby_w_dokumentach.py`, so this
 paragraph cannot drift again in silence.

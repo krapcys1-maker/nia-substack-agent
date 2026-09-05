@@ -633,7 +633,14 @@ DAILY_LIMIT_USD = sufit_dnia(_dzis_utc())
 # Trzy dolary to okolo dwudziestu pelnych przebiegow szukania ciekawostek albo
 # ponad stu rankingow banku. Na dzien pracy nad kodem starczy z zapasem, a
 # przy petli bez wyjscia strata konczy sie na kwocie, ktora nie boli.
-TEST_LIMIT_USD = 3.00
+# Ale gorna granica to nie caly warunek. Trzy dolary bylo kalibrowane do
+# NASZEGO sufitu dziennego; operator, ktory ustawi `sufit_dzienny_usd = 1.0`,
+# dostawal tor testowy zdolny wydac trzykrotnosc calej swojej produkcji — i
+# dowiadywal sie o tym wylacznie z oblanego `test_tor_testowy`, bez slowa
+# wyjasnienia. Kwota nizsza z dwoch wygrywa; przeliczenie jest na koncu pliku,
+# bo tutaj `konfiguracja.toml` nie jest jeszcze wczytany.
+TEST_LIMIT_USD_BAZA = 3.00
+TEST_LIMIT_USD = TEST_LIMIT_USD_BAZA
 MONTHLY_LIMIT_USD = 40.00
 
 # Sufit na JEDEN przebieg. Działa ZAWSZE, także przy AGENT_V2_NO_LIMIT=1.
@@ -3246,6 +3253,22 @@ FETCH_USER_AGENT = _naglowek_klienta()
 
 # Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia.
 DAILY_LIMIT_USD = sufit_dnia(_dzis_utc())
+
+# Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`.
+TEST_LIMIT_USD = min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)
+
+# DOBA MUSI ZMIESCIC ARTYKUL. Kreator pyta o oba sufity osobno i nie zestawia
+# ich ze soba, wiec para w rodzaju (doba 1,00; przebieg 0,60) zapisuje sie bez
+# slowa sprzeciwu — a znaczy tyle, ze artykul tygodniowy nie powstanie NIGDY:
+# potrzebuje calego przebiegu, a doba nie udzwignie dwoch. Agent milczalby
+# o przyczynie, bo kazdy pojedynczy etap miescilby sie w limicie.
+#
+# Ostrzezenie, nie wyjatek: to konfiguracja operatora i ma prawo byc dziwna.
+# Ale ma o tym wiedziec w chwili wczytania, a nie z oblanego testu.
+if DAILY_LIMIT_USD < RUN_LIMIT_USD * 2 and not _w_darmowym_tescie():
+    print("  [konfiguracja] UWAGA: sufit dobowy %.2f USD nie zmiesci dwoch "
+          "przebiegow po %.2f — artykul tygodniowy nie powstanie"
+          % (DAILY_LIMIT_USD, RUN_LIMIT_USD), flush=True)
 
 if KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():
     print("  [konfiguracja] %s: przestawiono %d pozycji"

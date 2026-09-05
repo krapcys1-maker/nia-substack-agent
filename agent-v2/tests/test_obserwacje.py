@@ -243,7 +243,12 @@ TEMPO_OBSERWACJI_SPRZED_NAPRAWY = 44
 sprawdz("subskrypcje nie ida w tempie obserwacji sprzed naprawy",
         config.SUBSKRYPCJE_MIESIECZNIE[1] < TEMPO_OBSERWACJI_SPRZED_NAPRAWY,
         config.SUBSKRYPCJE_MIESIECZNIE)
-sprawdz("i wielokrotnie mniej niz komentarzy, ktore nikogo nie zasypuja",
+# PROPORCJA, NIE PROG. Asercja wyzej stoi przed konkretna awaria (subskrypcje
+# w tempie obserwacji) i obowiazuje kazdego. Ta jest inna: mowi, ze subskrypcji
+# ma byc czterokrotnie mniej niz komentarzy — a to kalibracja NASZEGO konta.
+# Operator, ktory zszedl do dwoch komentarzy dziennie, oblewal ja nie dlatego,
+# ze subskrybuje za duzo, tylko dlatego, ze komentuje rzadko.
+sprawdz_nasze("i wielokrotnie mniej niz komentarzy, ktore nikogo nie zasypuja",
         config.SUBSKRYPCJE_MIESIECZNIE[1] * 4 < config.KOMENTARZE_DZIENNIE[0] * 30,
         (config.SUBSKRYPCJE_MIESIECZNIE, config.KOMENTARZE_DZIENNIE))
 sprawdz("KONTRDOWOD: tempo obserwacji sprzed naprawy by tego nie przeszlo",

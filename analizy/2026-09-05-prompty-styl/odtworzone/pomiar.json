@@ -1,0 +1,193 @@
+{
+  "method": "Interception before llm.call transport; synthetic inputs; no generation",
+  "prompts": [
+    {
+      "scenario": "CIEKAWOSTKA_PROSTA",
+      "purpose": "note",
+      "system_words": 27,
+      "user_words": 1546,
+      "user_chars": 8724,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    },
+    {
+      "scenario": "CIEKAWOSTKA_LISTA",
+      "purpose": "note",
+      "system_words": 27,
+      "user_words": 1606,
+      "user_chars": 9052,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    },
+    {
+      "scenario": "MYSL_LICZBA",
+      "purpose": "note",
+      "system_words": 27,
+      "user_words": 1941,
+      "user_chars": 10792,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    },
+    {
+      "scenario": "MYSL_LISTA",
+      "purpose": "note",
+      "system_words": 27,
+      "user_words": 1859,
+      "user_chars": 10400,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    },
+    {
+      "scenario": "DYSKUSJA_PYTANIE",
+      "purpose": "note",
+      "system_words": 27,
+      "user_words": 1629,
+      "user_chars": 9218,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    },
+    {
+      "scenario": "komentarz_ciekawosc_sprzeciw",
+      "purpose": "comment",
+      "system_words": 49,
+      "user_words": 1367,
+      "user_chars": 7915,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    },
+    {
+      "scenario": "odpowiedz_pytanie",
+      "purpose": "reply",
+      "system_words": 29,
+      "user_words": 1186,
+      "user_chars": 6882,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    },
+    {
+      "scenario": "artykul_THIN_bez_probek",
+      "purpose": "write",
+      "system_words": 32,
+      "user_words": 3475,
+      "user_chars": 20405,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    },
+    {
+      "scenario": "artykul_THIN_z_probkami",
+      "purpose": "write",
+      "system_words": 32,
+      "user_words": 3853,
+      "user_chars": 22696,
+      "no_emphasis_on_tokens": "word count, not provider tokens"
+    }
+  ],
+  "missing_style_examples": false,
+  "MYSL_formy_8_dni": [
+    {
+      "day": "2026-09-05",
+      "form": "ZACZEP_I_KONKRET"
+    },
+    {
+      "day": "2026-09-06",
+      "form": "PROSTA"
+    },
+    {
+      "day": "2026-09-07",
+      "form": "LISTA"
+    },
+    {
+      "day": "2026-09-08",
+      "form": "PYTANIE"
+    },
+    {
+      "day": "2026-09-09",
+      "form": "ODWROCENIE"
+    },
+    {
+      "day": "2026-09-10",
+      "form": "LICZBA"
+    },
+    {
+      "day": "2026-09-11",
+      "form": "SCENA"
+    },
+    {
+      "day": "2026-09-12",
+      "form": "KONTRAST"
+    }
+  ],
+  "uwaga_gestosci": [
+    {
+      "gate": "GESTOSC_BEATOW",
+      "detail": "2 przekonań na 650 słów — jedno co 325 słów przy progu 150; samo wsparcie: brak"
+    }
+  ],
+  "wymagane_przekonania_przy_celu": {
+    "RICH": 8,
+    "SINGLE": 5,
+    "THIN": 3
+  },
+  "style_file_words": {
+    "ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md": 301,
+    "ARTICLE_STYLE_PROFILE_V1.md": 513,
+    "CLAUDE_INSTRUKCJA_NATURALNEGO_PISANIA.md": 5742
+  },
+  "local_style_examples": [
+    {
+      "function": "OPENING",
+      "words": 68,
+      "chars": 382
+    },
+    {
+      "function": "CONCRETE_TO_SYSTEM",
+      "words": 80,
+      "chars": 454
+    },
+    {
+      "function": "MECHANISM",
+      "words": 58,
+      "chars": 343
+    },
+    {
+      "function": "COUNTERARGUMENT",
+      "words": 89,
+      "chars": 551
+    },
+    {
+      "function": "ENDING",
+      "words": 73,
+      "chars": 473
+    }
+  ],
+  "NOTE_MIX_OTHER_DAY": [
+    "CIEKAWOSTKA",
+    "DYSKUSJA",
+    "MYSL"
+  ],
+  "source_sha256": {
+    "agent-v2\\stages.py": "98ceaaa26b19d8c0e251a8897ff694a881c8e236aec5462717cc9cd023c65710",
+    "agent-v2\\config.py": "024a2a732eac6146559ea555523e6d79e721d34a4e03dec1652e0e0d56524b19",
+    "agent-v2\\style.py": "49aafa7af467c2001abf769c32445c7b6f373ffd8521fad8d80c4a04057e3751",
+    "agent-v2\\gates.py": "d7186ae14dc8c1d3d0155850d387da4237c0db6392fea36579fb1700c02be5e0",
+    "agent-v2\\prompts\\bank.md": "d5277288b39105426aaa1968861a2a89fd8a8972badcaa81eaff858f5e3c6f49",
+    "agent-v2\\prompts\\bibliotekarz.md": "43fd363a52ecbc213dada25ad1416f29f5116e68f6a64fff4fbe92909e87b1d4",
+    "agent-v2\\prompts\\cele.md": "6ae8f1a200526fc7bb27228637593446fc0fd955a2db3d060890ef07cb17272c",
+    "agent-v2\\prompts\\ciekawostki.md": "c1219caae7502739914e91e7aa4b2aa0e44ef4cfce9252451e5ef5fed0ba9b4d",
+    "agent-v2\\prompts\\dyskoveria.md": "f93be909c956ee46b7841439d0d1e05ae2c5441f0701c0c4fc15a27b95466302",
+    "agent-v2\\prompts\\fedreg.md": "d89452387cf9e1e4dc3acef2021831770c22a704a1c17dd996a1fd764ddce722",
+    "agent-v2\\prompts\\forma.md": "50a572ff5ef8be32d1b0a2a4b3afa4c57c45f9972ecfd2416d31a546720fc4b7",
+    "agent-v2\\prompts\\grafika.md": "4bf713df373526f7c77826992d88ad1f45084a7ed4488e0e841887edd78da1e8",
+    "agent-v2\\prompts\\klasyfikacja.md": "93e93790b17a9a873ac061f53c0acfccef95a895741aecee266c1379488c762f",
+    "agent-v2\\prompts\\kogo_odpowiedziec.md": "8039ee19e53d42a47c2940ab5c5663cf84676b4d99519f36683437a512f9f72f",
+    "agent-v2\\prompts\\komentarz.md": "28768f15f4835b84a5fdbe843b706e92cecd70231e7b7edd785d57da9b0ab612",
+    "agent-v2\\prompts\\naprawa.md": "84213105b504284f15a35fe8ab3c6206194e40c683b53088e843cdf0745c5443",
+    "agent-v2\\prompts\\notka.md": "2ba6d5f07c79d85d0a3244de6e709f12a855c42c5b0bdc2a6e6fbeb1bdce5786",
+    "agent-v2\\prompts\\odpowiedz.md": "0ce0cbe1b77b87b673c5a9ada0ac18475bfb4e79ebad553c2a2049328f01d283",
+    "agent-v2\\prompts\\OSWIADCZENIE_AUTORSTWA.md": "abf5ec712824185f518a1981b3a94345d5a9bfc3324cd15e6479e734d5361105",
+    "agent-v2\\prompts\\pisarz.md": "4849631d0f000d51dec70e4295b98289ffd1afab740bc10fbf23c67eb33812f1",
+    "agent-v2\\prompts\\po_ludzku.md": "f74b39ef956241edf28b95d85a29686818398a68acb7246dcbb315fcfe68c28e",
+    "agent-v2\\prompts\\recenzent.md": "68e17738ea02bb23b3adb48bd70752d9e5bf7e1c2168c6b4419474f428257cde",
+    "agent-v2\\prompts\\restack.md": "ca115defccd4d7b2413ec1f25b84644a92247c31f8a2aa9e153008b27365be67",
+    "agent-v2\\prompts\\skaut.md": "8c5b9362cad15837bba430fd285427c85bd1f8647b2119f6f2a8025fbc35e5f8",
+    "agent-v2\\prompts\\synteza.md": "f51a4cc03b40031c738faa0c086cc2cb34cd75693121dac38e196fd751667c56",
+    "agent-v2\\prompts\\warto_pisac.md": "fb314117c271a970351a5ba3ef0b19011d31c66c776cf0fc0a403909cfac95ed",
+    "agent-v2\\prompts\\weryfikacja.md": "6cc78aae99b6f4307dad2e03ccc347113d948abd047b0c40253ee8fa182502d6",
+    "agent-v2\\prompts\\wykonalnosc.md": "26de9a9f64bbaea99733d87b059287eaeaf2e2c3c206914289b95d30ce85e982",
+    "style-profiles\\ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md": "604845e737ea09837f313af52f7ee827e0fbbdc28aff3647808876f760783cca",
+    "style-profiles\\ARTICLE_STYLE_PROFILE_V1.md": "f5bbf97144e69554fe3b78d98d5738235beb306fe6db8ce6912cfc92434fdc59",
+    "style-profiles\\CLAUDE_INSTRUKCJA_NATURALNEGO_PISANIA.md": "b4eff768444594b746ef1ef6c456f913c2f97020f3f8ea828e0be7c32085a348"
+  }
+}
