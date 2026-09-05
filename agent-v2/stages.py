@@ -2836,6 +2836,14 @@ KSZTALT_CIEKAWOSTEK = (
     '"CONFIRMS|MODIFIES|ENDS", "control_fact": "", "domain": ""}]}'
 )
 
+# POLA, KTORE SA DOWODEM — reszta wpisu indeksu nim nie jest.
+#
+# Wyprowadzone z `KSZTALT_CIEKAWOSTEK`, a nie wypisane drugi raz recznie: dwie
+# listy tych samych nazw rozjechalyby sie przy pierwszym dopisanym polu, a to
+# jest w tym repozytorium wada z dluga historia (data przestawienia w pieciu
+# kopiach, slowa puste w czterech).
+POLA_FAKTU = frozenset(re.findall(r'"([a-z_]+)":', KSZTALT_CIEKAWOSTEK)) - {"facts"}
+
 # Pola kontraktu ciekawostek wyprowadzone z samego ksztaltu — zeby zapis do
 # indeksu nie mogl sie z nim rozjechac. Patrz `dopisz_kandydatow`.
 def _pola_ksztaltu(ksztalt: str, pomin: tuple[str, ...] = ("facts",)) -> tuple[str, ...]:
@@ -3601,7 +3609,22 @@ def notki_dnia(
                 break
             juz_o_tym.append("%s %s" % (fakt.get("domain") or "",
                                         fakt.get("fact") or ""))
-            material = {"fact": fakt}
+            # TYLKO POLA FAKTU, NIE CALY WPIS INDEKSU.
+            #
+            # Stalo tu `{"fact": fakt}`, gdzie `fakt` to wpis prosto z indeksu —
+            # razem z `status`, `powod`, `ranga`, `wazny_do`, `zielone_swiatlo`,
+            # `dlaczego_mocny`, `podobne_do`, `kiedy`, `z_kanalu`. To jest nasza
+            # ksiegowosc banku, nie dowod.
+            #
+            # A `notka.md` mowi pisarzowi: „every fact comes from the evidence
+            # below". Dwa z tych pol (`dlaczego_mocny`, `powod`) to ZDANIA
+            # SEDZIEGO BANKU, gotowe do przepisania do notki jako ustalenie —
+            # model dostawal ocene wlasnego materialu podana jako material.
+            #
+            # Bierzemy pola z `KSZTALT_CIEKAWOSTEK`, czyli dokladnie to, o co
+            # prosilismy model przy szukaniu.
+            material = {"fact": {k: v for k, v in fakt.items()
+                                 if k in POLA_FAKTU}}
         print(f"  [{typ} / {forma}]", flush=True)
         # Adres artykułu leci TYLKO pod notką, która ten artykuł promuje.
         # Pod ciekawostką byłby reklamą doklejoną do faktu i psułby ją.

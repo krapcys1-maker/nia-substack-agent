@@ -1301,6 +1301,22 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                         if powod:
                             break
                     stages.zakwestionuj_promocje(n["promocja_url"], powod)
+                # FAKT WRACA DO PULI, BO NOTKA NIE WYSZLA.
+                #
+                # `wez_kandydatow` znaczy jako `uzyty` wszystko, co wyda — bo
+                # przy notkach wydane naprawde ida do pisania. Ale notka odpada
+                # jeszcze TUTAJ, na zaporze albo na dlugosci, i wtedy oplacony
+                # fakt przepadal: w indeksie `uzyty`, a w swiat nie poszedl nic.
+                #
+                # `notki_dnia` oddaje juz NIEUZYTY zapas (`zwroc_kandydatow`
+                # przy koncu funkcji); to jest druga polowa tej samej sprawy —
+                # fakt ZDJETY dla konkretnej notki, ktorej potem nie ma.
+                #
+                # Zasada „wolimy stracic niz wystawic dwa razy" zostaje
+                # nietknieta: duplikat blokuja `zuzyte_fakty.json` (dopisywany
+                # dopiero po potwierdzonej publikacji) i pamiec notek.
+                if n.get("fakt"):
+                    stages.zwroc_kandydatow([{"fact": n["fakt"]}])
                 continue
             if wyslij:
                 if not rytm("notka", "notki", rytm_stanu):
