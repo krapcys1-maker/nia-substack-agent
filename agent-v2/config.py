@@ -1374,10 +1374,46 @@ OTWARCIA = (
 )
 
 
-def losowe_otwarcie() -> str:
+# OTWARCIA, KTORYCH DANA POSTAWA NIE MOZE WYKONAC.
+#
+# Postawa i otwarcie byly losowane NIEZALEZNIE, wiec komentarz potrafil dostac
+# w jednym prompcie polecenie „nie korygujesz" i „zacznij od sprzeciwu".
+# Zmierzone na wagach z tego pliku: cztery takie pary to 8,2% komentarzy.
+#
+# Gorsza jest jednak druga rzecz, ktora to samo losowanie robilo po cichu.
+# Otwarcie „Start by naming what the piece got right, then the part it
+# skipped" JEST ruchem KOREKTA — a KOREKTA ma wage 1, najnizsza w calej
+# tabeli, i jej wlasny opis mowi dlaczego: „Used by default it becomes a tic".
+# Waga dawala temu ruchowi 3,1% komentarzy, a otwarcie zamawialo go w 12,5%.
+# Cztery razy czesciej, tylnymi drzwiami, omijajac wage, ktora istnieje
+# wylacznie po to, zeby ten ruch byl rzadki.
+#
+# Nie zabieramy otwarcia nikomu, kto moze je wykonac: sprzeciw zostaje dla
+# postaw, ktore sie nie zgadzaja, a ruch korekty dla tej, ktora go nazywa.
+OTWARCIE_SPRZECIWU = "Start with the objection: say plainly where you part company."
+OTWARCIE_KOREKTY = "Start by naming what the piece got right, then the part it skipped."
+
+# Kto MOZE dostac dane otwarcie. Postawy spoza listy go nie dostaja.
+OTWARCIA_TYLKO_DLA = {
+    OTWARCIE_SPRZECIWU: frozenset({"SPRZECIW", "KOREKTA"}),
+    OTWARCIE_KOREKTY: frozenset({"KOREKTA", "SPRZECIW"}),
+}
+
+
+def otwarcia_dla_postawy(postawa: str) -> tuple[str, ...]:
+    """Otwarcia, ktore ta postawa ma jak wykonac."""
+    p = (postawa or "").upper()
+    wolno = tuple(o for o in OTWARCIA
+                  if p in OTWARCIA_TYLKO_DLA.get(o, frozenset({p})))
+    # Pusta lista znaczylaby, ze postawa nie ma ZADNEGO otwarcia — to bylby
+    # blad w tablicy powyzej, a nie stan, w ktorym wolno milczkiem isc dalej.
+    return wolno or OTWARCIA
+
+
+def losowe_otwarcie(postawa: str = "") -> str:
     import random
 
-    return random.choice(OTWARCIA)
+    return random.choice(otwarcia_dla_postawy(postawa))
 
 
 def losowa_dlugosc() -> int:

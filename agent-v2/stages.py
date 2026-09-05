@@ -4677,11 +4677,22 @@ def comment_on(
             "but write something. ---\n"
             + str(post["co_dodamy"])[:600]
         )
-    otwarcie = config.losowe_otwarcie()
     # POSTAWA PRZYDZIELONA, nie wybrana przez model. Prompt oferowal cztery ruchy
     # i mowil „wybierz jeden"; model niemal zawsze bral ten sam. Wagi sprawiaja,
     # ze korekta i zgoda sa naprawde rzadkie, a nie tylko nazwane rzadkimi.
     postawa, postawa_opis = config.losowa_postawa()
+    # OTWARCIE DOBIERANE DO POSTAWY, i dlatego stoi PONIZEJ niej — wczesniej
+    # bylo odwrotnie i oba losowania byly niezalezne.
+    #
+    # Zmierzone na wagach z `config`: cztery sprzeczne pary to 8,2% komentarzy
+    # („nie korygujesz" + „zacznij od sprzeciwu", „zgodz sie" + „zacznij od
+    # sprzeciwu"). Gorsze bylo to, czego nie widac: otwarcie „naming what the
+    # piece got right, then the part it skipped" JEST ruchem KOREKTA, a KOREKTA
+    # ma wage 1 — najnizsza w tabeli — bo „used by default it becomes a tic".
+    # Waga dawala mu 3,1% komentarzy, otwarcie zamawialo go w 12,5%. Cztery
+    # razy czesciej, omijajac wage, ktora istnieje wylacznie po to, zeby ten
+    # ruch byl rzadki.
+    otwarcie = config.losowe_otwarcie(postawa)
     zajete_otwarcia = set(ostatnie_otwarcia("komentarz"))
 
     # PIERWSZE SLOWO ma sie roznic. Osiem roznych polecen otwarcia istnieje od

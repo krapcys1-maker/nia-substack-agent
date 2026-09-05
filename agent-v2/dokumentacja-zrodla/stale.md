@@ -108,6 +108,9 @@
 | `DLUGOSCI_WYPOWIEDZI` | `( (12, 3), # jedno zdanie, najczestsze u lud` | DLUGOSC KOMENTARZA I ODPOWIEDZI losowana osobno za kazdym razem. Sam prompt tego nie zalatwi: proszony o roznorodnosc model i tak osiada w w |
 | `POSTAWY_KOMENTARZA` | `{ "CIEKAWOSC": (7, ( "Say what genuinely cau` | SPOSOB OTWARCIA, losowany tak samo jak dlugosc i z tego samego powodu. Zmierzone na naszych wlasnych komentarzach: SIEDEM Z DZIEWIECIU zaczy |
 | `OTWARCIA` | `( "Start with the mechanism itself, no pream` | — |
+| `OTWARCIE_SPRZECIWU` | `"Start with the objection: say plainly where` | OTWARCIA, KTORYCH DANA POSTAWA NIE MOZE WYKONAC. Postawa i otwarcie byly losowane NIEZALEZNIE, wiec komentarz potrafil dostac w jednym promp |
+| `OTWARCIE_KOREKTY` | `"Start by naming what the piece got right, t` | — |
+| `OTWARCIA_TYLKO_DLA` | `{ OTWARCIE_SPRZECIWU: frozenset({"SPRZECIW",` | Kto MOZE dostac dane otwarcie. Postawy spoza listy go nie dostaja. |
 | `COMMENTS_PER_DAY` | `4` | Sufit dzienny. Research mówi, że trzy przemyślane komentarze tygodniowo biją piętnaście uprzejmych; pierwotne 15-20 dziennie było z planu sp |
 | `NOTE_FORMS` | `{ "PROSTA": ( "One tight paragraph. No line ` | Typy notek. W dniu publikacji artykułu lecą notki typu ARTYKUL z linkiem; w pozostałe dni — pozostałe typy, oparte na fragmentach, których a |
 | `NOTE_FORM_MIX` | `("SCENA", "KONTRAST", "ZACZEP_I_KONKRET", "P` | — |

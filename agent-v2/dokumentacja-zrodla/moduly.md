@@ -35,7 +35,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8079 wierszy, 141 funkcji na poziomie modułu, 0 klas
+8090 wierszy, 141 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -462,7 +462,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3368 wierszy, 37 funkcji na poziomie modułu, 0 klas
+3404 wierszy, 38 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -479,7 +479,8 @@
 | `_tokens_for(chars)` *(wewn.)* | — |
 | `dlugosc_notki(typ)` | Przedział słów dla tego typu notki. Nieznany typ dostaje całe pasmo. |
 | `losowa_postawa()` | Ktora postawa dla TEGO komentarza. Wagi, nie rownomiernie. |
-| `losowe_otwarcie()` | — |
+| `otwarcia_dla_postawy(postawa)` | Otwarcia, ktore ta postawa ma jak wykonac. |
+| `losowe_otwarcie(postawa)` | — |
 | `losowa_dlugosc()` | Ile slow ma miec ta konkretna wypowiedz. |
 | `formy_dla_typu(typ)` | Formy, ktore ten typ notki ma czym wypelnic. |
 | `losowy_ksztalt_mysli()` | Ktory ksztalt dostaje ta MYSL. Losowany, bo wybor zbiega do stalej. |
