@@ -80,8 +80,10 @@ def baza_z_przebiegami(ile_dzis: int) -> sqlite3.Connection:
     PRZEBIEGI, nie wywolania.
     """
     c = sqlite3.connect(":memory:")
+    # Kolumna `ok` jak w prawdziwej tabeli: 1 = model odpowiedzial, 0 = padlo
+    # przed odpowiedzia (zerwane polaczenie, limit dostawcy).
     c.execute("CREATE TABLE calls (id INTEGER PRIMARY KEY, run_id INT,"
-              " at TEXT, purpose TEXT)")
+              " at TEXT, purpose TEXT, ok INT DEFAULT 1)")
     for r in range(ile_dzis):
         for _ in range(2):
             c.execute("INSERT INTO calls (run_id, at, purpose) VALUES (?,?,?)",
@@ -91,6 +93,16 @@ def baza_z_przebiegami(ile_dzis: int) -> sqlite3.Connection:
     for r in range(5):
         c.execute("INSERT INTO calls (run_id, at, purpose) VALUES (?,?,?)",
                   (200 + r, wczoraj + "T10:00:00+00:00", "curiosity"))
+    return c
+
+
+def baza_z_awariami(udanych: int, padnietych: int) -> sqlite3.Connection:
+    """Dzisiejsze przebiegi: `udanych` z odpowiedzia modelu i `padnietych`
+    z samym zerwanym polaczeniem (ok=0, zero tokenow, zero faktow)."""
+    c = baza_z_przebiegami(udanych)
+    for r in range(padnietych):
+        c.execute("INSERT INTO calls (run_id, at, purpose, ok) VALUES (?,?,?,0)",
+                  (300 + r, DZIS + "T11:00:00+00:00", "curiosity"))
     return c
 
 
@@ -117,6 +129,12 @@ try:
         baza_z_przebiegami(3)) == 3)
     sprawdz("wczorajsze wywolania nie licza sie do dzisiaj",
             stages._przebiegi_z_bankiem_dzis(baza_z_przebiegami(0)) == 0)
+    # ZERWANE POLACZENIE TO NIE SZUKANIE. Zmierzone 2026-09-05: jedno padniete
+    # `curiosity` zamykalo limit dobowy i dzien konczyl sie bez notki.
+    sprawdz("przebieg, ktoremu model nie odpowiedzial, NIE liczy sie do limitu",
+            stages._przebiegi_z_bankiem_dzis(baza_z_awariami(0, 2)) == 0)
+    sprawdz("a udany obok padnietego liczy sie raz",
+            stages._przebiegi_z_bankiem_dzis(baza_z_awariami(1, 3)) == 1)
 
     print()
     print("=== 2. TO SAMO WYDARZENIE OTWIERA FURTKE RAZ ===")
@@ -177,34 +195,50 @@ try:
         korpus_kanalow.wielkie_wydarzenia = lambda *a, **k: [dict(INNE)]
         licznik = {"n": 0}
 
-        def liczacy(*a, **k):
-            # LICZYMY TYLKO SZUKANIE DO BANKU. Jedno wejscie w etap wola model
-            # DWA razy: raz po stan modeli (`aktualne_modele`), raz po material
-            # (`curiosity`). Liczenie obu dawalo 2, 6, 6 zamiast 1, 3, 3 —
-            # i wygladalo jak zepsuta bramka, choc bramka dzialala.
+        # PROBA = ODPOWIEDZ, KTORA WROCILA (chocby bez faktow). Model, ktory
+        # odpowiada pustym zestawem, zuzywa proby wydarzenia az do limitu.
+        def pusty(*a, **k):
             if a and a[0] == "curiosity":
                 licznik["n"] += 1
-                raise RuntimeError("model niedostepny")   # material NIE wraca
+                return '{"facts": []}'                    # odpowiedz bez materialu
             return "{}"
 
-        llm.call = liczacy
+        llm.call = pusty
         stages.znajdz_ciekawostki(baza_z_przebiegami(5), 1)
         sprawdz("NOWE zdarzenie przebija limit dobowy i pelny bank",
                 licznik["n"] == 1, licznik)
 
-        # OD 2 WRZESNIA 2026 nieudana proba NIE zamyka furtki — znacznik
-        # notuje SKUTEK, nie zamiar (`test_furtka_wydarzenia.py`). Ale liczba
-        # prob jest ograniczona, zeby padajace szukanie nie chodzilo przy
-        # kazdym z pieciu przebiegow dziennie.
         for _ in range(config.WYDARZENIE_PROB_MAKS - 1):
             stages.znajdz_ciekawostki(baza_z_przebiegami(5), 1)
-        sprawdz("nieudane proby dostaja szanse az do limitu (%d)"
+        sprawdz("puste odpowiedzi dostaja szanse az do limitu (%d)"
                 % config.WYDARZENIE_PROB_MAKS,
                 licznik["n"] == config.WYDARZENIE_PROB_MAKS, licznik)
 
         stages.znajdz_ciekawostki(baza_z_przebiegami(5), 1)
         sprawdz("po limicie prob furtka sie zamyka — model NIE wolany",
                 licznik["n"] == config.WYDARZENIE_PROB_MAKS, licznik)
+
+        # KONTRDOWOD: AWARIA TRANSPORTU NIE ZUZYWA PROBY. Zmierzone 2026-09-05:
+        # dwie premiery stracily furtke po DRY_RUN i jednym zerwanym polaczeniu,
+        # zanim model powiedzial o nich slowo. Swieza pamiec, model rzuca —
+        # furtka ma zostac otwarta po dowolnej liczbie takich prob.
+        stara.write_text(json.dumps({}), encoding="utf-8")
+        licznik["n"] = 0
+
+        def rzucajacy(*a, **k):
+            if a and a[0] == "curiosity":
+                licznik["n"] += 1
+                raise RuntimeError("peer closed connection")   # odpowiedz NIE wrocila
+            return "{}"
+
+        llm.call = rzucajacy
+        for _ in range(config.WYDARZENIE_PROB_MAKS + 2):
+            stages.znajdz_ciekawostki(baza_z_przebiegami(5), 1)
+        sprawdz("zerwane polaczenie nie zamyka furtki: model wolany za kazdym razem",
+                licznik["n"] == config.WYDARZENIE_PROB_MAKS + 2, licznik)
+        sprawdz("i pamiec wydarzen nie dostala ani jednej proby",
+                json.loads(stara.read_text(encoding="utf-8")) == {},
+                stara.read_text(encoding="utf-8")[:120])
     finally:
         korpus_kanalow.korpus_kanalow = oryg_korpus
         korpus_kanalow.wielkie_wydarzenia = oryg_wyd

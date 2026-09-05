@@ -499,6 +499,12 @@ print("=== 9. POLUBIENIE BEZ POTWIERDZENIA NIE JEST POLUBIENIEM ===")
 wyczysc()
 lajki = [Lajk(zmienia=True), Lajk(zmienia=False), Lajk(w_dokumencie=False)]
 podepnij(StronaKanalu(lajki))
+# ATRAPY PRZYCISKOW NIE MAJA TRESCI NOTKI, a filtr rewiru (`browser.w_rewirze`)
+# bez tresci odrzuca przy niepustych znakach niszy — ktore w darmowym tescie
+# przychodza z lokalnego `konfiguracja.toml` operatora. Ten test mierzy
+# potwierdzanie klikniecia, nie temat: znaki puste jak w silniku bez kartridza.
+import config  # noqa: E402
+config.ZNAKI_NISZY = ()
 w = browser.polub_w_kanale(3, wyslij=True)
 lista = wpisy()
 sprawdz("wszystkie trzy przyciski klikniete",

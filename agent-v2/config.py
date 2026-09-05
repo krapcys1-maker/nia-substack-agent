@@ -678,8 +678,8 @@ MONTHLY_LIMIT_USD = 40.00
 # Ponowienia TYLKO bledow przejsciowych (zerwana siec, przekroczony czas, 429,
 # 5xx). Bledy trwale — odmowa, zly klucz, przekroczony budzet, uciecie na suficie
 # — nie sa ponawiane, bo powtorza sie identycznie i tylko koszruja.
-PONOWIENIA = 2
-PONOWIENIE_ODSTEP_S = 8
+PONOWIENIA = 4
+PONOWIENIE_ODSTEP_S = 15
 
 RUN_LIMIT_USD = 1.60
 

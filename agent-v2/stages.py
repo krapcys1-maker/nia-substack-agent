@@ -1672,9 +1672,15 @@ def _przebiegi_z_bankiem_dzis(conn: sqlite3.Connection) -> int:
         return 0
     dzis = datetime.now(timezone.utc).date().isoformat()
     try:
+        # TYLKO UDANE. Zmierzone 2026-09-05 (przebieg 2 kartridza `ai`):
+        # wywolanie `curiosity` padlo na zerwanym polaczeniu z dostawca
+        # (RemoteProtocolError, zero tokenow, zero faktow), a i tak zamknelo
+        # limit dobowy — druga proba w tym samym przebiegu dostala „dzis juz
+        # dobieralismy" i dzien skonczyl sie bez notki. Limit ma pilnowac
+        # WYDANYCH szukan, nie prob nawiazania polaczenia.
         r = conn.execute(
             "SELECT COUNT(DISTINCT run_id) FROM calls"
-            " WHERE purpose = ? AND substr(at, 1, 10) = ?",
+            " WHERE purpose = ? AND substr(at, 1, 10) = ? AND ok = 1",
             ("curiosity", dzis)).fetchone()
         return int(r[0]) if r and r[0] is not None else 0
     except sqlite3.Error:
@@ -1963,9 +1969,23 @@ def znajdz_ciekawostki(
             + zuzyte[-config.CURIOSITY_MEMORY:]))
                or "(nothing yet — this is the first batch)"),
     )
+    # AWARIA TRANSPORTU TO NIE PROBA. Do 2026-09-05 wyjatek z `llm.call`
+    # (zerwane polaczenie, limit dostawcy) szedl ta sama sciezka, co model,
+    # ktory odpowiedzial i nic o wydarzeniu nie znalazl: zapisywal probe
+    # wydarzenia. Zmierzone tego dnia na kartridzu `ai`: dwie premiery
+    # (astra/gpt-6, fable/5.1) dostaly trzy „proby" — dwie z DRY_RUN i jedna
+    # z zerwanego polaczenia — i furtka zamknela sie, zanim model zdazyl
+    # powiedziec o nich choc slowo. Proba jest wtedy, gdy ODPOWIEDZ WROCILA,
+    # chocby pusta; ponowienia awarii transportu ogranicza `llm.call`
+    # (`config.PONOWIENIA`), a liczbe szukan na dobe — limit dobowy wyzej.
     try:
         raw = llm.call("curiosity", CURIOSITY_SYSTEM, prompt,
                        conn=conn, run_id=run_id, web_search=True)
+    except Exception as exc:
+        print(f"  [ciekawostki] nie wyszły ({exc}) — proba wydarzenia"
+              " niezaliczona, furtka zostaje otwarta", flush=True)
+        return []
+    try:
         try:
             fakty = llm.parse_json(raw).get("facts") or []
         except Exception:
@@ -1984,9 +2004,8 @@ def znajdz_ciekawostki(
             print("  [ciekawostki] odzyskane: %d faktow" % len(fakty), flush=True)
     except Exception as exc:
         print(f"  [ciekawostki] nie wyszły ({exc})", flush=True)
-        # PROBA LICZY SIE TAKZE WTEDY, GDY MODEL RZUCIL. Bez tego wydarzenie,
-        # przy ktorym szukanie pada w kolko, otwieraloby furtke przy kazdym
-        # z pieciu przebiegow dziennie — bez konca i bez sladu.
+        # TU MODEL ODPOWIEDZIAL, a odpowiedzi nie dalo sie odczytac ani
+        # uratowac — to jest proba wydarzenia (patrz komentarz nad `llm.call`).
         if nowe_wyd:
             _zapamietaj_wydarzenia(nowe_wyd, znane_wyd, 0)
         return []

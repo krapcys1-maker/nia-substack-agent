@@ -127,5 +127,34 @@ sprawdz("bez zgody wychodzimy przed klikaniem",
         blok.index("if not wyslij:") < blok.index("kandydat.click"))
 
 print()
+print("=== 7. POZA REWIREM NIE LUBIMY I NIE PLACIMY ZA DECYZJE O RESTACKU ===")
+# Zmierzone 2026-09-05 na kartridzu `ai`: kanal pelen notek o rynkach, dwa
+# polubienia poszly do autorow finansowych (kolejnosc w kanale, zero filtra),
+# a cztery wywolania modelu przy restackach odrzucily cztery notki o FX.
+import config  # noqa: E402
+_stare_znaki = config.ZNAKI_NISZY
+try:
+    config.ZNAKI_NISZY = ("model", "benchmark", "chatbot", "gpu")
+    sprawdz("notka o walutach jest poza rewirem",
+            not browser.w_rewirze("Treasury yields and the yen intervention this week"))
+    sprawdz("notka o benchmarku jest w rewirze",
+            browser.w_rewirze("The new benchmark score dropped 4 points on re-test"))
+    sprawdz("wielkosc liter nie gra roli", browser.w_rewirze("GPU shortage at every cloud"))
+    sprawdz("pusta notka jest poza rewirem", not browser.w_rewirze(""))
+    config.ZNAKI_NISZY = ()
+    sprawdz("kontrdowod: silnik bez kartridza (puste znaki) przepuszcza wszystko",
+            browser.w_rewirze("Treasury yields and the yen"))
+finally:
+    config.ZNAKI_NISZY = _stare_znaki
+sprawdz("polubienie sprawdza rewir PRZED kliknieciem",
+        "w_rewirze(" in blok and blok.index("w_rewirze(") < blok.index("kandydat.click"))
+sprawdz("i PRZED rozgalezieniem na tryb suchy (sucho tez nie liczy cudzego tematu)",
+        blok.index("w_rewirze(") < blok.index("if not wyslij:"))
+j = zrodlo.index("def restackuj_w_kanale(")
+blok_r = zrodlo[j:zrodlo.index("\ndef ", j + 10)]
+sprawdz("restack sprawdza rewir PRZED wywolaniem modelu",
+        "w_rewirze(" in blok_r and blok_r.index("w_rewirze(") < blok_r.index("decyzja(notka)"))
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 sys.exit(1 if oblane else 0)

@@ -26,6 +26,12 @@ sys.path.insert(0, "agent-v2")
 import browser   # noqa: E402
 import config    # noqa: E402
 
+# TEN TEST MIERZY PRZERWY, NIE TEMAT. Znaki niszy przychodza z kartridza
+# (a w darmowym tescie z lokalnego `konfiguracja.toml` operatora), wiec
+# atrapa notki „o czyms" odpadalaby na filtrze rewiru jeszcze przed
+# decyzja. Silnik bez kartridza ma pusta liste i przepuszcza wszystko.
+config.ZNAKI_NISZY = ()
+
 zdane = oblane = 0
 
 
@@ -209,6 +215,22 @@ print("    przebieg z 1 restackiem: oszczedza srednio %.0f min" % (sredni / 60))
 print("    dzien z 4 przebiegami:   do %.0f min mniej bezczynnej przegladarki"
       % (4 * sredni / 60))
 sprawdz("oszczednosc przekracza kwadrans na przebieg", sredni / 60 > 15, sredni / 60)
+
+print()
+print("=== 7. POZA REWIREM: MODEL NIE JEST WOLANY, RESTACKU NIE MA ===")
+# Zmierzone 2026-09-05 na kartridzu `ai`: cztery wywolania modelu ($0,019)
+# poszly na odrzucenie czterech notek o walutach z kanalu konta testowego.
+config.ZNAKI_NISZY = ("model", "benchmark")
+try:
+    w, s = przebieg(ile=1, ile_notek=1, zgody=1)
+    sprawdz("notka bez znaku niszy odpada przed decyzja", w["rozwazone"] == 0, w)
+    sprawdz("i jest policzona jako poza rewirem", w.get("poza_rewirem") == 1, w)
+    sprawdz("restacku nie ma", w["restackowane"] == 0, w)
+finally:
+    config.ZNAKI_NISZY = ()
+w, s = przebieg(ile=1, ile_notek=1, zgody=1)
+sprawdz("kontrdowod: bez znakow ta sama notka idzie do decyzji i restacku",
+        w["rozwazone"] == 1 and w["restackowane"] == 1, w)
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))

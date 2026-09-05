@@ -2820,6 +2820,13 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
                 # Zmierzone przed napisaniem tego kodu: autor stoi JEDEN poziom
                 # nad przyciskiem, 5 na 5 sprawdzonych wpisow w kanale.
                 kto = _autor_przy_przycisku(kandydat)
+                # POZA REWIREM NIE LUBIMY. Polubienie nic nie twierdzi, ale
+                # mowi czytelnikowi profilu, co to konto czyta — patrz `w_rewirze`.
+                if not w_rewirze(_notka_przy_przycisku(kandydat).get("tekst", "")):
+                    wynik["poza_rewirem"] = wynik.get("poza_rewirem", 0) + 1
+                    print(f"    pomijam (poza rewirem): {(kto or {}).get('nazwa', '?')[:30]}",
+                          flush=True)
+                    continue
                 if not wyslij:
                     wynik["polubione"] += 1
                     continue
@@ -5230,6 +5237,12 @@ def restackuj_w_kanale(
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
                     continue
+                # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
+                if not w_rewirze(notka["tekst"]):
+                    wynik["poza_rewirem"] = wynik.get("poza_rewirem", 0) + 1
+                    print(f"    pomijam (poza rewirem): {notka.get('autor', '?')[:30]}",
+                          flush=True)
+                    continue
                 wynik["rozwazone"] += 1
                 ocena = decyzja(notka)
                 if not ocena.get("restack"):
@@ -5346,6 +5359,24 @@ def restackuj_w_kanale(
         browser.close()
         p.stop()
     return wynik
+
+
+def w_rewirze(tekst: str) -> bool:
+    """Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy.
+
+    TANI FILTR PRZED KLIKNIECIEM I PRZED MODELEM. Zmierzone 2026-09-05 na
+    kartridzu `ai`: kanal konta testowego byl pelen notek o rynkach i walutach,
+    polubienia poszly do dwoch autorow finansowych (kolejnosc w kanale, zero
+    filtra), a cztery wywolania modelu przy restackach ($0,019) sluzyly tylko
+    do odrzucenia czterech notek o Treasury i FX. Znaki niszy przychodza
+    z kartridza (`config.ZNAKI_NISZY`); bez kartridza lista jest pusta i filtr
+    przepuszcza wszystko — silnik nie ma wlasnego tematu.
+    """
+    znaki = [str(z).lower() for z in (getattr(config, "ZNAKI_NISZY", ()) or ()) if str(z).strip()]
+    if not znaki:
+        return True
+    t = (tekst or "").lower()
+    return any(z in t for z in znaki)
 
 
 def _notka_przy_przycisku(przycisk) -> dict[str, str]:
