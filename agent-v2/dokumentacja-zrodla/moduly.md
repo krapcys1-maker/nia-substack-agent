@@ -35,7 +35,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7853 wierszy, 137 funkcji na poziomie modułu, 0 klas
+7971 wierszy, 139 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -162,6 +162,8 @@
 | `_stale_sygnaly(topics, pola)` *(wewn.)* | Ktore z pol mialy TE SAMA wartosc u WSZYSTKICH kandydatow. |
 | `_precedens_ok(p)` *(wewn.)* | Czy ten wpis to naprawde precedens, a nie wypelniacz. |
 | `_wspolna_kotwica(a, b)` *(wewn.)* | Czy oba zdania mowia o tej samej NAZWIE albo tej samej LICZBIE. |
+| `_bez_liczb(t)` *(wewn.)* | Zdanie z liczbami zastapionymi znacznikiem — do porownania szkieletu. |
+| `_to_aktualizacja(nowy, stary)` *(wewn.)* | TO SAMO ZDANIE, INNE LICZBY — czyli nowe ustalenie, nie powtorka. |
 | `dopisz_kandydatow(kandydaci)` | Przepuszcza kandydatow przez bramke i dokłada do indeksu. |
 | `wez_kandydatow(ile)` | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. |
 | `co_zadzialalo(ile)` | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. |

@@ -22,6 +22,23 @@ import config
 import korpus_kanalow
 import db
 import llm
+# NA GORZE, BO UZYWAJA GO DWIE FUNKCJE, A IMPORT BYL W JEDNEJ.
+#
+# `import statystyki` stal wewnatrz `co_zadzialalo`, czyli w jej zasiegu
+# lokalnym — a `statystyki._liczba` wola `_tabela_odbioru`, funkcja OBOK.
+# Skutek: `NameError: name 'statystyki' is not defined`, odtworzony
+# uruchomieniem 5 wrzesnia 2026.
+#
+# Wyzwalaczem sa POMIARY CZYTELNIKOW. Dopoki `najnowsze_per_pozycja` oddaje
+# pustke, `co_zadzialalo` konczy na wczesniejszym `return` i nikt tego nie
+# widzi; pierwsza notka z polubieniem wywraca ranking banku. `posortuj_bank`
+# lapie wyjatek jako „nieudany ranking" i idzie dalej ze stara kolejnoscia,
+# wiec awaria nie ma jak sie zglosic — sedzia banku po prostu milknie
+# dokladnie wtedy, gdy zaczyna byc cos wart.
+#
+# Cyklu importow nie ma: `statystyki` bierze tylko `config`, `json` i
+# `datetime`. Lokalny import nie chronil wiec przed niczym.
+import statystyki
 
 # DWA WYJATKI, KTORE NIE SA AWARIA JEDNEGO WYWOLANIA, TYLKO STANEM KONTA.
 #
@@ -6976,6 +6993,55 @@ def _wspolna_kotwica(a: str, b: str) -> bool:
     return bool(kotwice(a) & kotwice(b))
 
 
+def _bez_liczb(t: str) -> str:
+    """Zdanie z liczbami zastapionymi znacznikiem — do porownania szkieletu."""
+    import re as _re
+
+    return " ".join(_re.sub(r"\d[\d.,]*", "#", (t or "").lower()).split())
+
+
+def _to_aktualizacja(nowy: str, stary: str) -> bool:
+    """TO SAMO ZDANIE, INNE LICZBY — czyli nowe ustalenie, nie powtorka.
+
+    BANK NIE MIAL POJECIA „TEN SAM TEMAT, NOWE USTALENIE" i to jest wada
+    zmierzona, nie teoretyczna. Odtworzone 5 wrzesnia 2026:
+
+        Acme released Model 5.1 with a context window of 100000 tokens.
+        Acme released Model 5.2 with a context window of 200000 tokens.
+
+    Obie warstwy odsiewu uznaly te zdania za to samo. `_klucz_faktu` daje im
+    IDENTYCZNY klucz (`acme context model released tokens window with`), bo
+    celowo usuwa liczby — jego docstring nazywa to wprost odpornoscia „na
+    inna liczbe w tym samym zdaniu". Warstwa druga, `_o_tym_samym` plus
+    `_wspolna_kotwica`, tez orzeka blizniaki, bo zdania dziela nazwe.
+
+    Kazda z tych regul ma sens osobno: pierwsza lapie ten sam fakt zaokraglony
+    inaczej, druga ten sam fakt opowiedziany innymi slowami. Razem odcinaly
+    jednak wlasnie to, po co istnieje publikacja o liczbach — moment, w ktorym
+    liczba SIE ZMIENILA.
+
+    ROZROZNIK JEST WASKI CELOWO: szkielet zdania po wymazaniu liczb musi byc
+    IDENTYCZNY, a same liczby rozne. Probowalem najpierw luzniejszej reguly,
+    opartej na wspolnych nazwach wlasnych, i odrzucilem ja po pomiarze: nazwy
+    bierze `_wspolna_kotwica`, ktora POMIJA PIERWSZE SLOWO zdania (bo kazde
+    zaczyna sie wielka litera) — wiec przy „Vega shipped Model 7.0" i „Acme
+    released Model 5.1" po obu stronach zostawalo samo „Model" i zdania
+    o dwoch roznych produktach wychodzily jako aktualizacja tego samego.
+
+    Waska regula przepusci mniej aktualizacji, niz istnieje. Przepuszczona
+    bledna oznaczalaby jednak, ze cudzy fakt kasuje prawidlowy wpis w banku,
+    a nierozpoznana jest tylko zachowaniem sprzed tej zmiany. Blad w te
+    strone jest tanszy.
+    """
+    import re as _re
+
+    l_nowy = {x for x in _re.findall(r"\d[\d.,]*", nowy or "")}
+    l_stary = {x for x in _re.findall(r"\d[\d.,]*", stary or "")}
+    if not l_nowy or not l_stary or (l_nowy & l_stary):
+        return False
+    return _bez_liczb(nowy) == _bez_liczb(stary) and bool(_bez_liczb(nowy))
+
+
 def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
     """Przepuszcza kandydatow przez bramke i dokłada do indeksu.
 
@@ -7004,20 +7070,49 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
     # nazwe firmy i te sama liczbe.
     PODOBIENSTWO = {"min_wspolnych": 4, "prog": 0.35}
     fakty_w_banku = [str(k.get("fact") or "") for k in indeks]
-    licznik = {"przyjete": 0, "odrzucone": 0, "znane": 0, "podobne": 0}
+    # WPISY, NIE SAME NAPISY. Obok listy tekstow trzymamy wpis, ktory dany
+    # tekst wniosl — bo przy aktualizacji trzeba go ODNALEZC i wycofac, a nie
+    # tylko stwierdzic, ze cos podobnego juz bylo. Nowo przyjeci w tej samej
+    # partii maja None: nie ma czego wycofywac.
+    wpis_faktu = {str(k.get("fact") or ""): k for k in indeks}
+    licznik = {"przyjete": 0, "odrzucone": 0, "znane": 0,
+               "podobne": 0, "aktualizacje": 0}
     for k in kandydaci or []:
-        klucz = _klucz_faktu(str(k.get("fact") or ""))
-        if not klucz or klucz in znane:
+        tresc = str(k.get("fact") or "")
+        klucz = _klucz_faktu(tresc)
+        if not klucz:
             licznik["znane"] += 1
             continue
-        tresc = str(k.get("fact") or "")
+        # Bliźniak szukany ZAWSZE, takze gdy klucz juz jest w banku: przy
+        # zderzeniu kluczy trzeba wiedziec, KTORY wpis sie zderzyl, zeby dalo
+        # sie zapytac, czy nowy jest jego aktualizacja.
         blizniak = next((f for f in fakty_w_banku
                          if _o_tym_samym(tresc, f, **PODOBIENSTWO)
                          and _wspolna_kotwica(tresc, f)), None)
-        if blizniak:
-            licznik["podobne"] += 1
-            print("  [indeks] to samo innymi slowami — pomijam: %s" % tresc[:70],
-                  flush=True)
+        if blizniak is None and klucz in znane:
+            blizniak = next((f for f in fakty_w_banku
+                             if _klucz_faktu(f) == klucz), None)
+        if blizniak is not None:
+            # TEN SAM TEMAT, NOWE USTALENIE — patrz `_to_aktualizacja`. Bez
+            # tego przejscia zmiana liczby w znanym zdaniu byla nieodrozalna
+            # od powtorki i bank odrzucal ja jako „juz to mamy".
+            if _to_aktualizacja(tresc, blizniak):
+                stary_wpis = wpis_faktu.get(blizniak)
+                if stary_wpis is not None:
+                    stary_wpis["status"] = "zastapiony"
+                licznik["aktualizacje"] += 1
+                print("  [indeks] AKTUALIZACJA znanego faktu: %s" % tresc[:70],
+                      flush=True)
+            elif klucz in znane:
+                licznik["znane"] += 1
+                continue
+            else:
+                licznik["podobne"] += 1
+                print("  [indeks] to samo innymi slowami — pomijam: %s"
+                      % tresc[:70], flush=True)
+                continue
+        elif klucz in znane:
+            licznik["znane"] += 1
             continue
         fakty_w_banku.append(tresc)
         ok, powod = bramka_kandydata(k)
@@ -7283,7 +7378,6 @@ def co_zadzialalo(ile: int = 6) -> str:
     pokazal notke, a nie czy ktokolwiek ja uznal za warta czegokolwiek.
     """
     try:
-        import statystyki
         naj = statystyki.najnowsze_per_pozycja("notka")
     except Exception:
         return "(no measurements available yet)"
@@ -7370,10 +7464,34 @@ def _tabela_odbioru(naj: dict, ile: int) -> str:
                    r.get("wyswietlenia", 0),
                    " ".join(str(r.get("tekst") or "").split())[:150]))
 
-    gora = [wiersz(r) for r in posort[:ile]]
-    dol = [wiersz(r) for r in posort[-ile:]]
-    return (NOWA_LINIA.join(["THESE LANDED:"] + gora + ["", "THESE DID NOT:"]
-                            + dol))
+    # GRUPY MUSZA BYC ROZLACZNE. Stalo tu `posort[:ile]` i `posort[-ile:]`,
+    # wiec przy liczbie notek NIE WIEKSZEJ niz `ile` oba wycinki byly cala
+    # lista. Odtworzone: cztery notki, domyslne `ile=6` — te same cztery
+    # wiersze pod „THESE LANDED" i pod „THESE DID NOT". Sedzia banku dostawal
+    # platny prompt mowiacy, ze ten sam material zadzialal i nie zadzialal.
+    # To gorsze niz brak pomiaru: pusty zbior niczego nie twierdzi, a ten
+    # twierdzil dwie rzeczy naraz.
+    # GRANICA MIEDZY GRUPAMI MUSI COS ZNACZYC. Sama rozlacznosc nie wystarcza:
+    # przy czterech notkach o wynikach 6, 4, 4, 2 podzial na pol stawia dwie
+    # notki z TYM SAMYM wynikiem po przeciwnych stronach, a model czyta to
+    # jako „ta zadzialala, tamta nie". Zwezamy wiec grupy, dopoki najslabsza
+    # z gornych nie bije najmocniejszej z dolnych.
+    polowa = len(posort) // 2
+    ile_grupy = max(1, min(ile, polowa))
+    while ile_grupy >= 1 and punkty(posort[ile_grupy - 1]) <= punkty(posort[-ile_grupy]):
+        ile_grupy -= 1
+
+    # ZERO ZNACZY: POMIAR ICH NIE ROZDZIELA. To nie jest wynik gorszy, tylko
+    # brak wyniku — a pusty zbior niczego nie twierdzi, w odroznieniu od
+    # dwoch grup zbudowanych na szumie.
+    if ile_grupy < 1:
+        return ("(measurements do not separate these notes yet — %d notes, "
+                "scores %s)" % (len(posort),
+                                ", ".join(str(punkty(r)) for r in posort[:8])))
+    gora, dol = posort[:ile_grupy], posort[-ile_grupy:]
+    return (NOWA_LINIA.join(["THESE LANDED:"] + [wiersz(r) for r in gora]
+                            + ["", "THESE DID NOT:"]
+                            + [wiersz(r) for r in dol]))
 
 
 BANK_SYSTEM = (
