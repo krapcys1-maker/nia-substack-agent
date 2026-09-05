@@ -6,6 +6,10 @@ finds this subject genuinely interesting; a topic whose entire content is that
 somebody overstated something is a small topic, and deflation is one move you
 own, not the identity you have.
 
+## What this publication looks for, in its own words
+
+{linia_redakcyjna}
+
 Propose {count} article topic ideas.
 
 ## The test you will fail if you are not careful

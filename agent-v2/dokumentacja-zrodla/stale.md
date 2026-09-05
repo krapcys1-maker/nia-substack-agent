@@ -101,7 +101,6 @@
 | `NOTE_MAX_WORDS` | `64` | — |
 | `DLUGOSC_NOTKI_WG_TYPU` | `{ "SPROSTOWANIE": (33, 42), # najkrótsza: je` | DLUGOSC WG TYPU NOTKI — zeby piec notek na dobe nie bylo piecioma notkami tej samej dlugosci. Reguła „nie pisz wszystkiego tej samej długośc |
 | `NOTE_CANDIDATES` | `1` | Ilu kandydatow generujemy. Dawniej bylo pieciu, potem trzech; dodatkowe warianty tego samego zdania niczego nie dokladaly, a placilismy za n |
-| `DZIEDZINY_CIEKAWOSTEK` | `( # ========================================` | Ile ciekawostek szukamy naraz. Cztery z pięciu notek dziennie stoją na nich, a jedno szukanie kosztuje tyle co jedno — więc bierzemy zapas n |
 | `ILE_DZIEDZIN_NA_PRZEBIEG` | `5` | — |
 | `CURIOSITY_BATCH` | `8` | — |
 | `CURIOSITY_MEMORY` | `60` | Ile ostatnio zuzytych faktow pokazujemy szukajacemu jako zakaz powtorki. Bez tego to samo szukanie codziennie oddaje te same slynne osiem. |
@@ -175,11 +174,8 @@
 | `MIN_WIEK_NOTKI_MIN` | `(20, 90)` | NOTKA TO NIE ARTYKUL i zyje godziny, nie dni. Ten sam prog co dla artykulow oznaczal, ze pod notki wchodzilismy zawsze PO koncu rozmowy: prz |
 | `KOMFORTOWO_KOMENTARZY` | `25` | ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto |
 | `ODSTEP_DNI_NA_PUBLIKACJE` | `4` | Ile dni odstepu przed kolejnym komentarzem pod TA SAMA publikacja. Komentarz pod kazdym kolejnym tekstem tej samej osoby to drugi najczyteln |
-| `NISZA` | `"how everyday things are made and regulated"` | HASLA, KTORYMI AGENT SZUKA NOWYCH KONT. Kanal czytelnika pokazuje tylko to, co juz znamy, wiec sam z siebie nie przyprowadzi nikogo nowego — |
-| `ZNAKI_NISZY` | `( "standard", "rule", "regulat", "code", "co` | — |
-| `OBSZARY_REWIRU` | `{ "rzecz i jak zrobiona": ("standard", "desi` | Obszary, ktore rewir ma pokrywac. Dwadziescia hasel o tym samym daje te sama garstke kont, co trzy — dlatego pilnujemy nie tylko LICZBY hase |
-| `KAT_REDAKCYJNY` | `"what the record actually says, how the thin` | KAT REDAKCYJNY — czym to konto zajmuje sie W NISZY. Do 2026-09-03 stal wpisany w DZIEWIECIU promptach, w szesciu jako „what these systems ac |
-| `HASLA_SZUKANIA` | `( # ========================================` | — |
+| `NISZA` | `""` | HASLA, KTORYMI AGENT SZUKA NOWYCH KONT. Kanal czytelnika pokazuje tylko to, co juz znamy, wiec sam z siebie nie przyprowadzi nikogo nowego — |
+| `KAT_REDAKCYJNY` | `""` | KAT REDAKCYJNY — czym to konto zajmuje sie W NISZY. Do 2026-09-03 stal wpisany w DZIEWIECIU promptach, w szesciu jako „what these systems ac |
 | `ILE_HASEL_NA_PRZEBIEG` | `5` | PIEC, NIE TRZY. Przy trzech haslach na przebieg i osiemnastu w puli agent ogladal jedna szosta rewiru na raz — a po zaostrzeniu reguly celow |
 | `RUNDY_SZUKANIA_CELOW` | `4` | ILE RAZY SZUKAC CELOW W JEDNYM PRZEBIEGU, zanim odpuscimy. „Niech szuka, az znajdzie" bez ogranicznika znaczy „w nieskonczonosc", a kazda ru |
 | `ODPOWIEDZI_POZA_LIMITEM` | `True` | Odpowiedzi POD WLASNYMI tresciami sa poza limitami dziennymi. Decyzja wlasciciela i jest sluszna: limit chroni przed wygladaniem na spamera  |
@@ -214,7 +210,6 @@
 | `GENERATORY` | `{ "MEASUREMENT": "A number that looks like a` | --- generatory tematow ------------------------------------------------------ Mielismy 52 DZIEDZINY, czyli odpowiedz na pytanie GDZIE szukac |
 | `ILE_GENERATOROW_NA_PRZEBIEG` | `4` | — |
 | `KANDYDATOW_NA_PRZEBIEG` | `25` | Ile kandydatow-jednolinijkowcow zamawiamy, zanim cokolwiek napiszemy. Nadprodukcja jest obowiazkowa: piec notek z piatki pomyslow to mediana |
-| `W_TYM_MIESIACU` | `{ 1: "year-ahead plans and budgets being pub` | --- co czytelnik trzyma w reku W TYM MIESIACU ------------------------------- Najtansza dzwignia, jaka mamy, i nie mielismy jej wcale. Zwykl |
 | `KONFIGURACJA_PLIK` | `_konf.sciezka(AGENT_DIR)` | — |
 | `_BEZ_KONFIGURACJI` | `_env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower` | `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI I NARZEDZI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytori |
 | `DOMYSLNE_SILNIKA` | `_konf.zdjecie(sys.modules[__name__])` | NEUTRALNA BAZA SILNIKA — zdjecie stalych konta ZANIM cokolwiek je nadpisze. Od niej kompiluje sie kazdy preset: przywroc baze, naloz preset. |

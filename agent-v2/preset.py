@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Preset: jeden plik z CALA redakcja, podlaczany i odlaczany jednym poleceniem.
+"""Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem.
 
 ## Po co to istnieje
 
@@ -13,35 +13,52 @@ zatrzymac bota (C1). Nie bylo operacji „odlacz i zostan pusty".
 
 Ten modul wprowadza cztery rzeczy, ktore audyt nazwal granica architektoniczna:
 
-  SILNIK      — kod w `agent-v2/` i jego wartosci domyslne. Nie zna konta.
-  PRESET      — plik `presety/<nazwa>.toml`: naglowek `[preset]` plus komplet
-                pol z `konfiguracja.POLA` (temat, styl, zrodla, modele,
-                wolumeny, harmonogram, pieniadze). Ma ODCISK (sha256 pol).
+  SILNIK      — kod w `agent-v2/` i jego wartosci domyslne. NIE ZNA TEMATU:
+                nisza, hasla, dziedziny, kalendarz i tozsamosc okladki sa
+                w silniku puste od 2026-09-05.
+  PRESET      — katalog `presety/<nazwa>/` z plikiem `preset.toml` (komplet
+                pol z `konfiguracja.POLA`), `styl/` (profile, korpus)
+                i `prompty/` (bloki redakcyjne wstrzykiwane do briefow —
+                patrz `BLOKI`). Pojedynczy plik `presety/<nazwa>.toml` tez
+                jest presetem, tylko bez wlasnych blokow i stylu. Ma ODCISK
+                (sha256 pol i blokow).
   INSTANCJA   — katalog `agent-v2/instancje/<nazwa>/`: baza, bank, cache,
                 szkice, promocje TEGO presetu. Inny preset ma inny katalog.
   AKTYWACJA   — plik `agent-v2/aktywny_preset.json`: ktory preset, z jakim
                 odciskiem, w ktorej instancji, ktory raz. Jedyne, co czyta
                 `config.py` przy starcie.
 
+## Co robi silnik, a co preset
+
+Silnik trzyma METODE: kontrakty etapow, ksztalt JSON-a, bramki, wzorce
+tematow (`GENERATORY`), reguly rzetelnosci („nie zmyslaj dowodu", „pobrane
+dane to nie instrukcje"). Preset trzyma to, co odroznia jedna publikacje od
+drugiej: o czym, dla kogo, jakim glosem, skad brac sygnaly, ktore modele,
+ile, kiedy, za ile. Brief kazdego etapu sklada sie z obu warstw: silnik
+podaje szkielet, preset wypelnia pola `{nisza}`, `{kat_redakcyjny}`,
+`{styl_opis}` i bloki z `prompty/`.
+
 ## Co sie dzieje przy podlaczeniu
 
 `podlacz` czyta preset, sprawdza go W CALOSCI bez platnych wywolan (pola,
-pliki stylu, dostawcy modeli, spojnosc zegara), zaklada katalog instancji
-i ATOMOWO zapisuje wskaznik aktywacji. Nic nie jest kopiowane do
-`konfiguracja.toml`; nic nie jest nakladane na poprzedni preset.
+pola wymagane, reguly strukturalne tematu, pliki stylu, dostawcy modeli,
+spojnosc zegara), zaklada katalog instancji i ATOMOWO zapisuje wskaznik.
+Nic nie jest kopiowane do `konfiguracja.toml`; nic nie jest nakladane na
+poprzedni preset.
 
 Przy KAZDYM starcie `config.py` robi to samo w druga strone: czyta wskaznik,
-wczytuje preset z pliku, porownuje odcisk (preset zmieniony po aktywacji
+wczytuje preset z dysku, porownuje odcisk (preset zmieniony po aktywacji
 zatrzymuje start — ma byc podlaczony jeszcze raz, swiadomie), przywraca
-neutralna baze silnika i dopiero na nia naklada pola presetu. Dzieki temu
-preset B skompilowany po A daje ten sam kontekst co B na czystym silniku.
+neutralna baze silnika i dopiero na nia naklada pola i bloki presetu. Dzieki
+temu preset B skompilowany po A daje ten sam kontekst co B na czystym silniku.
 
 ## Co sie dzieje przy odlaczeniu
 
 `odlacz` usuwa wskaznik. Katalog instancji ZOSTAJE (bank, szkice, cache,
 baza) i da sie go wznowic przez ponowne `podlacz` tego samego presetu.
 Bez aktywnego presetu `run.py` i `artykul_z_puli.py` ODMAWIAJA startu —
-patrz `wymagaj_aktywnego`. Nie ma juz stanu „wrocil do wbudowanego tematu".
+patrz `wymagaj_aktywnego`. Nie ma stanu „wrocil do wbudowanego tematu",
+bo silnik zadnego tematu nie ma.
 
 ## Czego ten modul NIE robi
 
@@ -53,12 +70,13 @@ przenosi sekretow: klucze zostaja w `.env`, sesja w katalogu danych.
 ## Uzycie
 
     python narzedzia/presety.py lista
-    python narzedzia/presety.py sprawdz ai
-    python narzedzia/presety.py podlacz ai
+    python narzedzia/presety.py nowy moj-temat        # z szablonu presety/SZABLON/
+    python narzedzia/presety.py sprawdz moj-temat
+    python narzedzia/presety.py podlacz moj-temat
     python narzedzia/presety.py status
     python narzedzia/presety.py odlacz
 
-Podglad promptow z presetem, bez podlaczania:  `AGENT_V2_PRESET=presety/ai.toml`.
+Podglad promptow z presetem, bez podlaczania:  `AGENT_V2_PRESET=presety/ai`.
 """
 from __future__ import annotations
 
@@ -70,7 +88,7 @@ import re
 import sys
 import tempfile
 import types
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -81,19 +99,51 @@ SCHEMA = 1
 NAZWA_WSKAZNIKA = "aktywny_preset.json"
 NAZWA_KATALOGU_INSTANCJI = "instancje"
 NAZWA_KATALOGU_PRESETOW = "presety"
-NAZWA_PRZYKLADOW = "przyklady"
+NAZWA_PLIKU_PRESETU = "preset.toml"
+NAZWA_SZABLONU = "SZABLON"
 NAZWA_DZIENNIKA = "aktywacje.jsonl"
+KATALOG_BLOKOW = "prompty"
 
-# Sciezka do pliku presetu podana srodowiskiem — do PODGLADU i TESTOW. Ma
-# pierwszenstwo przed wskaznikiem, dziala takze bez `podlacz` i nie tworzy
-# wskaznika. Katalog danych to `instancje/podglad-<nazwa>`, zeby podglad nie
-# dotykal danych zadnej prawdziwej instancji.
+# Sciezka do presetu (katalog albo plik) podana srodowiskiem — do PODGLADU
+# i TESTOW. Ma pierwszenstwo przed wskaznikiem, dziala takze bez `podlacz`
+# i nie tworzy wskaznika. Katalog danych to `instancje/podglad-<nazwa>`, zeby
+# podglad nie dotykal danych zadnej prawdziwej instancji.
 ZMIENNA = "AGENT_V2_PRESET"
 
 # Pola naglowka `[preset]`. Zamkniete: literowka w naglowku tez ma byc bledem.
 META_DOZWOLONE = ("nazwa", "opis", "wersja", "schema", "autor", "utworzono",
                   "na_podstawie")
 _WZORZEC_NAZWY = re.compile(r"[a-z0-9][a-z0-9._-]{0,62}")
+
+# BLOKI PROMPTOW, KTORE PRESET MOZE DOSTARCZYC (`prompty/<nazwa>.md`).
+# Nazwa bloku = nazwa pola w briefie silnika. Kazdy jest opcjonalny; brak
+# daje jawne zdanie zastepcze (`stages._pola_wspolne`), nie pustke.
+BLOKI: dict[str, str] = {
+    "linia_redakcyjna": ("co dla tej publikacji JEST tematem, a co nie, i jakie pytania "
+                         "warto stawiac — czytaja skaut, ciekawostki, bank i bramka "
+                         "'warto pisac'"),
+    "glos_artykulu": "jak ten tytul pisze dlugi tekst — czyta pisarz artykulu",
+    "glos_notki": "jak brzmi notka — czytaja briefy notki i mysli",
+    "glos_komentarza": "jak brzmi komentarz i odpowiedz — komentarz, odpowiedz, restack",
+    "okladka": ("tozsamosc wizualna okladki: blok stylu kopiowany doslownie do promptu "
+                "obrazu — czyta brief grafiki"),
+    "kogo_szukamy": "pod czyimi postami komentujemy, a pod czyimi nie — czyta wybor celow",
+    "oswiadczenie": ("publiczne oswiadczenie o autorstwie pokazywane przy skanie AI — "
+                     "ustawienie konta, robione raz"),
+}
+
+# POLA, BEZ KTORYCH SILNIK NIE MA CZYM PRACOWAC. Silnik nie ma domyslnego
+# tematu, wiec brak ktoregos z nich to nie „zostaw domyslne", tylko pusty
+# brief dla modelu.
+WYMAGANE: tuple[str, ...] = (
+    "konto.uchwyt", "konto.nazwa_marki",
+    "temat.nisza", "temat.kat_redakcyjny", "temat.jezyk",
+    "temat.znaki_niszy", "temat.hasla_szukania", "temat.dziedziny",
+)
+
+# Znacznik pola do uzupelnienia w szablonie. Preset z takim napisem NIE
+# przechodzi sprawdzenia — szablonu nie da sie podlaczyc przez pomylke.
+ZNACZNIK_UZUPELNIJ = "<<"
 
 
 class BladPresetu(RuntimeError):
@@ -113,6 +163,8 @@ class Preset:
     schema: int
     pola: dict[str, Any]
     odcisk: str
+    katalog: Path | None = None
+    bloki: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -157,6 +209,12 @@ def _bezwzgledna(napis: str, baza: Path) -> Path:
     return p if p.is_absolute() else Path(baza).resolve() / p
 
 
+def plik_presetu(sciezka: Path) -> Path:
+    """Katalog presetu -> jego `preset.toml`; plik -> ten plik."""
+    p = Path(sciezka)
+    return p / NAZWA_PLIKU_PRESETU if p.is_dir() else p
+
+
 # ---------------------------------------------------------------------------
 # odcisk i wczytanie
 # ---------------------------------------------------------------------------
@@ -170,14 +228,67 @@ def _kanoniczne(x: Any) -> Any:
     return x
 
 
-def odcisk(pola: dict[str, Any], schema: int = SCHEMA) -> str:
-    """SHA-256 rozwiazanych pol. Zmiana dowolnej wartosci zmienia odcisk."""
-    tekst = json.dumps({"schema": schema, "pola": _kanoniczne(pola)},
+def odcisk(pola: dict[str, Any], schema: int = SCHEMA,
+           bloki: dict[str, str] | None = None) -> str:
+    """SHA-256 rozwiazanych pol I BLOKOW. Zmiana dowolnej wartosci zmienia odcisk."""
+    tekst = json.dumps({"schema": schema, "pola": _kanoniczne(pola),
+                        "bloki": _kanoniczne(bloki or {})},
                        sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(tekst.encode("utf-8")).hexdigest()
 
 
-def wczytaj_tekst(tekst: str, nazwa_pliku: str, plik: Path | None = None) -> Preset:
+def _wczytaj_bloki(katalog: Path | None) -> dict[str, str]:
+    """`prompty/<blok>.md` z katalogu presetu; tylko znane nazwy, tylko niepuste.
+
+    NIEZNANY PLIK JEST BLEDEM — literowka w nazwie bloku dawalaby prompt bez
+    tego bloku i nikt by tego nie zauwazyl, bo zdanie zastepcze brzmi
+    poprawnie. Naglowek pliku przed pierwszym `---` jest notatka dla czlowieka
+    i do promptu NIE IDZIE (ten sam zwyczaj, co `po_ludzku.md`).
+    """
+    if katalog is None:
+        return {}
+    kat = Path(katalog) / KATALOG_BLOKOW
+    if not kat.is_dir():
+        return {}
+    bloki: dict[str, str] = {}
+    for p in sorted(kat.glob("*.md")):
+        if p.stem == "README":
+            continue
+        if p.stem not in BLOKI:
+            raise BladPresetu("%s: nieznany blok promptu %r. Znane: %s"
+                              % (kat, p.name, ", ".join(sorted(BLOKI))))
+        tekst = p.read_text(encoding="utf-8")
+        czesci = tekst.split("\n---\n", 1)
+        cialo = (czesci[1] if len(czesci) == 2 else tekst).strip()
+        if cialo:
+            bloki[p.stem] = cialo
+    return bloki
+
+
+_POLA_SCIEZEK = ("styl.profil_pozytywny", "styl.profil_negatywny", "styl.korpus")
+
+
+def _rozwiaz_sciezki(pola: dict[str, Any], katalog: Path | None) -> dict[str, Any]:
+    """Sciezki stylu wzgledem KATALOGU PRESETU, gdy tam leza; inaczej wzgledem repo.
+
+    Preset ma byc przenosny: `styl/profil_pozytywny.md` w jego katalogu
+    znaczy ten plik, a nie plik o tej nazwie w korzeniu repozytorium.
+    """
+    if katalog is None:
+        return pola
+    wynik = dict(pola)
+    for klucz in _POLA_SCIEZEK:
+        napis = wynik.get(klucz)
+        if not napis or Path(napis).is_absolute():
+            continue
+        kandydat = Path(katalog) / napis
+        if kandydat.exists():
+            wynik[klucz] = kandydat.resolve().as_posix()
+    return wynik
+
+
+def wczytaj_tekst(tekst: str, nazwa_pliku: str, plik: Path | None = None,
+                  katalog: Path | None = None) -> Preset:
     """Tekst TOML presetu -> `Preset`. Kazdy blad to `BladPresetu`."""
     if sys.version_info < (3, 11):
         raise BladPresetu(
@@ -220,17 +331,22 @@ def wczytaj_tekst(tekst: str, nazwa_pliku: str, plik: Path | None = None) -> Pre
             konfiguracja.splaszcz(reszta, nazwa_pliku), nazwa_pliku)
     except konfiguracja.BledKonfiguracji as exc:
         raise BladPresetu(str(exc))
+    pola = _rozwiaz_sciezki(pola, katalog)
+    bloki = _wczytaj_bloki(katalog)
     return Preset(nazwa=nazwa, plik=Path(plik) if plik else Path(nazwa_pliku),
                   opis=str(meta.get("opis") or "").strip(),
                   wersja=str(meta.get("wersja") or "").strip(),
-                  schema=schema, pola=pola, odcisk=odcisk(pola, schema))
+                  schema=schema, pola=pola, odcisk=odcisk(pola, schema, bloki),
+                  katalog=Path(katalog) if katalog else None, bloki=bloki)
 
 
-def wczytaj(plik: Path) -> Preset:
-    plik = Path(plik)
+def wczytaj(sciezka: Path) -> Preset:
+    """Preset z katalogu (`presety/<nazwa>/`) albo z pojedynczego pliku."""
+    plik = plik_presetu(sciezka)
     if not plik.exists():
         raise BladPresetu("nie ma pliku presetu: %s" % plik)
-    return wczytaj_tekst(plik.read_text(encoding="utf-8"), plik.name, plik)
+    katalog = plik.parent if plik.name == NAZWA_PLIKU_PRESETU else None
+    return wczytaj_tekst(plik.read_text(encoding="utf-8"), plik.name, plik, katalog)
 
 
 # ---------------------------------------------------------------------------
@@ -270,6 +386,7 @@ def rozwiaz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None
         meldunki = konfiguracja.zastosuj(preset.pola, proba)
     except konfiguracja.BledKonfiguracji as exc:
         raise BladPresetu("%s: %s" % (preset.plik.name, exc))
+    proba.PRESET_BLOKI = dict(preset.bloki)
     return proba, meldunki
 
 
@@ -290,8 +407,6 @@ def pochodzenie(preset: Preset, cfg: Any, baza: dict[str, Any]) -> dict[str, str
             for klucz in sorted(set(po) | set(przed)):
                 wynik["%s[%s]" % (nazwa, klucz)] = (
                     "preset" if po.get(klucz) != przed.get(klucz) else "silnik")
-            # Calosc slownika tez ma odpowiedz: „preset", gdy zmienil sie
-            # choc jeden klucz — kanaly i przyklady sa czytane jako calosc.
             wynik[nazwa] = "preset" if _kanoniczne(po) != _kanoniczne(przed) else "silnik"
         else:
             wynik[nazwa] = "preset" if _kanoniczne(po) != _kanoniczne(przed) else "silnik"
@@ -317,21 +432,81 @@ def _dostawca(model: str) -> str:
         return ""
 
 
+def _napisy(x: Any):
+    """Wszystkie napisy w zagniezdzonej wartosci."""
+    if isinstance(x, str):
+        yield x
+    elif isinstance(x, dict):
+        for v in x.values():
+            yield from _napisy(v)
+    elif isinstance(x, (list, tuple)):
+        for v in x:
+            yield from _napisy(v)
+
+
 def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
             srodowisko: dict[str, str] | None = None) -> tuple[list[str], list[str]]:
     """Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli.
 
     Blad uniemozliwia podlaczenie. Uwaga to rzecz, ktora operator ma zobaczyc
-    (brak kanalow, brak przykladow, jezyk bez wzorcow bramek, brak klucza
+    (brak kanalow, brak bloku, jezyk bez wzorcow bramek, brak klucza
     w srodowisku) — swiadomie wylaczona funkcja nie jest bledem.
     """
     bledy: list[str] = []
     uwagi: list[str] = []
     srodowisko = os.environ if srodowisko is None else srodowisko
+
+    # --- pola wymagane i znaczniki szablonu ---------------------------
+    brak = [p for p in WYMAGANE if p not in preset.pola]
+    if brak:
+        bledy.append("brak pol wymaganych (silnik nie ma dla nich wartosci domyslnych): %s"
+                     % ", ".join(brak))
+    do_uzupelnienia = sorted({k for k, v in preset.pola.items()
+                              if any(ZNACZNIK_UZUPELNIJ in s for s in _napisy(v))})
+    if do_uzupelnienia:
+        bledy.append("pola z szablonu nadal do uzupelnienia (%s): %s"
+                     % (ZNACZNIK_UZUPELNIJ, ", ".join(do_uzupelnienia)))
+    for nazwa, tekst in sorted(preset.bloki.items()):
+        if ZNACZNIK_UZUPELNIJ in tekst:
+            bledy.append("blok prompty/%s.md nadal ma znacznik %s do uzupelnienia"
+                         % (nazwa, ZNACZNIK_UZUPELNIJ))
+    if bledy:
+        return bledy, uwagi
+
     try:
         proba, _ = rozwiaz(preset, cfg, baza)
     except BladPresetu as exc:
         return [str(exc)], []
+
+    # --- temat: reguly strukturalne, wywiedzione ze struktury silnika --
+    # Te same, ktore `narzedzia/pakiety.py` stawia wsadom: nie liczby wpisane
+    # recznie, tylko wielkosci, ktore MAJA skutek w kodzie.
+    hasla = [str(h).lower() for h in getattr(proba, "HASLA_SZUKANIA", ())]
+    znaki = [str(z).lower() for z in getattr(proba, "ZNAKI_NISZY", ())]
+    ile_na_przebieg = int(getattr(proba, "ILE_HASEL_NA_PRZEBIEG", 5))
+    minimum = 3 * ile_na_przebieg
+    if len(hasla) < minimum:
+        bledy.append("%d hasel szukania przy %d losowanych na przebieg — potrzeba co "
+                     "najmniej %d, inaczej kazdy przebieg bierze cala pule i wraca "
+                     "po tych samych kontach" % (len(hasla), ile_na_przebieg, minimum))
+    poza = [h for h in hasla if not any(z in h for z in znaki)]
+    if poza:
+        bledy.append("%d hasel nie niesie ZADNEGO znaku niszy (%s) — agent znajdzie "
+                     "posty, a regula celow odrzuci je co do jednego; dopisz znak "
+                     "albo przeformuluj haslo" % (len(poza), ", ".join(poza[:3])))
+    notki = int(getattr(proba, "NOTKI_DZIENNIE", len(getattr(proba, "NOTE_MIX_OTHER_DAY", ()))))
+    komorki = len(getattr(proba, "GENERATORY", {})) * len(getattr(proba, "DZIEDZINY_CIEKAWOSTEK", ()))
+    if notki > 0 and komorki < 10 * notki:
+        bledy.append("siatka daje %d komorek (%d wzorcow x %d dziedzin) przy %d notkach "
+                     "na dobe — dopisz dziedziny do co najmniej %d, inaczej ten sam "
+                     "wzorzec w tej samej dziedzinie wroci w tym samym tygodniu"
+                     % (komorki, len(getattr(proba, "GENERATORY", {})),
+                        len(getattr(proba, "DZIEDZINY_CIEKAWOSTEK", ())), notki,
+                        -(-10 * notki // max(1, len(getattr(proba, "GENERATORY", {}))))))
+    kat = str(getattr(proba, "KAT_REDAKCYJNY", "") or "")
+    if kat and not kat.rstrip().endswith("."):
+        uwagi.append("temat.kat_redakcyjny nie konczy sie kropka — jest doklejany po "
+                     "myslniku za nisza w kazdym briefie")
 
     # --- styl: pliki musza istniec, korpus wedle deklaracji ------------
     for nazwa, opis in (("STYLE_PROFILE_POSITIVE", "profil pozytywny stylu"),
@@ -356,6 +531,18 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
                      "i opis glosu (`styl.opis`)")
     if not str(getattr(proba, "STYL_OPIS", "") or "").strip():
         uwagi.append("styl.opis jest pusty — glos redakcji opisuja tylko profile")
+
+    # --- bloki promptow ------------------------------------------------
+    brak_blokow = sorted(set(BLOKI) - set(preset.bloki))
+    if preset.katalog is None:
+        uwagi.append("preset jednoplikowy: bez katalogu `prompty/` — briefy dostana "
+                     "zdania zastepcze zamiast blokow (%s)" % ", ".join(sorted(BLOKI)))
+    elif brak_blokow:
+        uwagi.append("bez blokow promptow: %s — briefy dostana zdanie zastepcze"
+                     % ", ".join(brak_blokow))
+    if getattr(proba, "OBRAZ_WLACZONY", True) and "okladka" not in preset.bloki:
+        uwagi.append("okladka wlaczona, a bez bloku prompty/okladka.md — obrazy nie "
+                     "beda mialy wspolnej tozsamosci wizualnej")
 
     # --- modele: kazda rola musi miec dostawce, ktorego silnik obsluguje ----
     klucze = {"anthropic": "ANTHROPIC_API_KEY", "deepseek": "DEEPSEEK_API_KEY",
@@ -395,7 +582,6 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
     if len(dni) != artykuly:
         bledy.append("artykuly na tydzien (%d) nie zgadzaja sie z dniami (%s)"
                      % (artykuly, ", ".join(dni) or "brak"))
-    notki = int(getattr(proba, "NOTKI_DZIENNIE", len(getattr(proba, "NOTE_MIX_OTHER_DAY", ()))))
     if artykuly == 0:
         uwagi.append("artykuly wylaczone (0 na tydzien): zegar artykulu nie powstanie, "
                      "promocja nie ma czego promowac")
@@ -417,34 +603,27 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
                      % (getattr(proba, "SUFIT_DZIENNY_BAZOWY", 0),
                         getattr(proba, "RUN_LIMIT_USD", 0)))
 
-    # --- temat i zrodla ----------------------------------------------
-    if not getattr(proba, "KANALY_YOUTUBE", {}):
-        uwagi.append("bez kanalow YouTube — zaczyn tematow z kanalow bedzie pusty")
+    # --- zrodla ------------------------------------------------------
+    if not getattr(proba, "KANALY_YOUTUBE", {}) and not getattr(proba, "KANALY_RSS", {}):
+        uwagi.append("bez kanalow YouTube i RSS — zaczyn tematow bedzie pusty, skaut "
+                     "i szukanie ciekawostek pojda z samej siatki dziedzin")
     przyklady = getattr(proba, "PRZYKLADY_NISZY", {}) or {}
     if not any(przyklady.values()):
         uwagi.append("bez przykladow z niszy — prompty dostana polecenie zastepcze")
-    ile_hasel = len(getattr(proba, "HASLA_SZUKANIA", ()))
-    minimum = 3 * int(getattr(proba, "ILE_HASEL_NA_PRZEBIEG", 5))
-    if ile_hasel < minimum:
-        uwagi.append("%d hasel szukania przy %d losowanych na przebieg — pula ponizej %d "
-                     "wraca po tych samych kontach" % (
-                         ile_hasel, getattr(proba, "ILE_HASEL_NA_PRZEBIEG", 5), minimum))
-    znaki = [z.lower() for z in getattr(proba, "ZNAKI_NISZY", ())]
-    poza = [h for h in getattr(proba, "HASLA_SZUKANIA", ())
-            if not any(z in h.lower() for z in znaki)]
-    if poza:
-        uwagi.append("%d hasel bez zadnego znaku niszy (%s)" % (len(poza), ", ".join(poza[:3])))
+    if not getattr(proba, "W_TYM_MIESIACU", {}):
+        uwagi.append("bez rytmu roku (temat.rytm_roku) — prompt ciekawostek nie dostanie "
+                     "podpowiedzi sezonowej")
 
     # --- jezyk: ktore bramki beda dzialac ------------------------------
     jezyk = str(getattr(proba, "ARTICLE_LANGUAGE", "English"))
     try:
         import jezyki
-        brak = jezyki.brakujace(jezyk)
+        brak_wzorcow = jezyki.brakujace(jezyk)
     except Exception:                                           # noqa: BLE001
-        brak = []
-    if brak:
+        brak_wzorcow = []
+    if brak_wzorcow:
         uwagi.append("jezyk %r nie ma wzorcow dla %d bramek (%s) — te bramki beda "
-                     "jawnie wylaczone" % (jezyk, len(brak), ", ".join(brak[:4])))
+                     "jawnie wylaczone" % (jezyk, len(brak_wzorcow), ", ".join(brak_wzorcow[:4])))
     return bledy, uwagi
 
 
@@ -452,12 +631,21 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
 # zastosowanie na zywym module `config`
 # ---------------------------------------------------------------------------
 def zastosuj(preset: Preset, cfg: Any, baza: dict[str, Any]) -> list[str]:
-    """Neutralna baza, potem preset. Oddaje meldunki `konfiguracja.zastosuj`."""
+    """Neutralna baza, potem pola i bloki presetu. Oddaje meldunki `konfiguracja.zastosuj`."""
     konfiguracja.przywroc(cfg, baza)
     try:
-        return konfiguracja.zastosuj(preset.pola, cfg)
+        meldunki = konfiguracja.zastosuj(preset.pola, cfg)
     except konfiguracja.BledKonfiguracji as exc:
         raise BladPresetu("%s: %s" % (preset.plik.name, exc))
+    bloki = getattr(cfg, "PRESET_BLOKI", None)
+    if isinstance(bloki, dict):
+        bloki.clear()
+        bloki.update(preset.bloki)
+    else:
+        cfg.PRESET_BLOKI = dict(preset.bloki)
+    if preset.bloki:
+        meldunki.append("prompty/ -> PRESET_BLOKI (%s)" % ", ".join(sorted(preset.bloki)))
+    return meldunki
 
 
 # ---------------------------------------------------------------------------
@@ -548,7 +736,7 @@ def aktywacja(agent_dir: Path, srodowisko: dict[str, str] | None = None) -> Akty
                      aktywowano=str(dane.get("aktywowano") or ""), zrodlo="wskaznik")
 
 
-def podlacz(plik: Path, agent_dir: Path, cfg: Any, baza: dict[str, Any] | None = None,
+def podlacz(sciezka: Path, agent_dir: Path, cfg: Any, baza: dict[str, Any] | None = None,
             instancja: str | None = None, srodowisko: dict[str, str] | None = None
             ) -> tuple[Aktywacja, list[str]]:
     """Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik.
@@ -557,7 +745,7 @@ def podlacz(plik: Path, agent_dir: Path, cfg: Any, baza: dict[str, Any] | None =
     zly preset B nie odlacza dzialajacego A (scenariusz 6 audytu).
     """
     agent_dir = Path(agent_dir).resolve()
-    preset = wczytaj(plik)
+    preset = wczytaj(sciezka)
     bledy, uwagi = sprawdz(preset, cfg, baza, srodowisko)
     if bledy:
         raise BladPresetu("preset %r nie przeszedl sprawdzenia:\n  - %s"
@@ -620,6 +808,7 @@ Silnik nie ma wbudowanego tematu, stylu ani planu. Zeby ruszyc:
     python narzedzia/presety.py lista              # co jest do podlaczenia
     python narzedzia/presety.py sprawdz <nazwa>    # czy preset jest kompletny
     python narzedzia/presety.py podlacz <nazwa>    # podlacz (nowa instancja albo wznowienie)
+Nie masz jeszcze presetu? python narzedzia/presety.py nowy <nazwa>   # z szablonu
 Masz stary agent-v2/konfiguracja.toml? Zamien go w preset:
     python narzedzia/presety.py importuj-konfiguracje --nazwa <nazwa>
 """
@@ -632,7 +821,7 @@ def wymagaj_aktywnego(cfg: Any, co: str = "ten przebieg") -> Aktywacja | None:
     `db` i `browser` i wolaja `main()` bez zadnego presetu, a zapora
     `config.WOLNO_WOLAC_MODEL` i tak nie pusci ich do platnego wywolania.
     Brama chroni PRODUKCJE: zegar, ktory odpala `run.py --dzien --wyslij`
-    po odlaczeniu presetu, ma dostac odmowe, nie wbudowany temat.
+    po odlaczeniu presetu, ma dostac odmowe, nie pusty temat.
     """
     if getattr(cfg, "W_TESCIE", False):
         return getattr(cfg, "PRESET_AKTYWACJA", None)
@@ -646,24 +835,36 @@ def wymagaj_aktywnego(cfg: Any, co: str = "ten przebieg") -> Aktywacja | None:
 # katalog presetow
 # ---------------------------------------------------------------------------
 def lista(agent_dir: Path) -> list[Path]:
-    """Presety operatora (`presety/*.toml`) i przyklady (`presety/przyklady/`)."""
+    """Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`.
+
+    Szablon (`SZABLON/`) tez jest na liscie — `sprawdz` pokazuje, ze nie da
+    sie go podlaczyc, dopoki nie zostanie uzupelniony.
+    """
     kat = katalog_presetow(agent_dir)
-    wlasne = sorted(p for p in kat.glob("*.toml") if p.is_file()) if kat.is_dir() else []
-    przyklady_kat = kat / NAZWA_PRZYKLADOW
-    przyklady = (sorted(p for p in przyklady_kat.glob("*.toml") if p.is_file())
-                 if przyklady_kat.is_dir() else [])
-    return wlasne + przyklady
+    if not kat.is_dir():
+        return []
+    wynik = [p / NAZWA_PLIKU_PRESETU for p in sorted(kat.iterdir())
+             if p.is_dir() and (p / NAZWA_PLIKU_PRESETU).is_file()]
+    wynik += sorted(p for p in kat.glob("*.toml") if p.is_file())
+    return wynik
+
+
+def nazwa_z_pliku(plik: Path) -> str:
+    """Nazwa presetu z jego polozenia: katalog albo nazwa pliku."""
+    plik = Path(plik)
+    return plik.parent.name if plik.name == NAZWA_PLIKU_PRESETU else plik.stem
 
 
 def znajdz(nazwa: str, agent_dir: Path) -> Path:
-    """Preset po nazwie (wlasne przed przykladami) albo po sciezce do pliku."""
+    """Preset po nazwie (katalog przed plikiem) albo po sciezce."""
     p = Path(nazwa)
-    if p.suffix == ".toml" and p.exists():
-        return p.resolve()
-    kandydaci = [x for x in lista(agent_dir) if x.stem == nazwa]
+    if p.exists() and (p.is_dir() or p.suffix == ".toml"):
+        return plik_presetu(p.resolve())
+    kandydaci = [x for x in lista(agent_dir) if nazwa_z_pliku(x) == nazwa]
     if not kandydaci:
         raise BladPresetu("nie ma presetu %r. Dostepne: %s"
-                          % (nazwa, ", ".join(x.stem for x in lista(agent_dir)) or "(brak)"))
+                          % (nazwa, ", ".join(nazwa_z_pliku(x) for x in lista(agent_dir))
+                             or "(brak)"))
     return kandydaci[0]
 
 
@@ -694,8 +895,9 @@ def z_konfiguracji(tekst_toml: str, nazwa: str, opis: str = "") -> str:
 def eksportuj(preset: Preset) -> str:
     """Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu).
 
-    Bez sekretow, bez pamieci instancji — tylko rozwiazane pola. Import
-    tego tekstu do pustego silnika daje ten sam odcisk (scenariusz 12).
+    Bez sekretow, bez pamieci instancji — tylko rozwiazane pola. Bloki
+    promptow zostaja w katalogu presetu; eksport TOML-a ich nie niesie,
+    o czym mowi naglowek.
     """
     meta = {"nazwa": preset.nazwa, "schema": preset.schema}
     if preset.opis:
@@ -705,4 +907,7 @@ def eksportuj(preset: Preset) -> str:
     naglowek = ["# Eksport presetu %r — bez kluczy, sesji i pamieci instancji."
                 % preset.nazwa,
                 "# odcisk: %s" % preset.odcisk]
+    if preset.bloki:
+        naglowek.append("# bloki promptow (%s) leza w katalogu presetu, nie w tym pliku"
+                        % ", ".join(sorted(preset.bloki)))
     return konfiguracja.zapisz_toml(preset.pola, naglowek, {"preset": meta})

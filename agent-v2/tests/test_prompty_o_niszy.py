@@ -428,8 +428,11 @@ print("=== 6. PROMPTY TEMATYCZNE NAZYWAJA TEMAT KONTA ===")
 # Sprawdzenie zostaje, bo pytanie sie nie zmienilo: czy prompt w ogole mowi
 # modelowi, o czym jest to konto. Prompt bez tego zdania — z polem czy bez —
 # zostawia model bez tematu.
-_WZORZEC_NISZY = "%s|%s" % (
-    _re_escape_ze_zawijaniem(config.NISZA), re.escape("{nisza}"))
+# SILNIK NIE MA NISZY (pusta od 2026-09-05), wiec wzorzec to samo pole
+# `{nisza}` — pusty napis w alternatywie pasowalby do wszystkiego i test
+# przechodzilby nad promptem, ktory tematu nie nazywa wcale.
+_WZORZEC_NISZY = ("%s|%s" % (_re_escape_ze_zawijaniem(config.NISZA), re.escape("{nisza}"))
+                  if config.NISZA else re.escape("{nisza}"))
 
 for nazwa in ("skaut.md", "ciekawostki.md", "bank.md", "warto_pisac.md"):
     sciezka = PROMPTY / nazwa

@@ -58,8 +58,10 @@ data_przestawienia = ""
 # -----------------------------------------------------------------------------
 [temat]
 # Jedno zdanie, podawane modelowi doslownie. Wchodzi w komunikat systemowy
-# skauta: „a publication about {nisza}".
-nisza = "how everyday things are made and regulated"
+# skauta: „a publication about {nisza}". SILNIK NIE MA WARTOSCI DOMYSLNEJ:
+# bez tematu bot nie startuje. Ten plik jest sciezka przejsciowa; wlasciwa
+# droga to kartridz w presety/ (patrz presety/README.md i presety/SZABLON/).
+nisza = "<<jedno zdanie po slowie 'about', mala litera, bez kropki>>"
 
 # Co ta publikacja robi W OBREBIE tematu. Doklejane do niszy po myslniku, wiec
 # zacznij mala litera i zakoncz kropka.
@@ -69,7 +71,7 @@ nisza = "how everyday things are made and regulated"
 # z kazdego konta publikacje o technologii — niezaleznie od tego, co wlasciciel
 # ustawil w `nisza`. Konto o pieczeniu chleba dostawalo brief o systemach:
 # konfiguracja mowila jedno, prompt drugie, a prompt jest blizej modelu.
-kat_redakcyjny = "what the record actually says, how the thing is built, who decides what it is allowed to do, and what that arrangement hands the people who built it."
+kat_redakcyjny = "<<czym ta publikacja zajmuje sie W temacie; mala litera, kropka na koncu.>>"
 
 # Jezyk tresci. STERUJE TYLKO CZTEREMA ETAPAMI (pisarz, notka, komentarz,
 # odpowiedz). Prompty i bramki `gates.py` sa po angielsku — zmiana samego tego
@@ -82,67 +84,19 @@ jezyk = "English"
 # jawna i krotka celowo: ma sie dac przeczytac i zakwestionowac.
 # WYMOG: kazde haslo z `hasla_szukania` musi zawierac co najmniej jedno z nich
 # (pilnuje `tests/test_szukanie_celow.py`).
-znaki_niszy = [
-    "standard", "rule", "regulat", "code", "codes", "certif",
-    "test", "safety", "design", "material", "tolerance", "label",
-    "approval", "liability", "procurement", "patent", "protection",
-    "requirement", "inspect", "measurement", "manufactur", "packaging",
-]
+znaki_niszy = ["<<slowo-klucz>>", "<<slowo-klucz>>", "<<slowo-klucz>>"]
 
 # Czym agent szuka cudzych postow do komentowania.
 # WYMOG: CO NAJMNIEJ 19 hasel, pokrywajacych trzy rozne obszary tematu.
 # Dwadziescia hasel o tym samym daje te sama garstke kont, co trzy.
-hasla_szukania = [
-    "engineering standards", "building codes", "product safety",
-    "industrial design history", "materials testing", "measurement standards",
-    "manufacturing tolerances", "packaging regulation",
-    "consumer protection", "food labelling rules", "workplace safety rules",
-    "accessibility standards", "public transport rules", "housing regulation",
-    "medical device approval", "road design",
-    "standards bodies", "regulatory capture", "certification costs",
-    "insurance requirements", "procurement rules", "liability law",
-    "patent disputes", "supply chain standards",
-]
+hasla_szukania = ["<<haslo ze znakiem rewiru>>", "<<haslo ze znakiem rewiru>>"]
 
 # Siatka dziedzin, w ktorych szuka sie ciekawostek. Kazda pozycja to nie
 # slowo-klucz, tylko OPIS MIEJSCA, w ktorym cos ciekawego siedzi — krotkie
 # hasla daja modelowi za maly uchwyt.
 # WYMOG: `len(GENERATORY) * len(dziedziny) >= 400`. Przy 14 wzorcach znaczy to
 # co najmniej 29 dziedzin (pilnuje `tests/test_generatory.py`).
-dziedziny = [
-    "how a standard becomes mandatory, and who sat in the room",
-    "the tolerance on a part, and what happens at the edge of it",
-    "why two versions of the same object are not interchangeable",
-    "a dimension that is round in one country and not in another",
-    "the test a product must pass, and what the test does not check",
-    "a material that was replaced, and what the replacement cannot do",
-    "why a fastener, thread or fitting comes in exactly these sizes",
-    "the difference between a rating and a guarantee",
-    "what a printed number on a package is actually the ratio of",
-    "a rating measured under conditions nobody encounters",
-    "how a certification is audited, and how often",
-    "reproducing a published measurement, and how often it fails",
-    "the gap between a showroom demonstration and a bad day",
-    "a figure that is a legal minimum quoted as a typical value",
-    "who pays for a certification, and what that buys",
-    "an insurance requirement that shaped a design",
-    "a cost hidden in one price and paid by a different group",
-    "what a warranty excludes, and why exactly that",
-    "a procurement rule that decided what got built",
-    "the cheapest possible version that still passes",
-    "a rule written after one specific accident",
-    "an approval process, and what it delegates to the maker",
-    "a workplace limit and the study it came from",
-    "an accessibility requirement and what it changed for everyone",
-    "how a dispute over a patent changed a whole category",
-    "a labelling rule and the argument it settled",
-    "a threshold in law that a machine has to rule on",
-    "who is liable when a certified thing fails",
-    "a constraint that disappeared while its shape stayed",
-    "a standard that lost, and what we use instead",
-    "a hype cycle in this field that resolved, and how",
-    "the people who were right early and ignored",
-]
+dziedziny = ["<<opis miejsca, w ktorym siedzi cos ciekawego>>", "<<...>>"]
 
 # Slowa, ktore w TWOJEJ dziedzinie nic nie znacza, bo padaja w co drugim
 # zdaniu. Sluza jednemu: rozpoznawaniu, ze dwie notki mowia o tym samym.
@@ -192,6 +146,10 @@ przekonania = []
 # Publiczne sprawdziany tej dziedziny, ktore cos zmienily.
 precedensy = []
 
+# Rytm roku tej dziedziny: miesiac -> gdzie patrzec w tym miesiacu. Pusta
+# tablica = bez podpowiedzi sezonowej. Klucze to numery miesiecy.
+[temat.rytm_roku]
+
 
 # -----------------------------------------------------------------------------
 # ZRODLA — skad biora sie tematy
@@ -239,6 +197,14 @@ o_co_pytac = ""
 kanaly_youtube = { }
 # przyklad:
 # kanaly_youtube = { "Nazwa kanalu" = "UCxxxxxxxxxxxxxxxxxxxxxx" }
+
+# Kanaly RSS/Atom (blogi laboratoriow, listy publikacji): ta sama rola co
+# kanaly YouTube — zaczyn tematow, nigdy zrodlo. Nazwa = adres.
+kanaly_rss = { }
+
+# Hosty, na ktorych leza DOKUMENTY PIERWOTNE tej dziedziny — podpowiedz dla
+# researchu („szukaj najpierw tu"), nie filtr. Pusta lista = bez podpowiedzi.
+domeny_preferowane = []
 
 # Hosty, ktore nigdy nie oddaly tresci albo odmawiaja automatycznego czytania.
 # Respektujemy je zamiast obchodzic.

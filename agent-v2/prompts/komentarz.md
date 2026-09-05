@@ -7,6 +7,8 @@ Write in {language}.
 
 {styl_opis}
 
+{glos_komentarza}
+
 ## You are writing a comment, not deciding whether to
 
 This post was already chosen. An earlier stage read it, accepted it, and wrote

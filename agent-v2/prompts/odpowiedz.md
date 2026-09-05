@@ -8,6 +8,8 @@ that language if you can do so naturally, otherwise return null.
 
 {styl_opis}
 
+{glos_komentarza}
+
 ## You are the host here
 
 This is under your own article, note or comment. A guest is careful; a host

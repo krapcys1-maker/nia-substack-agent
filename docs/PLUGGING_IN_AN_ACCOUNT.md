@@ -337,5 +337,5 @@ ledger and nowhere else is the failure this step is here to catch.
 | the order of a day | `agent-v2/run.py`, `dzien()` |
 | anything about Substack itself | `agent-v2/browser.py`, `agent-v2/kanal.py` |
 
-Full function-level index: [FUNCTION_MAP.md](FUNCTION_MAP.md) — 634 functions,
+Full function-level index: [FUNCTION_MAP.md](FUNCTION_MAP.md) — 649 functions,
 which of them cost money and for which stage, and who calls each one.

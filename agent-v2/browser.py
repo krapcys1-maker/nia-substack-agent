@@ -3730,6 +3730,12 @@ def tresc_oswiadczenia() -> str:
     Tekst jest publiczny i wiążący, więc ma jedno źródło: cytat blokowy
     w `prompts/OSWIADCZENIE_AUTORSTWA.md`, gdzie leży razem z uzasadnieniem.
     """
+    # Z PRESETU, GDY GO DOSTARCZYL (`prompty/oswiadczenie.md`). Oswiadczenie
+    # jest publicznym zdaniem KONTA, wiec nalezy do presetu, nie do silnika;
+    # plik w `prompts/` zostaje jako uzasadnienie i wzor.
+    z_presetu = str((getattr(config, "PRESET_BLOKI", None) or {}).get("oswiadczenie") or "")
+    if z_presetu.strip():
+        return " ".join(z_presetu.split())
     plik = config.PROMPTS_DIR / "OSWIADCZENIE_AUTORSTWA.md"
     linie = [l[2:].strip() for l in plik.read_text(encoding="utf-8").splitlines()
              if l.startswith("> ")]

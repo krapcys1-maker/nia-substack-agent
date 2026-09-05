@@ -467,3 +467,50 @@ industry's product names; and the measurement narratives in `config.py`
 comments and in the documentation, which are the reasons behind the constants
 rather than material any model sees. Making the subject a required, separate
 package is the next step, not this one.
+
+## 13. The subject leaves the engine
+
+Section 12 ended with "making the subject a required, separate package is the
+next step, not this one". This is that step, taken on 6 September 2026 on the
+`presety` branch.
+
+The engine no longer has a subject of its own. In `config.py` the values that
+described one publication are empty until a cartridge fills them: `NISZA`,
+`KAT_REDAKCYJNY`, `ZNAKI_NISZY`, `OBSZARY_REWIRU`, `HASLA_SZUKANIA`,
+`DZIEDZINY_CIEKAWOSTEK`, `W_TYM_MIESIACU`, `KANALY_YOUTUBE`, `KANALY_RSS`,
+`DOMENY_PREFEROWANE` and the prompt blocks in `PRESET_BLOKI`. A snapshot of
+those defaults, `DOMYSLNE_SILNIKA`, is taken before any file is read, and the
+audit's section 7 asserts that every entry in it is empty. Without an active
+cartridge `run.py` and `artykul_z_puli.py` stop with exit code 3 and say what
+to plug in; nothing falls back to a built-in profile.
+
+What was removed with the subject:
+
+- `packs/everyday-things-and-regulation.toml`, the previous subject as a pack,
+  and its row in `packs/README.md`.
+- `presety/przyklady/`, two single-file example presets from the first draft of
+  this branch. They carried placeholders, so they stay in the branch history;
+  the audit's history scan names that directory as allowed for that reason.
+- the fixed cover palette in `prompts/grafika.md`, the editorial line inside
+  `skaut.md`, `ciekawostki.md`, `warto_pisac.md` and `bank.md`, and the voice
+  paragraphs in the writer, note and comment briefs. Each is now a `{block}`
+  filled from the cartridge's `prompty/` directory, with a neutral fallback
+  sentence in `stages._ZASTEPCZE_BLOKI` so a missing block is visible in the
+  prompt rather than silently empty.
+- the tests that measured the old subject through `config.*`:
+  `test_szukanie_celow`, `test_generatory` (its section 3 mapped the previous
+  account's article titles to generators) and `test_przyklad_przechodzi_reguly`
+  now read the example cartridge, and each asserts first that the engine has
+  nothing of its own.
+
+What replaces it: `presety/ai/` is the example cartridge, written from scratch
+for one subject (what AI systems do when measured, what they cost, and who is
+accountable), with the account handle left as a placeholder; `presety/SZABLON/`
+is the template every field of which is a `<<...>>` marker that `sprawdz`
+refuses. Both are in git on purpose; any other directory under `presety/` is an
+installation and the audit treats it like `konfiguracja.toml`.
+
+Still tied to the previous subject, and still on purpose: the version-name
+pattern `WZORZEC_WERSJI`, and the measurement narratives in `config.py`
+comments and in the documentation, which are the reasons behind the constants
+rather than material any model sees.

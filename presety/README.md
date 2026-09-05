@@ -1,26 +1,39 @@
-# Presets
+# Presets — the cartridge
 
-A **preset** is one TOML file that describes an entire publication — subject,
-voice, sources, model split, daily volumes, schedule and money — and that can
-be plugged into the engine and unplugged again. Without an active preset the
-engine refuses to run: there is no built-in subject to fall back to.
+The engine in `agent-v2/` is the console: it carries the method (stages,
+gates, contracts, guards) and **no subject at all** — no niche, no search
+terms, no domains, no calendar, no visual identity. A **preset** is the
+cartridge: one directory with everything that makes a publication *this*
+publication. Plug it in and go; unplug it and the engine is empty again.
+
+```
+presety/<name>/
+  preset.toml        knobs (notes/day, articles/week, comments, likes, runs,
+                     models per role, budgets, schedule), account, subject,
+                     sources (YouTube channels, RSS feeds, preferred hosts), style
+  prompty/*.md       editorial blocks injected into the engine's briefs:
+                     linia_redakcyjna, glos_artykulu, glos_notki,
+                     glos_komentarza, okladka, kogo_szukamy, oswiadczenie
+  styl/*.md          the positive and negative style profiles (+ optional corpus)
+```
 
 ```bash
 python narzedzia/presety.py lista            # what is here, and what is plugged in
+python narzedzia/presety.py nowy moj-temat   # a new cartridge from SZABLON/
 python narzedzia/presety.py sprawdz ai       # errors and warnings, no paid calls
-python narzedzia/presety.py podglad ai       # the prompts exactly as a model gets them
+python narzedzia/presety.py podglad ai       # the briefs exactly as a model gets them
 python narzedzia/presety.py podlacz ai       # activate (creates agent-v2/instancje/ai/)
 python narzedzia/presety.py status
 python narzedzia/presety.py odlacz           # deactivate; the instance data stays
 ```
 
-- `presety/przyklady/` — shipped examples, tracked in git. `zgodnosc` is the
-  engine's former built-in profile written out explicitly; `ai` is a full
-  example: AI in English, two notes a day, one article a week.
-- `presety/*.toml` — **your** presets. Gitignored, because a preset carries the
-  account handle and the subject, which is exactly what should not be in a
-  public repository. Start by copying an example.
+- `presety/ai/` — a complete cartridge, tracked in git: AI in English, two
+  notes a day, one article a week, verified channels and feeds, its own
+  style profiles and editorial blocks. Replace `[konto]` with your account.
+- `presety/SZABLON/` — the empty cartridge with every field explained.
+  `<<...>>` placeholders make it impossible to plug in unfinished.
+- anything else in `presety/` is **yours** and gitignored: a preset carries
+  the account handle and the subject, which is exactly what should not sit in
+  a public repository.
 
-The full description, in Polish, is in [docs/PRESETY.md](../docs/PRESETY.md):
-what each section does, what happens on activation and deactivation, what is
-isolated per instance and what is deliberately shared.
+The full description, in Polish, is in [docs/PRESETY.md](../docs/PRESETY.md).

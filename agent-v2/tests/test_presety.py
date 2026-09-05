@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Preset da sie podlaczyc, odlaczyc i NIE przenosi niczego z poprzedniego.
+"""Kartridz da sie podlaczyc, odlaczyc i NIE przenosi niczego z poprzedniego.
 
 ## Po co ten plik istnieje
 
@@ -18,7 +18,10 @@ z nich i ma przechodzic DOPIERO po naprawie:
   T15  rola `obraz` zmieniona, `IMAGE_MODEL` nie
   T22  oczekujacy artykul innej instancji byl wystawiany
   C1   brak konfiguracji przywracal wbudowany temat zamiast zatrzymac bota
+  C2   linia redakcyjna i okladka jednej publikacji byly wpisane w silnik
+  C4   styl byl wspolnym zestawem plikow o stalych nazwach
   W2   liczba przebiegow i dzien artykulu nie wchodzily do zegara
+  W4   sygnaly (kanaly) i dowody (dokumenty) mialy jedno zrodlo: YouTube
 
 Kazda sekcja ma KONTRDOWOD: pokazuje, ze asercja umie oblac — inaczej test
 przechodzilby takze nad kodem sprzed naprawy.
@@ -27,9 +30,7 @@ BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
     PYTHONIOENCODING=utf-8 python agent-v2/tests/test_presety.py
 """
 import ast
-import copy
 import json
-import os
 import pathlib
 import sys
 import tempfile
@@ -38,7 +39,7 @@ import types
 sys.path.insert(0, "agent-v2/tests")
 import wlasna_konfiguracja  # noqa: E402
 
-wlasna_konfiguracja.pomin_gdy_bez_tomllib("czy presety podlaczaja sie i odlaczaja czysto")
+wlasna_konfiguracja.pomin_gdy_bez_tomllib("czy kartridze podlaczaja sie i odlaczaja czysto")
 
 sys.path.insert(0, "agent-v2")
 sys.path.append("narzedzia")
@@ -48,7 +49,8 @@ import preset          # noqa: E402
 
 KORZEN = pathlib.Path(".").resolve()
 AGENT = KORZEN / "agent-v2"
-PRZYKLADY = KORZEN / "presety" / "przyklady"
+KARTRIDZ_AI = KORZEN / "presety" / "ai"
+SZABLON = KORZEN / "presety" / preset.NAZWA_SZABLONU
 
 zdane = oblane = 0
 
@@ -65,11 +67,11 @@ def sprawdz(nazwa, warunek, szczegol=""):
 
 # NEUTRALNA BAZA SILNIKA — zdjecie zrobione przez `config.py` ZANIM wczytal
 # cokolwiek (takze stary `konfiguracja.toml` operatora, ktory darmowy test
-# nadal czyta). To ta sama baza, od ktorej silnik kompiluje kazdy preset;
-# `konfiguracja.zdjecie(config)` braloby juz wartosci operatora i test
-# zaleza​lby od tego, co akurat lezy w jego pliku.
+# nadal czyta). To ta sama baza, od ktorej silnik kompiluje kazdy kartridz.
 BAZA = config.DOMYSLNE_SILNIKA
 
+# Minimalny kartridz jednoplikowy: komplet pol wymaganych, reguly strukturalne
+# spelnione, profile z silnika. Wszystko inne dostaje z reszty.
 MINIMUM = """
 [preset]
 nazwa = "%(nazwa)s"
@@ -81,6 +83,13 @@ nazwa_marki = "Probna %(nazwa)s"
 
 [temat]
 nisza = "%(nisza)s"
+kat_redakcyjny = "what the record says."
+jezyk = "English"
+znaki_niszy = ["probn", "test"]
+hasla_szukania = ["probna a", "probna b", "probna c", "probna d", "probna e",
+    "probna f", "probna g", "probna h", "probna i", "probna j", "probna k",
+    "probna l", "probna m", "probna n", "probna o", "test p"]
+dziedziny = ["d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8"]
 
 [styl]
 profil_pozytywny = "style-profiles/ARTICLE_STYLE_PROFILE_V1.md"
@@ -114,41 +123,48 @@ def dokument(sekcje: str):
     return p
 
 
+def notki(reszta):
+    """MINIMUM plus `reszta`, przymierzone na kopii."""
+    p = preset.proba_konfiguracji(config, BAZA)
+    preset.zastosuj(wczytaj("n", reszta=reszta), p, BAZA)
+    return p
+
+
 def zwykla(x):
     return preset._kanoniczne(x)
 
 
-# =========================================================== 1. PRZYKLADY
-print("=== 1. PRZYKLADOWE PRESETY WCZYTUJA SIE I MAJA STABILNY ODCISK ===")
-przyklady = sorted(PRZYKLADY.glob("*.toml"))
-sprawdz("sa co najmniej dwa przyklady (zgodnosc i ai)",
-        {p.stem for p in przyklady} >= {"zgodnosc", "ai"}, [p.stem for p in przyklady])
-for p in przyklady:
-    blad = oblewa(lambda p=p: preset.wczytaj(p))
-    sprawdz("  %s wczytuje sie" % p.stem, blad is None, blad)
-    if blad:
-        continue
-    a, b = preset.wczytaj(p), preset.wczytaj(p)
-    sprawdz("  %s: ten sam plik, ten sam odcisk" % p.stem, a.odcisk == b.odcisk)
-    bledy, _uwagi = preset.sprawdz(a, config, BAZA, srodowisko={})
-    # Przyklad `zgodnosc` wymaga korpusu, ktorego swiezy klon nie ma — to
-    # JEDYNY dopuszczalny blad i ma miec czytelny komunikat.
-    dopuszczalne = [x for x in bledy if "korpus" in x]
-    sprawdz("  %s: przechodzi sprawdzenie (poza korpusem operatora)" % p.stem,
-            len(bledy) == len(dopuszczalne), bledy)
-    # ROUND-TRIP: eksport -> wczytanie -> ten sam odcisk (scenariusz 12).
-    znowu = preset.wczytaj_tekst(preset.eksportuj(a), p.name)
-    sprawdz("  %s: eksport i ponowny import daja ten sam odcisk" % p.stem,
-            znowu.odcisk == a.odcisk, (znowu.odcisk[:12], a.odcisk[:12]))
-
+# ============================================================ 1. SILNIK PUSTY
+print("=== 1. SILNIK NIE MA TEMATU; KARTRIDZ `ai` GO MA (C1, C2) ===")
+for nazwa in ("NISZA", "KAT_REDAKCYJNY", "ZNAKI_NISZY", "HASLA_SZUKANIA",
+              "DZIEDZINY_CIEKAWOSTEK", "W_TYM_MIESIACU", "KANALY_YOUTUBE", "KANALY_RSS",
+              "DOMENY_PREFEROWANE", "PRESET_BLOKI", "STYL_OPIS"):
+    sprawdz("silnik: %s pusta" % nazwa, not BAZA.get(nazwa), BAZA.get(nazwa))
+sprawdz("kartridz ai wczytuje sie z katalogu",
+        oblewa(lambda: preset.wczytaj(KARTRIDZ_AI)) is None)
+ai = preset.wczytaj(KARTRIDZ_AI)
+sprawdz("kartridz zna swoj katalog", ai.katalog == KARTRIDZ_AI.resolve(), ai.katalog)
+sprawdz("kartridz niesie wszystkie bloki promptow", set(ai.bloki) == set(preset.BLOKI),
+        sorted(set(preset.BLOKI) - set(ai.bloki)))
+bledy, uwagi = preset.sprawdz(ai, config, BAZA, srodowisko={})
+sprawdz("kartridz ai przechodzi sprawdzenie bez bledow", not bledy, bledy)
+a, b = preset.wczytaj(KARTRIDZ_AI), preset.wczytaj(KARTRIDZ_AI)
+sprawdz("ten sam kartridz, ten sam odcisk", a.odcisk == b.odcisk)
+sprawdz("szablon NIE wczytuje sie (placeholder w nazwie) — nie da sie go podlaczyc",
+        "<<" in (oblewa(lambda: preset.wczytaj(SZABLON)) or ""),
+        oblewa(lambda: preset.wczytaj(SZABLON)))
+# ODCISK OBEJMUJE BLOKI: zmiana samego pliku w prompty/ zmienia odcisk.
+sprawdz("odcisk zalezy od blokow",
+        preset.odcisk(ai.pola, ai.schema, ai.bloki) != preset.odcisk(ai.pola, ai.schema, {}))
+# ROUND-TRIP pol: eksport -> wczytanie -> te same pola (scenariusz 12).
+znowu = preset.wczytaj_tekst(preset.eksportuj(ai), "ai.toml")
+sprawdz("eksport i ponowny import daja te same pola",
+        zwykla(znowu.pola) == zwykla(ai.pola))
 # KONTRDOWOD: zmiana jednego pola zmienia odcisk.
-_a = wczytaj("odcisk-a")
-_b = wczytaj("odcisk-a", nisza="inna nisza")
-sprawdz("inne pole -> inny odcisk", _a.odcisk != _b.odcisk)
-
+sprawdz("inne pole -> inny odcisk",
+        wczytaj("odcisk-a").odcisk != wczytaj("odcisk-a", nisza="inna nisza").odcisk)
 # NOWA LINIA W NAPISIE (T08): eksport musi dac czytelny TOML.
-_wiel = wczytaj("wielowiersz", reszta='[styl]\nopis = """linia jedna\nlinia druga"""\n'
-                .replace("[styl]\n", ""))  # dopisujemy do istniejacej sekcji styl
+_wiel = wczytaj("wielowiersz", reszta='opis = """linia jedna\nlinia druga"""\n')
 _znowu = preset.wczytaj_tekst(preset.eksportuj(_wiel), "wielowiersz.toml")
 sprawdz("opis stylu z nowa linia przezywa eksport i import",
         _znowu.pola.get("styl.opis") == "linia jedna\nlinia druga",
@@ -156,7 +172,7 @@ sprawdz("opis stylu z nowa linia przezywa eksport i import",
 
 # ========================================================== 2. NAGLOWEK
 print()
-print("=== 2. NAGLOWEK [preset] JEST OBOWIAZKOWY I ZAMKNIETY ===")
+print("=== 2. NAGLOWEK [preset] I POLA WYMAGANE ===")
 sprawdz("plik bez [preset] jest odrzucany",
         "sekcji [preset]" in (oblewa(lambda: preset.wczytaj_tekst(
             '[konto]\nuchwyt = "x"\n', "bez.toml")) or ""))
@@ -172,11 +188,19 @@ sprawdz("inna wersja schematu jest bledem",
 sprawdz("nieznane pole konfiguracji nadal jest bledem (te same reguly co loader)",
         "nieznane pola" in (oblewa(lambda: preset.wczytaj_tekst(
             '[preset]\nnazwa = "x"\n[temat]\nniszaa = "x"\n', "z.toml")) or ""))
+_goly = preset.wczytaj_tekst('[preset]\nnazwa = "goly"\n', "goly.toml")
+_bledy_g, _ = preset.sprawdz(_goly, config, BAZA, srodowisko={})
+sprawdz("kartridz bez tematu NIE przechodzi: silnik nie ma dla niego wartosci",
+        any("wymaganych" in b for b in _bledy_g), _bledy_g)
+_ze_znacznikiem = preset.wczytaj_tekst(tekst("zn").replace('nisza = "probna nisza"',
+                                                            'nisza = "<<uzupelnij>>"'), "zn.toml")
+_bledy_z, _ = preset.sprawdz(_ze_znacznikiem, config, BAZA, srodowisko={})
+sprawdz("znacznik <<...>> w polu zatrzymuje sprawdzenie",
+        any("<<" in b for b in _bledy_z), _bledy_z)
 
 # ====================================================== 3. IZOLACJA A -> B
 print()
-print("=== 3. PRESET B PO PRESECIE A == PRESET B NA CZYSTYM SILNIKU (T02) ===")
-# `reszta` doklejana jest POD sekcja [styl] z MINIMUM, wiec `opis` stoi pierwszy.
+print("=== 3. KARTRIDZ B PO KARTRIDZU A == B NA CZYSTYM SILNIKU (T02) ===")
 A = wczytaj("a", nisza="nisza A", reszta="""opis = "glos A"
 
 [temat.przyklady]
@@ -187,6 +211,8 @@ o_co_pytac = "pytanie A"
 
 [zrodla]
 kanaly_youtube = { "Kanal A" = "UCaaaaaaaaaaaaaaaaaaaaaa" }
+kanaly_rss = { "Blog A" = "https://a.example/feed.xml" }
+domeny_preferowane = ["a.example"]
 
 [modele]
 role = { write = "deepseek-v4-pro" }
@@ -195,44 +221,76 @@ B = wczytaj("b", nisza="nisza B")
 
 po_a = preset.proba_konfiguracji(config, BAZA)
 preset.zastosuj(A, po_a, BAZA)
-sprawdz("A ustawil kanaly", "Kanal A" in po_a.KANALY_YOUTUBE)
+sprawdz("A ustawil kanaly", "Kanal A" in po_a.KANALY_YOUTUBE and "Blog A" in po_a.KANALY_RSS)
 sprawdz("A ustawil pisarza", po_a.MODEL_FOR["write"] == "deepseek-v4-pro")
 sprawdz("A ustawil przyklad", po_a.PRZYKLADY_NISZY["kanon"] == ("kanon A",))
 sprawdz("A ustawil pytanie", po_a.STAN_DZIEDZINY_PYTANIE == "pytanie A")
 preset.zastosuj(B, po_a, BAZA)
 czysty = preset.proba_konfiguracji(config, BAZA)
 preset.zastosuj(B, czysty, BAZA)
-sprawdz("po B nie ma kanalow A", "Kanal A" not in po_a.KANALY_YOUTUBE, po_a.KANALY_YOUTUBE)
-sprawdz("po B pisarz wraca do silnika", po_a.MODEL_FOR["write"] == BAZA["MODEL_FOR"]["write"],
-        po_a.MODEL_FOR["write"])
+sprawdz("po B nie ma kanalow A", not po_a.KANALY_YOUTUBE and not po_a.KANALY_RSS)
+sprawdz("po B pisarz wraca do silnika", po_a.MODEL_FOR["write"] == BAZA["MODEL_FOR"]["write"])
 sprawdz("po B przyklad A znika", "kanon A" not in po_a.PRZYKLADY_NISZY.get("kanon", ()))
 sprawdz("po B pytanie A znika", po_a.STAN_DZIEDZINY_PYTANIE != "pytanie A")
 rozne = [n for n in konfiguracja.STALE_KONTA
          if zwykla(getattr(po_a, n, None)) != zwykla(getattr(czysty, n, None))]
 sprawdz("KAZDA stala konta jest taka sama po A->B i na czystym silniku", not rozne, rozne)
+sprawdz("pola kartridza A nie zostaly zmienione przez zastosowanie",
+        A.pola["zrodla.kanaly_youtube"] == {"Kanal A": "UCaaaaaaaaaaaaaaaaaaaaaa"})
 # KONTRDOWOD: bez przywrocenia bazy stara semantyka NAKLADA i roznica jest.
 naklad = preset.proba_konfiguracji(config, BAZA)
 konfiguracja.zastosuj(A.pola, naklad)
 konfiguracja.zastosuj(B.pola, naklad)
 sprawdz("kontrdowod: samo nakladanie zostawia kanaly A", "Kanal A" in naklad.KANALY_YOUTUBE,
         naklad.KANALY_YOUTUBE)
-# PRESET MA ZOSTAC NIEZMIENNY: `config` dostaje kopie jego pol, nie te same
-# obiekty. Bez tego `przywroc` czyscilo w miejscu slownik kanalow presetu A.
-sprawdz("pola presetu A nie zostaly zmienione przez zastosowanie",
-        A.pola["zrodla.kanaly_youtube"] == {"Kanal A": "UCaaaaaaaaaaaaaaaaaaaaaa"},
-        A.pola["zrodla.kanaly_youtube"])
 
-# ====================================================== 4. JEDEN SLOT
+# ================================================== 4. BLOKI Z KATALOGU
 print()
-print("=== 4. LICZBA NOTEK MA JEDNO ZNACZENIE (T04) ===")
+print("=== 4. BLOKI PROMPTOW Z KARTRIDZA, ZDANIA ZASTEPCZE BEZ NIEGO (C2) ===")
+import stages  # noqa: E402
 
+_stare_bloki = dict(config.PRESET_BLOKI)
+try:
+    config.PRESET_BLOKI.clear()
+    pola = stages._pola_wspolne()
+    sprawdz("bez kartridza kazdy blok to jawne zdanie zastepcze",
+            all(pola[n] == stages._ZASTEPCZE_BLOKI[n] for n in preset.BLOKI if n != "oswiadczenie"))
+    sprawdz("zastepczy blok okladki jest neutralny (bez palety jednej marki)",
+            "no text" in pola["okladka"] and "grey" not in pola["okladka"].lower())
+    config.PRESET_BLOKI.update(ai.bloki)
+    pola = stages._pola_wspolne()
+    sprawdz("z kartridzem blok linii redakcyjnej idzie do pol wspolnych",
+            pola["linia_redakcyjna"] == ai.bloki["linia_redakcyjna"])
+    sprawdz("naglowek pliku bloku (przed ---) NIE idzie do promptu",
+            "Tekst przed" not in pola["linia_redakcyjna"])
+    sprawdz("blok okladki z kartridza wchodzi do briefu grafiki",
+            "{okladka}" in (config.PROMPTS_DIR / "grafika.md").read_text(encoding="utf-8")
+            and pola["okladka"] == ai.bloki["okladka"])
+    import browser  # noqa: E402
+    sprawdz("oswiadczenie o autorstwie bierze sie z kartridza",
+            browser.tresc_oswiadczenia() == " ".join(ai.bloki["oswiadczenie"].split()))
+finally:
+    config.PRESET_BLOKI.clear()
+    config.PRESET_BLOKI.update(_stare_bloki)
+for nazwa, plik in (("linia_redakcyjna", "skaut.md"), ("linia_redakcyjna", "ciekawostki.md"),
+                    ("linia_redakcyjna", "warto_pisac.md"), ("linia_redakcyjna", "bank.md"),
+                    ("glos_artykulu", "pisarz.md"), ("glos_notki", "notka.md"),
+                    ("glos_notki", "mysl.md"), ("glos_komentarza", "komentarz.md"),
+                    ("glos_komentarza", "odpowiedz.md"), ("glos_komentarza", "restack.md"),
+                    ("kogo_szukamy", "cele.md"), ("domeny_preferowane", "dyskoveria.md")):
+    sprawdz("%s niesie {%s}" % (plik, nazwa),
+            "{%s}" % nazwa in (config.PROMPTS_DIR / plik).read_text(encoding="utf-8"))
+with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+    kat = pathlib.Path(tmp) / "zly"
+    (kat / "prompty").mkdir(parents=True)
+    (kat / "prompty" / "glos_wszystkiego.md").write_text("x", encoding="utf-8")
+    (kat / "preset.toml").write_text(tekst("zly"), encoding="utf-8")
+    sprawdz("nieznany plik w prompty/ zatrzymuje wczytanie",
+            "nieznany blok" in (oblewa(lambda: preset.wczytaj(kat)) or ""))
 
-def notki(reszta):
-    p = preset.proba_konfiguracji(config, BAZA)
-    preset.zastosuj(wczytaj("n", reszta=reszta), p, BAZA)
-    return p
-
-
+# ====================================================== 5. JEDEN SLOT
+print()
+print("=== 5. LICZBA NOTEK MA JEDNO ZNACZENIE (T04) ===")
 p1 = notki('[wolumeny]\nnotki_dziennie = 1\n[publikowanie]\nmiks_notek = ["CIEKAWOSTKA"]\n')
 sprawdz("1 slot: zwykly dzien ma 1 notke", len(p1.NOTE_MIX_OTHER_DAY) == 1, p1.NOTE_MIX_OTHER_DAY)
 sprawdz("1 slot: dzien artykulu TEZ ma 1 notke (promujaca)",
@@ -249,7 +307,7 @@ p2 = notki('[wolumeny]\nnotki_dziennie = 2\n[publikowanie]\nmiks_notek = '
            '["CIEKAWOSTKA", "DYSKUSJA", "MYSL", "SPROSTOWANIE"]\n')
 sprawdz("2 sloty z miksu 4 typow: sloty wypelnione cyklicznie",
         p2.NOTE_MIX_OTHER_DAY == ("CIEKAWOSTKA", "DYSKUSJA"), p2.NOTE_MIX_OTHER_DAY)
-sprawdz("2 sloty: promocja zajmuje JEDEN z nich, nie dokłada trzeciego",
+sprawdz("2 sloty: promocja zajmuje JEDEN z nich, nie doklada trzeciego",
         p2.NOTE_MIX_ARTICLE_DAY == ("ARTYKUL", "CIEKAWOSTKA"), p2.NOTE_MIX_ARTICLE_DAY)
 pz = notki('[wolumeny]\nnotki_dziennie = 3\nartykuly_tygodniowo = 0\n')
 sprawdz("bez artykulow dzien artykulu == zwykly dzien",
@@ -260,27 +318,27 @@ sprawdz("miks bez liczby: liczba to dlugosc miksu (zgodnosc wstecz)",
 sprawdz("nieznany typ notki jest bledem",
         "nieznane typy" in (oblewa(lambda: notki('[publikowanie]\nmiks_notek = ["ZMYSLONY"]\n')) or ""))
 
-# ================================================== 5. ZERO I HARMONOGRAM
+# ================================================== 6. ZERO I HARMONOGRAM
 print()
-print("=== 5. ZERO WYLACZA FORMAT; HARMONOGRAM Z PRESETU (W2) ===")
+print("=== 6. ZERO WYLACZA FORMAT; HARMONOGRAM Z KARTRIDZA (W2) ===")
 pw = notki("[wolumeny]\nrestacki_dziennie = [0, 0]\nfollow_miesiecznie = [0, 0]\n")
 sprawdz("widelki [0, 0] sa przyjmowane", pw.RESTACK_DZIENNIE == (0, 0) and pw.FOLLOW_MIESIECZNIE == (0, 0))
 pa = notki("[wolumeny]\nartykuly_tygodniowo = 0\n")
 sprawdz("0 artykulow -> brak dni artykulu", pa.ARTYKULY_TYGODNIOWO == 0 and pa.DNI_ARTYKULU == ())
 p3 = notki("[wolumeny]\nartykuly_tygodniowo = 3\n")
-sprawdz("3 artykuly bez dni -> trzy dni dobrane przez silnik",
-        len(p3.DNI_ARTYKULU) == 3, p3.DNI_ARTYKULU)
+sprawdz("3 artykuly bez dni -> trzy dni dobrane przez silnik", len(p3.DNI_ARTYKULU) == 3, p3.DNI_ARTYKULU)
 pd = notki('[harmonogram]\ndni_artykulu = ["Friday", "mon"]\n')
 sprawdz("dni po nazwie, w dowolnej pisowni -> skroty w kolejnosci tygodnia",
         pd.DNI_ARTYKULU == ("Mon", "Fri") and pd.ARTYKULY_TYGODNIOWO == 2, pd.DNI_ARTYKULU)
 pg = notki('[harmonogram]\ngodziny_przebiegow_utc = ["21:30", "9:05"]\n')
 sprawdz("godziny -> liczba przebiegow i posortowany zegar",
-        pg.PRZEBIEGOW_DZIENNIE == 2 and pg.GODZINY_PRZEBIEGOW_UTC == ("09:05", "21:30"),
-        (pg.PRZEBIEGOW_DZIENNIE, pg.GODZINY_PRZEBIEGOW_UTC))
+        pg.PRZEBIEGOW_DZIENNIE == 2 and pg.GODZINY_PRZEBIEGOW_UTC == ("09:05", "21:30"))
 pp = notki("[wolumeny]\nprzebiegow_dziennie = 2\n")
 sprawdz("liczba bez godzin -> dwie godziny z domyslnego zegara, skrajne",
-        len(pp.GODZINY_PRZEBIEGOW_UTC) == 2 and pp.GODZINY_PRZEBIEGOW_UTC[0] < pp.GODZINY_PRZEBIEGOW_UTC[-1],
-        pp.GODZINY_PRZEBIEGOW_UTC)
+        len(pp.GODZINY_PRZEBIEGOW_UTC) == 2 and pp.GODZINY_PRZEBIEGOW_UTC[0] < pp.GODZINY_PRZEBIEGOW_UTC[-1])
+pr = notki('[temat.rytm_roku]\n"3" = "marzec"\n"11" = "listopad"\n')
+sprawdz("rytm roku z kartridza (klucze TOML -> miesiace)",
+        pr.W_TYM_MIESIACU == {3: "marzec", 11: "listopad"}, pr.W_TYM_MIESIACU)
 
 import jednostki  # noqa: E402
 
@@ -295,19 +353,18 @@ z_godz = jednostki.zbuduj(KATALOG, UZYTKOWNIK, MARKA, cfg=pg)
 zegar = next(t for n, t in z_godz.items() if n.endswith(".timer") and
              "run.py" in z_godz.get(n[:-6] + ".service", ""))
 linie = [w for w in zegar.splitlines() if w.startswith("OnCalendar=")]
-sprawdz("zegar agenta ma dokladnie tyle OnCalendar, ile godzin w presecie",
+sprawdz("zegar agenta ma dokladnie tyle OnCalendar, ile godzin w kartridzu",
         linie == ["OnCalendar=*-*-* 09:05:00", "OnCalendar=*-*-* 21:30:00"], linie)
 zegar_art = next(t for n, t in z_godz.items() if n.endswith(".timer") and
                  "artykul_z_puli" in z_godz.get(n[:-6] + ".service", ""))
-sprawdz("zegar artykulu bierze dni i godzine z presetu",
+sprawdz("zegar artykulu bierze dni i godzine z kartridza",
         "OnCalendar=Tue *-*-* 14:00:00" in zegar_art, zegar_art)
-# KONTRDOWOD: domyslny silnik daje ten sam zegar co szablon.
 domyslny = jednostki.zbuduj(KATALOG, UZYTKOWNIK, MARKA, cfg=preset.proba_konfiguracji(config, BAZA))
-sprawdz("kontrdowod: bez presetu komplet szesciu jednostek", len(domyslny) == 6, sorted(domyslny))
+sprawdz("kontrdowod: bez kartridza komplet szesciu jednostek", len(domyslny) == 6, sorted(domyslny))
 
-# ======================================================== 6. WALIDACJA
+# ======================================================== 7. WALIDACJA
 print()
-print("=== 6. WALIDATORY ZNAJA DZIEDZINE WARTOSCI (T05) ===")
+print("=== 7. WALIDATORY ZNAJA DZIEDZINE WARTOSCI (T05) ===")
 przypadki = [
     ("ujemne komentarze", "[wolumeny]\nkomentarze_dziennie = [-1, 3]\n", "ujemna"),
     ("1,5 przebiegu", "[wolumeny]\nprzebiegow_dziennie = 1.5\n", "calkowitej"),
@@ -327,25 +384,25 @@ przypadki = [
     ("liczba artykulow niezgodna z dniami",
      '[wolumeny]\nartykuly_tygodniowo = 2\n[harmonogram]\ndni_artykulu = ["Tue"]\n', "zgodne"),
     ("ujemne notki", "[wolumeny]\nnotki_dziennie = -2\n", "ujemna"),
+    ("kanal RSS bez http", '[zrodla]\nkanaly_rss = { "X" = "ftp://x" }\n', "http"),
+    ("domena ze sciezka", '[zrodla]\ndomeny_preferowane = ["https://x.org/a"]\n', "hosta"),
+    ("miesiac 13", '[temat.rytm_roku]\n"13" = "x"\n', "1-12"),
 ]
 for nazwa, reszta, fragment in przypadki:
     komunikat = oblewa(lambda reszta=reszta: dokument(reszta))
     sprawdz("  %s -> zatrzymuje i mowi co" % nazwa,
             komunikat is not None and fragment in komunikat, (komunikat or "PRZESZLO")[:120])
-# T06: walidator list przykladow przyjmuje wlasny wynik.
 raz = konfiguracja._slownik_list({"kanon": ["a", "b"]}, "x")
 sprawdz("walidator przykladow przyjmuje wlasny wynik (T06)",
         konfiguracja._slownik_list(raz, "x") == raz)
-# KONTRDOWOD: poprawne skrajne wartosci przechodza.
 _skrajne = oblewa(lambda: dokument('[konto]\nstrefa_czytelnika = "UTC"\n[wolumeny]\n'
                                    'notki_dziennie = 0\nartykuly_tygodniowo = 0\n'
                                    'lajki_dziennie = [0, 0]\n'))
-sprawdz("kontrdowod: [0, 0], 0 notek, 0 artykulow, strefa UTC przechodza",
-        _skrajne is None, _skrajne)
+sprawdz("kontrdowod: [0, 0], 0 notek, 0 artykulow, strefa UTC przechodza", _skrajne is None, _skrajne)
 
-# ======================================================== 7. ATOMOWOSC
+# ======================================================== 8. ATOMOWOSC
 print()
-print("=== 7. ZLY PRESET NIE ZMIENIA NICZEGO (T03) ===")
+print("=== 8. ZLY KARTRIDZ NIE ZMIENIA NICZEGO (T03) ===")
 proba = preset.proba_konfiguracji(config, BAZA)
 przed = zwykla({n: getattr(proba, n, None) for n in konfiguracja.STALE_KONTA})
 zly = wczytaj("zly", nisza="nisza zla", reszta='[modele]\nrole = { nie_ma_takiego = "x" }\n')
@@ -355,9 +412,9 @@ po = zwykla({n: getattr(proba, n, None) for n in konfiguracja.STALE_KONTA})
 sprawdz("i NISZA ani nic innego nie zostalo zmienione", po == przed,
         [n for n in przed if przed[n] != po[n]])
 
-# ========================================================== 8. OKLADKA
+# ========================================================== 9. OKLADKA
 print()
-print("=== 8. ROLA OBRAZU I MODEL OBRAZU RAZEM (T15) ===")
+print("=== 9. ROLA OBRAZU I MODEL OBRAZU RAZEM (T15) ===")
 po_obraz = notki('[modele]\nobraz = "dall-e-3"\n')
 sprawdz("modele.obraz ustawia IMAGE_MODEL i role naraz",
         po_obraz.IMAGE_MODEL == "dall-e-3" and po_obraz.MODEL_FOR["obraz"] == "dall-e-3"
@@ -366,120 +423,108 @@ bez = notki('[modele]\nobraz = ""\n')
 sprawdz("pusty obraz wylacza okladke", bez.OBRAZ_WLACZONY is False)
 rola = notki('[modele]\nrole = { obraz = "dall-e-3" }\n')
 sprawdz("sama rola tez przestawia IMAGE_MODEL", rola.IMAGE_MODEL == "dall-e-3")
-sprawdz("pisarz zapasowy z presetu",
-        notki('[modele]\nzapasowy_pisarz = ""\n').ZAPASOWY_PISARZ == "")
-# Dostawca bez sciezki jest bledem SPRAWDZENIA, nie dopiero platnego wywolania.
+sprawdz("pisarz zapasowy z kartridza", notki('[modele]\nzapasowy_pisarz = ""\n').ZAPASOWY_PISARZ == "")
 _gpt = wczytaj("gpt", reszta='[modele]\nrole = { write = "gpt-6-astra" }\n')
 _bledy, _ = preset.sprawdz(_gpt, config, BAZA, srodowisko={})
-sprawdz("model bez sciezki dostawcy jest bledem sprawdzenia",
-        any("dostawcy" in b for b in _bledy), _bledy)
+sprawdz("model bez sciezki dostawcy jest bledem sprawdzenia", any("dostawcy" in b for b in _bledy), _bledy)
 
-# ========================================================== 9. AKTYWACJA
+# ========================================================== 10. AKTYWACJA
 print()
-print("=== 9. PODLACZ / ODLACZ / ZMIANA PO AKTYWACJI / BRAMA (C1) ===")
+print("=== 10. PODLACZ / ODLACZ / ZMIANA PO AKTYWACJI / BRAMA (C1) ===")
 with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
     korzen = pathlib.Path(tmp)
     agent = korzen / "agent-v2"
     agent.mkdir()
     presety = korzen / "presety"
-    presety.mkdir()
-    plik_a = presety / "a.toml"
+    (presety / "a" / "prompty").mkdir(parents=True)
+    plik_a = presety / "a" / "preset.toml"
     plik_a.write_text(tekst("a", "nisza A"), encoding="utf-8")
+    (presety / "a" / "prompty" / "okladka.md").write_text("Notatka.\n---\nBlok okladki A.\n",
+                                                          encoding="utf-8")
     plik_b = presety / "b.toml"
     plik_b.write_text(tekst("b", reszta='[modele]\nrole = { write = "gpt-6-astra" }\n'),
                       encoding="utf-8")
 
-    sprawdz("bez wskaznika: nic nie jest podlaczone",
-            preset.aktywacja(agent, srodowisko={}) is None)
-    akt, uwagi = preset.podlacz(plik_a, agent, config, BAZA, srodowisko={})
+    sprawdz("bez wskaznika: nic nie jest podlaczone", preset.aktywacja(agent, srodowisko={}) is None)
+    sprawdz("lista widzi katalog i plik",
+            [preset.nazwa_z_pliku(p) for p in preset.lista(agent)] == ["a", "b"],
+            [preset.nazwa_z_pliku(p) for p in preset.lista(agent)])
+    sprawdz("znajdz po nazwie katalogu trafia w preset.toml",
+            preset.znajdz("a", agent).name == "preset.toml")
+    akt, uwagi = preset.podlacz(presety / "a", agent, config, BAZA, srodowisko={})
     sprawdz("podlacz pisze wskaznik", preset.wskaznik(agent).exists())
-    sprawdz("instancja = nazwa presetu, katalog danych istnieje",
+    sprawdz("instancja = nazwa kartridza, katalog danych istnieje",
             akt.instancja == "a" and akt.katalog_danych.is_dir(), akt)
+    sprawdz("blok z prompty/ jest w aktywacji", akt.preset.bloki.get("okladka") == "Blok okladki A.")
     sprawdz("pierwsza aktywacja ma numer 1", akt.numer == 1, akt.numer)
     odczyt = preset.aktywacja(agent, srodowisko={})
     sprawdz("aktywacja() odczytuje to samo", odczyt is not None and odczyt.preset.odcisk == akt.preset.odcisk
             and odczyt.instancja == "a" and odczyt.zrodlo == "wskaznik")
     wsk_przed = preset.wskaznik(agent).read_text(encoding="utf-8")
 
-    # ZLY B NIE ODLACZA DOBREGO A (scenariusz 6).
     blad = oblewa(lambda: preset.podlacz(plik_b, agent, config, BAZA, srodowisko={}))
-    sprawdz("zly preset B nie przechodzi", blad is not None and "dostawcy" in blad, blad)
-    sprawdz("i wskaznik A jest nietkniety",
-            preset.wskaznik(agent).read_text(encoding="utf-8") == wsk_przed)
+    sprawdz("zly kartridz B nie przechodzi", blad is not None and "dostawcy" in blad, blad)
+    sprawdz("i wskaznik A jest nietkniety", preset.wskaznik(agent).read_text(encoding="utf-8") == wsk_przed)
 
-    # PRESET ZMIENIONY PO AKTYWACJI ZATRZYMUJE START.
-    plik_a.write_text(tekst("a", "nisza A zmieniona"), encoding="utf-8")
+    # ZMIANA BLOKU PO AKTYWACJI TEZ ZATRZYMUJE START — odcisk obejmuje prompty/.
+    (presety / "a" / "prompty" / "okladka.md").write_text("Notatka.\n---\nInny blok.\n", encoding="utf-8")
     blad = oblewa(lambda: preset.aktywacja(agent, srodowisko={}))
-    sprawdz("zmiana pliku po podlaczeniu = odmowa startu z nazwa presetu",
+    sprawdz("zmiana bloku po podlaczeniu = odmowa startu z nazwa kartridza",
             blad is not None and "zmienil sie po aktywacji" in blad and "podlacz a" in blad, blad)
-    akt2, _ = preset.podlacz(plik_a, agent, config, BAZA, srodowisko={})
-    sprawdz("ponowne podlaczenie: numer 2, ta sama instancja",
-            akt2.numer == 2 and akt2.instancja == "a", (akt2.numer, akt2.instancja))
+    akt2, _ = preset.podlacz(presety / "a", agent, config, BAZA, srodowisko={})
+    sprawdz("ponowne podlaczenie: numer 2, ta sama instancja", akt2.numer == 2 and akt2.instancja == "a")
     sprawdz("i start znow przechodzi", preset.aktywacja(agent, srodowisko={}) is not None)
 
-    # NOWA INSTANCJA TEGO SAMEGO PRESETU = INNY KATALOG.
-    akt3, _ = preset.podlacz(plik_a, agent, config, BAZA, instancja="a-swieza", srodowisko={})
+    akt3, _ = preset.podlacz(presety / "a", agent, config, BAZA, instancja="a-swieza", srodowisko={})
     sprawdz("inna instancja -> inny katalog danych",
             akt3.katalog_danych != akt2.katalog_danych and akt3.katalog_danych.is_dir())
 
-    # ZMIENNA SRODOWISKOWA MA PIERWSZENSTWO I NIE TYKA WSKAZNIKA.
     ze_srodowiska = preset.aktywacja(agent, srodowisko={preset.ZMIENNA: str(plik_b.resolve())})
-    sprawdz("AGENT_V2_PRESET wskazuje inny preset bez zmiany wskaznika",
+    sprawdz("AGENT_V2_PRESET wskazuje inny kartridz bez zmiany wskaznika",
             ze_srodowiska is not None and ze_srodowiska.preset.nazwa == "b"
             and ze_srodowiska.zrodlo == "srodowisko" and ze_srodowiska.instancja == "podglad-b")
 
-    # ODLACZENIE — ostatnio podlaczona byla instancja `a-swieza`.
     dane = preset.odlacz(agent)
     sprawdz("odlacz oddaje, co bylo podlaczone",
             dane and dane.get("preset") == "a" and dane.get("instancja") == "a-swieza", dane)
     sprawdz("po odlaczeniu nie ma wskaznika", not preset.wskaznik(agent).exists())
-    sprawdz("a katalogi instancji ZOSTAJA",
-            akt2.katalog_danych.is_dir() and akt3.katalog_danych.is_dir())
+    sprawdz("a katalogi instancji ZOSTAJA", akt2.katalog_danych.is_dir() and akt3.katalog_danych.is_dir())
 
     def _zdarzenia(katalog):
         dziennik = (katalog / preset.NAZWA_DZIENNIKA).read_text(encoding="utf-8")
         return [json.loads(w)["zdarzenie"] for w in dziennik.splitlines() if w.strip()]
 
-    sprawdz("dziennik `a`: podlacz, podlacz (odlaczono INNA instancje)",
-            _zdarzenia(akt2.katalog_danych) == ["podlacz", "podlacz"], _zdarzenia(akt2.katalog_danych))
-    sprawdz("dziennik `a-swieza`: podlacz, odlacz",
-            _zdarzenia(akt3.katalog_danych) == ["podlacz", "odlacz"], _zdarzenia(akt3.katalog_danych))
+    sprawdz("dziennik `a`: podlacz, podlacz", _zdarzenia(akt2.katalog_danych) == ["podlacz", "podlacz"])
+    sprawdz("dziennik `a-swieza`: podlacz, odlacz", _zdarzenia(akt3.katalog_danych) == ["podlacz", "odlacz"])
     sprawdz("drugie odlacz nie wywala", preset.odlacz(agent) is None)
 
-    # BRAMA.
     goly = types.SimpleNamespace(W_TESCIE=False, PRESET_AKTYWACJA=None)
     blad = oblewa(lambda: preset.wymagaj_aktywnego(goly, "run.py"))
-    sprawdz("bez presetu brama odmawia i mowi, co zrobic",
+    sprawdz("bez kartridza brama odmawia i mowi, co zrobic",
             blad is not None and "podlacz" in blad and "run.py" in blad, blad)
     z_presetem = types.SimpleNamespace(W_TESCIE=False, PRESET_AKTYWACJA=akt2)
-    sprawdz("z presetem brama przepuszcza", preset.wymagaj_aktywnego(z_presetem) is akt2)
+    sprawdz("z kartridzem brama przepuszcza", preset.wymagaj_aktywnego(z_presetem) is akt2)
     w_tescie = types.SimpleNamespace(W_TESCIE=True, PRESET_AKTYWACJA=None)
     sprawdz("w darmowym tescie brama milczy", preset.wymagaj_aktywnego(w_tescie) is None)
 
 
 def _wola_brame_przed_baza(plik: str) -> bool:
-    """Czy `main()` wola `preset.wymagaj_aktywnego` ZANIM dotknie `db.connect`."""
     drzewo = ast.parse(pathlib.Path(plik).read_text(encoding="utf-8"))
     for w in ast.walk(drzewo):
         if isinstance(w, ast.FunctionDef) and w.name == "main":
             zrodlo = ast.unparse(w)
-            brama = zrodlo.find("wymagaj_aktywnego")
-            baza = zrodlo.find("db.connect")
-            return 0 <= brama < baza
+            return 0 <= zrodlo.find("wymagaj_aktywnego") < zrodlo.find("db.connect")
     return False
 
 
 sprawdz("run.main wola brame przed baza", _wola_brame_przed_baza("agent-v2/run.py"))
-sprawdz("artykul_z_puli.main wola brame przed baza",
-        _wola_brame_przed_baza("agent-v2/artykul_z_puli.py"))
+sprawdz("artykul_z_puli.main wola brame przed baza", _wola_brame_przed_baza("agent-v2/artykul_z_puli.py"))
 sprawdz("brama rzuca BrakPresetu, a nie wraca do wbudowanego profilu (C1)",
         "raise BrakPresetu" in pathlib.Path("agent-v2/preset.py").read_text(encoding="utf-8"))
 
-# ================================================= 10. WLASCICIEL ZADANIA
+# ================================================= 11. WLASCICIEL ZADANIA
 print()
-print("=== 10. OCZEKUJACY ARTYKUL I PROMOCJA NALEZA DO INSTANCJI (T22) ===")
-import stages  # noqa: E402
-
+print("=== 11. OCZEKUJACY ARTYKUL I PROMOCJA NALEZA DO INSTANCJI (T22) ===")
 _stara_instancja = config.INSTANCJA
 with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
     zdj = config.uzyj_katalogu_danych(pathlib.Path(tmp))
@@ -494,40 +539,37 @@ with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         config.INSTANCJA = "instancja-a"
         sprawdz("wlasna instancja widzi go nadal", stages.niewystawiony_artykul() is not None)
         stages.zapomnij_niewystawiony()
-
         stages.zapisz_do_promocji("https://x/p/a", "Artykul A", "tresc")
-        sprawdz("wpis promocji niesie instancje",
-                stages.wczytaj_promocje()[-1].get("instancja") == "instancja-a")
-        sprawdz("wlasna instancja ma co promowac",
-                (stages.artykul_do_promocji() or {}).get("tytul") == "Artykul A")
+        sprawdz("wpis promocji niesie instancje", stages.wczytaj_promocje()[-1].get("instancja") == "instancja-a")
+        sprawdz("wlasna instancja ma co promowac", (stages.artykul_do_promocji() or {}).get("tytul") == "Artykul A")
         config.INSTANCJA = "instancja-b"
         sprawdz("inna instancja nie promuje cudzego artykulu", stages.artykul_do_promocji() is None)
-        # KONTRDOWOD: bez presetu (pusta instancja) stare wpisy sa widoczne.
         config.INSTANCJA = ""
-        sprawdz("kontrdowod: bez instancji (brak presetu) kolejka jest widoczna",
+        sprawdz("kontrdowod: bez instancji (brak kartridza) kolejka jest widoczna",
                 stages.artykul_do_promocji() is not None)
     finally:
         config.INSTANCJA = _stara_instancja
         config.przywroc_katalog_danych(zdj)
 
-# ======================================================== 11. STYL
+# ======================================================== 12. STYL
 print()
-print("=== 11. STYL Z PRESETU (C4) ===")
+print("=== 12. STYL Z KARTRIDZA (C4) ===")
 import style  # noqa: E402
 
-# Profile stoja juz w MINIMUM (sekcja [styl]); `reszta` doklada do niej korpus i opis.
+proba_ai, _ = preset.rozwiaz(ai, config, BAZA)
+sprawdz("profile stylu kartridza ai leza w jego katalogu",
+        pathlib.Path(proba_ai.STYLE_PROFILE_POSITIVE).parent == (KARTRIDZ_AI / "styl").resolve()
+        and pathlib.Path(proba_ai.STYLE_PROFILE_NEGATIVE).is_file())
 ps = notki('korpus = "moj/korpus.txt"\nopis = "glos probny"\n')
-sprawdz("sciezki stylu rozwiazane wzgledem korzenia repo",
+sprawdz("sciezki stylu spoza katalogu kartridza rozwiazane wzgledem repo",
         pathlib.Path(ps.STYLE_PROFILE_POSITIVE).is_absolute()
-        and pathlib.Path(ps.STYLE_PROFILE_POSITIVE).name == "ARTICLE_STYLE_PROFILE_V1.md"
         and str(ps.STYLE_CORPUS).replace("\\", "/").endswith("moj/korpus.txt"))
 sprawdz("opis glosu dochodzi do stalej", ps.STYL_OPIS == "glos probny")
 _stan = (config.STYL_WYMAGAJ_KORPUSU, config.STYLE_CORPUS, config.STYL_OPIS)
 try:
     config.STYLE_CORPUS = pathlib.Path(tempfile.gettempdir()) / "nie-ma-takiego-korpusu.txt"
     config.STYL_WYMAGAJ_KORPUSU = False
-    sprawdz("bez korpusu i bez wymogu: pusta lista, nie wyjatek",
-            style.przyklady_albo_pusto() == [])
+    sprawdz("bez korpusu i bez wymogu: pusta lista, nie wyjatek", style.przyklady_albo_pusto() == [])
     config.STYL_WYMAGAJ_KORPUSU = True
     try:
         style.przyklady_albo_pusto()
@@ -536,28 +578,60 @@ try:
         rzucil = True
     sprawdz("kontrdowod: z wymogiem brak korpusu nadal zatrzymuje (StyleError)", rzucil)
     config.STYL_OPIS = ""
-    sprawdz("pusty opis daje jawne zdanie zastepcze, nie pustke",
-            "no additional voice notes" in stages._blok_stylu())
+    sprawdz("pusty opis daje jawne zdanie zastepcze, nie pustke", "no additional voice notes" in stages._blok_stylu())
     config.STYL_OPIS = "glos probny"
-    sprawdz("opis z presetu idzie do pol wspolnych",
-            stages._pola_wspolne()["styl_opis"] == "glos probny"
-            and "styl_opis" in stages.POLA_WSPOLNE)
+    sprawdz("opis z kartridza idzie do pol wspolnych",
+            stages._pola_wspolne()["styl_opis"] == "glos probny" and "styl_opis" in stages.POLA_WSPOLNE)
 finally:
     config.STYL_WYMAGAJ_KORPUSU, config.STYLE_CORPUS, config.STYL_OPIS = _stan
-for nazwa in ("pisarz.md", "notka.md", "komentarz.md", "odpowiedz.md"):
-    sprawdz("%s niesie {styl_opis}" % nazwa,
-            "{styl_opis}" in (config.PROMPTS_DIR / nazwa).read_text(encoding="utf-8"))
 
-# ============================================== 12. POCHODZENIE I CACHE
+# ============================================== 13. SYGNALY: RSS I PRZEPLOT
 print()
-print("=== 12. POCHODZENIE WARTOSCI I ODCISK W CACHE (K7, T13) ===")
+print("=== 13. KANALY RSS OBOK YOUTUBE, PO ROWNO ZE ZRODEL (W4) ===")
+import korpus_kanalow  # noqa: E402
+
+RSS = b"""<?xml version="1.0"?><rss version="2.0"><channel><title>Blog</title>
+<item><title>Introducing a model that changes everything for agents today</title>
+<pubDate>Wed, 02 Sep 2026 15:40:00 +0000</pubDate><link>https://a.example/p1</link></item>
+<item><title>How to build a tutorial for a benchmark suite</title>
+<pubDate>Tue, 01 Sep 2026 10:00:00 +0000</pubDate><link>https://a.example/p2</link></item>
+<item><title>A licence clause that forbids one common use of the weights</title>
+<pubDate>Mon, 31 Aug 2026 10:00:00 +0000</pubDate><link>https://a.example/p3</link></item>
+</channel></rss>"""
+ATOM = b"""<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><title>Lab</title>
+<entry><title>Evaluation results for the new release across four tasks</title>
+<published>2026-09-03T12:00:00Z</published><link rel="alternate" href="https://b.example/e1"/></entry>
+</feed>"""
+z_rss = korpus_kanalow.wpisy_z_kanalu("Blog", RSS)
+z_atom = korpus_kanalow.wpisy_z_kanalu("Lab", ATOM)
+sprawdz("RSS 2.0: data z pubDate, link, oprawa zdjeta, poradnik odsiany",
+        [w["data"] for w in z_rss] == ["2026-09-02", "2026-08-31"]
+        and z_rss[0]["url"] == "https://a.example/p1"
+        and "changes everything" not in z_rss[0]["temat"].lower(), z_rss)
+sprawdz("Atom: data z published, link z rel=alternate",
+        len(z_atom) == 1 and z_atom[0]["data"] == "2026-09-03" and z_atom[0]["url"] == "https://b.example/e1", z_atom)
+sprawdz("ten sam ksztalt slownika co z YouTube", set(z_rss[0]) == set(z_atom[0]) >= {"temat", "kanal", "data", "url"})
+sprawdz("zepsuty XML daje pusta liste, nie wyjatek", korpus_kanalow.wpisy_z_kanalu("X", b"<rss") == [])
+duzo = [{"temat": "arxiv paper number %d about a thing" % i, "kanal": "arXiv", "data": "2026-09-05", "url": "u%d" % i}
+        for i in range(30)]
+malo = [{"temat": "video about a benchmark result %d" % i, "kanal": "Wideo", "data": "2026-09-0%d" % (4 - i), "url": "v%d" % i}
+        for i in range(3)]
+przeplot = korpus_kanalow.przeplot_zrodel([duzo, malo])
+sprawdz("przeplot: pierwsze szesc pozycji to na zmiane dwa zrodla",
+        [w["kanal"] for w in przeplot[:6]] == ["arXiv", "Wideo"] * 3, [w["kanal"] for w in przeplot[:6]])
+sprawdz("przeplot niczego nie gubi", len(przeplot) == 33, len(przeplot))
+sprawdz("kontrdowod: bez przeplotu 26 pierwszych to samo zrodlo",
+        all(w["kanal"] == "arXiv" for w in sorted(duzo + malo, key=lambda x: x["data"], reverse=True)[:26]))
+
+# ============================================== 14. POCHODZENIE I CACHE
+print()
+print("=== 14. POCHODZENIE WARTOSCI I ODCISK W CACHE (K7, T13) ===")
 skad = preset.pochodzenie(A, config, BAZA)
-sprawdz("kanaly z A sa oznaczone jako preset", skad.get("KANALY_YOUTUBE") == "preset", skad.get("KANALY_YOUTUBE"))
-sprawdz("rola write z A jest z presetu", skad.get("MODEL_FOR[write]") == "preset")
+sprawdz("kanaly z A sa oznaczone jako preset", skad.get("KANALY_YOUTUBE") == "preset")
+sprawdz("rola write z A jest z kartridza", skad.get("MODEL_FOR[write]") == "preset")
 sprawdz("rola, ktorej A nie tknal, jest z silnika", skad.get("MODEL_FOR[scout]") == "silnik")
 run_src = pathlib.Path("agent-v2/run.py").read_text(encoding="utf-8")
-sprawdz("cache etapu ma odcisk presetu w nazwie pliku",
-        'f"{stage}.{odcisk}.json"' in run_src)
+sprawdz("cache etapu ma odcisk kartridza w nazwie pliku", 'f"{stage}.{odcisk}.json"' in run_src)
 sprawdz("stan dziedziny pamieta pytanie",
         '"pytanie"' in pathlib.Path("agent-v2/aktualne_modele.py").read_text(encoding="utf-8"))
 

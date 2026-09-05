@@ -1,0 +1,137 @@
+# =============================================================================
+# SZABLON KARTRIDZA — skopiuj i wypelnij.
+#
+#     python narzedzia/presety.py nowy moj-temat     # robi kopie tego katalogu
+#
+# Kazde `<<...>>` trzeba zastapic wlasna wartoscia. Preset z takim znacznikiem
+# NIE PRZECHODZI sprawdzenia i nie da sie go podlaczyc — celowo. Pokretla
+# u gory maja rozsadne wartosci startowe; zmienia sie je jedna liczba.
+#
+# Silnik (agent-v2/) jest konsola bez tematu. Wszystko ponizej jest kartridzem.
+# Pelny opis pol: docs/PRESETY.md. Gotowy kartridz do podejrzenia: presety/ai/.
+# =============================================================================
+
+[preset]
+nazwa = "<<nazwa-presetu>>"            # male litery, cyfry, myslnik; nazwa katalogu instancji
+opis = "<<jedno zdanie, o czym jest ta publikacja>>"
+schema = 1
+wersja = "<<RRRR-MM-DD>>"
+
+# =============================================================================
+# POKRETLA — ILE, KIEDY, CZYM, ZA ILE
+# =============================================================================
+
+[wolumeny]
+notki_dziennie = 2               # 0 wylacza notki
+artykuly_tygodniowo = 1          # 0 wylacza artykul
+komentarze_dziennie = [3, 5]     # [0, 0] wylacza
+lajki_dziennie = [5, 8]
+restacki_dziennie = [0, 1]
+follow_miesiecznie = [0, 0]
+subskrypcje_miesiecznie = [0, 0]
+przebiegow_dziennie = 3          # = liczba godzin w [harmonogram]
+
+[modele]
+# Rola = model; role niewymienione zostaja na domyslnych silnika.
+role = { write = "claude-fable-5-1", note = "claude-opus-5" }
+obraz = "gpt-image-1.5"            # "" = bez okladki
+zapasowy_pisarz = "claude-opus-5"  # "" = zatrzymaj sie po awarii pisarza
+
+[pieniadze]
+sufit_miesieczny_usd = 25.0
+sufit_dzienny_usd = 3.5
+sufit_przebiegu_usd = 1.60
+sufit_podniesiony_na = ""
+
+[harmonogram]
+godziny_przebiegow_utc = ["12:30", "17:30", "21:30"]
+dni_artykulu = ["Tue"]
+godzina_artykulu_utc = "14:00"
+
+[publikowanie]
+okno_et = [7, 22]
+martwe_godziny_et = [12, 13]
+notek_promujacych = 2
+okno_promocji_dni = 7
+miks_notek = ["CIEKAWOSTKA", "DYSKUSJA", "SPROSTOWANIE", "MYSL"]
+ciche_dni_wlaczone = true
+cichy_dzien_na_ile = 8
+
+# =============================================================================
+# KONTO
+# =============================================================================
+
+[konto]
+uchwyt = "<<uchwyt-substacka>>"        # czesc przed .substack.com
+nazwa_marki = "<<Nazwa publikacji>>"
+strefa_czytelnika = "America/New_York" # strefa CZYTELNIKA (IANA), nie serwera
+data_przestawienia = ""
+
+# =============================================================================
+# TEMAT
+# =============================================================================
+
+[temat]
+nisza = "<<jedno zdanie po slowie 'about', mala litera, bez kropki>>"
+jezyk = "English"
+kat_redakcyjny = "<<czym ta publikacja zajmuje sie W temacie; mala litera, kropka na koncu.>>"
+
+# Znaki rewiru: kazde haslo szukania musi zawierac ktorys (jako podciag).
+znaki_niszy = ["<<slowo-klucz>>", "<<slowo-klucz>>", "<<slowo-klucz>>"]
+
+# Czym szukamy LUDZI do rozmowy. Co najmniej 15 (silnik losuje 5 na przebieg),
+# z trzech roznych stron tematu.
+hasla_szukania = ["<<haslo ze znakiem rewiru>>", "<<haslo ze znakiem rewiru>>"]
+
+# Soczewki: opis MIEJSCA, w ktorym siedzi cos ciekawego. Co najmniej 10 na
+# kazda notke dziennie podzielone przez 14 wzorcow silnika — przy 2 notkach
+# wystarczy kilkanascie, przy 5 potrzeba ~30.
+dziedziny = ["<<opis miejsca, w ktorym siedzi cos ciekawego>>", "<<...>>"]
+
+# Slowa bez znaczenia w tej dziedzinie (do rozpoznawania powtorek). Pusta jest OK.
+puste_slowa = []
+
+[temat.przyklady]
+# Wszystkie opcjonalne; pusta lista = model wyprowadzi odpowiednik sam.
+kanon = []          # tezy tak ograne, ze ich powtorzenie nie jest tematem
+rzeczy = []         # co czytelnik widzial albo mial w rekach
+seam = []           # reguly, ktore powstaly PO tym, jak cos poszlo zle
+przekonania = []    # „everyone assumes ..." — szeroko wyznawane i nieprawdziwe
+precedensy = []     # publiczne sprawdziany tej dziedziny, ktore cos zmienily
+
+[temat.rytm_roku]
+# Opcjonalnie: miesiac -> gdzie patrzec w tym miesiacu. Pusta tablica = brak.
+
+# =============================================================================
+# STAN DZIEDZINY
+# =============================================================================
+
+[stan_dziedziny]
+pytaj = true                       # raz na dobe jedno wywolanie z wyszukiwaniem
+o_co_pytac = ""                    # puste = zbuduj pytanie z niszy
+
+# =============================================================================
+# ZRODLA
+# =============================================================================
+
+[zrodla]
+# Kanaly YouTube: nazwa = "UC...". Identyfikator sprawdzasz tak:
+#   curl -s "https://www.youtube.com/feeds/videos.xml?channel_id=UC..." | head
+kanaly_youtube = { }
+# Kanaly RSS/Atom: nazwa = "https://...". Blogi laboratoriow, listy publikacji.
+kanaly_rss = { }
+# Hosty, ktore blokuja automatyczne czytanie albo sa platne.
+blokowane_hosty = ["sciencedirect.com", "tandfonline.com", "academia.edu", "researchgate.net"]
+# Gdzie leza dokumenty pierwotne tej dziedziny (podpowiedz dla researchu).
+domeny_preferowane = []
+
+# =============================================================================
+# STYL
+# =============================================================================
+
+[styl]
+opis = "<<glos w trzech-czterech zdaniach: jak brzmi, czego nie robi>>"
+profil_pozytywny = "styl/profil_pozytywny.md"
+profil_negatywny = "styl/profil_negatywny.md"
+korpus = ""                        # styl/korpus.txt po przypieciu (przypnij_styl.py)
+wymagaj_korpusu = false

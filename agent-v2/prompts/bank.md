@@ -3,6 +3,10 @@ ones this publication should throw away.
 
 {marka} is a publication **about {nisza}** — {kat_redakcyjny}
 
+What this publication looks for, in its own words:
+
+{linia_redakcyjna}
+
 ## You are RANKING, not scoring
 
 Put them in order, best to worst. Every position is different; there are no

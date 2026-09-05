@@ -372,6 +372,41 @@ def _slownik_napisow(v: Any, gdzie: str) -> dict[str, str]:
     return dict(v)
 
 
+def _slownik_adresow(v: Any, gdzie: str) -> dict[str, str]:
+    """Nazwa -> adres kanalu RSS/Atom. Adres musi byc http(s), bez bialych znakow."""
+    slownik = _slownik_napisow(v, gdzie)
+    for nazwa, adres in slownik.items():
+        czysty = adres.strip()
+        if not re.fullmatch(r"https?://\S+", czysty):
+            raise BledKonfiguracji("%s: %r ma adres, ktory nie jest http(s): %r"
+                                   % (gdzie, nazwa, adres))
+        slownik[nazwa] = czysty
+    return slownik
+
+
+def _lista_domen(v: Any, gdzie: str) -> tuple[str, ...]:
+    """Lista hostow (bez schematu i sciezki), pusta dozwolona."""
+    domeny = _lista_napisow_moze_pusta(v, gdzie)
+    wynik = []
+    for d in domeny:
+        czysta = d.strip().lower()
+        if not re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,}", czysta):
+            raise BledKonfiguracji("%s: %r nie wyglada na nazwe hosta (np. arxiv.org)"
+                                   % (gdzie, d))
+        wynik.append(czysta)
+    return tuple(wynik)
+
+
+def _slownik_miesiecy(v: Any, gdzie: str) -> dict[str, str]:
+    """Tablica `"1".."12" = napis` (klucze TOML sa napisami). Pusta dozwolona."""
+    slownik = _slownik_napisow(v, gdzie)
+    for klucz in slownik:
+        if not (klucz.isdigit() and 1 <= int(klucz) <= 12):
+            raise BledKonfiguracji("%s: klucz %r nie jest numerem miesiaca 1-12"
+                                   % (gdzie, klucz))
+    return {str(int(k)): x for k, x in slownik.items()}
+
+
 # Ksztalt pliku. Klucz to sciezka `sekcja.pole`, wartosc to (nazwa stalej
 # w config.py, sprawdzacz). Zamknieta lista, bo nieznany klucz ma byc bledem.
 #
@@ -400,6 +435,10 @@ POLA: dict[str, tuple[str | None, Any]] = {
     # Przyklady z niszy wstrzykiwane w prompty. Tablica tablic, bo kazda
     # z pieciu list trafia w INNE miejsce briefu — patrz `stages._pola_wspolne`.
     "temat.przyklady": (None, _slownik_list),
+    # RYTM ROKU tej dziedziny: miesiac -> co sie wtedy dzieje (konferencje,
+    # terminy, sezony). Idzie do promptu ciekawostek jako „what the reader is
+    # holding this month". Pusta tablica = bez podpowiedzi sezonowej.
+    "temat.rytm_roku": (None, _slownik_miesiecy),
 
     # --- stan dziedziny ------------------------------------------------
     # Czy raz na dobe pytac swiata, co w tej dziedzinie jest AKTUALNE. Kosztuje
@@ -412,7 +451,12 @@ POLA: dict[str, tuple[str | None, Any]] = {
 
     # --- zrodla --------------------------------------------------------
     "zrodla.kanaly_youtube": ("KANALY_YOUTUBE", _slownik_napisow),
+    # Kanaly RSS/Atom (blogi laboratoriow, listy publikacji) — ta sama rola co
+    # kanaly YouTube: zaczyn tematow, nigdy zrodlo. Nazwa -> adres.
+    "zrodla.kanaly_rss": ("KANALY_RSS", _slownik_adresow),
     "zrodla.blokowane_hosty": ("BLOCKED_HOSTS", _lista_napisow),
+    # Hosty dokumentow pierwotnych tej dziedziny — podpowiedz dla dyskoverii.
+    "zrodla.domeny_preferowane": ("DOMENY_PREFEROWANE", _lista_domen),
 
     # --- styl (2026-09-05) ---------------------------------------------
     # Glos redakcji byl wspolnym zestawem plikow o stalych nazwach: pierwszy
@@ -515,7 +559,8 @@ STALE_KONTA: tuple[str, ...] = tuple(sorted(
         "PRZYKLADY_NISZY", "MODEL_FOR", "IMAGE_MODEL", "OBRAZ_WLACZONY",
         "STYLE_CORPUS", "STYLE_PROFILE_POSITIVE", "STYLE_PROFILE_NEGATIVE",
         "PRZEBIEGOW_DZIENNIE", "GODZINY_PRZEBIEGOW_UTC",
-        "ARTYKULY_TYGODNIOWO", "DNI_ARTYKULU",
+        "ARTYKULY_TYGODNIOWO", "DNI_ARTYKULU", "W_TYM_MIESIACU",
+        "OBSZARY_REWIRU", "PRESET_BLOKI",
     }))
 
 
@@ -706,6 +751,12 @@ def _plan(dane: dict[str, Any], cfg: Any) -> tuple[dict[str, Any], dict[str, dic
             meldunki.append("wolumeny.notki_dziennie -> NOTE_MIX_OTHER_DAY, "
                             "NOTE_MIX_ARTICLE_DAY (%d slotow, %d promujacych "
                             "w dniu artykulu)" % (ile, promuj))
+
+    # --- rytm roku: klucze TOML sa napisami, `config` chce miesiecy jako int --
+    rytm = dane.get("temat.rytm_roku")
+    if rytm is not None:
+        ustaw["W_TYM_MIESIACU"] = {int(k): v for k, v in rytm.items()}
+        meldunki.append("temat.rytm_roku -> W_TYM_MIESIACU (%d miesiecy)" % len(rytm))
 
     # --- przyklady z niszy: nakladane NA ISTNIEJACE ----------------------
     # Podanie jednej listy nie kasuje czterech pozostalych; pusta lista

@@ -108,16 +108,15 @@ def oczysc(tytul: str) -> str:
     return t
 
 
-def przetworz(wpisy: list[tuple[str, Any]]) -> list[dict[str, Any]]:
-    """(nazwa_kanalu, element) -> kandydaci. Czysta funkcja, testowalna."""
+def _kandydaci(pozycje: list[tuple[str, str, str, str]]) -> list[dict[str, Any]]:
+    """(kanal, surowy tytul, data RRRR-MM-DD, url) -> kandydaci. Wspolne dla
+    YouTube, RSS 2.0 i Atom: to samo czyszczenie, to samo odsiewanie, ten sam
+    ksztalt slownika, wiec `wielkie_wydarzenia` i prompt nie odrozniaja zrodel."""
     widziane: set[str] = set()
     out: list[dict[str, Any]] = []
-    for kanal, e in wpisy or []:
-        t = e.find("a:title", NS)
-        if t is None or not (t.text or "").strip():
-            continue
-        surowy = " ".join(t.text.split())
-        if NIE_TEMAT.search(surowy):
+    for kanal, surowy, data, url in pozycje:
+        surowy = " ".join((surowy or "").split())
+        if not surowy or NIE_TEMAT.search(surowy):
             continue
         czysty = oczysc(surowy)
         if len(czysty.split()) < 4:
@@ -126,18 +125,109 @@ def przetworz(wpisy: list[tuple[str, Any]]) -> list[dict[str, Any]]:
         if klucz in widziane:
             continue
         widziane.add(klucz)
-        link = e.find("a:link", NS)
         out.append({
             "temat": czysty,
             "surowy": surowy,
             "kanal": kanal,
-            "data": (e.find("a:published", NS).text or "")[:10]
-                    if e.find("a:published", NS) is not None else "",
-            "url": link.get("href") if link is not None else "",
+            "data": (data or "")[:10],
+            "url": url or "",
             "rola": "zdarzenie do sprawdzenia; naglowka nie kopiujemy",
         })
     out.sort(key=lambda x: x["data"], reverse=True)
     return out
+
+
+def przetworz(wpisy: list[tuple[str, Any]]) -> list[dict[str, Any]]:
+    """(nazwa_kanalu, element Atom z YouTube) -> kandydaci. Czysta funkcja, testowalna."""
+    pozycje = []
+    for kanal, e in wpisy or []:
+        t = e.find("a:title", NS)
+        if t is None or not (t.text or "").strip():
+            continue
+        link = e.find("a:link", NS)
+        opublikowano = e.find("a:published", NS)
+        pozycje.append((kanal, t.text, (opublikowano.text or "") if opublikowano is not None else "",
+                        link.get("href") if link is not None else ""))
+    return _kandydaci(pozycje)
+
+
+_ATOM = "{http://www.w3.org/2005/Atom}"
+
+
+def _tekst(el) -> str:
+    return " ".join((el.text or "").split()) if el is not None else ""
+
+
+def _data_rss(napis: str) -> str:
+    """`pubDate` RSS (RFC 2822) albo data ISO -> RRRR-MM-DD; pusto, gdy nie da sie."""
+    napis = (napis or "").strip()
+    if not napis:
+        return ""
+    if re.match(r"\d{4}-\d{2}-\d{2}", napis):
+        return napis[:10]
+    try:
+        from email.utils import parsedate_to_datetime
+        return parsedate_to_datetime(napis).strftime("%Y-%m-%d")
+    except Exception:                                           # noqa: BLE001
+        return ""
+
+
+def wpisy_z_kanalu(nazwa: str, tresc: bytes) -> list[dict[str, Any]]:
+    """Kanal RSS 2.0 albo Atom (blog laboratorium, lista publikacji) -> kandydaci.
+
+    ZACZYN, NIE ZRODLO — ta sama rola co kanaly YouTube: tytul mowi, o czym
+    mowi sie w tym tygodniu, a dokument trzeba znalezc osobno. Czysta
+    funkcja: (nazwa, bajty XML) -> slowniki tego samego ksztaltu co z YouTube.
+    """
+    try:
+        root = ET.fromstring(tresc)
+    except ET.ParseError:
+        return []
+    pozycje: list[tuple[str, str, str, str]] = []
+    if root.tag == _ATOM + "feed":
+        for e in root.iter(_ATOM + "entry"):
+            link = e.find(_ATOM + "link")
+            for alt in e.findall(_ATOM + "link"):
+                if alt.get("rel") in (None, "alternate"):
+                    link = alt
+                    break
+            pozycje.append((nazwa, _tekst(e.find(_ATOM + "title")),
+                            _data_rss(_tekst(e.find(_ATOM + "published"))
+                                      or _tekst(e.find(_ATOM + "updated"))),
+                            link.get("href") if link is not None else ""))
+    else:
+        for it in root.iter("item"):
+            pozycje.append((nazwa, _tekst(it.find("title")),
+                            _data_rss(_tekst(it.find("pubDate"))
+                                      or _tekst(it.find("{http://purl.org/dc/elements/1.1/}date"))),
+                            _tekst(it.find("link"))))
+    return _kandydaci(pozycje)
+
+
+def przeplot_zrodel(po_zrodlach: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """Po jednym wpisie z kazdego zrodla na zmiane, od najswiezszych.
+
+    Bez tego jedna lista publikacji z piecdziesiecioma wpisami dziennie
+    wypelnilaby cale 26 pozycji zaczynu, a dziesiec kanalow wideo nie
+    dostaloby ani jednej. Wielkie wydarzenia liczy sie na PELNYM korpusie,
+    wiec przeplot nie gubi niczego — zmienia tylko kolejnosc.
+    """
+    kolejki = [sorted(z, key=lambda x: x.get("data") or "", reverse=True)
+               for z in po_zrodlach if z]
+    wynik: list[dict[str, Any]] = []
+    widziane: set[str] = set()
+    while kolejki:
+        for k in list(kolejki):
+            if not k:
+                kolejki.remove(k)
+                continue
+            w = k.pop(0)
+            klucz = re.sub(r"[^a-z0-9 ]", "", (w.get("temat") or "").lower())[:60]
+            if klucz in widziane:
+                continue
+            widziane.add(klucz)
+            wynik.append(w)
+    return wynik
 
 
 # Slowa, ktore nie odrozniaja jednego wydarzenia od drugiego. Bez nich jedno
@@ -343,7 +433,11 @@ def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
             and time.time() - _ZAPAS["kiedy"] < ZAPAS_WAZNY_S):
         return list(_ZAPAS["wpisy"])[:ile]
 
-    wpisy: list[tuple[str, Any]] = []
+    # KANALY RSS/ATOM Z KONFIGURACJI — blogi laboratoriow, listy publikacji.
+    # Czytane przy wywolaniu, nie przy imporcie, bo to preset o nich decyduje.
+    kanaly_rss = dict(getattr(config, "KANALY_RSS", {}) or {})
+    po_zrodlach: list[list[dict[str, Any]]] = []
+    filmow = 0
     with httpx.Client(timeout=config.FETCH_TIMEOUT_S, follow_redirects=True,
                       headers={"User-Agent": config.FETCH_USER_AGENT}) as c:
         for nazwa, cid in KANALY.items():
@@ -352,13 +446,26 @@ def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
                 if r.status_code != 200:
                     print("  [kanaly] %s: HTTP %s" % (nazwa, r.status_code), flush=True)
                     continue
-                for e in ET.fromstring(r.content).findall("a:entry", NS):
-                    wpisy.append((nazwa, e))
+                wpisy = [(nazwa, e) for e in ET.fromstring(r.content).findall("a:entry", NS)]
+                filmow += len(wpisy)
+                po_zrodlach.append(przetworz(wpisy))
             except Exception as exc:
                 print("  [kanaly] %s: %s" % (nazwa, type(exc).__name__), flush=True)
-    k = przetworz(wpisy)
-    print("  [kanaly] %d filmow z %d kanalow -> %d tematow"
-          % (len(wpisy), len(KANALY), len(k)), flush=True)
+        for nazwa, adres in kanaly_rss.items():
+            try:
+                r = c.get(adres)
+                if r.status_code != 200:
+                    print("  [kanaly] %s: HTTP %s" % (nazwa, r.status_code), flush=True)
+                    continue
+                z_kanalu = wpisy_z_kanalu(nazwa, r.content)
+                filmow += len(z_kanalu)
+                po_zrodlach.append(z_kanalu)
+            except Exception as exc:
+                print("  [kanaly] %s: %s" % (nazwa, type(exc).__name__), flush=True)
+    k = przeplot_zrodel(po_zrodlach)
+    print("  [kanaly] %d wpisow z %d kanalow (%d wideo, %d RSS) -> %d tematow"
+          % (filmow, len(KANALY) + len(kanaly_rss), len(KANALY), len(kanaly_rss), len(k)),
+          flush=True)
     # Zapas zapisujemy TYLKO wtedy, gdy cos przyszlo. Zapamietanie pustki po
     # sieciowej wpadce wyciszyloby kanaly na pol godziny, a prompt dostalby
     # „(nothing fetched today)" mimo dzialajacej sieci.

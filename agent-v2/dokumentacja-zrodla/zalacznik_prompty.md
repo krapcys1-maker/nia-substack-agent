@@ -79,13 +79,17 @@ pokazuje się **niezależnie** od tego ustawienia — u takiego konta widać nar
 
 #### `prompts/bank.md`
 
-**93 wierszy.** Pola wejsciowe: `co_zadzialalo`, `kandydaci`, `kat_redakcyjny`, `marka`, `nisza`
+**97 wierszy.** Pola wejsciowe: `co_zadzialalo`, `kandydaci`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `nisza`
 
 ````markdown
 Rank these candidate facts against each other, strongest first, and say which
 ones this publication should throw away.
 
 {marka} is a publication **about {nisza}** — {kat_redakcyjny}
+
+What this publication looks for, in its own words:
+
+{linia_redakcyjna}
 
 ## You are RANKING, not scoring
 
@@ -236,7 +240,7 @@ Return only valid JSON, shaped exactly as:
 
 #### `prompts/cele.md`
 
-**76 wierszy.** Pola wejsciowe: `kat_redakcyjny`, `marka`, `nisza`, `posts`
+**80 wierszy.** Pola wejsciowe: `kat_redakcyjny`, `kogo_szukamy`, `marka`, `nisza`, `posts`
 
 ````markdown
 Choose which of these posts are worth commenting on, and which are not.
@@ -248,6 +252,10 @@ Most of them will not be. That is the expected answer, not a failure.
 {marka} is a publication about {nisza} — {kat_redakcyjny}
 Its comments are worth reading because they add a mechanism the post did
 not name, not because they are enthusiastic.
+
+Whose posts this publication looks for, in its own words:
+
+{kogo_szukamy}
 
 ## Take a post only if you can answer yes to all three
 
@@ -321,7 +329,7 @@ is visible either way:
 
 #### `prompts/ciekawostki.md`
 
-**246 wierszy.** Pola wejsciowe: `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
+**250 wierszy.** Pola wejsciowe: `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
 
 ````markdown
 Find {ile} documented facts worth stopping a stranger mid-scroll.
@@ -344,6 +352,10 @@ Do not manufacture the assumption. "Everyone assumes X" is a claim about what
 people believe, with no figure to check and no source to miss. If you cannot
 point to where the belief is visibly stated (a headline, a product page, a
 press release), the fact stands on its own without one.
+
+## What this publication looks for, in its own words
+
+{linia_redakcyjna}
 
 ## Happening right now: this takes precedence
 
@@ -576,7 +588,7 @@ worth more than thirty that do not.
 
 #### `prompts/dyskoveria.md`
 
-**77 wierszy.** Pola wejsciowe: `blocked_hosts`, `max_results`, `max_searches`, `min_primary`, `min_why`, `ostatnie_domeny`, `question`
+**82 wierszy.** Pola wejsciowe: `blocked_hosts`, `domeny_preferowane`, `max_results`, `max_searches`, `min_primary`, `min_why`, `ostatnie_domeny`, `question`
 
 ````markdown
 Search the web, then return sources for this question:
@@ -628,6 +640,11 @@ everything after {max_searches} searches, return what you have.
    {ostatnie_domeny}
    Do not reach for one of them out of habit. Go there when the record itself
    lives there and no other host carries it, not because it worked last time.
+8. The primary records of this field usually live on these hosts, so look
+   there first and prefer the record found there over a copy elsewhere:
+   {domeny_preferowane}
+   A host on this list still has to carry the document itself; the list says
+   where to look, not what counts.
 
 ## Three rules about copies
 
@@ -855,7 +872,7 @@ point at an entry in `beliefs`.
 
 #### `prompts/grafika.md`
 
-**98 wierszy.** Pola wejsciowe: `body`, `nisza`, `title`
+**82 wierszy.** Pola wejsciowe: `body`, `nisza`, `okladka`, `title`
 
 ````markdown
 Write the image brief for the header illustration of this article. You are
@@ -883,16 +900,10 @@ brief and dead on the page.
 
 This publication is about {nisza}, so the scene comes from where the reader
 actually meets it, or from where the machinery behind it actually sits. Both
-are fair game, and the second is usually the more surprising. Places worth
-photographing: where the answer arrives (a desk at the moment of waiting, a
-phone face-up beside something that says whose life this is, a screen
-reflected in a window); where the work is done (a workstation at the end of
-a shift, a review queue on a second monitor, an empty chair still pushed
-back); where the machinery lives (a hot aisle between racks, a cooling plant,
-cable trays overhead, a trench being dug for fibre); where the paperwork
-lives (a filing counter, a conference table after a hearing, a printed
-submission with a pen across it); where it touches something physical (a
-corridor display, a scanner in its cradle, a handset on a dashboard).
+are fair game, and the second is usually the more surprising. Which places
+those are in this subject, and which treatment every header shares, is set by
+the publication's own style block below; work out the scene from the article,
+not from a list.
 
 ## Two rules that survive from the old brief
 
@@ -921,7 +932,9 @@ corridor the visitors do not see.
 **Never** put text, numbers, letters, logos or brand marks in the image.
 Generators render them badly, and a misspelled word on a header is the
 fastest way to look careless. If the meaning depends on text, choose a
-different scene.
+different scene. This is a rule of the engine, not of the publication: end
+the prompt with "no lettering, no logos, no watermarks" whatever the style
+block says.
 
 **No recognisable faces.** People may appear as presence rather than
 portrait: a hand leaving the frame, a figure out of focus and turned away, a
@@ -937,19 +950,7 @@ Return only valid JSON:
 
 ## The style block: copy verbatim into `prompt`, after your scene sentence
 
-Photographed as a real place, not a set. Deep putty-grey and graphite tonality
-throughout, with the focal point clearly brighter than what surrounds it so the
-composition still reads at thumbnail size. Natural depth: something close,
-something receding, air between them. Flat, even, diffuse light as though from
-overhead panels or an overcast window, one soft shadow falling short and to the
-right, no dramatic highlights and no lens flare. Slightly elevated angle,
-unhurried framing, horizon level. Restrained palette — grey, graphite, and one
-colour allowed to stay saturated where it occurs naturally. Surfaces show honest
-wear consistent with use: scuffs, dust, fingerprints, cable slack, uneven
-paint — so the frame reads as a place in service, never as a render. Sharp focus
-on the focal point with gentle falloff behind it, fine surface texture visible,
-no gloss, no vignette. Calm, forensic, editorial. Absolutely no text, no
-lettering, no numbers, no logos, no watermarks, no recognisable faces.
+{okladka}
 
 ## The article
 
@@ -1083,7 +1084,7 @@ Return only valid JSON:
 
 #### `prompts/komentarz.md`
 
-**146 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `styl_opis`, `title`
+**148 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `glos_komentarza`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `styl_opis`, `title`
 
 ````markdown
 You are writing a comment under someone else's Substack post, as the anonymous
@@ -1094,6 +1095,8 @@ Write in {language}.
 ## The voice of this publication, in its own words
 
 {styl_opis}
+
+{glos_komentarza}
 
 ## You are writing a comment, not deciding whether to
 
@@ -1238,13 +1241,19 @@ Title: {title}
 
 #### `prompts/mysl.md`
 
-**129 wierszy.** Pola wejsciowe: `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `ostatnie_otwarcia_json`, `po_ludzku`, `type_brief`
+**135 wierszy.** Pola wejsciowe: `evidence`, `form_brief`, `glos_notki`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `ostatnie_otwarcia_json`, `po_ludzku`, `styl_opis`, `type_brief`
 
 ````markdown
 Write a Substack Note for the anonymous editorial brand {marka}, a publication
 about {nisza} — {kat_redakcyjny}
 
 Write in {language}.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
+
+{glos_notki}
 
 ## This one carries no evidence, and that is the whole point
 
@@ -1424,7 +1433,7 @@ Return only:
 
 #### `prompts/notka.md`
 
-**163 wierszy.** Pola wejsciowe: `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `styl_opis`, `type_brief`
+**165 wierszy.** Pola wejsciowe: `evidence`, `form_brief`, `glos_notki`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `styl_opis`, `type_brief`
 
 ````markdown
 Write a Substack Note for the anonymous editorial brand {marka}, a publication
@@ -1462,6 +1471,8 @@ number is usually enough; four names and five numbers is a changelog entry.
 ## The voice of this publication, in its own words
 
 {styl_opis}
+
+{glos_notki}
 
 ## Length
 
@@ -1596,7 +1607,7 @@ account is consistent. They think it is a machine working through a backlog.
 
 #### `prompts/odpowiedz.md`
 
-**129 wierszy.** Pola wejsciowe: `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `po_ludzku`, `styl_opis`, `under_what`
+**131 wierszy.** Pola wejsciowe: `cel_slow`, `comment`, `commenter`, `evidence`, `glos_komentarza`, `language`, `marka`, `otwarcie`, `po_ludzku`, `styl_opis`, `under_what`
 
 ````markdown
 Someone has replied to you. Write the response, as the anonymous editorial
@@ -1608,6 +1619,8 @@ that language if you can do so naturally, otherwise return null.
 ## The voice of this publication, in its own words
 
 {styl_opis}
+
+{glos_komentarza}
 
 ## You are the host here
 
@@ -1734,7 +1747,7 @@ Author of the comment: {commenter}
 
 #### `prompts/pisarz.md`
 
-**304 wierszy.** Pola wejsciowe: `card_json`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+**308 wierszy.** Pola wejsciowe: `card_json`, `glos_artykulu`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
 ````markdown
 You write for the anonymous editorial brand {marka}, a publication about
@@ -1796,6 +1809,10 @@ third dash in a paragraph, start a new sentence.
 ## The voice of this publication, in its own words
 
 {styl_opis}
+
+## How this publication writes an article, in its own words
+
+{glos_artykulu}
 
 ## What you may assert
 
@@ -2174,11 +2191,15 @@ Include every sentence in `sentences`. Repeat only the failing ones in
 
 #### `prompts/restack.md`
 
-**69 wierszy.** Pola wejsciowe: `autor`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
+**73 wierszy.** Pola wejsciowe: `autor`, `glos_komentarza`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
 
 ````markdown
 Somebody else wrote the note below. You are deciding whether to pass it on to
 your own readers with one sentence of your own attached.
+
+## The voice of this publication, in its own words
+
+{glos_komentarza}
 
 ## Why the sentence is the whole thing
 
@@ -2252,7 +2273,7 @@ Return only valid JSON, shaped exactly as:
 
 #### `prompts/skaut.md`
 
-**388 wierszy.** Pola wejsciowe: `count`, `history_json`, `kanon_niszy`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `obszary_seam`, `precedensy_niszy`, `przekonania_niszy`, `pytania_czytelnikow`, `rzeczy_czytelnika`, `zaczyn_kanalow`
+**392 wierszy.** Pola wejsciowe: `count`, `history_json`, `kanon_niszy`, `kat_redakcyjny`, `language`, `linia_redakcyjna`, `marka`, `nisza`, `obszary_seam`, `precedensy_niszy`, `przekonania_niszy`, `pytania_czytelnikow`, `rzeczy_czytelnika`, `zaczyn_kanalow`
 
 ````markdown
 You are a topic scout for the {language}-language Substack "{marka}", a
@@ -2262,6 +2283,10 @@ It is not a publication about how badly designed everything is. The reader
 finds this subject genuinely interesting; a topic whose entire content is that
 somebody overstated something is a small topic, and deflation is one move you
 own, not the identity you have.
+
+## What this publication looks for, in its own words
+
+{linia_redakcyjna}
 
 Propose {count} article topic ideas.
 
@@ -2772,13 +2797,17 @@ Return only valid JSON, shaped exactly as:
 
 #### `prompts/warto_pisac.md`
 
-**106 wierszy.** Pola wejsciowe: `card_json`, `kat_redakcyjny`, `marka`, `nisza`, `przekonania_niszy`, `rzeczy_czytelnika`
+**110 wierszy.** Pola wejsciowe: `card_json`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `nisza`, `przekonania_niszy`, `rzeczy_czytelnika`
 
 ````markdown
 You read the evidence card **before** the writer sees it, and you answer one
 question: is there a gap here that a stranger would feel?
 
 This is for "{marka}", a publication **about {nisza}** — {kat_redakcyjny}
+
+What this publication looks for, in its own words:
+
+{linia_redakcyjna}
 
 Material that is not about that subject does not become worth writing by
 being interesting. You are not deciding whether to publish. You are deciding

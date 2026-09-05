@@ -23,16 +23,10 @@ brief and dead on the page.
 
 This publication is about {nisza}, so the scene comes from where the reader
 actually meets it, or from where the machinery behind it actually sits. Both
-are fair game, and the second is usually the more surprising. Places worth
-photographing: where the answer arrives (a desk at the moment of waiting, a
-phone face-up beside something that says whose life this is, a screen
-reflected in a window); where the work is done (a workstation at the end of
-a shift, a review queue on a second monitor, an empty chair still pushed
-back); where the machinery lives (a hot aisle between racks, a cooling plant,
-cable trays overhead, a trench being dug for fibre); where the paperwork
-lives (a filing counter, a conference table after a hearing, a printed
-submission with a pen across it); where it touches something physical (a
-corridor display, a scanner in its cradle, a handset on a dashboard).
+are fair game, and the second is usually the more surprising. Which places
+those are in this subject, and which treatment every header shares, is set by
+the publication's own style block below; work out the scene from the article,
+not from a list.
 
 ## Two rules that survive from the old brief
 
@@ -61,7 +55,9 @@ corridor the visitors do not see.
 **Never** put text, numbers, letters, logos or brand marks in the image.
 Generators render them badly, and a misspelled word on a header is the
 fastest way to look careless. If the meaning depends on text, choose a
-different scene.
+different scene. This is a rule of the engine, not of the publication: end
+the prompt with "no lettering, no logos, no watermarks" whatever the style
+block says.
 
 **No recognisable faces.** People may appear as presence rather than
 portrait: a hand leaving the frame, a figure out of focus and turned away, a
@@ -77,19 +73,7 @@ Return only valid JSON:
 
 ## The style block: copy verbatim into `prompt`, after your scene sentence
 
-Photographed as a real place, not a set. Deep putty-grey and graphite tonality
-throughout, with the focal point clearly brighter than what surrounds it so the
-composition still reads at thumbnail size. Natural depth: something close,
-something receding, air between them. Flat, even, diffuse light as though from
-overhead panels or an overcast window, one soft shadow falling short and to the
-right, no dramatic highlights and no lens flare. Slightly elevated angle,
-unhurried framing, horizon level. Restrained palette — grey, graphite, and one
-colour allowed to stay saturated where it occurs naturally. Surfaces show honest
-wear consistent with use: scuffs, dust, fingerprints, cable slack, uneven
-paint — so the frame reads as a place in service, never as a render. Sharp focus
-on the focal point with gentle falloff behind it, fine surface texture visible,
-no gloss, no vignette. Calm, forensic, editorial. Absolutely no text, no
-lettering, no numbers, no logos, no watermarks, no recognisable faces.
+{okladka}
 
 ## The article
 

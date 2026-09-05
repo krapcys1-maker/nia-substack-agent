@@ -47,6 +47,11 @@ everything after {max_searches} searches, return what you have.
    {ostatnie_domeny}
    Do not reach for one of them out of habit. Go there when the record itself
    lives there and no other host carries it, not because it worked last time.
+8. The primary records of this field usually live on these hosts, so look
+   there first and prefer the record found there over a copy elsewhere:
+   {domeny_preferowane}
+   A host on this list still has to carry the document itself; the list says
+   where to look, not what counts.
 
 ## Three rules about copies
 

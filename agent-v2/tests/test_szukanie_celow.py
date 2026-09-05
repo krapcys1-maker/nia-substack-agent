@@ -62,14 +62,27 @@ def sprawdz(nazwa, warunek, szczegol=""):
 sprawdz_nasze = wlasna_konfiguracja.tylko_nasze(sprawdz)
 
 
+print("=== 0. SILNIK NIE MA WLASNYCH HASEL — HASLA SA W KARTRIDZU ===")
+# Od 2026-09-06 `config.HASLA_SZUKANIA` i `config.ZNAKI_NISZY` sa w silniku
+# PUSTE. Temat przychodzi z kartridza (`presety/<nazwa>/`), wiec ten test
+# mierzy hasla kartridza `ai`, a od silnika wymaga jednego: zeby nie mial
+# zadnego tematu, ktory wlaczalby sie po odlaczeniu kartridza.
+import preset  # noqa: E402
+
+sprawdz("silnik nie ma hasel szukania", config.DOMYSLNE_SILNIKA.get("HASLA_SZUKANIA") == (),
+        config.DOMYSLNE_SILNIKA.get("HASLA_SZUKANIA"))
+sprawdz("silnik nie ma znakow niszy", config.DOMYSLNE_SILNIKA.get("ZNAKI_NISZY") == ())
+KARTRIDZ = preset.wczytaj(pathlib.Path("presety/ai"))
+
+print()
 print("=== 1. HASLA SZUKANIA MIESZCZA SIE W ZNAKACH NISZY ===")
-hasla = [h.lower() for h in config.HASLA_SZUKANIA]
-# Lista slow, po ktorych poznajemy nasz rewir. Jawna i krotka, zeby dalo sie
+hasla = [str(h).lower() for h in KARTRIDZ.pola.get("temat.hasla_szukania", ())]
+# Lista slow, po ktorych poznajemy rewir. Jawna i krotka, zeby dalo sie
 # ja przeczytac i zakwestionowac — a nie zgadywac, co test uznaje za „w niszy".
-# ZNAKI NISZY IDA Z CONFIGU, nie z ciala testu. Do 2026-09-03 stala tu
+# ZNAKI IDA Z TEGO SAMEGO KARTRIDZA co hasla. Do 2026-09-03 stala tu
 # wpisana lista slow o jednej konkretnej niszy — czyli test, ktory mial
 # pilnowac SPOJNOSCI rewiru z nisza, w rzeczywistosci betonowal nisze.
-ZNAKI = tuple(z.lower() for z in config.ZNAKI_NISZY)
+ZNAKI = tuple(str(z).lower() for z in KARTRIDZ.pola.get("temat.znaki_niszy", ()))
 
 
 def w_niszy(h: str) -> bool:
@@ -86,7 +99,7 @@ poza = [h for h in hasla if not w_niszy(h)]
 # Sama lista trafien nic nie mowila operatorowi, ktory dopiero co wpisal
 # swoje hasla. Teraz mowi, ktorego znaku brakuje.
 if poza:
-    print("    %d hasel nie zawiera ZADNEGO znaku z config.ZNAKI_NISZY:" % len(poza))
+    print("    %d hasel nie zawiera ZADNEGO znaku z temat.znaki_niszy kartridza:" % len(poza))
     for h in poza[:12]:
         print("      %s" % h)
     print("    Znaki, ktore masz: %s" % ", ".join(ZNAKI))
@@ -96,7 +109,7 @@ if poza:
     print("      * przeformuluj hasla tak, zeby niosly znak, ktory juz masz.")
     print("    Skutek zaniechania jest zmierzony: agent znajduje posty,")
     print("    a regula rewiru odrzuca je co do jednego.")
-sprawdz("kazde haslo dotyczy niszy z config.NISZA", not poza,
+sprawdz("kazde haslo kartridza dotyczy jego niszy", not poza,
         "%d poza: %s" % (len(poza), ", ".join(poza[:4])) if poza else "")
 
 # HASLA WYRAZNIE ODRZUCONE PRZEZ WLASCICIELA. Lista jest teraz w configu
@@ -119,16 +132,16 @@ sprawdz("pula jest szersza niz jeden przebieg (>= %d)" % _minimum,
         len(hasla) >= _minimum,
         "%d hasel przy %d losowanych na przebieg"
         % (len(hasla), config.ILE_HASEL_NA_PRZEBIEG))
-# A DZIEWIETNASCIE TO JUZ NASZA LICZBA, nie regula.
-sprawdz_nasze("hasel jest co najmniej 19", len(hasla) > 18, len(hasla))
-# `OBSZARY_REWIRU` TO NASZA MAPA REWIRU — polskie nazwy, i nie ma jej
-# w kreatorze, wiec operator nie moze jej przestawic. Zadanie od cudzej
-# publikacji, zeby jej hasla pokrywaly „pieniadze i wladza", jest niewykonalne
-# z definicji. Dla nas nadal obowiazuje: dwadziescia hasel o jednym daje te
-# sama garstke kont, co trzy.
-for obszar, slowa in config.OBSZARY_REWIRU.items():
-    sprawdz_nasze("  rewir obejmuje: %s" % obszar,
-                  any(any(s in h for s in slowa) for h in hasla))
+# TRZY STRONY TEMATU: dwadziescia hasel o jednym daje te sama garstke kont,
+# co trzy. Strony wynikaja ze znakow KARTRIDZA (pomiar, pieniadze,
+# odpowiedzialnosc), a nie z mapy w silniku — silnik nie ma zadnej.
+sprawdz("silnik nie ma mapy rewiru", config.DOMYSLNE_SILNIKA.get("OBSZARY_REWIRU") == {})
+_strony = {"pomiar": ("benchmark", "eval", "hallucinat", "reproduc"),
+           "pieniadze": ("token", "gpu", "compute", "chip", "training"),
+           "odpowiedzialnosc": ("regulat", "ai act", "copyright", "licen", "liabil")}
+for obszar, slowa in _strony.items():
+    sprawdz("  rewir kartridza obejmuje: %s" % obszar,
+            any(any(s in h for s in slowa) for h in hasla))
 
 print()
 print("=== 3. WIECEJ HASEL NA PRZEBIEG ===")
@@ -194,9 +207,9 @@ sprawdz("nic spoza rewiru nie przechodzi sita niszy",
 # Druga polowa kontrdowodu — sito nie odrzuca WSZYSTKIEGO. Dla cudzej
 # konfiguracji mowi to samo, co sekcja 1, i tam jest powiedziane z instrukcja,
 # co zrobic; tu wystarczy raz.
-sprawdz_nasze("a wszystkie nasze hasla przechodza",
-              all(w_niszy(h) for h in hasla),
-              [h for h in hasla if not w_niszy(h)])
+sprawdz("a wszystkie hasla kartridza przechodza",
+        all(w_niszy(h) for h in hasla),
+        [h for h in hasla if not w_niszy(h)])
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))

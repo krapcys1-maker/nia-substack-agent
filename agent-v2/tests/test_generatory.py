@@ -79,10 +79,22 @@ sprawdz("kazdy wzorzec naprawde cos opisuje, nie jest sama nazwa",
         all(len(o.split()) >= 15 for o in config.GENERATORY.values()),
         {n: len(o.split()) for n, o in config.GENERATORY.items()
          if len(o.split()) < 15})
-komorki = len(config.GENERATORY) * len(config.DZIEDZINY_CIEKAWOSTEK)
-print("    siatka: %d wzorcow x %d dziedzin = %d komorek"
-      % (len(config.GENERATORY), len(config.DZIEDZINY_CIEKAWOSTEK), komorki))
-sprawdz_nasze("siatka ma setki komorek", komorki >= 400, komorki)
+# DZIEDZINY SA W KARTRIDZU, NIE W SILNIKU. Od 2026-09-06 silnik ma pusta
+# siatke: wzorce (druga os) sa metoda i zostaja w kodzie, dziedziny (pierwsza
+# os) sa tematem i przychodza z `presety/<nazwa>/`. Siatke mierzymy wiec na
+# kartridzu `ai`, a od silnika wymagamy, zeby dziedzin nie mial.
+import preset  # noqa: E402
+sprawdz("silnik nie ma dziedzin", config.DOMYSLNE_SILNIKA.get("DZIEDZINY_CIEKAWOSTEK") == ())
+KARTRIDZ = preset.wczytaj(pathlib.Path("presety/ai"))
+_dziedziny = list(KARTRIDZ.pola.get("temat.dziedziny", ()))
+_notki = int(KARTRIDZ.pola.get("wolumeny.notki_dziennie", 1))
+komorki = len(config.GENERATORY) * len(_dziedziny)
+print("    siatka kartridza ai: %d wzorcow x %d dziedzin = %d komorek"
+      % (len(config.GENERATORY), len(_dziedziny), komorki))
+sprawdz("siatka daje co najmniej 10 komorek na notke dziennie (regula strukturalna)",
+        komorki >= 10 * _notki, (komorki, _notki))
+sprawdz("i ma setki komorek, wiec ten sam wzorzec w tej samej dziedzinie nie wraca"
+        " w tym samym tygodniu", komorki >= 400, komorki)
 
 print()
 print("=== 2. WZORCE SIE ROTUJA (jednolity ksztalt to podpis maszyny) ===")
@@ -95,14 +107,18 @@ sprawdz("z czasem wypadaja wszystkie", uzyte == set(config.GENERATORY),
         set(config.GENERATORY) - uzyte)
 
 print()
-print("=== 3. NASZE ARTYKULY MAPUJA SIE NA WZORCE (sprawdzian przydatnosci) ===")
-NASZE = {"0014 okno w samolocie": "MARGIN", "0016 symbol kosmetyczny": "BOUNDARY",
-         "0017 blokada karty": "BOUNDARY", "0019 zolte swiatlo": "CONFESSION",
-         "przyklad kolor autobusu": "DECIDER", "przyklad wskaznik": "MEASUREMENT"}
-for tytul, gen in NASZE.items():
-    sprawdz("%-26s -> %s" % (tytul, gen), gen in config.GENERATORY)
-sprawdz("szesc artykulow trafia w piec roznych wzorcow",
-        len(set(NASZE.values())) == 5, set(NASZE.values()))
+print("=== 3. WZORCE SA NEUTRALNE WOBEC TEMATU (metoda, nie temat) ===")
+# Wzorce zostaja w silniku, bo pytaja o LICZBE, JURYSDYKCJE, DECYDENTA,
+# AWARIE i ZACHOWANIE — odpowiedz istnieje w kazdej dziedzinie. Test pilnuje,
+# ze zaden opis wzorca nie przemyca konkretnej dziedziny: slowo z jednej
+# branzy w sondzie sprawia, ze model szuka tej branzy w kazdym temacie.
+_BRANZOWE = ("model", "chatbot", "benchmark", "gpu", "regulator", "factory",
+             "hospital", "bank", "airline", "food", "drug", "car", "software")
+_z_branza = {n: [s for s in _BRANZOWE if s in o.lower()] for n, o in config.GENERATORY.items()}
+_z_branza = {n: s for n, s in _z_branza.items() if s}
+sprawdz("zaden wzorzec nie nazywa branzy", not _z_branza, _z_branza)
+sprawdz("wzorce pytaja o zachowanie systemu, nie tylko o instytucje",
+        {"SEEMING", "UNBIDDEN"} <= set(config.GENERATORY))
 
 print()
 print("=== 4. BRAMKA 1: NAZWANY DECYDENT Z DATA ===")
@@ -133,20 +149,27 @@ sprawdz("bez skutku w reku odpada",
 sprawdz("bez zrodla odpada", not stages.bramka_kandydata(wariant(url="brak"))[0])
 
 print()
-print("=== 7. SEZONOWOSC ===")
+print("=== 7. SEZONOWOSC (RYTM ROKU Z KARTRIDZA) ===")
 from datetime import datetime, timezone   # noqa: E402
-sprawdz("kazdy miesiac ma rzeczy w reku",
-        all(config.co_teraz_w_reku(datetime(2026, m, 15, tzinfo=timezone.utc))
+# RYTM ROKU JEST TEMATEM, wiec od 2026-09-06 siedzi w kartridzu
+# (`[temat.rytm_roku]`), a silnik ma pusty kalendarz: bez kartridza
+# `co_teraz_w_reku` oddaje pusty napis i prompt nie dostaje sezonu.
+sprawdz("silnik nie ma rytmu roku", config.DOMYSLNE_SILNIKA.get("W_TYM_MIESIACU") == {})
+sprawdz("bez kartridza podpowiedz sezonowa jest pusta, nie zmyslona",
+        config.co_teraz_w_reku(datetime(2026, 8, 15, tzinfo=timezone.utc),
+                               kalendarz={}) == "")
+_kalendarz = preset.rozwiaz(KARTRIDZ, config, config.DOMYSLNE_SILNIKA)[0].W_TYM_MIESIACU
+sprawdz("kartridz ai ma rzeczy w reku na kazdy miesiac",
+        all(config.co_teraz_w_reku(datetime(2026, m, 15, tzinfo=timezone.utc), kalendarz=_kalendarz)
             for m in range(1, 13)))
-sierpien = config.co_teraz_w_reku(datetime(2026, 8, 15, tzinfo=timezone.utc))
-styczen = config.co_teraz_w_reku(datetime(2026, 1, 15, tzinfo=timezone.utc))
+sierpien = config.co_teraz_w_reku(datetime(2026, 8, 15, tzinfo=timezone.utc), kalendarz=_kalendarz)
+styczen = config.co_teraz_w_reku(datetime(2026, 1, 15, tzinfo=timezone.utc), kalendarz=_kalendarz)
 sprawdz("sierpien to nie styczen", sierpien != styczen)
 # ZASADA, NIE SLOWO. Stalo tu "sierpien wymienia krem z filtrem" i
 # "pazdziernik wymienia ogrzewanie" — przypiete do rzeczy, o ktorych konto
-# wtedy pisalo. Po zmianie dziedziny na AI (25 sierpnia 2026) oba sie oblaly,
-# choc REGULA ocalala w calosci: podpowiedz sezonowa ma byc konkretna, rozna
-# w kazdym miesiacu i ma mowic, gdzie patrzec. Test pyta wiec o to.
-_miesiace = [config.co_teraz_w_reku(datetime(2026, m, 15, tzinfo=timezone.utc))
+# wtedy pisalo. REGULA ocalala w calosci: podpowiedz sezonowa ma byc konkretna,
+# rozna w kazdym miesiacu i ma mowic, gdzie patrzec. Test pyta wiec o to.
+_miesiace = [config.co_teraz_w_reku(datetime(2026, m, 15, tzinfo=timezone.utc), kalendarz=_kalendarz)
              for m in range(1, 13)]
 sprawdz("kazdy miesiac mowi cos konkretnego (nie jedno slowo)",
         all(len(x.split()) >= 4 for x in _miesiace),

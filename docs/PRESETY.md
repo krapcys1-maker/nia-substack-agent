@@ -1,97 +1,109 @@
-# Presety — jak podłączyć i odłączyć całą redakcję
+# Presety — konsola i kartridż
 
-Stan na 5 września 2026, gałąź `presety`. Ten dokument opisuje mechanizm
-wprowadzony po audycie `analizy/2026-09-05-czystosc-presety/RAPORT.md`.
-Angielskie streszczenie dla obcego operatora stoi w `presety/README.md`.
+Stan na 6 września 2026, gałąź `presety`. Angielskie streszczenie stoi
+w `presety/README.md`.
 
-## Cztery rzeczy, których nie wolno mieszać
+## Podział
 
-| Rzecz | Gdzie leży | Co zawiera |
-|---|---|---|
-| **Silnik** | `agent-v2/*.py`, `prompts/`, `style-profiles/` | etapy, bramki, adaptery, wartości domyślne. Nie zna konta. |
-| **Preset** | `presety/<nazwa>.toml` (własne, poza gitem) i `presety/przyklady/` (w gicie) | nagłówek `[preset]` plus komplet pól: konto, temat, styl, źródła, modele, wolumeny, harmonogram, publikowanie, pieniądze |
-| **Instancja** | `agent-v2/instancje/<nazwa>/` | baza SQLite, bank pomysłów, cache etapów, szkice, kolejka promocji, dziennik działań TEGO presetu |
-| **Aktywacja** | `agent-v2/aktywny_preset.json` | który preset, z jakim odciskiem, w której instancji, który raz |
+**Silnik** (`agent-v2/`) jest konsolą. Ma metodę: etapy, bramki, kontrakty
+JSON, wzorce tematów, reguły rzetelności, zapory testowe. **Nie ma tematu.**
+Od 6 września nisza, kąt redakcyjny, znaki rewiru, hasła, dziedziny,
+kalendarz roku, kanały, tożsamość okładki i oświadczenie o autorstwie są
+w silniku puste. Bez podłączonego kartridża `run.py` i `artykul_z_puli.py`
+odmawiają startu.
 
-Sekrety (`agent-v2/.env`) i sesja Substacka pozostają poza presetem. Preset
-da się wysłać komuś mailem; klucze nie.
+**Kartridż** (`presety/<nazwa>/`) jest wszystkim, co odróżnia jedną
+publikację od drugiej:
+
+| Plik | Co niesie |
+|---|---|
+| `preset.toml` | pokrętła (notki/dobę, artykuły/tydzień, komentarze, polubienia, przebiegi, modele per rola, budżety, zegar), konto, temat, źródła, styl |
+| `prompty/linia_redakcyjna.md` | co jest tematem, a co nie, i jakie pytania zadawać; czytają skaut, ciekawostki, bank, bramka „warto pisać” |
+| `prompty/glos_artykulu.md` | jak ten tytuł pisze długi tekst; czyta pisarz |
+| `prompty/glos_notki.md` | jak brzmi notka; czytają briefy notki i myśli |
+| `prompty/glos_komentarza.md` | jak brzmi komentarz, odpowiedź, zdanie przy restacku |
+| `prompty/okladka.md` | tożsamość wizualna: blok stylu kopiowany dosłownie do promptu obrazu |
+| `prompty/kogo_szukamy.md` | pod czyimi postami komentujemy, a pod czyimi nie |
+| `prompty/oswiadczenie.md` | publiczne oświadczenie o autorstwie (ustawienie konta) |
+| `styl/profil_pozytywny.md`, `styl/profil_negatywny.md` | do czego dąży pisarz i czego mu nie wolno |
+| `styl/korpus.txt` (opcjonalnie) | własne teksty do przypięcia |
+
+Każdy plik w `prompty/` jest opcjonalny: brak daje w briefie jawne zdanie
+zastępcze („preset nie dostarczył...”), nigdy pustkę i nigdy cudzą treść.
+Tekst przed pierwszym `---` w pliku bloku jest notatką dla człowieka i do
+promptu nie idzie. Ścieżki stylu w `preset.toml` są względem katalogu
+kartridża.
 
 ## Polecenia
 
 ```bash
-python narzedzia/presety.py lista                 # co jest, co podłączone (*)
+python narzedzia/presety.py lista                 # kartridże i który podłączony
+python narzedzia/presety.py nowy moj-temat        # kopia SZABLON/ do wypełnienia
 python narzedzia/presety.py sprawdz ai            # błędy i uwagi, bez płatnych wywołań
-python narzedzia/presety.py pokaz ai              # rozwiązane stałe: preset czy silnik
-python narzedzia/presety.py podglad ai            # prompty tak, jak zobaczy je model
+python narzedzia/presety.py pokaz ai              # rozwiązane stałe, pochodzenie, bloki
+python narzedzia/presety.py podglad ai            # briefy tak, jak zobaczy je model
 python narzedzia/presety.py podlacz ai            # aktywacja
 python narzedzia/presety.py status
 python narzedzia/presety.py odlacz
-python narzedzia/presety.py importuj-konfiguracje --nazwa moje   # stary konfiguracja.toml -> preset
+python narzedzia/presety.py importuj-konfiguracje --nazwa moje   # stary konfiguracja.toml -> kartridż
 python narzedzia/presety.py eksportuj ai > kopia.toml            # znormalizowany TOML, bez sekretów
 ```
 
 Po `podlacz` i `odlacz` **procesy uruchamia się od nowa**. Kontekst jest
-czytany raz, przy starcie; działający przebieg dokończy pracę w starym
-kontekście. Zegary systemd buduje się z presetu:
+czytany raz, przy starcie. Zegary systemd buduje się z kartridża:
 `python narzedzia/jednostki.py --katalog /srv/bot --uzytkownik bot`.
 
 ## Co się dzieje przy podłączeniu
 
-1. Plik jest czytany i sprawdzany **w całości**: nieznane pole, zła wartość,
-   niespójny zegar, brak pliku profilu stylu, model bez ścieżki dostawcy —
-   każde z tych zatrzymuje `podlacz` **zanim** cokolwiek zostanie zapisane.
-   Poprzedni preset zostaje podłączony bez zmian.
-2. Powstaje katalog instancji (domyślnie `instancje/<nazwa>`; inna nazwa przez
-   `--instancja` daje świeży katalog, ten sam preset).
-3. Wskaźnik aktywacji jest zapisywany atomowo (plik tymczasowy i `os.replace`).
-4. Przy każdym starcie `config.py` czyta wskaźnik, wczytuje preset z pliku,
-   porównuje odcisk SHA-256 pól z odciskiem z aktywacji, **przywraca neutralną
-   bazę silnika** i dopiero na nią nakłada pola presetu. Preset zmieniony po
-   aktywacji zatrzymuje start z komunikatem, co zrobić.
+1. Kartridż jest czytany i sprawdzany **w całości**: pola wymagane (bez nich
+   silnik nie ma czym pracować), znaczniki `<<...>>` z szablonu, reguły
+   strukturalne tematu (pula haseł szersza niż jeden przebieg, każde hasło ze
+   znakiem rewiru, co najmniej 10 komórek siatki na notkę dziennie), pliki
+   profili stylu, dostawcy modeli, spójność zegara. Każdy błąd zatrzymuje
+   `podlacz` zanim cokolwiek zostanie zapisane. Poprzedni kartridż zostaje
+   podłączony bez zmian.
+2. Powstaje katalog instancji (`agent-v2/instancje/<nazwa>/`; inna nazwa przez
+   `--instancja` daje świeży katalog danych z tym samym kartridżem).
+3. Wskaźnik aktywacji jest zapisywany atomowo.
+4. Przy każdym starcie `config.py` czyta wskaźnik, wczytuje kartridż z dysku,
+   porównuje odcisk SHA-256 pól i bloków z odciskiem z aktywacji, **przywraca
+   neutralną bazę silnika** i dopiero na nią nakłada kartridż. Kartridż
+   zmieniony po aktywacji zatrzymuje start z komunikatem, co zrobić.
 
-Z tego wynika własność, o którą chodziło w audycie: preset B skompilowany po
+Stąd własność, o którą chodziło w audycie: kartridż B skompilowany po
 używaniu A daje **ten sam kontekst** co B na czystym silniku. Pilnuje tego
-`agent-v2/tests/test_presety.py`, sekcja 3.
+`agent-v2/tests/test_presety.py`.
 
 ## Co się dzieje przy odłączeniu
 
-`odlacz` usuwa wskaźnik i dopisuje wpis do dziennika instancji. Dane instancji
-zostają — ponowne `podlacz` tego samego presetu je wznawia. Bez wskaźnika:
+`odlacz` usuwa wskaźnik i dopisuje wpis do dziennika instancji. Dane
+instancji zostają; ponowne `podlacz` tego samego kartridża je wznawia. Bez
+wskaźnika:
 
 - `run.py` i `artykul_z_puli.py` odmawiają startu (kod wyjścia 3, komunikat
-  z poleceniami). Nie ma powrotu do „wbudowanego tematu": silnik go nie ma.
-- `alarm.py` zgłasza kontrolę `preset` jako pierwszą — brak presetu jest
-  alarmem, nie ciszą.
+  z poleceniami). Silnik nie ma do czego wracać.
+- `alarm.py` zgłasza kontrolę `preset` jako pierwszą.
 - Zegary systemd trzeba wyłączyć ręcznie (`odlacz` wypisuje polecenie).
 
-Wyjątek: w **darmowym teście** (proces uruchomiony z `agent-v2/tests/`) brama
-milczy, tak samo jak zapora płatnych wywołań. Testy pracują na silniku, nie na
-tym, co operator akurat podłączył.
+W **darmowym teście** (proces uruchomiony z `agent-v2/tests/`) brama milczy,
+tak samo jak zapora płatnych wywołań. Testy pracują na silniku, nie na tym,
+co operator akurat podłączył. Zmienna `AGENT_V2_PRESET=presety/ai` podłącza
+kartridż jednemu procesowi bez wskaźnika (podgląd, testy).
 
-## Pola presetu
+## Skąd biorą się dane
 
-Kontrakt pól jest jeden — `konfiguracja.POLA` — wspólny dla presetu, starego
-`konfiguracja.toml` i wsadów tematycznych. Nowe sekcje i pola z 5 września:
-
-| Pole | Co robi |
-|---|---|
-| `wolumeny.notki_dziennie` | liczba slotów notek na dobę, jedna dla zwykłego dnia i dnia artykułu; promocja artykułu zajmuje slot, nie dokłada go; `0` wyłącza notki |
-| `publikowanie.miks_notek` | proporcje typów, którymi sloty wypełniają się cyklicznie |
-| `wolumeny.artykuly_tygodniowo` | `0` wyłącza ścieżkę artykułu (zegar, promocję, `artykul_z_puli`) |
-| `harmonogram.dni_artykulu`, `harmonogram.godzina_artykulu_utc` | dni i godzina zegara artykułu; bez dni silnik dobiera je z liczby |
-| `harmonogram.godziny_przebiegow_utc` | zegar rutyny dnia; liczba godzin musi zgadzać się z `przebiegow_dziennie` |
-| `styl.opis` | głos opisany słowami, wstrzykiwany do briefów pisarza, notki, komentarza i odpowiedzi jako `{styl_opis}` |
-| `styl.profil_pozytywny`, `styl.profil_negatywny` | ścieżki profili stylu względem korzenia repozytorium |
-| `styl.korpus`, `styl.wymagaj_korpusu` | plik korpusu i czy pisarz ma odmówić bez przypiętego korpusu |
-| `modele.obraz` | model okładki; pusty napis wyłącza okładkę; ustawia naraz rolę i model żądania |
-| `modele.zapasowy_pisarz` | na jaki model wraca pisarz po awarii; pusty = zatrzymaj się |
-
-Walidatory sprawdzają dziedzinę wartości, nie tylko typ: liczności są
-nieujemnymi liczbami całkowitymi, kwoty skończone i nieujemne, strefa musi
-istnieć w bazie IANA, data być dniem w kalendarzu, godziny mieścić się w dobie.
-
-Role modeli podane w presecie nakładają się na **domyślne silnika**, nigdy na
-poprzedni preset. `pokaz` wypisuje przy każdej roli, skąd pochodzi.
+- **Sygnały** (o czym mówi się w tym tygodniu): `zrodla.kanaly_youtube`
+  (identyfikatory `UC...`, czytane po RSS) i `zrodla.kanaly_rss` (blogi
+  laboratoriów, listy publikacji, RSS 2.0 lub Atom). Silnik przeplata źródła
+  po równo, więc lista z pięćdziesięcioma wpisami dziennie nie zagłusza
+  dziesięciu kanałów wideo. Sygnał nigdy nie jest źródłem: tytuł mówi, gdzie
+  patrzeć, dokument trzeba znaleźć osobno.
+- **Dowody** (czym potwierdzamy): research z wyszukiwaniem w sieci;
+  `zrodla.domeny_preferowane` mówi mu, na których hostach leżą dokumenty
+  pierwotne tej dziedziny; `zrodla.blokowane_hosty` mówi, których nie czytać.
+- **Stan dziedziny**: raz na dobę jedno wywołanie z wyszukiwaniem o to, co
+  jest aktualne (`stan_dziedziny.o_co_pytac`); odpowiedź pamięta pytanie,
+  więc zmiana pytania ją unieważnia.
 
 ## Co jest izolowane, a co celowo wspólne
 
@@ -99,31 +111,27 @@ poprzedni preset. `pokaz` wypisuje przy każdej roli, skąd pochodzi.
 |---|---|
 | baza, bank pomysłów, indeks kandydatów, zużyte fakty, przegrane tematy | klucze API (`agent-v2/.env`) |
 | cache etapów (`cache/<etap>.<odcisk>.json`) | sesja przeglądarki i profil Chrome |
-| stan dziedziny (`aktualne_modele.json`, pamięta pytanie) | kod, prompty, profile stylu w repozytorium |
+| stan dziedziny (pamięta pytanie) | kod, prompty silnika, wzorce tematów |
 | oczekujący artykuł i kolejka promocji (znacznik `instancja`) | |
-| dziennik działań, czytelnicy, obserwowani — w katalogu instancji | |
+| dziennik działań, czytelnicy, obserwowani | |
 
-Dziennik działań w katalogu instancji oznacza, że nowa instancja **nie pamięta
-komentarzy poprzedniej** i może wrócić pod ten sam post. To znane ograniczenie
-tej wersji; wznowienie tej samej instancji (`podlacz` tej samej nazwy) pamięta.
+Nowa instancja nie pamięta komentarzy poprzedniej i może wrócić pod ten sam
+post. Wznowienie tej samej instancji pamięta.
 
-## Przykład: preset „ai"
+## Kartridż `ai`
 
-`presety/przyklady/ai.toml` — AI po angielsku, dwie notki dziennie, jeden
-artykuł we wtorek, trzy przebiegi dziennie, komentarze 3–5, polubienia 5–8,
-restacki, obserwacje i subskrypcje wyłączone, pisarz na `claude-fable-5-1`,
-notki na `claude-opus-5`, opis głosu w `styl.opis`, korpus opcjonalny.
-Skopiuj do `presety/moj-ai.toml`, zmień `[preset].nazwa` i `[konto]`, uruchom
-`sprawdz`, potem `podlacz`.
+`presety/ai/` jest kompletny i sprawdzony bez płatnych wywołań: temat, 26
+haseł, 32 dziedziny, przykłady, rytm roku, 11 kanałów YouTube sprawdzonych po
+RSS, 6 kanałów RSS, 15 hostów preferowanych, własne profile stylu i siedem
+bloków promptów. Dwie notki dziennie, jeden artykuł we wtorek, trzy przebiegi
+dziennie, komentarze 3–5, polubienia 5–8, obserwacje i subskrypcje wyłączone,
+pisarz `claude-fable-5-1`, notki `claude-opus-5`. Przed podłączeniem podmień
+`[konto]`. Kolejny temat robi się z `nowy <nazwa>` i szablonu.
 
-## Co ten mechanizm jeszcze nie robi
+## Czego jeszcze nie ma
 
-- Nie wymienia kontekstu w pracującym procesie — po przełączeniu trzeba
-  uruchomić procesy od nowa.
-- Nie waliduje kluczy u dostawców — mówi tylko, których brakuje w środowisku.
-- Nie ma osobnych profili stylu dla notki i komentarza — jest jeden `styl.opis`
-  wspólny dla form krótkich i długiej.
-- Nie rozdziela źródeł na role (sygnał, dowód, miejsce rozmowy) — są kanały
-  YouTube i lista blokowanych hostów, jak dotąd.
-- `konfiguracja.toml` jest nadal czytany, gdy presetu nie ma — na czas
-  przejścia; przy podłączonym presecie jest ignorowany z komunikatem.
+- Wymiany kontekstu w pracującym procesie: po przełączeniu nowy proces.
+- Walidacji kluczy u dostawców: `sprawdz` mówi tylko, których brakuje.
+- Osobnego bloku dla restacku i odpowiedzi: dzielą `glos_komentarza`.
+- `konfiguracja.toml` jest nadal czytany, gdy kartridża nie ma, ale sam z
+  siebie nie daje tematu: pola tematu i tak trzeba wypełnić.

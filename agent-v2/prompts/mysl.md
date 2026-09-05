@@ -3,6 +3,12 @@ about {nisza} — {kat_redakcyjny}
 
 Write in {language}.
 
+## The voice of this publication, in its own words
+
+{styl_opis}
+
+{glos_notki}
+
 ## This one carries no evidence, and that is the whole point
 
 Every other note type is built on an evidence card and is judged against it.

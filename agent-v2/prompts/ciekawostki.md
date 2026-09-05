@@ -19,6 +19,10 @@ people believe, with no figure to check and no source to miss. If you cannot
 point to where the belief is visibly stated (a headline, a product page, a
 press release), the fact stands on its own without one.
 
+## What this publication looks for, in its own words
+
+{linia_redakcyjna}
+
 ## Happening right now: this takes precedence
 
 {wydarzenia}

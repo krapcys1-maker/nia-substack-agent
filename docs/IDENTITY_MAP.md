@@ -30,7 +30,7 @@ Constant `config.NAZWA_MARKI`, set by `konto.nazwa_marki`
 |---|---|---|---|
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 1 | GENERATED — rebuilds itself | `# Your Publication — dokumentacja odtworzeniowa agenta` |
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 46 | GENERATED — rebuilds itself | `Agent prowadzi anglojęzycznego Substacka **„Your Publication"**, który` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 11947 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 11991 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
 | `agent-v2/config.py` | 139 | **FIELD** | `NAZWA_MARKI = "Your Publication"` |
 | `agent-v2/run.py` | 599 | comment — harmless, but stale | `# „Your Publication", czyli nas — Substack melduje w tym` |
 | `agent-v2/systemd/nia-agent.service` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — agent` |
@@ -55,18 +55,12 @@ Constant `config.NAZWA_MARKI`, set by `konto.nazwa_marki`
 
 ---
 
-## nisza — `how everyday things are made and regulated`
+## nisza — ``
 
 Constant `config.NISZA`, set by `temat.nisza`
 
-| file | line | how | context |
-|---|---|---|---|
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12098 | GENERATED — rebuilds itself | `\| `NISZA` \| `"how everyday things are made and regulated"` \| HASLA, KTORYMI AGENT SZUKA ` |
-| `agent-v2/config.py` | 2471 | **FIELD** | `NISZA = "how everyday things are made and regulated"` |
-| `analizy/2026-09-05-czystosc-presety/RAPORT.md` | 37 | **INJECTED** — follows the field | `W `config.py` nadal jest aktywna nisza „how everyday things are made and regulated”, 32 ` |
-| `konfiguracja.example.toml` | 62 | TEMPLATE — this is the file you copy | `nisza = "how everyday things are made and regulated"` |
-| `packs/everyday-things-and-regulation.toml` | 2 | comment — harmless, but stale | `# WSAD TEMATYCZNY — "how everyday things are made and regulated"` |
-| `packs/everyday-things-and-regulation.toml` | 20 | **BY HAND** | `nisza = "how everyday things are made and regulated"` |
+Appears nowhere in the tree outside `config.py` — nothing to
+hand-edit.
 
 ---
 
@@ -76,8 +70,8 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 
 | file | line | how | context |
 |---|---|---|---|
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2182 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 11948 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2197 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 11992 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
 | `agent-v2/browser.py` | 566 | comment — harmless, but stale | `# (your-handle.substack.com), a /api/v1/reader/* i /api/v1/user/*` |
 | `agent-v2/browser.py` | 1320 | comment — harmless, but stale | `# `substack.com/@your-handle/following` oddaje 26 uchwytow, a` |
 | `agent-v2/config.py` | 141 | **FIELD** | `SUBSTACK_HANDLE = "your-handle"` |
@@ -87,12 +81,14 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 | `agent-v2/tests/test_naprawa_zamiast_ciecia.py` | 306 | test fixture | `LINK = "https://your-handle.substack.com/p/first-remove-the-brakes"` |
 | `agent-v2/tests/test_obserwacje.py` | 361 | test fixture | `Z_LINKIEM = "Pressure panels have a tiny hole. https://your-handle.substack.com/p/x"` |
 | `agent-v2/tests/test_obserwacje.py` | 362 | test fixture | `Z_LINKIEM_2 = "Sorting machines read the barcode. https://your-handle.substack.com/p/y"` |
+| `agent-v2/tests/test_przyklad_przechodzi_reguly.py` | 107 | test fixture | `ai.pola.get("konto.uchwyt") == "your-handle", ai.pola.get("konto.uchwyt"))` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 20 | test fixture | `Odczyt, nic nie klikniete, konto `your-handle`:` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 22 | test fixture | `substack.com/@your-handle/following  -> 26 uchwytow` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 23 | test fixture | `/api/v1/user/your-handle/public_profile` |
 | `agent-v2/tests/test_wstrzykniecie.py` | 133 | test fixture | `LINK = "https://your-handle.substack.com/p/example-article-slug"` |
 | `agent-v2/tests/test_wzrost_konta.py` | 54 | test fixture | `"handle": "your-handle",` |
 | `konfiguracja.example.toml` | 36 | TEMPLATE — this is the file you copy | `uchwyt = "your-handle"` |
+| `presety/ai/preset.toml` | 75 | **BY HAND** | `uchwyt = "your-handle"` |
 
 ---
 
@@ -134,7 +130,7 @@ itself, or is a test fixture that no live run reads.
 | nazwa marki | `agent-v2/systemd/nia-artykul.service` | 2 | `Description=Your Publication — artykul tygodniowy` |
 | nazwa marki | `agent-v2/systemd/nia-artykul.timer` | 2 | `Description=Your Publication — zegar artykulu tygodniowego` |
 | nazwa marki | `packs/README.md` | 21 | `your publication.` |
-| nisza | `packs/everyday-things-and-regulation.toml` | 20 | `nisza = "how everyday things are made and regulated"` |
+| uchwyt konta | `presety/ai/preset.toml` | 75 | `uchwyt = "your-handle"` |
 
 The `systemd` unit descriptions are per-installation by nature,
 like `WorkingDirectory` and `User` in the same files. You edit those

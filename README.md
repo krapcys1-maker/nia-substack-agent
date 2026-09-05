@@ -21,7 +21,7 @@ a provider invoice, to the cent.
 
 The account identity, the subject matter and the source list have been removed.
 What ships is the machine plus an example configuration you are expected to
-replace — or one of four ready [subject packs](packs/README.md), so you do not
+replace — or one of three ready [subject packs](packs/README.md), so you do not
 have to invent twenty search terms before the first run.
 [docs/INSTALL.md](docs/INSTALL.md) says exactly where everything goes.
 
@@ -88,7 +88,7 @@ cannot see.
 | **[docs/INSTALL.md](docs/INSTALL.md)** | zero to running, step by step — including the one step no software can do for you |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | how it works and where everything lives: both pipelines, all 26 roles, every directory |
 | **[docs/BRIEF_MAP.md](docs/BRIEF_MAP.md)** | what each of the 24 briefs is responsible for: what calls it, what model it runs on, and — for every field it tells the model to return — whether a gate reads it, something reads it, or **nobody does**. Generated |
-| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **634 functions** in 26 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
+| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **649 functions** in 26 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
 | **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | split in two: what will bite you on a fresh clone, and what already bit us and is fixed. **Read before your first run** |
 | **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
 | **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
@@ -102,7 +102,7 @@ behind each entry, is [docs/ROZWIAZYWANIE_PROBLEMOW.md](docs/ROZWIAZYWANIE_PROBL
 The bot's own design documents are in `agent-v2/` and are in Polish:
 `DOKTRYNA.md` (what it must and must not do — canonical, and its closing
 "Discrepancies" section is part of the document), `JAK_DZIALA_V2.md`
-(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,192 lines,
+(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,231 lines,
 **generated from the code** and guarded by a test so it cannot drift.
 
 **A word on the language, before you open a file.** Everything written *for

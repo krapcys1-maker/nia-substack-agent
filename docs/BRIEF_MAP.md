@@ -20,29 +20,29 @@ through a variable this scan cannot see. Check before cutting.
 
 | brief | lines | called by | model role | fields | gate | used | nobody |
 |---|---|---|---|---|---|---|---|
-| `bank.md` | 93 | `stages.posortuj_bank` | `bank` | 8 | 0 | 8 | 0 |
+| `bank.md` | 97 | `stages.posortuj_bank` | `bank` | 8 | 0 | 8 | 0 |
 | `bibliotekarz.md` | 46 | `stages.bibliotekarz` | `bibliotekarz` | 8 | 1 | 6 | **1** |
-| `cele.md` | 76 | `stages.wybierz_cele` | `cele` | 4 | 0 | 4 | 0 |
-| `ciekawostki.md` | 246 | `stages.znajdz_ciekawostki` | `curiosity` | 12 | 10 | 2 | 0 |
-| `dyskoveria.md` | 77 | `stages.discovery` | `discovery` | 0 | 0 | 0 | 0 |
+| `cele.md` | 80 | `stages.wybierz_cele` | `cele` | 4 | 0 | 4 | 0 |
+| `ciekawostki.md` | 250 | `stages.znajdz_ciekawostki` | `curiosity` | 12 | 10 | 2 | 0 |
+| `dyskoveria.md` | 82 | `stages.discovery` | `discovery` | 0 | 0 | 0 | 0 |
 | `fedreg.md` | 82 | `stages.kandydaci_z_fedreg` | `fedreg` | 6 | 5 | 1 | 0 |
 | `forma.md` | 93 | `stages.ocen_forme` | `forma` | 14 | 8 | 6 | 0 |
-| `grafika.md` | 98 | `stages.grafika` | `grafika` | 3 | 0 | 3 | 0 |
+| `grafika.md` | 82 | `stages.grafika` | `grafika` | 3 | 0 | 3 | 0 |
 | `klasyfikacja.md` | 55 | `stages.classify` | `classify` | 5 | 1 | 4 | 0 |
 | `kogo_odpowiedziec.md` | 48 | `stages.wybierz_do_odpowiedzi` | `wybor` | 5 | 0 | 5 | 0 |
-| `komentarz.md` | 146 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
-| `mysl.md` | 129 | `stages.note` | `—` | 3 | 1 | 2 | 0 |
+| `komentarz.md` | 148 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
+| `mysl.md` | 135 | `stages.note` | `—` | 3 | 1 | 2 | 0 |
 | `naprawa.md` | 39 | `stages.napraw_obalone` | `—` | 0 | 0 | 0 | 0 |
-| `notka.md` | 163 | `stages.note` | `—` | 4 | 1 | 3 | 0 |
-| `odpowiedz.md` | 129 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
+| `notka.md` | 165 | `stages.note` | `—` | 4 | 1 | 3 | 0 |
+| `odpowiedz.md` | 131 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
 | `OSWIADCZENIE_AUTORSTWA.md` | 56 | **nothing** | — | 0 | — | — | — |
-| `pisarz.md` | 304 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
+| `pisarz.md` | 308 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
 | `po_ludzku.md` | 53 | **nothing** | — | 0 | — | — | — |
 | `recenzent.md` | 56 | `stages.review` | `review` | 6 | 1 | 5 | 0 |
-| `restack.md` | 69 | `stages.ocen_restack` | `restack` | 4 | 3 | 1 | 0 |
-| `skaut.md` | 388 | `stages.scout` | `scout` | 5 | 0 | 5 | 0 |
+| `restack.md` | 73 | `stages.ocen_restack` | `restack` | 4 | 3 | 1 | 0 |
+| `skaut.md` | 392 | `stages.scout` | `scout` | 5 | 0 | 5 | 0 |
 | `synteza.md` | 114 | `stages.synthesis` | `synthesis` | 17 | 6 | 11 | 0 |
-| `warto_pisac.md` | 106 | `stages.warto_pisac` | `warto_pisac` | 13 | 0 | 13 | 0 |
+| `warto_pisac.md` | 110 | `stages.warto_pisac` | `warto_pisac` | 13 | 0 | 13 | 0 |
 | `weryfikacja.md` | 136 | `stages.zweryfikuj` | `factcheck` | 7 | 7 | 0 | 0 |
 | `wykonalnosc.md` | 86 | `stages.feasibility` | `feasibility` | 7 | 1 | 6 | 0 |
 

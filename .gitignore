@@ -137,8 +137,13 @@ konfiguracja.toml
 # (placeholdery zamiast konta); wlasne presety operatora nie.
 # `aktywny_preset.json` i `instancje/` to stan JEDNEJ instalacji: ktory preset
 # jest podlaczony i dane (baza, bank, cache, szkice) kazdej instancji.
-presety/*.toml
-!presety/przyklady/
+# W gicie zostaja TYLKO szablon i preset `ai` (oba z placeholderami zamiast
+# konta — pilnuje tego audyt). Kazdy inny katalog albo plik w `presety/` to
+# preset operatora i nie wychodzi z maszyny.
+presety/*
+!presety/README.md
+!presety/SZABLON/
+!presety/ai/
 agent-v2/aktywny_preset.json
 agent-v2/instancje/
 

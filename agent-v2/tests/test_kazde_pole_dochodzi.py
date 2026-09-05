@@ -86,6 +86,12 @@ def _probka(pole: str, sprawdzacz) -> object:
         return ["Tue"]
     if nazwa == "_slownik_napisow":
         return {"Probny": "UCprobnyprobnyprobny01"}
+    if nazwa == "_slownik_adresow":
+        return {"Probny": "https://example.org/feed.xml"}
+    if nazwa == "_lista_domen":
+        return ["example.org"]
+    if nazwa == "_slownik_miesiecy":
+        return {"1": "probna"}
     if nazwa == "_slownik_list":
         return {sorted(config.PRZYKLADY_NISZY)[0]: ["probna"]}
     if nazwa == "_lista_napisow":

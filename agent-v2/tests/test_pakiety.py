@@ -107,9 +107,16 @@ sprawdz("zaden modul agenta nie siega do packs/", not czytajace, czytajace)
 # Bez tego powyzsze przechodziloby takze wtedy, gdyby wsad byl wpiety inaczej.
 _pierwszy = pakiety.waliduj(WSADY[0])[0] if WSADY else {}
 _nisza_wsadu = str(_pierwszy.get("temat.nisza") or "")
-sprawdz("NISZA nie pochodzi z zadnego wsadu",
-        all(str(pakiety.waliduj(p)[0].get("temat.nisza") or "") != config.NISZA
-            or p.stem == "everyday-things-and-regulation" for p in WSADY),
+# Silnik nie ma niszy w ogole (pusta od 2026-09-05), wiec zaden wsad nie moze
+# byc jego „domyslna" — asercja pilnuje, ze to sie nie odwroci.
+# Mierzymy ZDJECIE SILNIKA (`DOMYSLNE_SILNIKA`), nie `config.NISZA`: darmowy
+# test nadal wczytuje `konfiguracja.toml` operatora, wiec `config.NISZA` moze
+# byc niepusta na jego maszynie — a pytanie jest o silnik, nie o operatora.
+_nisza_silnika = config.DOMYSLNE_SILNIKA.get("NISZA")
+sprawdz("NISZA silnika jest pusta i nie pochodzi z zadnego wsadu",
+        _nisza_silnika == "" and all(
+            str(pakiety.waliduj(p)[0].get("temat.nisza") or "") != _nisza_silnika
+            for p in WSADY),
         config.NISZA)
 
 print()

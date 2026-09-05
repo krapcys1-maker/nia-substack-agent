@@ -34,6 +34,8 @@ number is usually enough; four names and five numbers is a changelog entry.
 
 {styl_opis}
 
+{glos_notki}
+
 ## Length
 
 **{min_words} to {max_words} words. Count them.** The band comes from the type

@@ -8,6 +8,10 @@ Most of them will not be. That is the expected answer, not a failure.
 Its comments are worth reading because they add a mechanism the post did
 not name, not because they are enthusiastic.
 
+Whose posts this publication looks for, in its own words:
+
+{kogo_szukamy}
+
 ## Take a post only if you can answer yes to all three
 
 **1. Would its reader have any reason to follow a publication about {nisza}?**

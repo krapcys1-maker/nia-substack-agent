@@ -1120,63 +1120,12 @@ NOTE_CANDIDATES = 1
 # Ksztalt pytania byl dobry, przyklady nie — dzis pytaja o to samo bez nazywania
 # dziedziny. Powod ich istnienia zostaje: dwanascie starych pyta o liczbe,
 # jurysdykcje, decydenta i awarie, a zadne o to, jak rzecz sie ZACHOWUJE.
-DZIEDZINY_CIEKAWOSTEK = (
-    # ====================================================================
-    # PRZYKLAD. Siatka dziedzin razem z `GENERATORY` wyznacza przestrzen,
-    # w ktorej szuka sie ciekawostek. MUSI zostac przestawiona pod wlasna
-    # nisze przed uruchomieniem.
-    #
-    # WYMOG PILNOWANY TESTEM (`tests/test_generatory.py`): iloczyn
-    # `len(GENERATORY) * len(DZIEDZINY_CIEKAWOSTEK)` musi byc >= 400.
-    # Przy czternastu wzorcach znaczy to CO NAJMNIEJ 29 dziedzin. Ponizej
-    # jest ich 32, wiec jest zapas na dolozenie wzorca.
-    #
-    # Kazda pozycja to nie slowo-klucz, a OPIS MIEJSCA, w ktorym cos
-    # ciekawego siedzi. Krotkie hasla daja modelowi za maly uchwyt.
-    # ====================================================================
-
-    # --- jak rzecz jest zrobiona i kto to rozstrzygnal ------------------
-    "how a standard becomes mandatory, and who sat in the room",
-    "the tolerance on a part, and what happens at the edge of it",
-    "why two versions of the same object are not interchangeable",
-    "a dimension that is round in one country and not in another",
-    "the test a product must pass, and what the test does not check",
-    "a material that was replaced, and what the replacement cannot do",
-    "why a fastener, thread or fitting comes in exactly these sizes",
-    "the difference between a rating and a guarantee",
-
-    # --- pomiar, czyli miejsce gdzie najczesciej sie klamie -------------
-    "what a printed number on a package is actually the ratio of",
-    "a rating measured under conditions nobody encounters",
-    "how a certification is audited, and how often",
-    "reproducing a published measurement, and how often it fails",
-    "the gap between a showroom demonstration and a bad day",
-    "a figure that is a legal minimum quoted as a typical value",
-
-    # --- pieniadze, ryzyko i kto placi ---------------------------------
-    "who pays for a certification, and what that buys",
-    "an insurance requirement that shaped a design",
-    "a cost hidden in one price and paid by a different group",
-    "what a warranty excludes, and why exactly that",
-    "a procurement rule that decided what got built",
-    "the cheapest possible version that still passes",
-
-    # --- w swiecie: prawo, praca, zdrowie ------------------------------
-    "a rule written after one specific accident",
-    "an approval process, and what it delegates to the maker",
-    "a workplace limit and the study it came from",
-    "an accessibility requirement and what it changed for everyone",
-    "how a dispute over a patent changed a whole category",
-    "a labelling rule and the argument it settled",
-    "a threshold in law that a machine has to rule on",
-    "who is liable when a certified thing fails",
-
-    # --- historia i to, co juz przerabialismy --------------------------
-    "a constraint that disappeared while its shape stayed",
-    "a standard that lost, and what we use instead",
-    "a hype cycle in this field that resolved, and how",
-    "the people who were right early and ignored",
-)
+# SIATKA DZIEDZIN NALEZY DO PRESETU (`temat.dziedziny`). Razem z `GENERATORY`
+# wyznacza przestrzen, w ktorej szuka sie ciekawostek: kazda pozycja to nie
+# slowo-klucz, a OPIS MIEJSCA, w ktorym cos ciekawego siedzi. Wymog
+# strukturalny — co najmniej 10 komorek siatki na notke na dobe — sprawdza
+# `preset.sprawdz`. Silnik nie ma dziedzin, bo nie ma tematu.
+DZIEDZINY_CIEKAWOSTEK: tuple[str, ...] = ()
 ILE_DZIEDZIN_NA_PRZEBIEG = 5
 
 CURIOSITY_BATCH = 8
@@ -2466,28 +2415,19 @@ ODSTEP_DNI_NA_PUBLIKACJE = 4
 #
 # Lista jest jawna i krotka celowo: ma sie dac przeczytac i zakwestionowac.
 #
-# PRZYKLAD — przestaw pod wlasna publikacje razem z HASLA_SZUKANIA
-# i DZIEDZINY_CIEKAWOSTEK.
-NISZA = "how everyday things are made and regulated"
+# SILNIK NIE MA TEMATU. Do 2026-09-05 stala tu nisza jednego konta z 22
+# znakami rewiru — i byla „domyslna", czyli wlaczala sie po usunieciu
+# konfiguracji (C1 audytu). Pusty napis znaczy dokladnie to, co mowi: brak
+# tematu. Temat przychodzi z presetu (`temat.nisza`), a bez presetu `run.py`
+# odmawia startu, wiec te pustki nie maja jak trafic do modelu.
+NISZA = ""
 
-ZNAKI_NISZY = (
-    "standard", "rule", "regulat", "code", "codes", "certif",
-    "test", "safety", "design", "material", "tolerance", "label",
-    "approval", "liability", "procurement", "patent", "protection",
-    "requirement", "inspect", "measurement", "manufactur", "packaging",
-)
+ZNAKI_NISZY: tuple[str, ...] = ()
 
 # Obszary, ktore rewir ma pokrywac. Dwadziescia hasel o tym samym daje te sama
-# garstke kont, co trzy — dlatego pilnujemy nie tylko LICZBY hasel, ale i tego,
-# czy dotykaja roznych stron tematu. Pilnuje tego `tests/test_szukanie_celow.py`.
-OBSZARY_REWIRU = {
-    "rzecz i jak zrobiona": ("standard", "design", "material", "tolerance",
-                             "manufactur", "measurement"),
-    "ludzie i prawo": ("protection", "safety", "label", "accessib",
-                       "housing", "transport", "approval", "liability"),
-    "pieniadze i wladza": ("bodies", "capture", "cost", "insurance",
-                           "procurement", "patent", "supply"),
-}
+# garstke kont, co trzy. Mapa obszarow nalezy do presetu tak samo jak hasla;
+# silnik nie wie, jakie strony ma temat, ktorego nie zna.
+OBSZARY_REWIRU: dict[str, tuple[str, ...]] = {}
 
 # SLOWA, KTORE W TWOJEJ NISZY PADAJA W CO DRUGIM ZDANIU.
 #
@@ -2533,11 +2473,9 @@ PUSTE_SLOWA_NISZY: tuple[str, ...] = ()
 # stalo w `NISZA`. Konto o pieczeniu chleba dostawalo brief o systemach.
 #
 # Zdanie jest doklejane po myslniku zaraz za nisza, wiec ma sie zaczynac mala
-# litera i konczyc kropka. Domyslne jest celowo szerokie — dziala dla kazdej
-# dziedziny, w ktorej cokolwiek jest zbudowane, zmierzone albo dopuszczone.
-KAT_REDAKCYJNY = ("what the record actually says, how the thing is built, who "
-                  "decides what it is allowed to do, and what that arrangement "
-                  "hands the people who built it.")
+# litera i konczyc kropka. Pusty: kat redakcyjny jest decyzja presetu, nie
+# silnika — „domyslny" kat byl linia jednego konta podawana kazdemu (C2 audytu).
+KAT_REDAKCYJNY = ""
 
 # --- PRZYKLADY Z NISZY, KTORE DO 2026-09-03 BYLY WPISANE W PROMPTY ----------
 # `NISZA` przestawiala JEDNO ZDANIE na gorze promptu, a nizej ten sam prompt
@@ -2565,31 +2503,12 @@ PRZYKLADY_NISZY: dict[str, tuple[str, ...]] = {
     "precedensy": (),
 }
 
-HASLA_SZUKANIA = (
-    # ====================================================================
-    # PRZYKLAD. Ta pula opisuje nisze, o ktorej pisze konto, i MUSI zostac
-    # przestawiona przed uruchomieniem. Wpisany tu przyklad jest neutralny:
-    # standardy, przepisy i budowa rzeczy codziennych.
-    #
-    # DWA TWARDE WYMOGI, oba pilnowane przez `tests/test_szukanie_celow.py`:
-    #   * co najmniej 19 hasel — przy pieciu na przebieg mniejsza pula znaczy,
-    #     ze agent oglada te sama garstke kont codziennie;
-    #   * pokrycie TRZECH obszarow, nie jednego. Dwadziescia hasel o tym samym
-    #     daje te sama garstke kont, co trzy.
-    # ====================================================================
-    # rdzen niszy: jak rzeczy sa zrobione i dlaczego tak
-    "engineering standards", "building codes", "product safety",
-    "industrial design history", "materials testing", "measurement standards",
-    "manufacturing tolerances", "packaging regulation",
-    # gdzie to dotyka ludzi — tu sa czytelnicy, nie sami inzynierowie
-    "consumer protection", "food labelling rules", "workplace safety rules",
-    "accessibility standards", "public transport rules", "housing regulation",
-    "medical device approval", "road design",
-    # pieniadze i wladza wokol niszy
-    "standards bodies", "regulatory capture", "certification costs",
-    "insurance requirements", "procurement rules", "liability law",
-    "patent disputes", "supply chain standards",
-)
+# PULA HASEL NALEZY DO PRESETU (`temat.hasla_szukania`). Stala tu pula
+# jednego konta jako „przyklad do przestawienia" — i byla tym, czym agent
+# szukal, gdy nikt jej nie przestawil. Wymogi strukturalne (pula szersza niz
+# jeden przebieg, kazde haslo ze znakiem niszy) sprawdza `preset.sprawdz`
+# przy podlaczaniu, a nie test na wartosciach silnika, ktorych juz nie ma.
+HASLA_SZUKANIA: tuple[str, ...] = ()
 # PIEC, NIE TRZY. Przy trzech haslach na przebieg i osiemnastu w puli agent
 # ogladal jedna szosta rewiru na raz — a po zaostrzeniu reguly celow (tylko
 # posty w niszy) waska pula zamieniala sie w zero kandydatow. Zmierzone 31 sierpnia:
@@ -2867,6 +2786,19 @@ def pytanie_o_stan_dziedziny() -> str:
 # HTTP z ciasteczkiem `CONSENT=YES+cb...` i `SOCS=CAI`, a potem szukanie
 # `"externalId":"(UC...)"` w HTML. Sam kanal RSS zgody NIE wymaga.
 KANALY_YOUTUBE: dict[str, str] = {}
+
+# KANALY RSS/ATOM — blogi laboratoriow, listy publikacji, serwisy. Ta sama
+# rola co kanaly YouTube: ZACZYN tematow (co sie dzieje w tym tygodniu), nigdy
+# zrodlo. `korpus_kanalow` czyta oba rodzaje i sklada w jeden korpus, po
+# rowno ze zrodel — inaczej lista publikacji o piecdziesieciu wpisach
+# dziennie zaglusza dziesiec kanalow wideo. Nazwa -> adres kanalu.
+KANALY_RSS: dict[str, str] = {}
+
+# HOSTY, NA KTORYCH LEZA DOKUMENTY PIERWOTNE TEJ DZIEDZINY — podpowiedz dla
+# dyskoverii („szukaj najpierw tu"), nie filtr. Preset publikacji o nauce
+# wskaze archiwum preprintow i strony laboratoriow; publikacja o przepisach
+# wskaze rejestry urzedowe. Pusta krotka znaczy „bez podpowiedzi".
+DOMENY_PREFEROWANE: tuple[str, ...] = ()
 
 
 # --- SEKCJA ZRODEL POD ARTYKULEM --------------------------------------------
@@ -3374,47 +3306,29 @@ def losowe_generatory(ile: int = 0) -> list[str]:
 # ktorej ktos WLASNIE dotyka, bije zwykla rzecz w ogole — dlatego tekst
 # o czyms sezonowym trafia lepiej w swoim sezonie niz poza nim.
 #
-# Miesiace wg polkuli polnocnej, bo tam jest wiekszosc czytelnikow anglojezycznych.
-# RYTM ROKU. Hasla opisuja rytm INSTYTUCJI, nie jednej branzy: budzety,
-# sprawozdania, konsultacje, wyniki kwartalne, terminy w przepisach. To sa
-# okresy WZMOZONEJ UWAGI, nie fakty do zacytowania — kazde haslo mowi GDZIE
-# patrzec, a nie CO jest prawda, bo terminy sie przesuwaja, a model tego nie
-# czuje. Publikacja o dziedzinie z wlasnym kalendarzem powinna te hasla
-# przestawic pod siebie.
-W_TYM_MIESIACU = {
-    1: "year-ahead plans and budgets being published, committees setting "
-       "their agenda for the year, claims made at the season's first events",
-    2: "annual reports landing, rules with dates attached, consultation "
-       "windows opening",
-    3: "spring launches and announcements, procurement cycles starting, "
-       "renewals and re-certifications falling due",
-    4: "first-quarter results, capital spending disclosed to investors, "
-       "consultations closing",
-    5: "conference season and the demonstrations shown at it, seasonal "
-       "campaigns starting",
-    6: "mid-year rule changes taking effect, testing seasons, half-year "
-       "deadlines",
-    7: "half-year retrospectives, quiet-period announcements, peak-load and "
-       "heat-related failures",
-    8: "autumn procurement beginning, revisions to rules and standards "
-       "circulating for comment",
-    9: "new rules commencing with the institutional year, autumn launches, "
-       "third-quarter results",
-    10: "earnings season, compliance deadlines arriving, annual inspection "
-        "and audit reports published",
-    11: "end-of-year launches, ballots and votes closing, annual transparency "
-        "and safety reporting",
-    12: "year in review everywhere, December committee meetings, budgets and "
-        "contracts signed for next year",
-}
+# RYTM ROKU NALEZY DO PRESETU (`temat.rytm_roku`, miesiac -> co sie wtedy
+# dzieje w tej dziedzinie). Stal tu kalendarz instytucji jednego profilu
+# (budzety, sprawozdania, konsultacje, polkula polnocna) podawany kazdej
+# publikacji jako jej wlasny sezon (C2 audytu). Pusty slownik znaczy „bez
+# podpowiedzi sezonowej": prompt dostaje wtedy jawne „(nothing seasonal
+# listed)", a nie cudzy kalendarz.
+W_TYM_MIESIACU: dict[int, str] = {}
 
 
-def co_teraz_w_reku(kiedy=None) -> str:
-    """Rzeczy, ktorych czytelnik dotyka wlasnie teraz."""
+def co_teraz_w_reku(kiedy=None, kalendarz=None) -> str:
+    """Rzeczy, ktorych czytelnik dotyka wlasnie teraz.
+
+    Kalendarz jest tematem, wiec przychodzi z kartridza (`[temat.rytm_roku]`);
+    silnik ma go pusty i wtedy oddaje pusty napis — prompt dostaje wprost
+    „nic sezonowego", a nie zmyslony sezon. `kalendarz` mozna podac jawnie
+    (testy, podglad), domyslnie bierze sie aktualna stala.
+    """
     from datetime import datetime, timezone
 
     kiedy = kiedy or datetime.now(timezone.utc)
-    return W_TYM_MIESIACU.get(kiedy.month, "")
+    if kalendarz is None:
+        kalendarz = W_TYM_MIESIACU
+    return kalendarz.get(kiedy.month, "")
 
 
 # --- konfiguracja z pliku ----------------------------------------------------
@@ -3473,6 +3387,14 @@ DOMYSLNE_SILNIKA = _konf.zdjecie(sys.modules[__name__])
 PRESET = None              # `preset.Preset` albo None
 PRESET_AKTYWACJA = None    # `preset.Aktywacja` albo None
 INSTANCJA = ""             # identyfikator instancji; pusty = brak presetu
+
+# BLOKI PROMPTOW Z PRESETU (`presety/<nazwa>/prompty/*.md`): linia redakcyjna,
+# glos artykulu, notki i komentarza, tozsamosc okladki, kogo szukamy,
+# oswiadczenie o autorstwie. Silnik trzyma METODE (kontrakty, format
+# odpowiedzi, bramki); preset trzyma to, co odroznia jedna publikacje od
+# drugiej. `stages._pola_wspolne` wstrzykuje je do briefow; brak bloku daje
+# jawne zdanie zastepcze, nie pustke. Patrz `preset.BLOKI`.
+PRESET_BLOKI: dict[str, str] = {}
 
 
 def _aktywacja_przy_starcie():

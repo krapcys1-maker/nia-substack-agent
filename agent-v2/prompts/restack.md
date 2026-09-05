@@ -1,6 +1,10 @@
 Somebody else wrote the note below. You are deciding whether to pass it on to
 your own readers with one sentence of your own attached.
 
+## The voice of this publication, in its own words
+
+{glos_komentarza}
+
 ## Why the sentence is the whole thing
 
 Passing it on puts their note in front of people who follow us, and puts our

@@ -170,6 +170,13 @@ POLA_WSPOLNE = frozenset({
     "po_ludzku",
     # Glos redakcji opisany slowami — z presetu (`styl.opis`). Patrz `_blok_stylu`.
     "styl_opis",
+    # BLOKI Z KATALOGU PRESETU (`prompty/*.md`) — patrz `preset.BLOKI`
+    # i `_blok_presetu`. Silnik trzyma metode, preset trzyma linie redakcyjna,
+    # glos kazdej formy, tozsamosc okladki i to, kogo szukamy.
+    "linia_redakcyjna", "glos_artykulu", "glos_notki", "glos_komentarza",
+    "okladka", "kogo_szukamy",
+    # Hosty dokumentow pierwotnych — podpowiedz dla dyskoverii (`zrodla.domeny_preferowane`).
+    "domeny_preferowane",
 })
 
 
@@ -183,6 +190,41 @@ def _blok_stylu() -> str:
     opis = str(getattr(config, "STYL_OPIS", "") or "").strip()
     return opis or ("(no additional voice notes for this publication — the "
                     "profiles and the rules above are the whole instruction)")
+
+
+# ZDANIA ZASTEPCZE DLA BLOKOW, KTORYCH PRESET NIE DOSTARCZYL. Kazde mowi
+# modelowi, ze bloku NIE MA i co ma zrobic zamiast — nigdy nie udaje tresci.
+# Blok okladki jest osobny: bez niego brief obrazu dostaje styl NEUTRALNY
+# (fotografia, bez tekstu, bez twarzy), a nie tozsamosc cudzej marki.
+_ZASTEPCZE_BLOKI = {
+    "linia_redakcyjna": ("(the preset supplies no editorial line beyond the subject "
+                         "sentence above — judge topics by that sentence alone)"),
+    "glos_artykulu": ("(no article-specific voice notes from the preset — the two style "
+                      "profiles and the rules above are the whole instruction)"),
+    "glos_notki": ("(no note-specific voice notes from the preset — the rules above are "
+                   "the whole instruction)"),
+    "glos_komentarza": ("(no comment-specific voice notes from the preset — the rules "
+                        "above are the whole instruction)"),
+    "okladka": ("Photographed as a real place, not a set. Natural, even light; sharp "
+                "focus on the focal point, gentle falloff behind it; restrained, "
+                "realistic colour; honest wear on surfaces. Absolutely no text, no "
+                "lettering, no numbers, no logos, no watermarks, no recognisable faces."),
+    "kogo_szukamy": ("(the preset adds nothing about whose posts to prefer — apply the "
+                     "three questions above and nothing else)"),
+}
+
+
+def _blok_presetu(nazwa: str) -> str:
+    """Blok `prompty/<nazwa>.md` z presetu — albo jego zdanie zastepcze."""
+    bloki = getattr(config, "PRESET_BLOKI", None) or {}
+    tekst = str(bloki.get(nazwa) or "").strip()
+    return tekst or _ZASTEPCZE_BLOKI[nazwa]
+
+
+def _blok_domen() -> str:
+    """Hosty dokumentow pierwotnych z presetu, jako jedna linia dla dyskoverii."""
+    domeny = tuple(getattr(config, "DOMENY_PREFEROWANE", ()) or ())
+    return ", ".join(domeny) if domeny else "(no preferred hosts listed by the preset)"
 
 
 def _blok_przykladow(klucz: str, gdy_pusto: str) -> str:
@@ -303,6 +345,14 @@ def _pola_wspolne() -> dict[str, Any]:
         # GLOS Z PRESETU. Styl byl wspolnym zestawem plikow o stalych nazwach;
         # preset nie mial jak powiedziec pisarzowi, jak ma brzmiec (C4 audytu).
         "styl_opis": _blok_stylu(),
+        # BLOKI Z KATALOGU PRESETU — patrz `_blok_presetu` i `preset.BLOKI`.
+        "linia_redakcyjna": _blok_presetu("linia_redakcyjna"),
+        "glos_artykulu": _blok_presetu("glos_artykulu"),
+        "glos_notki": _blok_presetu("glos_notki"),
+        "glos_komentarza": _blok_presetu("glos_komentarza"),
+        "okladka": _blok_presetu("okladka"),
+        "kogo_szukamy": _blok_presetu("kogo_szukamy"),
+        "domeny_preferowane": _blok_domen(),
     }
 
 

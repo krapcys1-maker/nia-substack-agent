@@ -1,0 +1,279 @@
+# =============================================================================
+# KARTRIDZ „ai" — sztuczna inteligencja, po angielsku.
+#
+# Silnik (agent-v2/) jest KONSOLA: nie zna tematu, stylu ani planu. Ten
+# katalog jest KARTRIDZEM: wszystko, co odroznia te publikacje od kazdej
+# innej, siedzi tutaj i tylko tutaj. Podlaczasz i ruszasz; odlaczasz i silnik
+# jest znowu pusty.
+#
+#   presety/ai/preset.toml      <- ten plik: pokretla, konto, temat, zrodla, modele
+#   presety/ai/prompty/*.md     <- linia redakcyjna, glos kazdej formy, okladka, oswiadczenie
+#   presety/ai/styl/*.md        <- profil pozytywny i negatywny stylu
+#
+#   python narzedzia/presety.py sprawdz ai      # zero platnych wywolan
+#   python narzedzia/presety.py podglad ai      # briefy tak, jak zobaczy je model
+#   python narzedzia/presety.py podlacz ai
+#
+# POKRETLA SA NA GORZE. Zmieniasz liczbe, zapisujesz, podlaczasz jeszcze raz
+# (preset zmieniony po podlaczeniu zatrzymuje start, dopoki go nie podlaczysz
+# ponownie — celowo, zeby nic nie weszlo po cichu).
+# =============================================================================
+
+[preset]
+nazwa = "ai"
+opis = "AI po angielsku: co naprawde pokazano i zmierzono, ile to kosztuje i kto odpowiada, gdy system sie myli"
+schema = 1
+wersja = "2026-09-06"
+
+# =============================================================================
+# POKRETLA — ILE, KIEDY, CZYM, ZA ILE
+# =============================================================================
+
+[wolumeny]
+notki_dziennie = 2               # sloty notek na dobe; 0 wylacza notki
+artykuly_tygodniowo = 1          # 0 wylacza artykul (zegar, promocje, sciezke)
+komentarze_dziennie = [3, 5]     # widelki [od, do]; [0, 0] wylacza
+lajki_dziennie = [5, 8]
+restacki_dziennie = [0, 1]
+follow_miesiecznie = [0, 0]      # obserwacje wylaczone — swiadomie
+subskrypcje_miesiecznie = [0, 0] # subskrypcje wylaczone — swiadomie
+przebiegow_dziennie = 3          # musi zgadzac sie z liczba godzin w [harmonogram]
+
+[modele]
+# Rola = model. Role niewymienione zostaja na domyslnych silnika
+# (`python narzedzia/presety.py pokaz ai` wypisuje wszystkie 26 z pochodzeniem).
+# Wariant tani: role = { write = "deepseek-v4-pro", note = "deepseek-v4-pro" }
+role = { write = "claude-fable-5-1", note = "claude-opus-5", note_tani = "deepseek-v4-pro", naprawa = "claude-opus-5" }
+obraz = "gpt-image-1.5"            # "" = artykul bez okladki, zero wywolan OpenAI
+zapasowy_pisarz = "claude-opus-5"  # "" = po awarii pisarza zatrzymaj sie
+
+[pieniadze]
+sufit_miesieczny_usd = 25.0        # jedyna twarda blokada w systemie
+sufit_dzienny_usd = 3.5
+sufit_przebiegu_usd = 1.60
+sufit_podniesiony_na = ""          # RRRR-MM-DD: dzien, w ktorym sufit dzienny jest x2
+
+[harmonogram]
+godziny_przebiegow_utc = ["12:30", "17:30", "21:30"]   # rutyna dnia, w UTC
+dni_artykulu = ["Tue"]
+godzina_artykulu_utc = "14:00"
+
+[publikowanie]
+okno_et = [7, 22]                  # godziny czytelnika, w ktorych wychodza notki
+martwe_godziny_et = [12, 13]
+notek_promujacych = 2              # ile notek promuje jeden artykul (po jednej dziennie)
+okno_promocji_dni = 7
+miks_notek = ["CIEKAWOSTKA", "DYSKUSJA", "SPROSTOWANIE", "MYSL"]   # proporcje, cyklicznie
+ciche_dni_wlaczone = true
+cichy_dzien_na_ile = 8
+
+# =============================================================================
+# KONTO — podmien na swoje przed podlaczeniem (w gicie zostaje placeholder)
+# =============================================================================
+
+[konto]
+uchwyt = "your-handle"
+nazwa_marki = "Your AI Publication"
+strefa_czytelnika = "America/New_York"
+data_przestawienia = ""
+
+# =============================================================================
+# TEMAT — o czym, dla kogo, po czym poznac rewir
+# =============================================================================
+
+[temat]
+# Jedno zdanie podawane modelowi doslownie po slowie „about".
+nisza = "what AI systems actually do when measured, what they cost, and who is accountable when they are wrong"
+jezyk = "English"
+# Doklejane po myslniku za nisza w kazdym briefie: mala litera, kropka na koncu.
+kat_redakcyjny = "the test that was run and the number it returned, the price on the invoice, the clause in the licence or the law, and the person who signed off on it."
+
+# Znaki rewiru: po nich mierzy sie, czy hasla szukania trzymaja sie tematu.
+znaki_niszy = [
+    "model", "models", "llm", "chatbot", "agent", "benchmark", "eval",
+    "training", "dataset", "inference", "token", "gpu", "compute", "chip",
+    "weights", "prompt", "hallucinat", "alignment", "safety", "regulat",
+    "ai act", "copyright", "licen", "liabil", "reproduc", "robot", "automat",
+    "algorithm", "deepfake",
+]
+
+# Czym agent szuka LUDZI do rozmowy (nie tematow). Kazde haslo niesie znak
+# rewiru. Trzy strony tematu: pomiar, pieniadze, odpowiedzialnosc — plus to,
+# co AI robi z praca.
+hasla_szukania = [
+    "model benchmark results", "llm evaluation methods", "benchmark contamination",
+    "reproducing ai research results", "hallucination rates measured",
+    "red teaming safety evaluations", "alignment research findings",
+    "inference pricing per token", "gpu shortage compute costs",
+    "data centre power for ai training", "chip export controls",
+    "model deprecation timelines", "open weights model licence",
+    "training data copyright lawsuit", "eu ai act compliance deadlines",
+    "ai liability for wrong answers", "deepfake law enforcement",
+    "hiring algorithm audits", "medical ai regulation approvals",
+    "coding agents in production", "prompt injection attacks on agents",
+    "customer service chatbot failures", "context window limits llm",
+    "robotics foundation models", "synthetic training data quality",
+    "ai automation of white collar work",
+]
+
+# Soczewki, nie cele: obracane przy kazdym przebiegu razem z wzorcami silnika.
+# Kazda pozycja to OPIS MIEJSCA, w ktorym cos ciekawego siedzi.
+dziedziny = [
+    "a benchmark score next to the task the benchmark was built to approximate, and the gap between them",
+    "the conditions under which a headline number was measured, and whether anyone outside the lab repeated it",
+    "who ran the evaluation: the maker, a customer, or somebody with no stake",
+    "the demo on stage and the same system under a real day's load",
+    "a capability claim and the system card's blank or hedged line about it",
+    "the price of one request, and who is quietly subsidising it",
+    "what a training run cost in electricity, water and time, and who paid",
+    "a price cut, and which part of the bill actually got cheaper",
+    "a model licence, and the one thing it forbids that everybody assumes it allows",
+    "what 'open' means in a given release: weights, data, code, or only the word",
+    "a deprecation date, and the products that were built on the thing being retired",
+    "the people who labelled, rated or corrected the data, and how they were paid",
+    "a context window, and what it silently drops when the input is longer",
+    "a hallucination rate: on which task, measured how, by whom",
+    "an agent given real permissions, and the first thing it did that nobody specified",
+    "a safety test, and the behaviour it was never designed to catch",
+    "a leaderboard position that moved without the model changing",
+    "the same claim tested by two labs with two different rulers",
+    "a benchmark that saturated, and what the field did next",
+    "a chip export rule, and the architecture designed to fit around it",
+    "hardware supply and the design decisions it forced",
+    "a court decision about training data, and what it settled or left open",
+    "a regulation's own definition of an 'AI system', and what falls outside it",
+    "a compliance deadline, and how many named companies met it",
+    "a hiring, lending or medical tool audited in public, and what the audit found",
+    "an approval or certification for an AI product, and what the approval did not examine",
+    "an outage, a leak or a jailbreak, and what it revealed about the arrangement underneath",
+    "a word used two incompatible ways in the same week: agent, reasoning, open, safe",
+    "a paper that nobody reproduced, still cited as settled",
+    "the human in the loop nobody counts: the reviewer, the moderator, the fallback operator",
+    "a claim about the future stated as a schedule, and the schedule's track record",
+    "an insurer's, procurer's or auditor's clause that quietly decides what AI is allowed to do",
+]
+
+# Slowa, ktore w tej dziedzinie padaja w co drugim zdaniu — tylko do
+# rozpoznawania powtorek. Malo i swiadomie.
+puste_slowa = ["ai", "model", "models", "llm"]
+
+# Przyklady z niszy, po jednym zdaniu, podawane doslownie. Kazda lista jest
+# opcjonalna; pusta znaczy „model ma wyprowadzic odpowiednik sam".
+[temat.przyklady]
+kanon = [
+    "AI will take everyone's job / AI will take nobody's job",
+    "the newest model is the best model",
+    "it is just autocomplete / it is basically conscious",
+    "the benchmark went up, so the model is smarter",
+    "open weights means open source",
+    "regulation will kill innovation / regulation will save us",
+]
+rzeczy = [
+    "a chatbot answer that cited a source which does not exist",
+    "a coding assistant that changed a file nobody asked it to touch",
+    "a monthly API bill that doubled with no change in usage",
+    "a launch announcement with a leaderboard screenshot and no test conditions",
+    "an email, cover letter or review that everyone could tell was generated",
+    "a support line where the first three answers came from a machine",
+]
+seam = [
+    "the court sanctions after lawyers filed briefs with invented citations",
+    "an airline held to a refund its chatbot promised",
+    "training-data lawsuits that forced licences, opt-outs and disclosure",
+    "deepfake laws written after specific named incidents",
+    "risk tiers in AI regulation, written around documented harms",
+    "model deprecations that broke products built on them, and the notice periods that followed",
+]
+przekonania = [
+    "everyone assumes a benchmark score measures how useful the model is",
+    "everyone assumes the price per token is the price they pay",
+    "everyone assumes a model that passes an exam understands the subject",
+    "everyone assumes 'open' means anyone can use it for anything",
+    "everyone assumes a system with a human in the loop has a human in the loop",
+]
+precedensy = [
+    "the lawyer sanctioned for citing cases a chatbot invented",
+    "the airline ordered to honour a chatbot's promise",
+    "the newspaper suing over training data, and the discovery it produced",
+    "the national regulator that suspended a chatbot and the conditions for its return",
+    "the benchmark whose test set turned out to be in the training data",
+]
+
+# Rytm roku tej dziedziny: gdzie patrzec w danym miesiacu, nie co jest prawda.
+# Terminy sie przesuwaja; model ma to sprawdzic, nie zacytowac.
+[temat.rytm_roku]
+1 = "CES and year-ahead compute plans; annual 'state of AI' reports and predictions; contracts and budgets for the year"
+2 = "big-tech earnings with capital spending on data centres; early-year model releases; regulatory deadlines announced"
+3 = "chip and hardware conferences; spring model releases; annual index reports on AI progress"
+4 = "first-quarter earnings and capital spending; new pricing tiers; academic results season"
+5 = "developer conferences with product launches; spring research conference season"
+6 = "mid-year model releases; computer vision conference season; half-year regulatory milestones"
+7 = "machine learning conference season; mid-year retrospectives; summer pricing changes"
+8 = "regulatory obligations taking effect; quiet weeks before autumn launches"
+9 = "autumn model releases; new API and pricing rounds; enterprise procurement cycles"
+10 = "third-quarter earnings and capital spending; developer events; safety and transparency reports"
+11 = "end-of-year launches and deprecation notices; annual policy summits"
+12 = "the largest ML research conference; year-in-review claims; next-year predictions and contracts"
+
+# =============================================================================
+# STAN DZIEDZINY — raz na dobe jedno wywolanie z wyszukiwaniem: co jest aktualne.
+# W AI wiedza modelu starzeje sie najszybciej, wiec wlaczone.
+# =============================================================================
+
+[stan_dziedziny]
+pytaj = true
+o_co_pytac = "which frontier and open-weight models, APIs, price lists and licences are current, what was renamed, deprecated or withdrawn, and which announced dates are still ahead"
+
+# =============================================================================
+# ZRODLA — skad biora sie SYGNALY (o czym sie mowi) i gdzie leza DOWODY
+# =============================================================================
+
+[zrodla]
+# Kanaly YouTube: zaczyn tematow, nigdy zrodlo. Identyfikatory sprawdzone
+# przez kanal RSS (tytul kanalu w feedzie) 2026-09-06. Laboratoria mowia, co
+# wypuscily; badacze i objasniacze mowia, co da sie z tego zrozumiec; kanaly
+# codzienne i deweloperskie mowia, co ludzie polslyszeli — i to ostatnie jest
+# sygnalem, ktorego pamiec modelu nie ma.
+kanaly_youtube = { "OpenAI" = "UCXZCJLdBC09xxGZ6gcdrc6A", "Anthropic" = "UCrDwWp7EBBv4NwvScIpBDOA", "AI at Meta" = "UC5qxlwEKM7-5YZudb24l0bg", "Microsoft Research" = "UCCb9_Kn8F_Opb3UCGm-lILQ", "Machine Learning Street Talk" = "UCMLtBahI5DMrt0NPvDSoIRQ", "Yannic Kilcher" = "UCZHmQk67mSJgfCCTn7xBfew", "AI Coffee Break with Letitia" = "UCobqgqE4i5Kf7wrxRxhToQA", "Andrej Karpathy" = "UCXUPKJO5MZQN11PqgIvyuvQ", "Welch Labs" = "UConVfxXodg78Tzh5nNu85Ew", "3Blue1Brown" = "UCYO_jab_esuFRV4b17AJtAw", "Computerphile" = "UC9-y-6csu5WGm29I7JiwpnA", "The AI Daily Brief" = "UCKelCK4ZaO6HeEI1KQjqzWA", "Fireship" = "UCsBjURrPoezykLs9EqgamOA", "IBM Technology" = "UCKWaEZ-_VweaEx1j62do_vQ" }
+
+# Kanaly RSS/Atom: ta sama rola co wideo. Adresy sprawdzone 2026-09-06
+# (kazdy oddaje RSS 2.0 albo Atom z wpisami). Silnik przeplata zrodla po
+# rowno, wiec arXiv (~50 wpisow dziennie) nie zaglusza reszty. Anthropic nie
+# ma oficjalnego RSS (2026-09) — jego kanal YouTube jest wyzej, strona
+# w domenach preferowanych.
+kanaly_rss = { "OpenAI News" = "https://openai.com/news/rss.xml", "Google AI Blog" = "https://blog.google/technology/ai/rss/", "arXiv cs.AI" = "https://rss.arxiv.org/rss/cs.AI", "MIT Technology Review AI" = "https://www.technologyreview.com/topic/artificial-intelligence/feed/", "Import AI" = "https://importai.substack.com/feed", "Simon Willison's Weblog" = "https://simonwillison.net/atom/everything/", "The Gradient" = "https://thegradient.pub/rss/" }
+
+# Hosty, ktore blokuja automatyczne czytanie albo sa platne. Respektujemy.
+blokowane_hosty = [
+    "sciencedirect.com", "tandfonline.com", "academia.edu", "researchgate.net",
+    "x.com", "twitter.com", "linkedin.com", "facebook.com",
+]
+
+# Gdzie leza DOKUMENTY PIERWOTNE tej dziedziny — podpowiedz dla dyskoverii,
+# nie filtr: dokument nadal musi byc dokumentem. Trzy strony tematu:
+# pomiar (arxiv, epoch, artificialanalysis, lmarena), pieniadze (sec, dostawcy),
+# odpowiedzialnosc (nist, ftc, oecd, eur-lex, federalregister, courtlistener).
+domeny_preferowane = [
+    "arxiv.org", "openai.com", "anthropic.com", "ai.meta.com", "microsoft.com",
+    "github.com", "epoch.ai", "artificialanalysis.ai", "lmarena.ai",
+    "nist.gov", "ftc.gov", "oecd.ai", "eur-lex.europa.eu",
+    "digital-strategy.ec.europa.eu", "federalregister.gov", "courtlistener.com",
+    "sec.gov",
+]
+
+# =============================================================================
+# STYL — glos, profile, korpus
+# =============================================================================
+
+[styl]
+# Glos opisany slowami; idzie doslownie do briefow pisarza, notki, komentarza
+# i odpowiedzi. Dluzsze instrukcje kazdej formy sa w prompty/.
+opis = """Plain and exact. Say what was measured before saying what it means, and keep the measurement, the claim and the expectation in three different sentences. Numbers come with their conditions in the same line. One specialist term per piece, explained the first time. No agency words for software: a model returns, scores, fails; it does not want, know or decide. No hype vocabulary, no doom vocabulary, no verdict on the whole field from one result."""
+# Profile z tego kartridza (sciezki wzgledem katalogu presetu).
+profil_pozytywny = "styl/profil_pozytywny.md"
+profil_negatywny = "styl/profil_negatywny.md"
+# Korpus wlasnych tekstow: opcjonalny. Gdy go dodasz (styl/korpus.txt,
+# akapity oddzielone pusta linia), wskaz plik i przypnij go:
+#   python narzedzia/przypnij_styl.py --pokaz
+korpus = ""
+wymagaj_korpusu = false

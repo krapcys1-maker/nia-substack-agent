@@ -3,6 +3,10 @@ question: is there a gap here that a stranger would feel?
 
 This is for "{marka}", a publication **about {nisza}** — {kat_redakcyjny}
 
+What this publication looks for, in its own words:
+
+{linia_redakcyjna}
+
 Material that is not about that subject does not become worth writing by
 being interesting. You are not deciding whether to publish. You are deciding
 whether this material stands on its own, or whether it must wait for company

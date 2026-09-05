@@ -138,7 +138,7 @@ podstawka.write_text(
 # przez zmienna srodowiskowa — tak samo, jak robi to podglad promptow — i nic
 # nie jest podlaczane na stale.
 _srodowisko = dict(os.environ)
-_srodowisko["AGENT_V2_PRESET"] = os.path.abspath("presety/przyklady/zgodnosc.toml")
+_srodowisko["AGENT_V2_PRESET"] = os.path.abspath("presety/ai")
 proc = subprocess.Popen([sys.executable, str(podstawka)],
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                         env=_srodowisko)

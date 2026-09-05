@@ -103,10 +103,13 @@ ZAKAZANE_PLIKI = [
     # a nie w kopie. Audyt krzyczacy na wlasny kod uczy ignorowania audytu.
     (r"subskrybenci.*\.(csv|json|txt)$", "lista subskrybentow (cudze adresy e-mail)"),
     (r"(^|/)konfiguracja\.toml$", "konfiguracja instalacji (uchwyt konta)"),
-    # PRESET OPERATORA to ta sama klasa co `konfiguracja.toml`: uchwyt, marka,
-    # temat. Przyklady w `presety/przyklady/` maja placeholdery i sa w gicie
-    # celowo — wzorzec omija je, bo maja o jeden segment sciezki wiecej.
+    # KARTRIDZ OPERATORA to ta sama klasa co `konfiguracja.toml`: uchwyt, marka,
+    # temat. W gicie sa celowo tylko: szablon `SZABLON/`, przykladowy kartridz
+    # `ai/` (z placeholderem uchwytu — sekcja 7 tego pilnuje) oraz, w historii
+    # galezi, wczesniejsze przyklady `przyklady/`, ktore mialy placeholdery
+    # i zostaly zastapione kartridzem `ai`. Kazdy inny katalog to instalacja.
     (r"^presety/[^/]+\.toml$", "wlasny preset operatora (uchwyt konta, temat)"),
+    (r"^presety/(?!SZABLON/|ai/|przyklady/)[^/]+/", "wlasny katalog presetu operatora"),
     (r"(^|/)aktywny_preset\.json$", "wskaznik aktywnego presetu (stan instalacji)"),
     (r"(^|/)instancje/", "dane instancji presetu (baza, bank, szkice)"),
     (r"\.db$", "baza danych"),
@@ -409,6 +412,37 @@ def main() -> int:
     sprawdz("uchwyt konta ma JEDNO zrodlo",
             config.SUBSTACK_HANDLE == __import__("browser").PROFIL_HANDLE)
 
+    # SILNIK NIE MA TEMATU. Od 2026-09-05 nisza, kat redakcyjny, znaki,
+    # hasla, dziedziny i kalendarz sa w `config.py` PUSTE, a temat przychodzi
+    # z presetu. Wartosc w ktorejkolwiek z tych stalych to powrot „domyslnego
+    # profilu" — czyli dokladnie tego, co ten audyt ma lapac.
+    _z_tematem = [n for n in ("NISZA", "KAT_REDAKCYJNY", "ZNAKI_NISZY",
+                              "HASLA_SZUKANIA", "DZIEDZINY_CIEKAWOSTEK",
+                              "OBSZARY_REWIRU", "W_TYM_MIESIACU", "KANALY_YOUTUBE",
+                              "KANALY_RSS", "DOMENY_PREFEROWANE")
+                  if config.DOMYSLNE_SILNIKA.get(n)]
+    sprawdz("silnik nie ma wbudowanego tematu (nisza, hasla, dziedziny, kalendarz puste)",
+            not _z_tematem, _z_tematem)
+
+    # PRESETY W GICIE MAJA PLACEHOLDER ZAMIAST KONTA. `presety/SZABLON/`
+    # i `presety/ai/` sa sledzone celowo; prawdziwy uchwyt w ktorymkolwiek
+    # z nich bylby tozsamoscia konta w publicznym repozytorium.
+    import preset as _preset   # noqa: E402
+    for _plik in sorted(KORZEN.glob("presety/*/preset.toml")):
+        _wzgl = wzgledna(_plik)
+        if _wzgl not in nazwy:
+            continue
+        try:
+            _p = _preset.wczytaj(_plik)
+            _uchwyt = str(_p.pola.get("konto.uchwyt") or "")
+            sprawdz("%s: uchwyt to placeholder, nie prawdziwe konto" % _wzgl,
+                    _uchwyt in ("", "your-handle") or "<<" in _uchwyt, _uchwyt)
+        except _preset.BladPresetu as exc:
+            # Szablon MA nie przechodzic wczytania z placeholderami w polach
+            # o scislym ksztalcie — to nie jest wada, o ile mowi dlaczego.
+            sprawdz("%s: nie wczytuje sie, ale z czytelnym powodem" % _wzgl,
+                    "<<" in str(exc) or "SZABLON" in _wzgl, str(exc)[:100])
+
     # ODWOLANIA DO STALYCH, KTORYCH NIE MA. Znalezione czytaniem `alarm.py`:
     # `config.NOTEK_DZIENNIE` nie istnieje w tym projekcie, a stalo w warunku
     # razem z `getattr(config, "NOTEK_DZIENNIE", None)` — czyli galaz nie mogla
@@ -516,55 +550,38 @@ def main() -> int:
                 % (len(config.MAX_TOKENS) - len(_na_sufcie),
                    len(config.MAX_TOKENS)))
 
-    # PROG 19 TO NASZA LICZBA, NIE REGULA. Asercja PONIZEJ (siatka wzorcow)
-    # zostala juz na to naprawiona; ta zostala pominieta i cudza instalacja
-    # z trzema haslami dostawala BLAD za stan calkowicie poprawny.
-    #
-    # Prog niezalezny od konfiguracji jest strukturalny: pula ma byc istotnie
-    # szersza niz to, co losujemy na przebieg (`ILE_HASEL_NA_PRZEBIEG`),
-    # inaczej kazdy przebieg bierze cala pule i wraca po tych samych kontach.
-    _min_hasel = 3 * config.ILE_HASEL_NA_PRZEBIEG
-    if (KORZEN / "agent-v2" / "konfiguracja.toml").exists():
-        sprawdz("pula hasel jest szersza niz jeden przebieg",
-                len(config.HASLA_SZUKANIA) >= _min_hasel,
-                "%d hasel przy %d losowanych na przebieg — dopisz do %d, "
-                "inaczej kazdy przebieg bierze cala pule"
-                % (len(config.HASLA_SZUKANIA), config.ILE_HASEL_NA_PRZEBIEG,
-                   _min_hasel))
-    else:
-        sprawdz("hasel szukania jest >= 19", len(config.HASLA_SZUKANIA) >= 19,
-                len(config.HASLA_SZUKANIA))
-    # SIATKA ZALEZY OD LICZBY DZIEDZIN, KTORA PODAJE OPERATOR. Prog 400
-    # opisuje NASZA pule (14 wzorcow x 46 dziedzin). Przy czterech wlasnych
-    # dziedzinach wychodzi 56 i audyt oblewal, nie zglaszajac zadnej awarii —
-    # a to jest narzedzie, ktore ma odrozniac awarie od decyzji.
-    #
-    # Prog niezalezny od konfiguracji jest inny i nizszy: siatka ma dawac
-    # z zapasem wiecej komorek niz notek w ciagu doby, inaczej ten sam wzorzec
-    # w tej samej dziedzinie wraca po kilku dniach.
-    komorki = len(config.GENERATORY) * len(config.DZIEDZINY_CIEKAWOSTEK)
-    na_dobe = max(1, len(config.NOTE_MIX_OTHER_DAY))
-    if (KORZEN / "agent-v2" / "konfiguracja.toml").exists():
-        sprawdz("siatka daje co najmniej 10 komorek na notke",
-                komorki >= 10 * na_dobe,
-                "%d komorek przy %d notkach na dobe — dopisz dziedziny"
-                % (komorki, na_dobe))
-    else:
-        sprawdz("siatka wzorce x dziedziny >= 400", komorki >= 400, komorki)
-    # NIEDOPASOWANIE DWOCH POL OPERATORA TO NIE JEST USTERKA INSTALACJI.
-    # Stal tu nagi `BLAD` z lista trafien. `test_szukanie_celow.py` przy tym
-    # samym trafieniu mowi, KTOREGO znaku brakuje i co z tym zrobic; audyt
-    # ma odsylac tam, a nie zglaszac awarie tam, gdzie jej nie ma.
-    poza = [h for h in config.HASLA_SZUKANIA
-            if not any(z in h.lower() for z in config.ZNAKI_NISZY)]
-    if poza and (KORZEN / "agent-v2" / "konfiguracja.toml").exists():
-        uwaga("hasla zgadzaja sie ze znakami niszy",
-                "%d hasel bez zadnego znaku (%s) — to dwa TWOJE pola, ktore"
-                " sie rozjechaly; `python agent-v2/tests/test_szukanie_celow.py`"
-                " mowi, ktorego znaku dopisac"
-                % (len(poza), ", ".join(poza[:3])))
-    else:
-        sprawdz("kazde haslo miesci sie w niszy", not poza, poza)
+    # PROGI TEMATU SA SPRAWDZANE NA PRESETACH, NIE NA SILNIKU. Silnik nie ma
+    # hasel ani dziedzin (patrz sekcja 7), wiec „hasel >= 19" i „siatka >= 400"
+    # nie maja tu czego mierzyc. Reguly strukturalne (pula szersza niz jeden
+    # przebieg, kazde haslo ze znakiem niszy, 10 komorek siatki na notke)
+    # stawia `preset.sprawdz` KAZDEMU presetowi — i to jest to samo miejsce,
+    # ktore blokuje `podlacz`, wiec audyt i podlaczenie nie moga sie rozjechac.
+    _presety_w_gicie = [p for p in sorted(KORZEN.glob("presety/*/preset.toml"))
+                        if wzgledna(p) in nazwy and p.parent.name != _preset.NAZWA_SZABLONU]
+    _baza = dict(config.DOMYSLNE_SILNIKA)
+    for _plik in _presety_w_gicie:
+        _nazwa_presetu = _preset.nazwa_z_pliku(_plik)
+        try:
+            _p = _preset.wczytaj(_plik)
+            _bledy, _uwagi_p = _preset.sprawdz(_p, config, _baza, srodowisko={})
+        except _preset.BladPresetu as exc:
+            _bledy, _uwagi_p = [str(exc)], []
+        sprawdz("preset %s przechodzi reguly strukturalne tematu" % _nazwa_presetu,
+                not _bledy, "; ".join(_bledy)[:200])
+        _wazne = [u for u in _uwagi_p if "brak w srodowisku" not in u]
+        if _wazne:
+            uwaga("preset %s bez uwag" % wzgledna(_plik), "; ".join(_wazne)[:200])
+    if not _presety_w_gicie:
+        uwaga("presety w repozytorium", "brak — nie ma na czym sprawdzic regul tematu")
+    _szablon = KORZEN / "presety" / _preset.NAZWA_SZABLONU / "preset.toml"
+    if _szablon.exists():
+        try:
+            _bledy_sz, _ = _preset.sprawdz(_preset.wczytaj(_szablon), config, _baza,
+                                           srodowisko={})
+        except _preset.BladPresetu as exc:
+            _bledy_sz = [str(exc)]
+        sprawdz("szablon presetu NIE przechodzi sprawdzenia (nie da sie go podlaczyc "
+                "przez pomylke)", bool(_bledy_sz))
 
     print()
     print("=== 9. KONTRDOWOD: CZY TEN AUDYT W OGOLE COKOLWIEK LAPIE ===")

@@ -35,12 +35,14 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8219 wierszy, 143 funkcji na poziomie modułu, 0 klas
+8269 wierszy, 145 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_na_kanal(nazwa)` *(wewn.)* | Wszystko, co ta funkcja zaplaci, ksieguje sie na kanal `nazwa`. |
 | `_blok_stylu()` *(wewn.)* | Opis glosu z presetu — albo jawne „bez uwag", zeby sekcja nie byla pusta. |
+| `_blok_presetu(nazwa)` *(wewn.)* | Blok `prompty/<nazwa>.md` z presetu — albo jego zdanie zastepcze. |
+| `_blok_domen()` *(wewn.)* | Hosty dokumentow pierwotnych z presetu, jako jedna linia dla dyskoverii. |
 | `_blok_przykladow(klucz, gdy_pusto)` *(wewn.)* | Przyklady z niszy jako lista punktow — albo polecenie, gdy ich nie ma. |
 | `_blok_po_ludzku()` *(wewn.)* | Wspolny blok „nie brzmij jak maszyna" — JEDNO zrodlo, nie cztery kopie. |
 | `_pola_wspolne()` *(wewn.)* | Nisza, marka i jezyk — czytane z configu przy KAZDYM wywolaniu. |
@@ -185,7 +187,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5366 wierszy, 97 funkcji na poziomie modułu, 1 klas
+5372 wierszy, 97 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -366,7 +368,7 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-895 wierszy, 38 funkcji na poziomie modułu, 1 klas
+946 wierszy, 41 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -392,6 +394,9 @@
 | `_sciezka_moze_pusta(v, gdzie)` *(wewn.)* | — |
 | `_slownik_list(v, gdzie)` *(wewn.)* | Tablica `klucz = [napisy]`. Pusta lista jest DOZWOLONA i coś znaczy. |
 | `_slownik_napisow(v, gdzie)` *(wewn.)* | — |
+| `_slownik_adresow(v, gdzie)` *(wewn.)* | Nazwa -> adres kanalu RSS/Atom. Adres musi byc http(s), bez bialych znakow. |
+| `_lista_domen(v, gdzie)` *(wewn.)* | Lista hostow (bez schematu i sciezki), pusta dozwolona. |
+| `_slownik_miesiecy(v, gdzie)` *(wewn.)* | Tablica `"1".."12" = napis` (klucze TOML sa napisami). Pusta dozwolona. |
 | `sciezka(agent_dir)` | — |
 | `splaszcz(dane, nazwa)` | `{"temat": {"nisza": ...}}` na `{"temat.nisza": ...}` — jeden poziom. |
 | `sprawdz_plaskie(plaskie, nazwa)` | Nieznane pole to blad; kazde znane przechodzi przez swoj walidator. |
@@ -411,7 +416,7 @@
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-708 wierszy, 28 funkcji na poziomie modułu, 4 klas
+913 wierszy, 33 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -421,26 +426,31 @@
 | `wskaznik(agent_dir)` | — |
 | `_wzgledna(p, baza)` *(wewn.)* | Sciezka wzgledem `baza` (posix), a gdy lezy poza nia — bezwzgledna. |
 | `_bezwzgledna(napis, baza)` *(wewn.)* | — |
+| `plik_presetu(sciezka)` | Katalog presetu -> jego `preset.toml`; plik -> ten plik. |
 | `_kanoniczne(x)` *(wewn.)* | — |
-| `odcisk(pola, schema)` | SHA-256 rozwiazanych pol. Zmiana dowolnej wartosci zmienia odcisk. |
-| `wczytaj_tekst(tekst, nazwa_pliku, plik)` | Tekst TOML presetu -> `Preset`. Kazdy blad to `BladPresetu`. |
-| `wczytaj(plik)` | — |
+| `odcisk(pola, schema, bloki)` | SHA-256 rozwiazanych pol I BLOKOW. Zmiana dowolnej wartosci zmienia odcisk. |
+| `_wczytaj_bloki(katalog)` *(wewn.)* | `prompty/<blok>.md` z katalogu presetu; tylko znane nazwy, tylko niepuste. |
+| `_rozwiaz_sciezki(pola, katalog)` *(wewn.)* | Sciezki stylu wzgledem KATALOGU PRESETU, gdy tam leza; inaczej wzgledem repo. |
+| `wczytaj_tekst(tekst, nazwa_pliku, plik, katalog)` | Tekst TOML presetu -> `Preset`. Kazdy blad to `BladPresetu`. |
+| `wczytaj(sciezka)` | Preset z katalogu (`presety/<nazwa>/`) albo z pojedynczego pliku. |
 | `proba_konfiguracji(cfg, baza)` | Kopia stalych `config` do bezpiecznego przymierzenia presetu. |
 | `rozwiaz(preset, cfg, baza)` | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). |
 | `pochodzenie(preset, cfg, baza)` | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". |
 | `_dostawca(model)` *(wewn.)* | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. |
+| `_napisy(x)` *(wewn.)* | Wszystkie napisy w zagniezdzonej wartosci. |
 | `sprawdz(preset, cfg, baza, srodowisko)` | Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli. |
-| `zastosuj(preset, cfg, baza)` | Neutralna baza, potem preset. Oddaje meldunki `konfiguracja.zastosuj`. |
+| `zastosuj(preset, cfg, baza)` | Neutralna baza, potem pola i bloki presetu. Oddaje meldunki `konfiguracja.zastosuj`. |
 | `_zapisz_atomowo(plik, tekst)` *(wewn.)* | — |
 | `_teraz()` *(wewn.)* | — |
 | `_dopisz_do_dziennika(katalog, wpis)` *(wewn.)* | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. |
 | `czytaj_wskaznik(agent_dir)` | Surowa tresc wskaznika (bez wczytywania presetu) albo None. |
 | `aktywacja(agent_dir, srodowisko)` | Co jest podlaczone. `None` = nic. Zly wskaznik albo zmieniony preset = wyjatek. |
-| `podlacz(plik, agent_dir, cfg, baza, instancja, srodowisko)` | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. |
+| `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko)` | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. |
 | `odlacz(agent_dir)` | Usuwa wskaznik. Oddaje jego tresc (co bylo podlaczone) albo None. |
 | `wymagaj_aktywnego(cfg, co)` | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. |
-| `lista(agent_dir)` | Presety operatora (`presety/*.toml`) i przyklady (`presety/przyklady/`). |
-| `znajdz(nazwa, agent_dir)` | Preset po nazwie (wlasne przed przykladami) albo po sciezce do pliku. |
+| `lista(agent_dir)` | Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`. |
+| `nazwa_z_pliku(plik)` | Nazwa presetu z jego polozenia: katalog albo nazwa pliku. |
+| `znajdz(nazwa, agent_dir)` | Preset po nazwie (katalog przed plikiem) albo po sciezce. |
 | `z_konfiguracji(tekst_toml, nazwa, opis)` | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). |
 | `eksportuj(preset)` | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). |
 
@@ -525,7 +535,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3548 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3470 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -569,7 +579,7 @@
 | `losowy_ruch_koncowy()` | Czym konczy sie TEN artykul. Rowne szanse, bez powtarzania formuly. |
 | `losowa_liczba_paraleli(glebokosc, dostepne)` | Ile paraleli w drugim akcie. Krotki artykul nigdy nie bierze trzech, |
 | `losowe_generatory(ile)` | Ktore wzorce w tym przebiegu. Ten sam generator dwa dni z rzedu daje |
-| `co_teraz_w_reku(kiedy)` | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. |
+| `co_teraz_w_reku(kiedy, kalendarz)` | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. |
 | `_aktywacja_przy_starcie()` *(wewn.)* | — |
 
 ### `statystyki.py` — co przyniosła każda pozycja: wejścia, reakcje, subskrypcje
@@ -619,12 +629,17 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-376 wierszy, 6 funkcji na poziomie modułu, 0 klas
+483 wierszy, 11 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `oczysc(tytul)` | Zdejmuje obietnice, zostawia zdarzenie. |
-| `przetworz(wpisy)` | (nazwa_kanalu, element) -> kandydaci. Czysta funkcja, testowalna. |
+| `_kandydaci(pozycje)` *(wewn.)* | (kanal, surowy tytul, data RRRR-MM-DD, url) -> kandydaci. Wspolne dla |
+| `przetworz(wpisy)` | (nazwa_kanalu, element Atom z YouTube) -> kandydaci. Czysta funkcja, testowalna. |
+| `_tekst(el)` *(wewn.)* | — |
+| `_data_rss(napis)` *(wewn.)* | `pubDate` RSS (RFC 2822) albo data ISO -> RRRR-MM-DD; pusto, gdy nie da sie. |
+| `wpisy_z_kanalu(nazwa, tresc)` | Kanal RSS 2.0 albo Atom (blog laboratorium, lista publikacji) -> kandydaci. |
+| `przeplot_zrodel(po_zrodlach)` | Po jednym wpisie z kazdego zrodla na zmiane, od najswiezszych. |
 | `_rdzen(temat)` *(wewn.)* | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. |
 | `_numer_wersji(slowo)` *(wewn.)* | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. |
 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. |

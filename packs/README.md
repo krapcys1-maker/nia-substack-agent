@@ -26,7 +26,6 @@ your publication.
 
 | pack | language | about |
 |---|---|---|
-| `everyday-things-and-regulation` | English | standards, tolerances, certification, liability, procurement — the default configuration this repository ships with |
 | `ai-and-machine-learning` | English | benchmarks, training data, inference economics, evaluation, and the rules being written around them |
 | `how-things-work` | English | physics, materials, measurement and engineering in ordinary objects |
 | `laws-and-public-money` | English | legislation, procurement, budgets and audit reports, read as documents |
