@@ -35,7 +35,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7832 wierszy, 137 funkcji na poziomie modułu, 0 klas
+7853 wierszy, 137 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -305,7 +305,7 @@
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-599 wierszy, 18 funkcji na poziomie modułu, 0 klas
+618 wierszy, 18 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

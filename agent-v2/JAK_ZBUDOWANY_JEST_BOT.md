@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 31 024 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 31 064 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 152 zestawów
-testów, 3789 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 3793 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -177,7 +177,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7832 wierszy, 137 funkcji na poziomie modułu, 0 klas
+7853 wierszy, 137 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -447,7 +447,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-599 wierszy, 18 funkcji na poziomie modułu, 0 klas
+618 wierszy, 18 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -7850,20 +7850,39 @@ def uwagi_z_formy(obserwacja: dict[str, Any], body: str) -> list[dict[str, str]]
     korpus = body.split(config.NAGLOWEK_ZRODEL)[0]
     slow = max(1, len(korpus.split()))
 
+    # GESTOSC JEST MIARA, NIE ZARZUTEM — i to jest zmiana z 5 wrzesnia 2026.
+    #
+    # Stalo tu `if na_beat > config.SLOW_NA_BEAT` i wpis szedl jako wada. Przy
+    # celach dlugosci prog 150 slow znaczy co najmniej 3 przekonania dla THIN,
+    # 5 dla SINGLE i 8 dla RICH — a `config.CARD_MAX_CONFIRMED` daje pisarzowi
+    # NAJWYZEJ 8 twierdzen. Artykul RICH mial wiec wycisnac osiem olsnien
+    # z osmiu faktow, bez grama zapasu.
+    #
+    # Skutek byl odwrotny do zamierzonego. Tekst, ktory cierpliwie tlumaczy
+    # JEDEN mechanizm — drugi pomiar rozdzielajacy dwie przyczyny, kontrprzyklad
+    # wyznaczajacy granice reguly — dostawal za to zarzut, a `ostatnie_uwagi`
+    # podawalo ten zarzut NASTEPNEMU pisarzowi jako wade do uniknięcia. Paralele
+    # sa najtanszym sposobem dorobienia kolejnego przekonania, gdy faktow juz
+    # nie ma, wiec regula pchala wprost ku porownaniom z powietrza.
+    #
+    # Ta sama funkcja stosuje juz to rozumowanie do pozycji „momentu przylapania"
+    # (patrz docstring): liczy ja i zapisuje, ale nie uznaje za wade. Gestosc
+    # jest tym samym rodzajem miary, wiec dostaje to samo traktowanie —
+    # BEZWARUNKOWO, tak jak `DLUGOSC` w `run.py`, zeby wlasciciel widzial
+    # rozklad, a nie tylko ogony. `stages.ostatnie_uwagi` nie podaje jej dalej.
     przekonania = obserwacja.get("beliefs") or []
     wsparcie = obserwacja.get("support_only") or []
     if przekonania:
         na_beat = slow / max(1, len(przekonania))
-        if na_beat > config.SLOW_NA_BEAT:
-            powtorki = [str(w.get("quote", ""))[:70] for w in wsparcie]
-            uwagi.append({
-                "gate": "GESTOSC_BEATOW",
-                "detail": ("%d przekonań na %d słów — jedno co %.0f słów "
-                           "przy progu %d; samo wsparcie: %s"
-                           % (len(przekonania), slow, na_beat,
-                              config.SLOW_NA_BEAT,
-                              " | ".join(powtorki[:3]) or "brak")),
-            })
+        powtorki = [str(w.get("quote", ""))[:70] for w in wsparcie]
+        uwagi.append({
+            "gate": "GESTOSC_BEATOW",
+            "detail": ("pomiar: %d przekonań na %d słów — jedno co %.0f słów "
+                       "(odniesienie %d, nie próg do zdania); samo wsparcie: %s"
+                       % (len(przekonania), slow, na_beat,
+                          config.SLOW_NA_BEAT,
+                          " | ".join(powtorki[:3]) or "brak")),
+        })
 
     if obserwacja.get("same_register") is True:
         twardy = (obserwacja.get("hardest_fact") or {}).get("quote", "")

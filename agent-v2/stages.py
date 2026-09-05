@@ -437,7 +437,28 @@ def ostatnie_uwagi(ile: int = 2) -> str:
                 continue
             # DLUGOSC i RECENZJA to zapis stanu, nie zarzut — wpisywanie ich
             # jako „wady do uniknięcia" nauczyloby pisarza unikac dlugosci.
-            if m.group(1) in ("DLUGOSC", "RECENZJA"):
+            #
+            # GESTOSC_BEATOW dolaczyla do nich 5 wrzesnia 2026, z tego samego
+            # powodu i o jeden krok dalej. `gates.uwagi_z_formy` dzieli slowa
+            # przez liczbe „przekonan" i zglaszala wade powyzej 150 slow na
+            # jedno. Przy celach dlugosci znaczy to co najmniej 3 przekonania
+            # dla THIN, 5 dla SINGLE i 8 dla RICH — a `CARD_MAX_CONFIRMED`
+            # daje pisarzowi NAJWYZEJ 8 twierdzen. Artykul RICH miał wiec
+            # wycisnac osiem olsnien z osmiu faktow: zapas zerowy.
+            #
+            # Tekst, ktory cierpliwie tlumaczy JEDEN mechanizm, dostawal za to
+            # zarzut, a przez `ostatnie_uwagi` zarzut wracal do NASTEPNEGO
+            # pisarza jako „wada do uniknięcia". Stad presja na paralele: sa
+            # najtanszym sposobem dorobienia kolejnego przekonania, gdy faktow
+            # juz nie ma.
+            #
+            # Ta sama funkcja stosuje juz to rozumowanie do pozycji „momentu
+            # przylapania": LICZY ja i zapisuje dla wlasciciela, ale nie uznaje
+            # za wade, bo „regula nakazujaca pozycje wypelnia ja jedna
+            # odpowiedzia i po dziesieciu tekstach sama staje sie podpisem
+            # maszyny". Gestosc jest dokladnie tym samym rodzajem miary.
+            # Mierzymy ja dalej i widac ja w dzienniku; nie jest zarzutem.
+            if m.group(1) in ("DLUGOSC", "RECENZJA", "GESTOSC_BEATOW"):
                 continue
             d = re.search(r"'detail':\s*[\"'](.{0,150})", linia)
             # Ogon skladni slownika obcinamy — wpis konczacy sie na `'}` albo

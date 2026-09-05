@@ -95,26 +95,50 @@ slow = len(TEKST.split())
 print("    tekst: %d słów, 4 przekonania -> jedno co %.0f słów (próg %d)"
       % (slow, slow / 4, config.SLOW_NA_BEAT))
 sprawdz("próg to 150 słów na beat", config.SLOW_NA_BEAT == 150, config.SLOW_NA_BEAT)
-sprawdz("rozdmuchany tekst zgłoszony", "GESTOSC_BEATOW" in nazwy, nazwy)
+# GESTOSC JEST POMIAREM, NIE ZARZUTEM — od 5 wrzesnia 2026. Wczesniej wpis
+# powstawal TYLKO powyzej progu i szedl dalej jako wada; przez
+# `stages.ostatnie_uwagi` wracal do NASTEPNEGO pisarza jako „wada do
+# uniknięcia". Prog 150 slow znaczy przy celach dlugosci co najmniej 8
+# przekonan dla RICH, a karta daje najwyzej 8 twierdzen (CARD_MAX_CONFIRMED) —
+# zapas zerowy, a najtanszym sposobem dorobienia kolejnego przekonania sa
+# paralele z powietrza.
+sprawdz("pomiar jest ZAWSZE, nie tylko przy rozdmuchanym tekscie",
+        "GESTOSC_BEATOW" in nazwy, nazwy)
 szczegol = next(x["detail"] for x in u if x["gate"] == "GESTOSC_BEATOW")
-sprawdz("uwaga cytuje to, co było samym wsparciem",
+sprawdz("i mowi wprost, ze to pomiar", szczegol.startswith("pomiar:"), szczegol[:40])
+sprawdz("nie nazywa progu progiem do zdania",
+        "nie próg do zdania" in szczegol, szczegol[:110])
+sprawdz("nadal cytuje to, co bylo samym wsparciem",
         "chasing arrows" in szczegol, szczegol[:90])
 
-# KONTRDOWOD: powtorzenie NIE moze liczyc sie jako beat. Gdyby liczylo,
-# ten sam tekst mialby szesc beatow i przeszedlby — czyli bramka mierzylaby
-# gadatliwosc, a nie gestosc.
+# KONTRDOWOD 1: pomiar musi nadal ROZROZNIAC wsparcie od przekonania. Gdyby
+# powtorzenie liczylo sie jako beat, miara pokazywalaby gadatliwosc zamiast
+# gestosci — a wtedy sam pomiar bylby bezwartosciowy, choc juz nikogo nie oskarza.
 wszystkie_nowe = bez("beliefs", JAK_NNNN["beliefs"] + [
     {"belief": "wsparcie policzone jako przekonanie", "first_stated": w["quote"]}
     for w in JAK_NNNN["support_only"]])
-sprawdz("gdyby wsparcie liczyło się jako przekonanie, przeszłoby (test rozróżnia)",
-        "GESTOSC_BEATOW" not in {x["gate"] for x in
-                                 gates.uwagi_z_formy(wszystkie_nowe, TEKST)})
+_inny = next(x["detail"] for x in gates.uwagi_z_formy(wszystkie_nowe, TEKST)
+             if x["gate"] == "GESTOSC_BEATOW")
+sprawdz("policzone wsparcie zmienia ZMIERZONA liczbe", _inny != szczegol,
+        (_inny[:50], szczegol[:50]))
 
-# Gesty tekst ma przechodzic, inaczej bramka mowi tylko „pisz krocej".
+# Gesty tekst tez dostaje pomiar — miara opisuje kazdy tekst, nie tylko ogony.
 gesty = bez("beliefs", [{"belief": "b%d" % i, "first_stated": "Q%d." % i}
                         for i in range(12)])
-sprawdz("gęsty tekst przechodzi",
-        "GESTOSC_BEATOW" not in {x["gate"] for x in gates.uwagi_z_formy(gesty, TEKST)})
+sprawdz("gesty tekst tez jest zmierzony",
+        "GESTOSC_BEATOW" in {x["gate"] for x in gates.uwagi_z_formy(gesty, TEKST)})
+
+# KONTRDOWOD 2: TU MIESZKA CALA ZMIANA. Sam wpis nadal istnieje, wiec test
+# patrzacy tylko na `uwagi_z_formy` nie odroznilby stanu przed od stanu po.
+# Rozstrzyga to, czy miara wraca do nastepnego pisarza.
+import pathlib  # noqa: E402
+_zrodlo = pathlib.Path("agent-v2/stages.py").read_text(encoding="utf-8")
+_filtr = _zrodlo[_zrodlo.index("def ostatnie_uwagi"):]
+_filtr = _filtr[:_filtr.index(chr(10) + "def ")]
+sprawdz("ostatnie_uwagi NIE podaje gestosci nastepnemu pisarzowi",
+        '"GESTOSC_BEATOW"' in _filtr and "continue" in _filtr, "brak w filtrze")
+sprawdz("a zarzuty merytoryczne nadal wracaja",
+        '"FAKT_BEZ_POKRYCIA"' not in _filtr, "wyciszono za duzo")
 sprawdz("brak obserwacji nie zgłasza nic",
         gates.uwagi_z_formy({}, TEKST) == [{"gate": "CZYTELNIK_NIEPRZYLAPANY",
                                             "detail": gates.uwagi_z_formy({}, TEKST)[0]["detail"]}])
