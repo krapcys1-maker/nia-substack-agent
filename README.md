@@ -11,7 +11,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 158 tests · 12 gates on every finished text
+26 model roles · 159 tests · 12 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -283,7 +283,7 @@ figure had reached 137:
 | `+ playwright install chromium` | the last three |
 | `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_jednostki_systemd` needs systemd |
 
-Measured on this copy (2026-09-05): of 158 test files, **156 pass and 2 fail**;
+Measured on this copy (2026-09-05): of 159 test files, **157 pass and 2 fail**;
 five of the passing ones skip part of their work and say so, line by line. Both
 failures are impossible to fix on a Windows install and neither says anything
 about the code. Each is listed with its cause in

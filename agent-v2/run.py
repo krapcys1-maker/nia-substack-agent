@@ -2901,7 +2901,32 @@ def _summary(conn, run_id: int) -> None:
         "SELECT COALESCE(SUM(cost_usd), 0) AS total, COUNT(*) AS n FROM calls WHERE run_id = ?",
         (run_id,),
     ).fetchone()
-    print(f"\n== koszt przebiegu: ${row['total']:.4f} w {row['n']} wywołaniach ==", flush=True)
+    # NIEUDANE WYWOLANIA MAJA KOSZT NIEZNANY, NIE ZEROWY — i ma to byc widac.
+    #
+    # `llm.call` po wyczerpaniu ponowien zapisuje wiersz z `cost_usd=0.0`,
+    # `price_verified=0` i `ok=0`, i robi to swiadomie: zgadnieta kwota
+    # w zapisie finansowym jest gorsza niz jej brak. Ale ta linia sumowala
+    # `cost_usd` i liczyla `COUNT(*)`, wiec nieudana proba wchodzila do LICZBY
+    # wywolan, wnosila zero do KWOTY i nic tego nie sygnalizowalo. Dzien
+    # z trzema padnietymi `curiosity` — kazde po dwoch ponowieniach, czyli
+    # dziewiec zadan wyslanych do dostawcy — meldowal sie jak dzien bez strat.
+    #
+    # Zmierzone 5 wrzesnia 2026 na zywej awarii DeepSeeka: wiersz powstaje,
+    # `ok=0`, `note` niesie `RemoteProtocolError`. Suma jest wiec DOLNA
+    # granica rachunku, nie rachunkiem.
+    nieudane = conn.execute(
+        "SELECT COUNT(*) FROM calls WHERE run_id = ? AND ok = 0", (run_id,)
+    ).fetchone()[0]
+    niepewne = conn.execute(
+        "SELECT COUNT(*) FROM calls WHERE run_id = ? AND ok = 1 "
+        "AND price_verified = 0", (run_id,)
+    ).fetchone()[0]
+    ogon = ""
+    if nieudane:
+        ogon += " — nieudanych o NIEZNANYM koszcie: %d" % nieudane
+    if niepewne:
+        ogon += " — po stawce niepotwierdzonej: %d" % niepewne
+    print(f"\n== koszt przebiegu: ${row['total']:.4f} w {row['n']} wywołaniach{ogon} ==", flush=True)
 
 
 if __name__ == "__main__":
