@@ -915,6 +915,17 @@ def reply_to(
                     print(f"    ODRZUCONA PRZED WYSLANIEM: {nazwa}", flush=True)
                     break
         candidates.append(data)
+        # KONIEC, GDY MAMY UZYTECZNA ODPOWIEDZ. Ta petla jako jedyna z trzech
+        # (notka, komentarz, odpowiedz) nie miala `break` i szla zawsze do
+        # konca zakresu — a `run.py` i tak bierze `kandydaci[0]`, wiec drugi
+        # i trzeci byly kosztem BEZ ZADNEGO wyboru: nie bylo tu nawet
+        # sortowania, ktore w `comment_on` chociaz probowalo ich uzyc.
+        #
+        # Milczenie nie przerywa: `reply` jest wtedy puste, `run.py` odsiewa
+        # taki wpis i dotad siegal po nastepnego kandydata. Zostawiam to
+        # zachowanie bez zmian — to pytanie o glos, nie o koszt.
+        if data.get("reply"):
+            break
     return {"comment": comment.get("text", "")[:200], "candidates": candidates}
 
 
@@ -4458,7 +4469,9 @@ def comment_on(
 ) -> dict[str, Any]:
     """Komentarz do cudzego posta — do szuflady.
 
-    Generuje kilku kandydatów i oddaje wszystkich; wybór należy do kodu wyżej.
+    Pisze JEDNEGO kandydata i sprawdza go; po następnego sięga dopiero wtedy,
+    gdy poprzedni odpadł. Oddaje tych, którzy naprawdę powstali — więc pole
+    `candidates` w zapisie mówi teraz także, ile prób kosztował ten komentarz.
 
     MILCZENIE NIE JEST JUŻ PEŁNOPRAWNĄ ODPOWIEDZIĄ — stało tu coś odwrotnego
     do 2 września 2026. Post jest już wybrany przez `wybierz_cele`, które
@@ -4526,6 +4539,19 @@ def comment_on(
     # ze korekta i zgoda sa naprawde rzadkie, a nie tylko nazwane rzadkimi.
     postawa, postawa_opis = config.losowa_postawa()
     zajete_otwarcia = set(ostatnie_otwarcia("komentarz"))
+
+    # PIERWSZE SLOWO ma sie roznic. Osiem roznych polecen otwarcia istnieje od
+    # poczatku i jest losowanych - a mimo to jedenascie z szesnastu komentarzy
+    # zaczynalo sie od "The", bo kazde z tych osmiu da sie wykonac, zaczynajac
+    # zdanie od rodzajnika. Stad wniosek zapisany tu wczesniej: "prosba w
+    # prompcie nie wystarcza; sprawdza kod" - i ten wniosek zostaje.
+    #
+    # Ponizej jest jednak COS INNEGO niz prosba: nie "zacznij inaczej", tylko
+    # lista slow, ktore juz zuzylismy. Model, ktory ja widzi, nie zgaduje.
+    def powtarza_otwarcie(d: dict[str, Any]) -> bool:
+        slowa = (d.get("comment") or "").split()
+        return bool(slowa) and slowa[0].strip("\"'.,").lower() in zajete_otwarcia
+
     prompt = _prompt(
         "komentarz.md",
         cel_slow=config.losowa_dlugosc(),
@@ -4535,9 +4561,34 @@ def comment_on(
         author=post.get("author", ""),
         title=post.get("title", ""),
         body=post.get("text", "")[:12000],
+        ostatnie_otwarcia_json=json.dumps(
+            sorted(zajete_otwarcia) or ["(zadnych jeszcze nie ma)"],
+            ensure_ascii=False),
     )
     candidates: list[dict[str, Any]] = []
-    for i in range(config.COMMENT_CANDIDATES):
+    def napisz_kandydata(i: int) -> dict[str, Any] | None:
+        """Jeden kandydat albo None, gdy odpadl przed bramkami.
+
+        ZWYKLA FUNKCJA, NIE GENERATOR — i to jest wymog, nie gust.
+        `comment_on` nie ma dekoratora `_na_kanal`; kanal dostaje od
+        wolajacego, przez `with db.kanal(...)`. Generator oddany z takiego
+        bloku wykonuje sie PO jego zamknieciu, wiec platne wywolania
+        ksiegowalyby sie z pustym polem `akcja` — awaria bez sladu w logu.
+        Tutaj generator bylby akurat bezpieczny, bo jest zagnieżdżony i
+        konsumowany w tej samej funkcji, ale regula "zaden platny etap nie
+        jest generatorem" da sie sprawdzic drzewem skladni, a "ten akurat
+        jest bezpieczny" wymaga, zeby kazdy nastepny czytelnik odtworzyl
+        moje rozumowanie. Pilnuje tego `test_kanal_platnego_wywolania`.
+
+        Bylo: trzy wywolania z gory, sortowanie, i `break` na pierwszym,
+        ktory przeszedl bramki. Zmierzone na dniu 2026-09-03: szesc wywolan
+        `comment` na dwa wystawione komentarze, 14 448 zetonow wyjscia do
+        kosza — bo pierwszy kandydat przechodzil za kazdym razem.
+
+        Polisa zostaje w calosci: gdy pierwszy oblewa zapore przeciw
+        wstrzyknieciu albo podloge z pamieci, po drugiego siegamy tak samo
+        jak dotad. Placimy za niego tylko wtedy, gdy byl potrzebny.
+        """
         try:
             raw = llm.call("comment", COMMENT_SYSTEM, prompt, conn=conn, run_id=run_id)
             data = llm.parse_json(raw)
@@ -4549,7 +4600,7 @@ def comment_on(
             raise
         except Exception as exc:
             print(f"  [komentarz {i + 1}] nie wyszedł: {exc}", flush=True)
-            continue
+            return None
         text = data.get("comment")
         words = len(text.split()) if text else 0
         # ZAMKNIETA LISTA POWODOW CISZY. `prompts/komentarz.md` dopuszcza
@@ -4567,21 +4618,40 @@ def comment_on(
             flush=True,
         )
         candidates.append(data)
+        # POWTORZONE OTWARCIE ODRZUCA, ALE NIE ZA CENE KOMENTARZA.
+        # Sortowanie zniklo razem z pula, a bylo jedynym miejscem, gdzie
+        # to kryterium dzialalo — notki przerabialy dokladnie to samo
+        # (patrz `tiki` w `note()`): zejscie do jednego kandydata po
+        # cichu wylacza kazde kryterium sortowania, wiec kryterium musi
+        # dostac zamiennik ZANIM pula zniknie.
+        #
+        # Zamiennik jest dwuczesciowy. W prompcie: lista zajetych
+        # pierwszych slow — DANE, nie prosba. Tutaj: sprawdzenie, ktore
+        # nadal ma zeby, ale kosztuje wywolanie tylko wtedy, gdy zostala
+        # jeszcze proba. Na ostatniej probie powtorzone otwarcie jest
+        # lepsze niz brak komentarza.
+        if powtarza_otwarcie(data) and i + 1 < config.COMMENT_CANDIDATES:
+            print(f"  [komentarz {i + 1}] powtarza otwarcie "
+                  f"\"{(data.get('comment') or '').split()[0]}\" "
+                  "— pisze jeszcze raz", flush=True)
+            return None
+        return data
 
-    # PIERWSZE SLOWO tez ma sie roznic. Osiem roznych polecen otwarcia istnieje
-    # od poczatku i jest losowanych — a mimo to jedenascie z szesnastu komentarzy
-    # zaczynalo sie od "The", bo kazde z tych osmiu da sie wykonac, zaczynajac
-    # zdanie od rodzajnika. Prosba w prompcie nie wystarcza; sprawdza kod.
-    def powtarza_otwarcie(d: dict[str, Any]) -> bool:
-        slowa = (d.get("comment") or "").split()
-        return bool(slowa) and slowa[0].strip("\"'.,").lower() in zajete_otwarcia
-
-    candidates.sort(key=powtarza_otwarcie)
+    # Sortowanie po fakcie zniklo — patrz `kolejni_kandydaci` wyzej. Samo
+    # `powtarza_otwarcie` zostaje, bo nadal sprawdza; zmienilo sie tylko to,
+    # KIEDY jest wolane: przy pisaniu, a nie przy wybieraniu z gotowej puli.
 
     # Ta sama zasada co przy notkach: wystawiamy jeden komentarz, wiec
     # sprawdzamy po kolei do pierwszego, ktory przechodzi. Przy siedemnastu
     # komentarzach dziennie to roznica miedzy 51 sprawdzeniami a osiemnastoma.
-    for data in candidates:
+    #
+    # Ta petla STEROWALA juz wczesniej kosztem, tylko nikt tego nie wykorzystal:
+    # konczyla sie na `break`, a mimo to trzej kandydaci byli juz zaplaceni.
+    # Teraz kandydat POWSTAJE w tej petli, wiec `break` zatrzymuje takze wydatek.
+    for i in range(config.COMMENT_CANDIDATES):
+        data = napisz_kandydata(i)
+        if data is None:
+            continue
         text = data.get("comment")
         if not text:
             continue

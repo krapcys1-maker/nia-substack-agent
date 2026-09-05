@@ -102,6 +102,11 @@ reply, and eight honest words under a one-line post is a good comment.
 **Opening: {otwarcie}** This instruction changes every time on purpose; a
 fixed opening shape is as readable a tell as a fixed length.
 
+**These are the words our last comments opened with. Do not open with any
+of them:**
+
+  {ostatnie_otwarcia_json}
+
 ## Output
 
 Return only valid JSON:

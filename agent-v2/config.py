@@ -1236,6 +1236,16 @@ WZORZEC_WERSJI = (
     r"|\bo[0-9]+(\s*-?\s*(mini|pro|preview))?\b"
     r"|\b(sonnet|opus|haiku|turbo|flash|lite)[\s\-]?v?[0-9]+(\.[0-9]+)?[a-z]?\b"
 )
+# SUFIT PROB, NIE LICZBA WYWOLAN. Do 5 wrzesnia 2026 ta stala znaczyla "napisz
+# tylu kandydatow", i tyle wywolan szlo za kazdym razem — takze wtedy, gdy
+# pierwszy przechodzil. Zmierzone na przebiegu z 3 wrzesnia 2026: szesc wywolan
+# `comment` na dwa wystawione komentarze, 14 448 zetonow wyjscia wyrzuconych.
+#
+# Teraz oba miejsca (`comment_on`, `reply_to`) siegaja po kolejnego dopiero
+# wtedy, gdy poprzedni odpadl: na bramce, na powtorzonym otwarciu albo na
+# milczeniu. Polisa zostaje w calosci, placi sie za nia tylko wtedy, gdy byla
+# potrzebna. Podniesienie tej liczby nie podnosi wiec kosztu dnia — podnosi
+# tylko wytrwalosc w zlych dniach.
 COMMENT_CANDIDATES = 3
 
 # DLUGOSC KOMENTARZA I ODPOWIEDZI losowana osobno za kazdym razem.

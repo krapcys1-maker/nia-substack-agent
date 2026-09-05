@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 30 680 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 30 778 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 146 zestawów
-testów, 3714 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 147 zestawów
+testów, 3732 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -177,7 +177,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7653 wierszy, 137 funkcji na poziomie modułu, 0 klas
+7723 wierszy, 137 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -425,7 +425,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-848 wierszy, 15 funkcji na poziomie modułu, 3 klas
+866 wierszy, 15 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -600,7 +600,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3242 wierszy, 36 funkcji na poziomie modułu, 0 klas
+3252 wierszy, 36 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -9716,7 +9716,7 @@ Return only valid JSON:
 
 #### `prompts/komentarz.md`
 
-**137 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
+**142 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
 
 ````markdown
 You are writing a comment under someone else's Substack post, as the anonymous
@@ -9822,6 +9822,11 @@ reply, and eight honest words under a one-line post is a good comment.
 
 **Opening: {otwarcie}** This instruction changes every time on purpose; a
 fixed opening shape is as readable a tell as a fixed length.
+
+**These are the words our last comments opened with. Do not open with any
+of them:**
+
+  {ostatnie_otwarcia_json}
 
 ## Output
 
@@ -11710,7 +11715,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `TWIERDZI_O_TERAZ` | `( "now", "currently", "today", "these days",` | Slowa, po ktorych poznajemy, ze zdanie twierdzi cos o STANIE SWIATA TERAZ, a nie opowiada o zdarzeniu z wlasna data. Tylko takie zdania podl |
 | `ZNIKA` | `( "deprecat", "retired", "retirement", "suns` | Slowa, ktore mowia, ze rzecz jest W TRAKCIE ZNIKANIA. Publikacja o szybko zmieniajacej sie dziedzinie nie ma po co opisywac czegos, co za os |
 | `WZORZEC_WERSJI` | `r"\b(gpt|claude|gemini|llama|mistral|qwen|gr` | NAZWA PRODUKTU Z NUMEREM WERSJI. Wlasciciel: „nie ma mi pisac o GPT 5.0, jak jest juz 5.5". Zdanie, ktore nazywa konkretna wersje, starzeje  |
-| `COMMENT_CANDIDATES` | `3` | — |
+| `COMMENT_CANDIDATES` | `3` | SUFIT PROB, NIE LICZBA WYWOLAN. Do 5 wrzesnia 2026 ta stala znaczyla "napisz tylu kandydatow", i tyle wywolan szlo za kazdym razem — takze w |
 | `DLUGOSCI_WYPOWIEDZI` | `( (12, 3), # jedno zdanie, najczestsze u lud` | DLUGOSC KOMENTARZA I ODPOWIEDZI losowana osobno za kazdym razem. Sam prompt tego nie zalatwi: proszony o roznorodnosc model i tak osiada w w |
 | `POSTAWY_KOMENTARZA` | `{ "CIEKAWOSC": (7, ( "Say what genuinely cau` | SPOSOB OTWARCIA, losowany tak samo jak dlugosc i z tego samego powodu. Zmierzone na naszych wlasnych komentarzach: SIEDEM Z DZIEWIECIU zaczy |
 | `OTWARCIA` | `( "Start with the mechanism itself, no pream` | — |

@@ -103,9 +103,9 @@
 {{"choices": [{{"index": <number>, "rank": <1 is highest>, "why": "<one sentence>", "kind": "disagreement"|"question"|"correction"|"addition"|"agreement"}}], "skipped_because": "<one sentence about the ones you left out>"}}
 ```
 
-#### `komentarz.md` (137 wierszy)
+#### `komentarz.md` (142 wierszy)
 
-**Pola wejściowe:** `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
+**Pola wejściowe:** `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
 
 **Kontrakt wyjścia:**
 

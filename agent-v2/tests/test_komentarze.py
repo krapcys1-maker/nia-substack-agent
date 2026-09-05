@@ -95,7 +95,16 @@ print("=== 3. KOD NAPRAWDE TEGO UZYWA ===")
 zrodlo = pathlib.Path("agent-v2/stages.py").read_text(encoding="utf-8")
 sprawdz("comment_on pobiera ostatnie otwarcia komentarzy",
         'ostatnie_otwarcia("komentarz")' in zrodlo)
-sprawdz("comment_on sortuje kandydatow", "candidates.sort(key=powtarza_otwarcie)" in zrodlo)
+# SORTOWANIE ZNIKLO 5 WRZESNIA 2026 i ta asercja slusznie oblala. Pula
+# trzech kandydatow byla jedynym powodem, dla ktorego istnialo sortowanie;
+# gdy kandydat powstaje na zadanie, nie ma czego sortowac. Kryterium
+# zostalo, w dwoch miejscach naraz — i oba sa tu sprawdzane, bo samo
+# skreslenie tej linii przepuscilo by ciche wylaczenie kryterium.
+sprawdz("zajete otwarcia ida DO MODELU, nie do sortownika po fakcie",
+        "ostatnie_otwarcia_json=json.dumps(" in zrodlo)
+sprawdz("i kod nadal odrzuca powtorzone otwarcie",
+        "if powtarza_otwarcie(data) and i + 1 < config.COMMENT_CANDIDATES:"
+        in zrodlo)
 sprawdz("comment_on oddaje przydzielone otwarcie", '"otwarcie": otwarcie,' in zrodlo)
 zrodlo_run = pathlib.Path("agent-v2/run.py").read_text(encoding="utf-8")
 sprawdz("run.py zapisuje otwarcie do dziennika",
@@ -166,7 +175,8 @@ sprawdz("prompt podaje post jako MATERIAL, nie czyjes przekonanie",
 for nazwa, (waga, opis) in config.POSTAWY_KOMENTARZA.items():
     gotowy = stages._prompt("komentarz.md", cel_slow=30, otwarcie="x",
                             postawa=nazwa, postawa_opis=opis, language="English",
-                            author="a", title="t", body="b")
+                            author="a", title="t", body="b",
+                            ostatnie_otwarcia_json='["the"]')
     if nazwa not in gotowy:
         sprawdz("postawa %s sklada sie w prompcie" % nazwa, False)
         break

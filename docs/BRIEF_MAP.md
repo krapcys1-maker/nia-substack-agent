@@ -30,7 +30,7 @@ through a variable this scan cannot see. Check before cutting.
 | `grafika.md` | 98 | `stages.grafika` | `grafika` | 3 | 0 | 3 | 0 |
 | `klasyfikacja.md` | 55 | `stages.classify` | `classify` | 5 | 1 | 4 | 0 |
 | `kogo_odpowiedziec.md` | 48 | `stages.wybierz_do_odpowiedzi` | `wybor` | 5 | 0 | 5 | 0 |
-| `komentarz.md` | 137 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
+| `komentarz.md` | 142 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
 | `naprawa.md` | 39 | `stages.napraw_obalone` | `—` | 0 | 0 | 0 | 0 |
 | `notka.md` | 159 | `stages.note` | `—` | 4 | 1 | 3 | 0 |
 | `odpowiedz.md` | 125 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
@@ -162,8 +162,8 @@ through a variable this scan cannot see. Check before cutting.
 | field | verdict | read by |
 |---|---|---|
 | `comment` | used | `browser._plaskie`, `browser.id_z_odpowiedzi`, `browser.ile_dzis_wystawione`, `browser.nasze_pozycje_do_pomiaru` |
-| `reason_if_silent` | used | `stages.comment_on`, `stages.reply_to` |
-| `what_it_adds` | used | `stages.comment_on` |
+| `reason_if_silent` | used | `stages.comment_on`, `stages.napisz_kandydata`, `stages.reply_to` |
+| `what_it_adds` | used | `stages.comment_on`, `stages.napisz_kandydata` |
 
 ### `notka.md`
 
@@ -179,7 +179,7 @@ through a variable this scan cannot see. Check before cutting.
 | field | verdict | read by |
 |---|---|---|
 | `kind` | used | `stages.reply_to`, `stages.scout`, `stages.wybierz_do_odpowiedzi` |
-| `reason_if_silent` | used | `stages.comment_on`, `stages.reply_to` |
+| `reason_if_silent` | used | `stages.comment_on`, `stages.napisz_kandydata`, `stages.reply_to` |
 | `reply` | used | `run.dzien`, `run.odpowiedzi`, `stages.reply_to` |
 
 ### `pisarz.md`
