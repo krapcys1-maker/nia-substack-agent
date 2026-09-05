@@ -7687,7 +7687,25 @@ def posortuj_bank(conn: sqlite3.Connection, run_id: int | None = None,
               % len(wolni), flush=True)
         return {"ocenione": 0, "wyrzucone": 0}
 
-    wolni = wolni[:ile]
+    # NIEOCENIENI ZAWSZE W PARTII, RESZTA JAKO PUNKTY ODNIESIENIA.
+    #
+    # Stalo tu samo `wolni = wolni[:ile]`. Warunek wejscia sprawdzal CALA
+    # liste („czy jest ktokolwiek bez rangi"), a partia brala pierwsze `ile`
+    # pozycji — wiec kandydat spoza tego okna uruchamial platny ranking,
+    # w ktorym go nie bylo, i po ktorym nadal nie mial rangi.
+    #
+    # Odtworzone: 40 ocenionych plus jeden nowy na koncu. Model wolany, NOWY
+    # nieobecny w prompcie, jego ranga po wszystkim `None` — a warunek
+    # wejscia dalej prawdziwy. Piec przebiegow z rzedu to PIEC platnych
+    # wywolan `bank` i zero postepu; przy dwoch przebiegach dziennie
+    # i ~$0,0105 za wywolanie to okolo 63 centow miesiecznie palone w kolko,
+    # dopoki bank przekracza `ile` wolnych wpisow.
+    #
+    # Ranking jest WZGLEDNY, wiec nowy kandydat potrzebuje towarzystwa: sam
+    # z siebie nie ma sie wobec czego ustawic. Stad kolejnosc — najpierw
+    # nieocenieni, potem ocenieni jako tlo — a nie wyciecie samych nowych.
+    ocenieni = [k for k in wolni if k.get("ranga") is not None]
+    wolni = (nieocenione + ocenieni)[:ile]
 
     opis = "\n\n".join(
         "id: %d\nfakt: %s\nmechanizm: %s\ndla czytelnika: %s\ndziedzina: %s"
