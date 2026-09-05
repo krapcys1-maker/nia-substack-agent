@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 30 886 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 30 933 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 148 zestawów
-testów, 3741 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 149 zestawów
+testów, 3750 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -177,7 +177,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7747 wierszy, 137 funkcji na poziomie modułu, 0 klas
+7761 wierszy, 137 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -600,7 +600,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3315 wierszy, 36 funkcji na poziomie modułu, 0 klas
+3348 wierszy, 37 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -619,6 +619,7 @@ wiec nie da sie go rozjechac z kodem.
 | `losowa_postawa()` | Ktora postawa dla TEGO komentarza. Wagi, nie rownomiernie. |
 | `losowe_otwarcie()` | — |
 | `losowa_dlugosc()` | Ile slow ma miec ta konkretna wypowiedz. |
+| `formy_dla_typu(typ)` | Formy, ktore ten typ notki ma czym wypelnic. |
 | `losowy_ksztalt_mysli()` | Ktory ksztalt dostaje ta MYSL. Losowany, bo wybor zbiega do stalej. |
 | `normy_dzienne()` | Ile czego POWINNO wychodzic dziennie — srodek widelek. |
 | `_cisza_z_hasza(dzien)` *(wewn.)* | — |
@@ -11744,6 +11745,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `COMMENTS_PER_DAY` | `4` | Sufit dzienny. Research mówi, że trzy przemyślane komentarze tygodniowo biją piętnaście uprzejmych; pierwotne 15-20 dziennie było z planu sp |
 | `NOTE_FORMS` | `{ "PROSTA": ( "One tight paragraph. No line ` | Typy notek. W dniu publikacji artykułu lecą notki typu ARTYKUL z linkiem; w pozostałe dni — pozostałe typy, oparte na fragmentach, których a |
 | `NOTE_FORM_MIX` | `("SCENA", "KONTRAST", "ZACZEP_I_KONKRET", "P` | — |
+| `FORMY_ZAKAZANE_DLA_TYPU` | `{ "MYSL": frozenset({"LICZBA", "LISTA"}), }` | FORMY, KTORYCH DANY TYP NIE MA JAK WYPELNIC. Forma byla dotad losowana z CALEJ osemki, niezaleznie od typu i od materialu: `(dzien_roku + wy |
 | `NOTE_TYPES` | `{ # MYSL — jedyny typ ZWOLNIONY z karty dowo` | — |
 | `PUBLISH_TIMEZONE` | `"America/New_York"` | Strefa czasowa publikacji. Liczy sie strefa CZYTELNIKOW, nie wlasciciela — i to jest cala rzecz. Godziny w tym pliku pochodza z pomiarow na  |
 | `WORST_NOTE_HOURS` | `(12, 13)` | NAJGORSZE OKNO — I TO JEST STALA EGZEKWOWANA, nie zapis ustalen. `pora_na_publikacje` odmawia publikacji w tych godzinach, wiec miedzy 12:00 |

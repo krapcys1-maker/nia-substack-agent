@@ -1499,6 +1499,39 @@ NOTE_FORMS = {
 NOTE_FORM_MIX = ("SCENA", "KONTRAST", "ZACZEP_I_KONKRET", "PROSTA", "LISTA",
                  "PYTANIE", "ODWROCENIE", "LICZBA")
 
+# FORMY, KTORYCH DANY TYP NIE MA JAK WYPELNIC.
+#
+# Forma byla dotad losowana z CALEJ osemki, niezaleznie od typu i od materialu:
+# `(dzien_roku + wystawione_dzis + i) % 8`. Komentarz przy tym wyliczeniu mowi
+# wprost, ze celem jest, by "po osmiu dniach kazda para typ-forma zdazyla
+# wystapic" — i tak sie dzialo, takze dla par NIEWYKONALNYCH.
+#
+# MYSL to jedyny typ ZWOLNIONY z karty dowodowej; jego brief mowi "NO FACTS:
+# no number, no date, no named company (...) nothing a reader could look up".
+# LICZBA kaze "Open with the number itself, alone on the first line".
+# LISTA kaze "EVERY line must carry a fact the previous line did not".
+#
+# To nie jest napiecie stylistyczne, tylko zlecenie bez rozwiazania: model
+# dostaje zakaz faktow i nakaz faktu w jednym prompcie. Zmierzone symulacja
+# roku kalendarzowego: 273 z 3597 par (7,6%) to MYSL z forma wymagajaca
+# faktow — mniej wiecej co trzynasta notka.
+#
+# Nie zabieramy tu formy nikomu, kto moze ja wypelnic: dryf zostaje, a kazda
+# ZGODNA para nadal wystapi.
+FORMY_ZAKAZANE_DLA_TYPU = {
+    "MYSL": frozenset({"LICZBA", "LISTA"}),
+}
+
+
+def formy_dla_typu(typ: str) -> tuple[str, ...]:
+    """Formy, ktore ten typ notki ma czym wypelnic."""
+    zakazane = FORMY_ZAKAZANE_DLA_TYPU.get((typ or "").upper(), frozenset())
+    dozwolone = tuple(f for f in NOTE_FORM_MIX if f not in zakazane)
+    # Pusta lista znaczylaby, ze typ nie ma ZADNEJ formy — to bylby blad
+    # w tablicy powyzej, a nie stan, w ktorym wolno milczkiem isc dalej.
+    return dozwolone or NOTE_FORM_MIX
+
+
 NOTE_TYPES = {
     # MYSL — jedyny typ ZWOLNIONY z karty dowodowej, i jedyny, ktoremu nie
     # wolno niesc faktu.

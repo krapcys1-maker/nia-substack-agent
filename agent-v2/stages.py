@@ -3493,8 +3493,6 @@ def notki_dnia(
     # wystapic, a zaden dzien nie powtarza poprzedniego.
     from datetime import datetime as _dt, timezone as _tz
     _dryf = _dt.now(_tz.utc).timetuple().tm_yday
-    formy = [config.NOTE_FORM_MIX[(_dryf + od + i) % len(config.NOTE_FORM_MIX)]
-             for i in range(len(typy))]
 
     # JEDNA notka promujaca dziennie, przez kolejne dni po publikacji artykulu.
     promowany = artykul_do_promocji()
@@ -3508,6 +3506,22 @@ def notki_dnia(
         link_artykulu = promowany["url"]
         print(f"  [promocja] dzien {promowany['wystawione'] + 1}"
               f"/{config.NOTEK_PROMUJACYCH}: {promowany['tytul'][:44]}", flush=True)
+
+    # FORMA WEDLE TYPU, I DOPIERO TERAZ — patrz `config.formy_dla_typu`.
+    #
+    # Dwie rzeczy stoja za tym, ze wyliczenie jest TUTAJ, a nie dwadziescia
+    # linii wyzej, gdzie stalo. Po pierwsze forma zalezy od typu, a `typy[0]`
+    # bywa podmieniane na ARTYKUL wlasnie w bloku powyzej — liczac wczesniej,
+    # dobieralibysmy forme do typu, ktorego juz nie ma. Po drugie stara wersja
+    # brala z calej osemki i potrafila zlecic MYSLI otwarcie liczba, mimo ze
+    # MYSL ma zakaz liczb.
+    #
+    # Dryf zostaje nietkniety: co dobe przesuwa sie o jeden, wiec kazda ZGODNA
+    # para typ-forma nadal wystapi, a zaden dzien nie powtarza poprzedniego.
+    formy = []
+    for i, _typ in enumerate(typy):
+        _dozwolone = config.formy_dla_typu(_typ)
+        formy.append(_dozwolone[(_dryf + od + i) % len(_dozwolone)])
     # SEDZIA BANKU — WOLANY WRESZCIE. Do 1 wrzesnia 2026 `posortuj_bank` nie
     # mial ANI JEDNEGO wywolania produkcyjnego: jedyne w calym repo byly
     # w `tests/test_bramka_banku.py`. Skutki byly dwa i oba widac w notkach:

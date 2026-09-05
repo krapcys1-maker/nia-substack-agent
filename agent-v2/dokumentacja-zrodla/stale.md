@@ -111,6 +111,7 @@
 | `COMMENTS_PER_DAY` | `4` | Sufit dzienny. Research mówi, że trzy przemyślane komentarze tygodniowo biją piętnaście uprzejmych; pierwotne 15-20 dziennie było z planu sp |
 | `NOTE_FORMS` | `{ "PROSTA": ( "One tight paragraph. No line ` | Typy notek. W dniu publikacji artykułu lecą notki typu ARTYKUL z linkiem; w pozostałe dni — pozostałe typy, oparte na fragmentach, których a |
 | `NOTE_FORM_MIX` | `("SCENA", "KONTRAST", "ZACZEP_I_KONKRET", "P` | — |
+| `FORMY_ZAKAZANE_DLA_TYPU` | `{ "MYSL": frozenset({"LICZBA", "LISTA"}), }` | FORMY, KTORYCH DANY TYP NIE MA JAK WYPELNIC. Forma byla dotad losowana z CALEJ osemki, niezaleznie od typu i od materialu: `(dzien_roku + wy |
 | `NOTE_TYPES` | `{ # MYSL — jedyny typ ZWOLNIONY z karty dowo` | — |
 | `PUBLISH_TIMEZONE` | `"America/New_York"` | Strefa czasowa publikacji. Liczy sie strefa CZYTELNIKOW, nie wlasciciela — i to jest cala rzecz. Godziny w tym pliku pochodza z pomiarow na  |
 | `WORST_NOTE_HOURS` | `(12, 13)` | NAJGORSZE OKNO — I TO JEST STALA EGZEKWOWANA, nie zapis ustalen. `pora_na_publikacje` odmawia publikacji w tych godzinach, wiec miedzy 12:00 |

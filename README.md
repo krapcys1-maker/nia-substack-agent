@@ -11,7 +11,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 148 tests · 12 gates on every finished text
+26 model roles · 149 tests · 12 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -88,7 +88,7 @@ cannot see.
 | **[docs/INSTALL.md](docs/INSTALL.md)** | zero to running, step by step — including the one step no software can do for you |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | how it works and where everything lives: both pipelines, all 26 roles, every directory |
 | **[docs/BRIEF_MAP.md](docs/BRIEF_MAP.md)** | what each of the 24 briefs is responsible for: what calls it, what model it runs on, and — for every field it tells the model to return — whether a gate reads it, something reads it, or **nobody does**. Generated |
-| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **568 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
+| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **569 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
 | **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | split in two: what will bite you on a fresh clone, and what already bit us and is fixed. **Read before your first run** |
 | **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
 | **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
@@ -283,7 +283,7 @@ figure had reached 137:
 | `+ playwright install chromium` | the last three |
 | `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_jednostki_systemd` needs systemd |
 
-Measured on this copy (2026-09-05): of 148 test files, **146 pass and 2 fail**;
+Measured on this copy (2026-09-05): of 149 test files, **147 pass and 2 fail**;
 five of the passing ones skip part of their work and say so, line by line. Both
 failures are impossible to fix on a Windows install and neither says anything
 about the code. Each is listed with its cause in
