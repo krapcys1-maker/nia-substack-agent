@@ -1504,8 +1504,30 @@ def _nowe_wydarzenia(
     return nowe, znane
 
 
+def _wydarzenie_w_fakcie(w: dict[str, Any], fakt: dict[str, Any]) -> bool:
+    """Czy ten fakt jest O TYM wydarzeniu.
+
+    Wydarzenie niesie `o_czym` — kilka slow wspolnych dla tytulow, ktore je
+    utworzyly (np. `["orion", "5.1"]`). Fakt uznajemy za jego material, gdy
+    niesie DWA z tych slow, a przy wydarzeniu jednoslownym to jedno.
+
+    Dwa, a nie jedno, bo pojedyncze slowo bywa wspolne calej niszy: przy
+    wydarzeniu `["vega", "audit"]` samo „audit" pasuje do niemal kazdego
+    naszego faktu i zamykaloby furtke premierze, o ktorej nikt nic nie napisal.
+    """
+    tokeny = {str(x).lower() for x in (w.get("o_czym") or []) if len(str(x)) > 2}
+    if not tokeny:
+        return False
+    tekst = " ".join(str(fakt.get(k) or "") for k in
+                     ("fact", "actually", "wrong_belief", "decision",
+                      "consequence", "domain")).lower()
+    trafione = sum(1 for tok in tokeny if tok in tekst)
+    return trafione >= min(2, len(tokeny))
+
+
 def _zapamietaj_wydarzenia(nowe: list[dict[str, Any]],
-                           znane: dict[str, Any], ile: int) -> None:
+                           znane: dict[str, Any], ile: int,
+                           fakty: list[dict[str, Any]] | None = None) -> None:
     """Zapisuje, ze o tych zdarzeniach material JUZ WROCIL.
 
     `ile` to liczba faktow, ktore weszly do indeksu. Zapisujemy ja razem z
@@ -1522,8 +1544,24 @@ def _zapamietaj_wydarzenia(nowe: list[dict[str, Any]],
         klucz = _rdzen_wydarzenia(w)
         stary = znane.get(klucz)
         proby = int(stary.get("proby") or 0) if isinstance(stary, dict) else 0
-        znane[klucz] = {"kiedy": dzis, "ile": int(ile),
-                        "proby": proby + (0 if int(ile) > 0 else 1)}
+        # ILE MATERIALU WROCILO O TYM WYDARZENIU, nie o wszystkich naraz.
+        #
+        # Stalo tu `int(ile)` dla KAZDEGO wpisu, a `ile` to bylo `len(fakty)` —
+        # laczna liczba faktow z partii. Dwa wykryte wydarzenia i osiem faktow
+        # wylacznie o pierwszym zamykalo OBA. Odtworzone: `orion 5.1` i `vega
+        # audit` obie zapisane z `ile: 8`, obie przestaly byc nowe.
+        #
+        # Kosztem jest przegapiona premiera: furtka wydarzen istnieje po to,
+        # zeby bot ruszyl za czyms, o czym mowi kilka kanalow naraz, a zamkniecie
+        # jej cudzym materialem znaczy, ze temat przepada bez jednej proby.
+        wlasne = ([f for f in fakty if _wydarzenie_w_fakcie(w, f)]
+                  if fakty is not None else None)
+        ile_tego = len(wlasne) if wlasne is not None else int(ile)
+        if fakty is not None and ile_tego != int(ile):
+            print("  [wydarzenia] %s: o tym wrocilo %d z %d faktow"
+                  % (klucz[:40], ile_tego, int(ile)), flush=True)
+        znane[klucz] = {"kiedy": dzis, "ile": ile_tego,
+                        "proby": proby + (0 if ile_tego > 0 else 1)}
     try:
         WYDARZENIA_OBSLUZONE.parent.mkdir(parents=True, exist_ok=True)
         WYDARZENIA_OBSLUZONE.write_text(
@@ -1996,7 +2034,7 @@ def znajdz_ciekawostki(
     # sie stac, to drugie szukanie o tym samym, czyli zachowanie sprzed
     # poprawki z 1 wrzesnia. Utrata premiery jest drozsza.
     if nowe_wyd:
-        _zapamietaj_wydarzenia(nowe_wyd, znane_wyd, len(fakty))
+        _zapamietaj_wydarzenia(nowe_wyd, znane_wyd, len(fakty), fakty)
     return fakty
 
 

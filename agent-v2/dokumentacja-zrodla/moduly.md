@@ -35,7 +35,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8124 wierszy, 141 funkcji na poziomie modułu, 0 klas
+8162 wierszy, 142 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -75,7 +75,8 @@
 | `zaczyn_z_kanalow(ile)` | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. |
 | `_rdzen_wydarzenia(w)` *(wewn.)* | Klucz zdarzenia: posortowane slowa rdzenia, zeby ta sama premiera |
 | `_nowe_wydarzenia(wydarzenia)` *(wewn.)* | Ktore z tych zdarzen sa NOWE — czyli nie dobieralismy juz o nich materialu. |
-| `_zapamietaj_wydarzenia(nowe, znane, ile)` *(wewn.)* | Zapisuje, ze o tych zdarzeniach material JUZ WROCIL. |
+| `_wydarzenie_w_fakcie(w, fakt)` *(wewn.)* | Czy ten fakt jest O TYM wydarzeniu. |
+| `_zapamietaj_wydarzenia(nowe, znane, ile, fakty)` *(wewn.)* | Zapisuje, ze o tych zdarzeniach material JUZ WROCIL. |
 | `_przebiegi_z_bankiem_dzis(conn)` *(wewn.)* | Ile PRZEBIEGOW dobieralo dzis material do banku. |
 | `_polecenie_premiery(wydarzenia, ile)` *(wewn.)* | Polecenie o premierze do promptu ciekawostek — albo PUSTY NAPIS. |
 | `znajdz_ciekawostki(conn, run_id, ile, na_artykul)` | Materiał na notki w dni bez artykułu. |
