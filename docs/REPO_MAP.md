@@ -36,7 +36,7 @@ only hard stop.
 agent-v2/            the bot itself
   prompts/           what the models are told — 24 briefs, 2738 lines
   prompts/styl/      the style corpus. EMPTY in the repo, you supply it
-  tests/             146 test_*.py, no pytest, each runs standalone
+  tests/             147 test_*.py, no pytest, each runs standalone
   tests/platne/      the 9 that cost money. Never run by CI
   systemd/           three services and three timers
   dokumentacja-zrodla/  source of the concatenated JAK_ZBUDOWANY_JEST_BOT.md
@@ -164,7 +164,7 @@ prompt file directly.
 
 ---
 
-## 6. Tests — 146 files, and what a skip means
+## 6. Tests — 147 files, and what a skip means
 
 No pytest. Each file runs standalone (`python agent-v2/tests/test_x.py`) and
 exits non-zero on failure. That is deliberate: a test you can run alone is a

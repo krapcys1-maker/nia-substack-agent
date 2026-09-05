@@ -12,6 +12,7 @@ import hashlib
 import json
 import re
 import sqlite3
+import time
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import urlparse
@@ -4907,9 +4908,32 @@ def fetch(
         follow_redirects=True,
         headers={"User-Agent": config.FETCH_USER_AGENT},
     ) as client:
+        # ODSTEP DLA TEGO SAMEGO HOSTA, nie dla wszystkich.
+        #
+        # `fetch` szedl przez cala liste bez ani jednej przerwy. Rozne hosty to
+        # nie problem — jedno zadanie na serwis. Ale `DISCOVERY_MAX_RESULTS`
+        # to dziesiec zrodel na runde i dwadziescia z druga, a NIC nie ogranicza
+        # ile z nich pochodzi z JEDNEGO serwisu. Szesc dokumentow z tego samego
+        # urzedu szlo wiec jedno po drugim, w kilka sekund.
+        #
+        # Ze juz nas to spotkalo, widac po wlasnej liscie ponowien: sa na niej
+        # `HTTP 429` i `HTTP 503`. Naprawiono objaw (ponow po chwili), nie
+        # przyczyne — a ponowienie po blokadzie to kolejne zadanie do serwisu,
+        # ktory wlasnie powiedzial „za duzo".
+        #
+        # To jest tez zgodne z doktryna: host, ktory odmawia automatom, ma byc
+        # uszanowany. Uszanowanie zaczyna sie przed odmowa, nie po niej.
+        ostatnio_z_hosta: dict[str, float] = {}
         for source in sources:
             url = source["url"]
             host = source.get("host") or _host(url)
+            czekaj = (config.ODSTEP_TEN_SAM_HOST_S
+                      - (time.monotonic() - ostatnio_z_hosta.get(host, 0.0)))
+            if host in ostatnio_z_hosta and czekaj > 0:
+                print("  [pobranie] %s — czekam %.1fs, zeby nie dobijac"
+                      % (host, czekaj), flush=True)
+                time.sleep(czekaj)
+            ostatnio_z_hosta[host] = time.monotonic()
             reason = None
             text = ""
             try:

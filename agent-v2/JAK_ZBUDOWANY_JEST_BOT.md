@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 30 680 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 30 744 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 146 zestawów
-testów, 3714 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 147 zestawów
+testów, 3725 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -177,7 +177,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7653 wierszy, 137 funkcji na poziomie modułu, 0 klas
+7677 wierszy, 137 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -425,7 +425,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-848 wierszy, 15 funkcji na poziomie modułu, 3 klas
+869 wierszy, 15 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -600,7 +600,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3242 wierszy, 36 funkcji na poziomie modułu, 0 klas
+3261 wierszy, 36 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6476,8 +6476,29 @@ def call(
             if collect_urls is not None:
                 collect_urls.extend(urls)
             break
-        except Exception as exc:
-            if przejsciowy(exc) and proba <= config.PONOWIENIA:
+        except BaseException as exc:
+            # BaseException, NIE Exception — i to nie jest niedbalstwo.
+            #
+            # `run.py` CELOWO zamienia SIGTERM na wyjatek (`_na_sygnale`, ~2246),
+            # zeby przebieg zdazyl sie zapisac, gdy systemd utnie go po
+            # `TimeoutStartSec`. Rzuca `KeyboardInterrupt` — a ten NIE JEST
+            # podklasa `Exception`, wiec przelatywal tedy bez zatrzymania.
+            #
+            # Skutek: przebieg zapisywal sie poprawnie (pilnuje tego
+            # `test_czas.py`), ale WYWOLANIE W LOCIE nie trafialo do `calls`
+            # w ogole. A `db.spent_usd` czyta wlasnie `calls`, wiec sufit
+            # dzienny, miesieczny i przebiegu nie widzialy pieniedzy wydanych
+            # na wywolanie, ktore akurat trwalo, gdy przyszedl sygnal. Traci
+            # sie przy tym najdrozsze: sygnal przychodzi po TimeoutStartSec,
+            # czyli trafia w wywolania, ktore trwaly najdluzej.
+            #
+            # Zmierzone: `RuntimeError` -> wiersz w `calls`; ten sam kod
+            # z `KeyboardInterrupt` -> zero wierszy.
+            #
+            # Zapisujemy i PODAJEMY DALEJ (`raise` nizej). Sygnal ma nadal
+            # zatrzymac przebieg — chodzi tylko o to, zeby po sobie posprzatal.
+            if isinstance(exc, Exception) and przejsciowy(exc) \
+                    and proba <= config.PONOWIENIA:
                 czekaj = config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1)
                 print(f"  [{purpose}] {type(exc).__name__} — przejściowy, "
                       f"ponawiam za {czekaj}s ({proba}/{config.PONOWIENIA})",
@@ -11784,6 +11805,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `MAX_TIMEOUT_S` | `300` | Twardy sufit na JEDNO wywolanie. Bez niego wyliczenie z sufitu tokenow dawalo 965 sekund, a przy wyszukiwaniu razy trzy — 48 MINUT. Jedno za |
 | `REFUSAL_PHRASES` | `( "you have been blocked", "access denied", ` | — |
 | `FETCH_TIMEOUT_S` | `30.0` | — |
+| `ODSTEP_TEN_SAM_HOST_S` | `2.0` | ODSTEP MIEDZY POBRANIAMI Z TEGO SAMEGO HOSTA. Dotyczy WYLACZNIE powtorzonego hosta — rozne serwisy nie czekaja na siebie, bo to jedno zadani |
 | `FETCH_MIN_CHARS` | `1500` | ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO. Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu. Zmierzone  |
 | `STAN_DZIEDZINY_PYTAJ` | `True` | --- STAN DZIEDZINY: CO JEST AKTUALNE DZISIAJ ------------------------------- Model nie ma jak zauwazyc, ze fakt sie przeterminowal: jego wie |
 | `STAN_DZIEDZINY_PYTANIE` | `""` | — |

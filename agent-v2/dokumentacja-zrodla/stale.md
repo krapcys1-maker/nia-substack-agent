@@ -177,6 +177,7 @@
 | `MAX_TIMEOUT_S` | `300` | Twardy sufit na JEDNO wywolanie. Bez niego wyliczenie z sufitu tokenow dawalo 965 sekund, a przy wyszukiwaniu razy trzy — 48 MINUT. Jedno za |
 | `REFUSAL_PHRASES` | `( "you have been blocked", "access denied", ` | — |
 | `FETCH_TIMEOUT_S` | `30.0` | — |
+| `ODSTEP_TEN_SAM_HOST_S` | `2.0` | ODSTEP MIEDZY POBRANIAMI Z TEGO SAMEGO HOSTA. Dotyczy WYLACZNIE powtorzonego hosta — rozne serwisy nie czekaja na siebie, bo to jedno zadani |
 | `FETCH_MIN_CHARS` | `1500` | ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO. Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu. Zmierzone  |
 | `STAN_DZIEDZINY_PYTAJ` | `True` | --- STAN DZIEDZINY: CO JEST AKTUALNE DZISIAJ ------------------------------- Model nie ma jak zauwazyc, ze fakt sie przeterminowal: jego wie |
 | `STAN_DZIEDZINY_PYTANIE` | `""` | — |

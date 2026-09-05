@@ -603,8 +603,29 @@ def call(
             if collect_urls is not None:
                 collect_urls.extend(urls)
             break
-        except Exception as exc:
-            if przejsciowy(exc) and proba <= config.PONOWIENIA:
+        except BaseException as exc:
+            # BaseException, NIE Exception — i to nie jest niedbalstwo.
+            #
+            # `run.py` CELOWO zamienia SIGTERM na wyjatek (`_na_sygnale`, ~2246),
+            # zeby przebieg zdazyl sie zapisac, gdy systemd utnie go po
+            # `TimeoutStartSec`. Rzuca `KeyboardInterrupt` — a ten NIE JEST
+            # podklasa `Exception`, wiec przelatywal tedy bez zatrzymania.
+            #
+            # Skutek: przebieg zapisywal sie poprawnie (pilnuje tego
+            # `test_czas.py`), ale WYWOLANIE W LOCIE nie trafialo do `calls`
+            # w ogole. A `db.spent_usd` czyta wlasnie `calls`, wiec sufit
+            # dzienny, miesieczny i przebiegu nie widzialy pieniedzy wydanych
+            # na wywolanie, ktore akurat trwalo, gdy przyszedl sygnal. Traci
+            # sie przy tym najdrozsze: sygnal przychodzi po TimeoutStartSec,
+            # czyli trafia w wywolania, ktore trwaly najdluzej.
+            #
+            # Zmierzone: `RuntimeError` -> wiersz w `calls`; ten sam kod
+            # z `KeyboardInterrupt` -> zero wierszy.
+            #
+            # Zapisujemy i PODAJEMY DALEJ (`raise` nizej). Sygnal ma nadal
+            # zatrzymac przebieg — chodzi tylko o to, zeby po sobie posprzatal.
+            if isinstance(exc, Exception) and przejsciowy(exc) \
+                    and proba <= config.PONOWIENIA:
                 czekaj = config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1)
                 print(f"  [{purpose}] {type(exc).__name__} — przejściowy, "
                       f"ponawiam za {czekaj}s ({proba}/{config.PONOWIENIA})",

@@ -2517,6 +2517,25 @@ REFUSAL_PHRASES = (
 )
 
 FETCH_TIMEOUT_S = 30.0
+
+# ODSTEP MIEDZY POBRANIAMI Z TEGO SAMEGO HOSTA.
+#
+# Dotyczy WYLACZNIE powtorzonego hosta — rozne serwisy nie czekaja na siebie,
+# bo to jedno zadanie na serwis i nikomu nie szkodzi.
+#
+# Powod jest zapisany we wlasnej liscie ponowien: sa na niej `HTTP 429`
+# i `HTTP 503`, czyli „za duzo zadan". Naprawiono objaw (ponow po chwili),
+# nie przyczyne — a ponowienie po blokadzie to kolejne zadanie do serwisu,
+# ktory wlasnie powiedzial „przestan".
+#
+# Skala ryzyka: `DISCOVERY_MAX_RESULTS` to dziesiec zrodel na runde
+# i dwadziescia z druga, a nic nie ogranicza, ile z nich pochodzi z jednego
+# urzedu. Bez odstepu szlo to jedno po drugim, w kilka sekund.
+#
+# Dwie sekundy to nie jest pomiar, tylko OSTROZNOSC: dolna granica tego, co
+# powszechnie uchodzi za grzeczne. Kosztuje sekundy w przebiegu, ktory i tak
+# trwa minuty.
+ODSTEP_TEN_SAM_HOST_S = 2.0
 # ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO.
 #
 # Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu.
