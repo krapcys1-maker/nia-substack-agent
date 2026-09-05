@@ -1966,7 +1966,27 @@ def znajdz_ciekawostki(
     # indeks na tygodnie, a odrzuceni zostaja odrzuceni NA STALE, zamiast
     # wracac przy kazdym przebiegu.
     try:
-        dopisz_kandydatow(fakty)
+        _bilans = dopisz_kandydatow(fakty)
+        # BRAMKA BANKU NIE JEST WSPOLNYM KONTRAKTEM — i dopoki nie jest, ma to
+        # byc widac w dzienniku.
+        #
+        # `dopisz_kandydatow` odrzuca kandydata, ktory nie przeszedl
+        # `bramka_kandydata`, ale ta funkcja jest wolana dla EFEKTU UBOCZNEGO:
+        # jej wynik szedl do kosza, a `return fakty` nizej oddaje WSZYSTKIE
+        # fakty, takze odrzucone. Ten sam material jest wiec dzis dobry (bo
+        # trafia do pisarza prosto stad), a jutro odrzucony (bo z banku
+        # wychodza tylko wpisy o statusie `nowy`).
+        #
+        # NIE ODCINAM ICH TUTAJ, i to jest decyzja, nie przeoczenie. Bramka
+        # wymaga `wrong_belief` i `actually` takze od faktu, ktory niczego nie
+        # obala — wyjasnienia mechanizmu odpadaja na niej mimo ze `ciekawostki.md`
+        # wprost dopuszcza fakt stojacy samodzielnie. Uszczelnienie zlej bramki
+        # odcieloby wiecej dobrego materialu, niz zlego. Najpierw kryteria,
+        # potem szczelnosc.
+        if _bilans and _bilans.get("odrzucone"):
+            print("  [indeks] UWAGA: %d z %d faktow bank odrzucil, a i tak ida "
+                  "do pisania w tym przebiegu (bramka nie jest wspolna)"
+                  % (_bilans["odrzucone"], len(fakty)), flush=True)
     except Exception as exc:
         print(f"  [indeks] nie zapisalem ({type(exc).__name__})", flush=True)
 
