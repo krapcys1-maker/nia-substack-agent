@@ -468,7 +468,9 @@ class StagesZIndeksem(AtrapaStages):
         # szukania: jedno wywolanie `curiosity` to 18 wyszukiwan i 0,127 USD.
         self.szukania = 0
 
-    def znajdz_ciekawostki(self, conn, run_id, ile=8):
+    # `na_artykul` doszlo, gdy artykul dostal zwolnienie z dobowego
+    # limitu szukania — atrapa musi przyjmowac te sama sygnature.
+    def znajdz_ciekawostki(self, conn, run_id, ile=8, na_artykul=False):
         self.szukania += 1
         return []
 

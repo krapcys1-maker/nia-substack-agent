@@ -1586,9 +1586,15 @@ def _polecenie_premiery(wydarzenia: list[dict[str, Any]], ile: int) -> str:
 
 
 def znajdz_ciekawostki(
-    conn: sqlite3.Connection, run_id: int, ile: int = config.CURIOSITY_BATCH
+    conn: sqlite3.Connection, run_id: int, ile: int = config.CURIOSITY_BATCH,
+    na_artykul: bool = False,
 ) -> list[dict[str, Any]]:
     """Materiał na notki w dni bez artykułu.
+
+    `na_artykul=True` zwalnia z dobowego limitu szukania. Limit jest ustawiony
+    dla notek — tam pusty zapas kosztuje jedną notkę z pięciu. Dla artykułu
+    kosztuje cały tydzień, bo `artykul_z_puli` bez materiału kończy się
+    `ValueError`. Szczegóły przy gałęzi `elif na_artykul` niżej.
 
     Notka typu CIEKAWOSTKA nie ma artykułu, z którego mogłaby wziąć dowody, a
     cztery z pięciu notek dziennie są właśnie takie. Bez tego etapu jedyne
@@ -1658,6 +1664,33 @@ def znajdz_ciekawostki(
         # zapisany z gory, zanim wiadomo, czy cokolwiek z tego wyszlo.
         print("  [wydarzenia] NOWE (%d) — otwieram furtke mimo sufitu banku"
               % len(nowe_wyd), flush=True)
+    elif na_artykul:
+        # DRUGI POWOD, DLA KTOREGO FURTKA STOI OTWOREM: to jest sciezka
+        # ARTYKULU, a artykul nie moze przepasc przez limit ustawiony dla notek.
+        #
+        # Zmierzone na zegarze: notki chodza o 07:00, 11:20, 17:00, 19:20,
+        # 21:30 i 23:40, artykul we WTOREK o 14:00. Dwa przebiegi notek ida
+        # wiec przed artykulem. Limit `SZUKANIE_BANKU_NA_DOBE = 1` jest wspolny
+        # i liczony z tabeli `calls`, a artykul nie mial z niego ZADNEGO
+        # zwolnienia.
+        #
+        # Skutek przy pustym banku we wtorek: `wez_kandydatow` oddaje nic,
+        # `znajdz_ciekawostki` oddaje `[]` z powodu limitu, a `artykul_z_puli`
+        # konczy sie `ValueError("pula ciekawostek pusta")`. NIE MA ARTYKULU
+        # W TYM TYGODNIU. `zalegly_artykul` tego nie ratuje — on ratuje tekst,
+        # ktory powstal, a tu nie powstalo nic.
+        #
+        # Rachunek byl odwrotny do zamierzonego: limit oszczedzal jedno
+        # szukanie (~0,06 USD wejscia) i potrafil kosztowac caly artykul
+        # (~1,50 USD plus tydzien publikacji). Pusty bank we wtorek nie jest
+        # egzotyka — wystarczy tydzien, w ktorym notki zjadly zapas, albo odsiew
+        # blizniakow odrzucil reszte.
+        #
+        # Sciezka notek limit ZACHOWUJE: tam pusty zapas kosztuje jedna notke
+        # z pieciu, a nie caly tydzien.
+        print("  [ciekawostki] sciezka artykulu — szukam mimo limitu dobowego"
+              " (%d/dobe dotyczy notek)" % config.SZUKANIE_BANKU_NA_DOBE,
+              flush=True)
     elif _przebiegi_z_bankiem_dzis(conn) >= config.SZUKANIE_BANKU_NA_DOBE:
         # Zwykle dobieranie do banku: RAZ NA DOBE, nie przy kazdym z pieciu
         # przebiegow. Licznik czytamy z tabeli `calls`, bo tam i tak zapisujemy

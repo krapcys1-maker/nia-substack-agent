@@ -276,7 +276,11 @@ def wybierz_fakt(conn, run_id, ile: int = 8) -> dict:
         print("  [temat] z indeksu: %d kandydatow (bez wyszukiwania)"
               % len(fakty), flush=True)
     else:
-        fakty = stages.znajdz_ciekawostki(conn, run_id, ile=ile)
+        # `na_artykul=True` — sciezka artykulu nie podlega dobowemu limitowi
+        # szukania. Limit jest dla notek; tutaj kosztowal caly tygodniowy
+        # artykul, bo dwa przebiegi notek chodza przed wtorkowym 14:00 i mogly
+        # zuzyc jedyne dobowe szukanie, zanim artykul w ogole ruszyl.
+        fakty = stages.znajdz_ciekawostki(conn, run_id, ile=ile, na_artykul=True)
     if not fakty:
         raise ValueError("pula ciekawostek pusta")
 

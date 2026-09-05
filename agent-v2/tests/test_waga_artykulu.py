@@ -129,7 +129,11 @@ print("=== 6. ARTYKUL TEZ SIEGA NAJPIERW DO SPIZARNI ===")
 # wejscia i 0,127 USD po to, zeby wybrac jeden fakt — podczas gdy w indeksie
 # lezaly gotowe, oplacone i przepuszczone przez bramke.
 i_spizarnia = src.find("stages.wez_kandydatow(ile)")
-i_szukanie = src.find("stages.znajdz_ciekawostki(conn, run_id, ile=ile)")
+# PO WLASNOSCI, NIE PO DOKLADNYM NAPISIE. Stalo tu szukanie calego wywolania
+# z lista argumentow — i wystrzelilo, gdy do wywolania doszedl argument
+# `na_artykul=True`. Asercja pilnuje KOLEJNOSCI (spizarnia przed platnym
+# szukaniem), a nie tego, jak dlugie jest wywolanie.
+i_szukanie = src.find("stages.znajdz_ciekawostki(")
 sprawdz("wybierz_fakt pyta indeks", i_spizarnia > 0, i_spizarnia)
 sprawdz("i robi to PRZED platnym szukaniem",
         0 < i_spizarnia < i_szukanie, (i_spizarnia, i_szukanie))
