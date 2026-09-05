@@ -174,18 +174,15 @@ WYJATKI = {
     # NIE WOLNO brac paraleli. Dla konta o ubezpieczeniach ten sam prompt
     # zakazywalby dokladnie wlasciwych paraleli. Akapit sklada sie teraz
     # z `{nisza}`, `{kat_redakcyjny}` i przykladow z konfiguracji.
-    # Zapisy wlasnej porazki — artykul, ktory trzeba bylo skasowac.
-    "synteza.md": ("A piece that failed had none of this",),
-    "warto_pisac.md": ("was dull, and the diagnosis was",),
+    # Zapisy wlasnej porazki w `synteza.md` i `warto_pisac.md` (artykul,
+    # ktory trzeba bylo skasowac) zniknely 2026-09-05 razem z reszta historii
+    # poprzedniego konta w promptach — wiec i wyjatki na nie zniknely.
     # Wyjatek zdjety: `wykonalnosc.md` opisuje te sama porazke bez nazwy
     # produktu („jedno oznaczenie na jednym produkcie"), wiec nie potrzebuje
     # juz przepustki na slownictwo poprzedniej niszy.
-    # Notka naprawde skonczyla sie odeslaniem czytelnika do okolnika FAA.
-    # Zapis zostaje, bo to on tlumaczy, skad wzial sie zakaz „zadnej pracy
-    # domowej z kanalu" — i stoi tam obok wersji tego samego bledu w naszym
-    # polu („open the model card and see for yourself").
-    "config.py:NOTE_FORMS[ZACZEP_I_KONKRET]": (
-        "This went wrong live, and the record stays so it does not repeat",),
+    # Zapis wpadki w `NOTE_FORMS[ZACZEP_I_KONKRET]` (odeslanie czytelnika do
+    # nazwanego okolnika) zniknal 2026-09-05 razem z reszta historii
+    # poprzedniego konta; zostal sam zakaz pracy domowej z kanalu.
 }
 
 # Pliki wylaczone ze skanu sekcji 1 — z nazwy i z powodem.
@@ -455,8 +452,8 @@ print("=== 7. NAPRAWY Z 1 WRZESNIA NIE DAJA SIE CICHO COFNAC ===")
 skaut = " ".join((PROMPTY / "skaut.md").read_text(encoding="utf-8").split())
 sprawdz("skaut: `scale` mowi o wiazacym SKUTKU, nie o zasiegu technologii",
         "Judge who the OUTCOME binds" in skaut)
-sprawdz("skaut: zapis pomiaru osiem-z-osmiu stoi przy AN_INDUSTRY",
-        "eight topics out of eight" in skaut)
+sprawdz("skaut: AN_INDUSTRY nazwane jako nadmiernie zglaszane",
+        "gets over-claimed" in skaut)
 sprawdz("skaut: enum nazywa sytuacje z tego pola",
         all(s in skaut for s in ("one applicant", "one employer",
                                  "moderates")))
@@ -472,10 +469,25 @@ sprawdz("forma: ale ogolne 'ty' nadal nie przechodzi",
 
 klas = " ".join((PROMPTY / "klasyfikacja.md").read_text(encoding="utf-8")
                 .split())
-sprawdz("klasyfikacja: lista liczb obejmuje miary z tego pola",
-        all(s in klas for s in ("accuracy or error rate",
-                                "model or dataset size",
-                                "cost per unit of usage")))
+# PO WLASNOSCI, NIE PO SLOWACH Z JEDNEJ NISZY — czyli dokladnie to, o czym
+# mowi komentarz dwie asercje nizej, a czego ta asercja nie robila.
+#
+# Wymagala doslownie „model or dataset size". To jest miara Z JEDNEJ DZIEDZINY,
+# wiec test WYMUSZAL slad tematu w prompcie czystego rdzenia — i wystrzelil,
+# gdy ten slad usunieto. Straznik czystosci, ktory kaze byc nieczystym.
+#
+# Wlasnoscia, ktorej ta lista naprawde broni, jest SZEROKOSC: model ma nie
+# przegapic liczby dlatego, ze nie wyglada jak liczba, ktorej sie spodziewal.
+# Liczymy wiec rodzaje miar, nie ich nazwy.
+_rodzaje = ("percentage", "count", "duration", "price", "rate", "threshold",
+            "score", "size", "wait", "cost", "headcount", "fine")
+_ile = sum(1 for r in _rodzaje if r in klas)
+sprawdz("klasyfikacja: lista liczb obejmuje wiele ROZNYCH rodzajow miar",
+        _ile >= 8, "%d z %d rodzajow" % (_ile, len(_rodzaje)))
+sprawdz("klasyfikacja: i mowi wprost, ze rodzaj nie ma znaczenia",
+        "whatever it counts" in klas)
+sprawdz("klasyfikacja: oraz zabrania pomijania nieoczekiwanych",
+        "Do not skip one because it does not look like" in klas)
 
 scena = config.NOTE_FORMS["SCENA"]
 zaczep = config.NOTE_FORMS["ZACZEP_I_KONKRET"]

@@ -279,9 +279,11 @@ STYLE_PROFILES_DIR = REPO_ROOT / "style-profiles"
 `write` rzuca `StyleError` i artykuł nie powstaje — po opłaconym researchu.
 `agent-v2/` nie jest samowystarczalny.
 
-Katalog ma pięć plików, ale kod czyta tylko dwa. `CLAUDE_INSTRUKCJA_NATURALNEGO
-_PISANIA.md` (45 KB), `NOTES_STYLE_PROFILE_V1.md` i `STYLE_SOURCES_MANIFEST.md`
-nie są czytane przez żadną linię.
+Katalog ma trzy pliki, ale kod czyta tylko dwa. `CLAUDE_INSTRUKCJA_NATURALNEGO
+_PISANIA.md` (45 KB) nie jest czytany przez żadną linię. Dwa dalsze pliki,
+które opisywały prywatny korpus poprzedniego konta i potok sprzed v2
+(`NOTES_STYLE_PROFILE_V1.md`, `STYLE_SOURCES_MANIFEST.md`), usunięto
+2026-09-05.
 
 **Obejście.** Przy przenoszeniu bota trzeba wziąć cały korzeń repozytorium, nie
 sam `agent-v2/`. W konfiguratorze ta ścieżka ma być polem, nie stałą.

@@ -78,8 +78,8 @@ The name reaches the model through `SCOUT_SYSTEM`, `WRITER_SYSTEM` and the
 `{marka}` field, which `stages._prompt` injects into every prompt. You do not
 have to touch a prompt file to rename a publication.
 
-**Still hand-edited:** the two files in `style-profiles/` carry the name in
-prose. They are read by the article writer.
+The two files in `style-profiles/` carry the name as `{marka}`, which
+`style.load_profiles` substitutes when the article writer reads them.
 
 ### Subject
 
@@ -276,5 +276,5 @@ Two more things live elsewhere by nature:
 | the order of a day | `agent-v2/run.py`, `dzien()` |
 | anything about Substack itself | `agent-v2/browser.py`, `agent-v2/kanal.py` |
 
-Full function-level index: [FUNCTION_MAP.md](FUNCTION_MAP.md) — 566 functions,
+Full function-level index: [FUNCTION_MAP.md](FUNCTION_MAP.md) — 567 functions,
 which of them cost money and for which stage, and who calls each one.

@@ -403,3 +403,67 @@ rule was ours all along.
 
 **If you take one thing from this section:** reading thirty thousand lines did
 not find any of it. Standing outside your own installation for ten minutes did.
+
+## 12. The previous account's history inside the prompts
+
+Removed 2026-09-05. The 24 briefs in `agent-v2/prompts/` had grown to 4,287
+lines, and close to half of that was not instruction but memory: measurements
+from one account's runs ("82 comments went out and 3 came back", "four cards
+in ninety-three claims", "156 subjects from 12 channels"), dated incidents
+("in August this cost us an article", what the target-selection stage did on
+2 September), sentences quoted from that account's own published comments and
+articles, and paragraphs explaining what an earlier version of the same brief
+used to say and why it was changed.
+
+Every one of those was a trace of the old life: its subject, its channels,
+its reception numbers and its mistakes. A bot pointed at a different account
+was being taught on somebody else's failures, and the owner's instruction was
+direct: the prompts are too long and they hold the writers too tightly.
+
+| Kept | Removed |
+|---|---|
+| every `{field}` the code injects, and only those | measurements, counts and dates from the previous account's runs |
+| every JSON contract the code parses, byte for byte | sentences quoted from its published comments and articles as examples |
+| every rule a gate or a test depends on: the injection barrier and its position, the five silence labels, the `your` requirement, the datestamp rule, the limits-paragraph rule, the banned openers, the six-word echo check and the three sentences it is tested against | paragraphs about what an earlier version of the brief said and why it changed |
+| the method: what each stage is for, what it may assert, what it must return | rules stated twice or three times inside one brief, and blocks repeated across three briefs |
+| the style block for the header image, verbatim | the punctuation-rate table measured on the old account's articles |
+
+Where a rule had been argued from "measured on this account, X happened", it
+is now stated as the rule. The writer's brief went from 519 lines to 300, the
+scout's from 615 to 388, the note brief from 298 to 159, the comment brief
+from 268 to 137; the set from 4,287 lines to about 2,740.
+
+Six tests had pinned the anecdotes rather than the rules, and were re-pointed
+at the rules, each change commented in place: `test_cele_o_niszy`,
+`test_rekordy_nie_omowienia`, `test_cytat_niesie_twierdzenie`,
+`test_zastrzezenie_o_datach`, `test_wybor_tematu`, and `test_prompty_o_niszy`
+(two entries in its exception list covered sentences that no longer exist).
+
+The same day, a second pass took the rest of the account's history out of the
+places that feed the same briefs:
+
+- `config.py`: the "this went wrong live" records in `NOTE_FORMS` (a patent
+  number and a named circular from the old account's notes), the
+  previous-subject flavour in `NOTE_TYPES["MYSL"]` and
+  `NOTE_FORMS["ZACZEP_I_KONKRET"]`, the tic story in
+  `POSTAWY_KOMENTARZA["KOREKTA"]`, and the monthly attention hints in
+  `W_TYM_MIESIACU`, which described one industry's calendar and now describe
+  the rhythm of institutions in general.
+- `style-profiles/`: the two profiles injected into every article described a
+  pipeline that no longer exists (frozen evidence IDs, `BLOCK`,
+  `REWRITE_ONCE`, a route key), in Polish, and named the previous account's
+  private corpus as their origin. Rewritten in English against the current
+  pipeline, brand kept as `{marka}`. `NOTES_STYLE_PROFILE_V1.md` and
+  `STYLE_SOURCES_MANIFEST.md`, which documented that corpus (path, hash,
+  extraction date) and were read by nothing, were deleted.
+
+What is still tied to the previous subject, on purpose and outside the scope
+of a clean core: the default subject in `config.py` (`NISZA`,
+`KAT_REDAKCYJNY`, `HASLA_SZUKANIA`, `ZNAKI_NISZY`, `DZIEDZINY_CIEKAWOSTEK`,
+`OBSZARY_REWIRU`), which is the same material as
+`packs/everyday-things-and-regulation.toml` and is what the tests exercise as
+"our own example"; the version-name pattern `WZORZEC_WERSJI`, tuned for one
+industry's product names; and the measurement narratives in `config.py`
+comments and in the documentation, which are the reasons behind the constants
+rather than material any model sees. Making the subject a required, separate
+package is the next step, not this one.

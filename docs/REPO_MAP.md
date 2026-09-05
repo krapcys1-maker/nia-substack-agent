@@ -34,7 +34,7 @@ only hard stop.
 
 ```
 agent-v2/            the bot itself
-  prompts/           what the models are told — 24 briefs, 4000 lines
+  prompts/           what the models are told — 24 briefs, 2738 lines
   prompts/styl/      the style corpus. EMPTY in the repo, you supply it
   tests/             145 test_*.py, no pytest, each runs standalone
   tests/platne/      the 9 that cost money. Never run by CI
@@ -136,24 +136,27 @@ INJECTED, GENERATED, TEMPLATE or BY HAND.
 
 ## 5. The prompts, and which stage reads each
 
-24 briefs, 4000 lines. The long ones are long because they carry the record of
-what went wrong before.
+24 briefs, 2738 lines. They carry the method and the contracts, not the
+account's history: what each stage is for, what it may assert, what it must
+return. The measurements, dated incidents and quoted examples from the
+previous account's runs were taken out on 2026-09-05 (CLEANING_LOG.md §12);
+the rules they had produced stayed, stated as rules.
 
 | Brief | Lines | Read by | Decides |
 |---|---:|---|---|
-| `skaut.md` | 615 | scout | what to write about |
-| `pisarz.md` | 519 | write | the article itself |
-| `ciekawostki.md` | 416 | curiosity | facts worth a note |
-| `notka.md` | 303 | note | one note |
-| `komentarz.md` | 287 | comment | one comment under somebody else |
-| `odpowiedz.md` | 205 | reply | answering a reply |
-| `weryfikacja.md` | 188 | factcheck | whether a claim survives |
-| `synteza.md` | 150 | synthesis | the evidence card |
-| `warto_pisac.md` | 151 | warto_pisac | whether a card is worth writing |
-| `bank.md` | 122 | bank | ranking candidate facts |
-| `dyskoveria.md` | 116 | discovery | which sources to open |
-| `grafika.md` | 110 | grafika | the cover image |
-| the other 12 | 1046 | one stage each | forma, feasibility, targets, restacks, … |
+| `skaut.md` | 388 | scout | what to write about |
+| `pisarz.md` | 300 | write | the article itself |
+| `ciekawostki.md` | 248 | curiosity | facts worth a note |
+| `notka.md` | 159 | note | one note |
+| `komentarz.md` | 137 | comment | one comment under somebody else |
+| `weryfikacja.md` | 136 | factcheck | whether a claim survives |
+| `odpowiedz.md` | 125 | reply | answering a reply |
+| `synteza.md` | 114 | synthesis | the evidence card |
+| `warto_pisac.md` | 106 | warto_pisac | whether a card is worth writing |
+| `grafika.md` | 98 | grafika | the cover image |
+| `bank.md` | 93 | bank | ranking candidate facts |
+| `dyskoveria.md` | 77 | discovery | which sources to open |
+| the other 12 | 760 | one stage each | forma, feasibility, targets, restacks, … |
 
 Every brief is read through `stages._prompt(name, **fields)`, which injects the
 common fields and fails loudly on a missing one. There is no path that reads a

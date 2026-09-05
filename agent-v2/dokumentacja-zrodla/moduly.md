@@ -1,7 +1,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2885 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2908 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -35,7 +35,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7468 wierszy, 136 funkcji na poziomie modułu, 0 klas
+7620 wierszy, 137 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -172,6 +172,7 @@
 | `_po_terminie(k)` *(wewn.)* | Czy kandydatura jest juz po swoim terminie przydatnosci. |
 | `bank_pelny()` | Czy zapas wystarczy, zeby NIE placic za nowe szukanie. |
 | `zwroc_kandydatow(kandydaci)` | Oddaje do puli kandydatow, ktorych ostatecznie NIE uzyto. |
+| `oznacz_uzyty(fakt)` | Odhacza w indeksie fakt, ktory NAPRAWDE poszedl w swiat. |
 | `stan_indeksu()` | Ile mamy zapasu i ile odsialismy — do wypisania przy starcie. |
 | `korpus_fedreg(ile_dokumentow, ile_gestych)` | Preambuly przepisow, w ktorych regulator ODPOWIADA na zastrzezenia. |
 | `kandydaci_z_fedreg(conn, run_id, dokument)` | Wyciaga kandydatow z jednej preambuly i oddaje w ksztalcie indeksu. |
@@ -457,7 +458,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3256 wierszy, 36 funkcji na poziomie modułu, 0 klas
+3242 wierszy, 36 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -569,7 +570,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1470 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1516 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

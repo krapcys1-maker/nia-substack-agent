@@ -137,8 +137,8 @@ touching logic.
 | ~~two publish-panel URLs written out~~ | ~~`browser.py:751-752`~~ | **fixed** — composed from the handle |
 | brand name | `config.NAZWA_MARKI` | CONFIG |
 | brand in scout and writer system messages | `stages.py` | **fixed** — composed from config |
-| brand in nine prompt files | `prompts/*.md` | TEXT — still open |
-| brand in both style profiles | `style-profiles/` | TEXT — still open |
+| ~~brand in nine prompt files~~ | ~~`prompts/*.md`~~ | **fixed** — injected as `{marka}` by `stages._prompt` |
+| ~~brand in both style profiles~~ | ~~`style-profiles/`~~ | **fixed** — `{marka}` substituted by `style.load_profiles` |
 
 > The handle used to live in two independent constants — 16 uses of one, 11 of
 > the other. Changing one gave a bot that **published to one account and read
@@ -163,7 +163,7 @@ touching logic.
 | curiosity patterns | `config.GENERATORY` | 14, topic-neutral | — |
 | topic sources | `korpus_kanalow.KANALY` | ships empty | CONFIG |
 | headline filtering | `korpus_kanalow.OPRAWA`, `NIE_TEMAT` | regexes | TEXT |
-| subject sentences in prompts | 14 files | ~30 lines | TEXT — still open |
+| ~~subject sentences in prompts~~ | ~~14 files~~ | — | **fixed** — injected as `{nisza}` and `{kat_redakcyjny}`, niche examples from `temat.przyklady` |
 
 All of the CONFIG rows above are now settable from `konfiguracja.toml`.
 
@@ -314,7 +314,7 @@ Brak sesji Substacka.
 
 ## 4.1 The proportions
 
-Measured across 566 functions in 25 modules:
+Measured across 567 functions in 25 modules:
 
 | layer | functions | portable? |
 |---|---|---|
@@ -372,7 +372,7 @@ The cheapest of the three, and now largely a config file:
 2. `DZIEDZINY_CIEKAWOSTEK`, ≥29 entries — **TEXT, a few hours**
 3. `KANALY` — **CONFIG**
 4. `OPRAWA` / `NIE_TEMAT` — **TEXT**
-5. ~30 sentences in 14 prompts — **TEXT, still open**
+5. ~~~30 sentences in 14 prompts~~ — **fixed**, injected from config
 6. rebuild the generated documentation
 
 **A day's work, mostly writing.**

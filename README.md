@@ -87,7 +87,7 @@ cannot see.
 | **[packs/README.md](packs/README.md)** | **subject packs** — ready-made subjects (AI, how things work, laws and public money) you can start from instead of inventing twenty search terms. One file each, and the place to contribute one |
 | **[docs/INSTALL.md](docs/INSTALL.md)** | zero to running, step by step — including the one step no software can do for you |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | how it works and where everything lives: both pipelines, all 26 roles, every directory |
-| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **566 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
+| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **567 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
 | **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | split in two: what will bite you on a fresh clone, and what already bit us and is fixed. **Read before your first run** |
 | **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
 | **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
@@ -101,7 +101,7 @@ behind each entry, is [docs/ROZWIAZYWANIE_PROBLEMOW.md](docs/ROZWIAZYWANIE_PROBL
 The bot's own design documents are in `agent-v2/` and are in Polish:
 `DOKTRYNA.md` (what it must and must not do — canonical, and its closing
 "Discrepancies" section is part of the document), `JAK_DZIALA_V2.md`
-(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 13,084 lines,
+(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 11,860 lines,
 **generated from the code** and guarded by a test so it cannot drift.
 
 **A word on the language, before you open a file.** Everything written *for
@@ -305,9 +305,10 @@ them. A nicer directory name is not worth that.
 
 **It is a configurable product for one platform, not for any platform.**
 `konfiguracja.toml` now drives the account, the subject, the model split, the
-volumes and the budget. What is still hand-edited: the subject sentences inside
-14 prompt files, and the brand name in nine of them. What will not become a
-field at all: the Substack layer is ~2,500 lines a second platform would not
+volumes and the budget. The prompts take subject, brand and
+niche examples from it at call time. What is still hand-edited: the two style
+profiles in `style-profiles/` and the monthly attention hints in `config.py`.
+What will not become a field at all: the Substack layer is ~2,500 lines a second platform would not
 share, and the gates in `gates.py` are English regular expressions that stop
 matching — silently — in another language. The full breakdown, split into a
 day's work, a few days' work and rewriting a module, is in

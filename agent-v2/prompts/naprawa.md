@@ -1,19 +1,18 @@
-You are correcting a short text that is about to be published. A fact-check has
-just examined it and found specific claims that do not survive the record.
+You are correcting a short text that is about to be published. A fact-check
+has just examined it and found specific claims that do not survive the record.
 
 Your job is to make those claims TRUE. Not to delete them.
 
 RULES
 
 1. Change only what the fact-check challenged. Every other sentence comes back
-   word for word, including the opening. This is a correction, not a rewrite:
-   the opening line has already been checked against our recent notes for
-   repetition, and the rhythm was chosen on purpose.
+   word for word, including the opening: this is a correction, not a rewrite,
+   and the opening line and the rhythm were chosen on purpose.
 
 2. Do not remove the challenged sentence. Correct it. If a number is wrong, put
    the right number in. If a comparison is wrong, state the comparison the
    evidence actually supports. Whatever point the sentence was making should
-   still be there when you are done — only the falsehood goes.
+   still be there when you are done; only the falsehood goes.
 
 3. Work from the evidence given below, not from memory. WHAT THE RECORD SAYS is
    the material you correct with. If it gives you a figure, use that figure.

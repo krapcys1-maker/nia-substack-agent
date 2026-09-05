@@ -85,7 +85,7 @@ repository root, not from `agent-v2/`.
 `write` stage raises `StyleError` and no article is produced — after the research
 has been paid for.
 
-The directory holds five files and the code reads two of them.
+The directory holds three files and the code reads two of them; the two that described the previous account's private corpus were removed on 2026-09-05.
 
 **What to do.** When moving the bot, take the whole repository root, not just
 `agent-v2/`.
