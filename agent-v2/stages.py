@@ -309,9 +309,22 @@ def recent_angles(conn: sqlite3.Connection, limit: int = config.DIVERSITY_LOOKBA
     return angles
 
 
-def tematy_do_porownania(conn: sqlite3.Connection,
-                         limit: int = config.DIVERSITY_LOOKBACK) -> list[str]:
+def tematy_do_porownania(conn: sqlite3.Connection, limit: int = -1) -> list[str]:
     """Poprzednie artykuly w postaci NADAJACEJ SIE DO POROWNANIA.
+
+    BEZ LIMITU DOMYSLNIE (`-1` to „wszystkie" w SQLite). Stalo tu
+    `config.DIVERSITY_LOOKBACK`, czyli PIEC — a przy jednym artykule tygodniowo
+    to pieciotygodniowa pamiec: szosty artykul wstecz byl dla straznika powtorek
+    niewidoczny i ten sam temat mogl wrocic.
+
+    `DIVERSITY_LOOKBACK` jest ustawione dla czegos innego (historia dla skauta,
+    `db.recent_domains`) i pilnowanie nim powtorek bylo pozyczeniem cudzej
+    liczby.
+
+    Bez limitu jest tanie, bo ta lista NIE IDZIE DO ZADNEGO PROMPTU — sprawdzone:
+    jedyny czytelnik to `pick_topic`/`niepowtorzony`, rozmyte porownanie liczone
+    lokalnie. Tabela rosnie o wiersz tygodniowo, po 1 200 znakow tresci na
+    artykul; piec lat pisania to okolo 340 kB w pamieci.
 
     Rozne od `recent_angles`, ktore oddaje same tytuly do promptu skauta.
     Tytul jest metafora — potrafi nie miec ANI JEDNEGO slowa wspolnego
@@ -3471,7 +3484,25 @@ def notki_dnia(
               % type(exc).__name__, flush=True)
 
     if ciekawostki is None:
-        ciekawostki = znajdz_ciekawostki(conn, run_id)
+        # SPIZARNIA PRZED ZAKUPAMI. Stalo tu gole `znajdz_ciekawostki(...)`,
+        # czyli platne szukanie na starcie KAZDEGO przebiegu — a `wez_kandydatow`
+        # wchodzilo dopiero nizej, gdy zapas sie skonczyl.
+        #
+        # Skutki byly dwa. Pierwszy to pieniadze: szukanie ciekawostek to
+        # zmierzone 266 517 tokenow wejscia srednio, placone przy banku, ktory
+        # mial czekajacy material. Drugi jest gorszy — swieze fakty wchodzily
+        # PRZED czekajacymi, a czekajace starzaly sie do `BANK_MAKS_DNI` i
+        # wypadaly jako `przeterminowany`. Placilismy wiec dwa razy: raz za
+        # szukanie, drugi raz za material, ktory przez to zgnil.
+        #
+        # Furtka wydarzen nie ginie: `znajdz_ciekawostki` nadal jest wolane,
+        # gdy spizarnia jest pusta, a `_nowe_wydarzenia` siedzi w srodku.
+        ciekawostki = wez_kandydatow(config.CURIOSITY_BATCH)
+        if ciekawostki:
+            print("  [bank] biore %d z zapasu zamiast szukac"
+                  % len(ciekawostki), flush=True)
+        else:
+            ciekawostki = znajdz_ciekawostki(conn, run_id)
     zapas = list(ciekawostki)
     dzien: list[dict[str, Any]] = []
     # O czym juz dzis mowimy. Promowany artykul liczy sie od razu — to od niego
@@ -7384,6 +7415,44 @@ def zwroc_kandydatow(kandydaci: list[dict[str, Any]]) -> int:
     if ile:
         _zapisz_indeks(indeks)
         print("  [indeks] oddane do puli, bo nieuzyte: %d" % ile, flush=True)
+    return ile
+
+
+def oznacz_uzyty(fakt: Any) -> int:
+    """Odhacza w indeksie fakt, ktory NAPRAWDE poszedl w swiat.
+
+    DWIE KSIEGOWOSCI, KTORE SIE NIE WIDZIALY. Po potwierdzonej publikacji
+    `run.py` dopisywal fakt do `zuzyte_fakty.json`, ale wpis w indeksie zostawal
+    `nowy` — bo status `uzyty` nadaje wylacznie `wez_kandydatow`, a ono z kolei
+    nie czyta `zuzyte_fakty.json`. Fakt wziety prosto ze swiezego szukania
+    (a nie z indeksu) nie przechodzil przez `wez_kandydatow` w ogole, wiec
+    nastepnego dnia ten sam wpis mogl wyjsc z indeksu drugi raz.
+
+    Zatrzymywalo go tylko rozmyte porownanie z pamiecia notek — cztery wspolne
+    rdzenie przy udziale 0,30 plus nazwa wlasna. To dziala (zmierzone: 5 z 5
+    prawdziwych powtorek na 29 notkach, 0 z 399 falszywych), ale jest
+    statystyka, a nie konstrukcja. Dwie notki o tym samym fakcie to dokladnie
+    wpadka z 23 i 24 sierpnia, ktora pamiec permanentna miala zamknac.
+
+    PELNA TRESC, NIE `_klucz_faktu` — symetrycznie do `zwroc_kandydatow` i z tego
+    samego powodu: klucz normalizuje tekst, zeby wykrywac POWTORKI, wiec
+    odhaczylby takze inny wpis, ktory dzieli z tym klucz.
+    """
+    tresc = " ".join(tekst_faktu(fakt).split())
+    if not tresc:
+        return 0
+    indeks = wczytaj_indeks()
+    ile = 0
+    for k in indeks:
+        if k.get("status") != "nowy":
+            continue
+        if " ".join(str(k.get("fact") or "").split()) == tresc:
+            k["status"] = "uzyty"
+            k["uzyty_kiedy"] = db.now()
+            ile += 1
+    if ile:
+        _zapisz_indeks(indeks)
+        print("  [indeks] odhaczone po publikacji: %d" % ile, flush=True)
     return ile
 
 

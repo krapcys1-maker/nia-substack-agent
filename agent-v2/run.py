@@ -1318,6 +1318,13 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 # notka nie poszla albo gdy przebieg byl tylko sprawdzeniem.
                 if wynik.get("wyslane") and n.get("fakt"):
                     stages.zapisz_zuzyte([n["fakt"]])
+                    # OBIE KSIEGOWOSCI, NIE JEDNA. `zapisz_zuzyte` pisze do
+                    # `zuzyte_fakty.json`, ktory czyta wylacznie SZUKANIE.
+                    # Sciezki indeksowe patrza na `status`, a ten nadaje tylko
+                    # `wez_kandydatow` — wiec fakt wziety prosto ze swiezego
+                    # szukania zostawal w indeksie jako `nowy` i mogl wyjsc
+                    # nastepnego dnia drugi raz.
+                    stages.oznacz_uzyty(n["fakt"])
                 # Dzien promocji artykulu tez odhaczamy dopiero po publikacji —
                 # inaczej artykul dostawal mniej niz piec notek promujacych,
                 # a nikt by tego nie zauwazyl.
