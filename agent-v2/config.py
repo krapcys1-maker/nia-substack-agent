@@ -1002,6 +1002,38 @@ MAX_TOKENS = {
 NOTE_MIN_WORDS = 33
 NOTE_MAX_WORDS = 64
 
+# DLUGOSC WG TYPU NOTKI — zeby piec notek na dobe nie bylo piecioma notkami
+# tej samej dlugosci.
+#
+# Reguła „nie pisz wszystkiego tej samej długości, jednakowość sama w sobie
+# jest sygnałem" stała w `komentarz.md` i `odpowiedz.md`, a NOTEK NIE
+# OBEJMOWAŁA. Skutek: pięć notek dziennie lądowało w paśmie 31 słów, co jest
+# wzorem widocznym gołym okiem u kogoś, kto czyta konto codziennie.
+#
+# NIE PODNOSIMY SUFITU. Te 64 słowa są zmierzone: 65-256 słów wyraźnie spada.
+# Zmienia się to, że pasmo jest teraz UŻYWANE NA CAŁEJ SZEROKOŚCI, a nie
+# w okolicach środka.
+#
+# Podział idzie za tym, czym typ notki jest, a nie za losowaniem:
+# sprostowanie jest z natury krótkie i ostre, myśl może oddychać.
+# Każdy przedział MUSI mieścić się w [NOTE_MIN_WORDS, NOTE_MAX_WORDS] —
+# pilnuje tego `test_dlugosc_notek.py`, bo bramka sprawdza pasmo globalne.
+DLUGOSC_NOTKI_WG_TYPU = {
+    "SPROSTOWANIE": (33, 42),   # najkrótsza: jedna rzecz do poprawienia
+    "CIEKAWOSTKA":  (36, 50),   # koń roboczy, środek pasma
+    "DYSKUSJA":     (44, 58),   # ma otworzyć rozmowę, potrzebuje zaczepienia
+    "MYSL":         (50, 64),   # ta, której wolno się rozwinąć
+}
+
+
+def dlugosc_notki(typ: str) -> tuple[int, int]:
+    """Przedział słów dla tego typu notki. Nieznany typ dostaje całe pasmo."""
+    od, do = DLUGOSC_NOTKI_WG_TYPU.get(
+        str(typ).upper(), (NOTE_MIN_WORDS, NOTE_MAX_WORDS))
+    # Przyciecie do pasma globalnego, zeby przestawienie sufitu w konfiguracji
+    # nie wypuscilo notki poza to, czego pilnuje bramka.
+    return (max(NOTE_MIN_WORDS, od), min(NOTE_MAX_WORDS, do))
+
 # Ilu kandydatow generujemy. Dawniej bylo pieciu, potem trzech; dodatkowe
 # warianty tego samego zdania niczego nie dokladaly, a placilismy za nie i ich
 # weryfikacje. Dzis notke pisze Opus, a kandydat jest jeden.

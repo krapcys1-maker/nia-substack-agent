@@ -46,10 +46,24 @@ consequence is a note; four names and five numbers is a changelog entry.
 
 **{min_words} to {max_words} words. Count them.**
 
-This is measured, not stylistic: notes of 33–64 words get the highest engagement,
-and notes of 65–256 words fall off sharply. The instinct to write a paragraph
-lands squarely in the dead zone. If your idea will not fit in {max_words} words,
-it is not a note.
+This band is measured, not stylistic: notes of 33-64 words get the highest
+engagement, and notes of 65-256 words fall off sharply. The instinct to write a
+paragraph lands squarely in the dead zone.
+
+**The range you were given is narrower than the full band, and it is narrower
+on purpose.** It comes from the type of note you are writing: a correction is
+short because it has one thing to fix, a thought is longer because it has room
+to turn. Five notes a day all landing on the same word count is a pattern a
+regular reader sees without looking for it.
+
+So use the range you were given, and use it properly:
+
+- If you are near the bottom of it, be genuinely short. Do not pad toward the
+  middle.
+- If you are near the top of it, you have room to develop the point — take it.
+  A second beat, a consequence, an objection answered.
+- Never write to hit a number. If the thought finishes early, stop early; if it
+  does not fit in {max_words} words, it is not this note.
 
 ## The note type you are writing now: {note_type}
 
@@ -212,14 +226,7 @@ Where the shape brief above rules on where a question may sit, the shape wins.
 
 # How not to read as a machine
 
-## Punctuation: this is the strongest tell in short text
-
-**No em dashes. No semicolons.** Not "few" — none, unless a quotation contains
-one. Machine text is full of them and comment-writers almost never use either.
-Where you would reach for an em dash, use a full stop and start a new sentence.
-
-Use the marks people actually use: full stops, commas, question marks. An
-occasional ellipsis is fine. Do not balance every sentence with a colon.
+{po_ludzku}
 
 ## Length
 
@@ -237,12 +244,6 @@ conversation" above, seen from the other side: the question that is banned is
 the one asked to collect replies. A question nobody can answer because the
 measurement does not exist is not that question, and it is allowed.
 
-## Hedging
-
-Hedge at most once, and only where you are actually unsure. "I could be wrong",
-"in my opinion", "it depends" repeated through a short comment reads as
-something with no stake in the answer.
-
 ## Register
 
 Take a position. Where the honest reaction is blunt, be blunt. A comment section
@@ -251,12 +252,6 @@ each reply is well written.
 
 Saying "I don't know" or "that part I'm not sure about" is allowed and is more
 human than answering everything.
-
-## Banned vocabulary
-
-delve, moreover, furthermore, in conclusion, overall, a testament to, it's
-important to note, landscape, navigate (figurative), leverage, foster, robust,
-underscore, crucial, seamless, holistic, myriad, tapestry.
 
 ## Output
 

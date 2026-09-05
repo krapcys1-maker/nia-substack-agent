@@ -1,15 +1,23 @@
-# Jak nie brzmieć jak maszyna
+# Jak nie brzmieć jak maszyną
 
-> **MATERIAŁ REFERENCYJNY, NIE PROMPT ETAPU.** Nagłówek tego pliku mówił
-> wcześniej „ten fragment jest dołączany do promptów komentarza, odpowiedzi
-> i notki" i **to była nieprawda** — sprawdzone drzewem składni: nazwa
-> `po_ludzku.md` nie pada w żadnej linii kodu. Reguły stąd zostały wpisane
-> ręcznie do `komentarz.md`, `odpowiedz.md` i `notka.md` (sekcje
-> „Banned vocabulary"), a ten plik został jako źródło. Zmiana tutaj **nie
-> działa sama z siebie** — trzeba przenieść ją do właściwego promptu.
+> **TEN PLIK JEST DOŁĄCZANY DO PROMPTÓW** — `komentarz.md`, `notka.md`
+> i `odpowiedz.md` wstawiają go przez pole `po_ludzku`. Zmiana tutaj działa od
+> razu, we wszystkich trzech naraz.
+>
+> Do 2026-09-05 było odwrotnie i nagłówek o tym kłamał: plik opisywał się jako
+> dołączany, a jego nazwa nie padała w żadnej linii kodu. Reguły były
+> przepisane ręcznie do trzech briefów — cztery kopie jednej reguły, ~4 900
+> znaków nadmiaru w każdym wywołaniu, i gwarancja, że z czasem się rozjadą.
+>
+> **Wszystko powyżej pierwszej poziomej kreski jest notatką dla człowieka
+> i do promptu nie idzie.**
 
 Pochodzi z researchu o tym, po czym ludzie i platformy rozpoznają tekst
 generowany — nie z przeczucia.
+
+
+<!-- WSTRZYKIWANE (pole `po_ludzku`): Punctuation: this is the strongest tell in short text, Hedging, Banned vocabulary.
+     Reszta tego pliku jest materialem referencyjnym i do promptu NIE IDZIE. -->
 
 ---
 

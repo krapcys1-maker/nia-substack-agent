@@ -138,14 +138,7 @@ sentence.
 
 # How not to read as a machine
 
-## Punctuation: this is the strongest tell in short text
-
-**No em dashes. No semicolons.** Not "few" — none, unless a quotation contains
-one. Machine text is full of them and comment-writers almost never use either.
-Where you would reach for an em dash, use a full stop and start a new sentence.
-
-Use the marks people actually use: full stops, commas, question marks. An
-occasional ellipsis is fine. Do not balance every sentence with a colon.
+{po_ludzku}
 
 ## Length for THIS one
 
@@ -181,12 +174,6 @@ is as readable a tell as a fixed length.
 
 End on the point. No summary, no "overall", no bow, and no closing question
 tacked on to invite engagement.
-
-## Hedging
-
-Hedge at most once, and only where you are actually unsure. "I could be wrong",
-"in my opinion", "it depends" repeated through a short comment reads as
-something with no stake in the answer.
 
 ## Register
 
@@ -239,12 +226,6 @@ each reply is well written. Blunt is fine; blunt is not the same as formal.
 Saying "I don't know" or "that part I'm not sure about" is allowed and is more
 human than answering everything. Saying it inside a comment is human. Saying it
 instead of a comment is not an option here.
-
-## Banned vocabulary
-
-delve, moreover, furthermore, in conclusion, overall, a testament to, it's
-important to note, landscape, navigate (figurative), leverage, foster, robust,
-underscore, crucial, seamless, holistic, myriad, tapestry.
 
 ## Output
 

@@ -143,6 +143,9 @@ POLA_WSPOLNE = frozenset({
     "nisza", "marka", "language", "kat_redakcyjny",
     "kanon_niszy", "rzeczy_czytelnika", "obszary_seam",
     "przekonania_niszy", "precedensy_niszy",
+    # Blok „nie brzmij jak maszyna" — wspolny dla krotkich form.
+    # Patrz `SEKCJE_WSPOLNE` i `_blok_po_ludzku`.
+    "po_ludzku",
 })
 
 
@@ -161,9 +164,64 @@ def _blok_przykladow(klucz: str, gdy_pusto: str) -> str:
     return "\n".join("- %s" % p for p in pozycje)
 
 
+# SEKCJE „po ludzku" WSPOLNE DLA WSZYSTKICH KROTKICH FORM. Zmierzone: te trzy
+# byly BAJT W BAJT identyczne w `komentarz.md`, `notka.md` i `odpowiedz.md` —
+# trzy kopie jednej reguly czekajace, az sie rozjada. Lista stoi w kodzie,
+# a nie w pliku, bo `test_po_ludzku.py` sprawdza ja wobec OBU stron: czy plik
+# te sekcje ma i czy briefy juz ich nie maja u siebie.
+SEKCJE_WSPOLNE = (
+    "Punctuation: this is the strongest tell in short text",
+    "Hedging",
+    "Banned vocabulary",
+)
+
+
+def _blok_po_ludzku() -> str:
+    """Wspolny blok „nie brzmij jak maszyna" — JEDNO zrodlo, nie cztery kopie.
+
+    Do 2026-09-05 ten material lezal w `prompts/po_ludzku.md`, ktory opisywal
+    sam siebie jako dolaczany do promptow — i nie byl dolaczany do niczego.
+    Reguly przepisano RECZNIE do `komentarz.md`, `notka.md` i `odpowiedz.md`,
+    wiec zmiana w zrodle nie robila nic, a cztery kopie jednej reguly rozjezdzaja
+    sie tak samo, jak rozjechala sie tu data przestawienia (piec kopii) i lista
+    slow pustych (cztery).
+
+    Zmierzone przed poprawka: 15 akapitow powtorzonych miedzy briefami,
+    ~4 900 znakow nadmiaru w kazdym wywolaniu.
+
+    Naglowek pliku (wszystko przed pierwszym `---`) jest notatka dla czlowieka
+    i do promptu NIE IDZIE.
+    """
+    tekst = (config.PROMPTS_DIR / "po_ludzku.md").read_text(encoding="utf-8")
+    czesci = tekst.split("\n---\n", 1)
+    cialo = (czesci[1] if len(czesci) == 2 else tekst).strip()
+    # TYLKO SEKCJE IDENTYCZNE WE WSZYSTKICH TRZECH BRIEFACH. `Openers and
+    # closers` i `Register` roznia sie miedzy plikami i zostaja u nich —
+    # wstrzykniecie ich zdublowaloby tresc, a scalenie byloby zgadywaniem,
+    # ktora wersja jest ta wlasciwa. `Length: vary it, hard` tez zostaje poza
+    # blokiem: komentarz i odpowiedz maja te regule u siebie pod innym
+    # naglowkiem, a notka dostaje wersje pisana pod notki.
+    wybrane, biezaca, tresc = [], None, []
+
+    def _dolacz():
+        if biezaca in SEKCJE_WSPOLNE:
+            wybrane.append(("## %s\n%s" % (biezaca, "\n".join(tresc))).strip())
+
+    for wiersz in cialo.split("\n"):
+        if wiersz.startswith("## "):
+            _dolacz()
+            biezaca, tresc = wiersz[3:].strip(), []
+        elif biezaca is not None:
+            tresc.append(wiersz)
+    _dolacz()
+    return "\n\n".join(wybrane)
+
+
 def _pola_wspolne() -> dict[str, Any]:
     """Nisza, marka i jezyk — czytane z configu przy KAZDYM wywolaniu."""
     return {
+        # WSTRZYKIWANE, NIE KOPIOWANE. Patrz `_blok_po_ludzku`.
+        "po_ludzku": _blok_po_ludzku(),
         "nisza": config.NISZA,
         "marka": config.NAZWA_MARKI,
         # KAT REDAKCYJNY. Doklejany po myslniku zaraz za nisza w dziewieciu
@@ -2518,10 +2576,15 @@ def note(
     W obu wypadkach notka stoi na materiale ocytowanym, więc nie ma skąd
     zmyślać liczby. Generujemy kilku kandydatów; wybór należy do właściciela.
     """
+    # DLUGOSC IDZIE ZA TYPEM, nie jedna dla wszystkich. Piec notek na dobe
+    # w pasmie 31 slow to wzor widoczny golym okiem; regula „nie pisz
+    # wszystkiego tej samej dlugosci" stala w komentarzach i odpowiedziach,
+    # a notek nie obejmowala. Sufit 64 zostaje — jest zmierzony.
+    _min_slow, _max_slow = config.dlugosc_notki(note_type)
     prompt = _prompt(
         "notka.md",
-        min_words=config.NOTE_MIN_WORDS,
-        max_words=config.NOTE_MAX_WORDS,
+        min_words=_min_slow,
+        max_words=_max_slow,
         note_type=note_type,
         type_brief=_opis_typu(note_type),
         note_form=note_form,

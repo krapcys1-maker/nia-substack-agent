@@ -11,7 +11,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 143 tests · 12 gates on every finished text
+26 model roles · 145 tests · 12 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -87,7 +87,7 @@ cannot see.
 | **[packs/README.md](packs/README.md)** | **subject packs** — ready-made subjects (AI, how things work, laws and public money) you can start from instead of inventing twenty search terms. One file each, and the place to contribute one |
 | **[docs/INSTALL.md](docs/INSTALL.md)** | zero to running, step by step — including the one step no software can do for you |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | how it works and where everything lives: both pipelines, all 26 roles, every directory |
-| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **563 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
+| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **566 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
 | **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | split in two: what will bite you on a fresh clone, and what already bit us and is fixed. **Read before your first run** |
 | **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
 | **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
@@ -282,7 +282,7 @@ figure had reached 137:
 | `+ playwright install chromium` | the last three |
 | `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_zapora_platnych_wywolan` needs a real `ANTHROPIC_API_KEY` to prove the paid-call firewall refuses it |
 
-Measured on this copy: of 143 test files, **137 pass, 2 skip themselves and 2
+Measured on this copy: of 145 test files, **137 pass, 2 skip themselves and 2
 fail**. Both remaining failures are impossible to fix on a fresh Windows install
 and neither says anything about the code. Each is listed with its cause in
 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The count of files is

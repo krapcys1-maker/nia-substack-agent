@@ -103,9 +103,9 @@
 {{"choices": [{{"index": <number>, "rank": <1 is highest>, "why": "<one sentence>", "kind": "disagreement"|"question"|"correction"|"addition"|"agreement"}}], "skipped_because": "<one sentence about the ones you left out>"}}
 ```
 
-#### `komentarz.md` (287 wierszy)
+#### `komentarz.md` (268 wierszy)
 
-**Pola wejściowe:** `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `otwarcie`, `postawa`, `postawa_opis`, `title`
+**Pola wejściowe:** `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
 
 **Kontrakt wyjścia:**
 
@@ -123,9 +123,9 @@
 {{"text": "the full corrected text", "co_zmienione": "one line: what you changed and what evidence you changed it to"}}
 ```
 
-#### `notka.md` (303 wierszy)
+#### `notka.md` (298 wierszy)
 
-**Pola wejściowe:** `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `type_brief`
+**Pola wejściowe:** `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `type_brief`
 
 **Kontrakt wyjścia:**
 
@@ -133,9 +133,9 @@
 {{"note": "<the note>", "words": <integer>, "fact_used": "<the single fact from the evidence this rests on>", "source_url": "<the url that fact came from>"}}
 ```
 
-#### `odpowiedz.md` (205 wierszy)
+#### `odpowiedz.md` (186 wierszy)
 
-**Pola wejściowe:** `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `under_what`
+**Pola wejściowe:** `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `po_ludzku`, `under_what`
 
 **Kontrakt wyjścia:**
 
@@ -152,6 +152,10 @@
 ```json
 {{"title": "<the published headline>", "subtitle": "<one line>", "body": "<the article, plain text with blank lines between paragraphs>", "numbers_used": ["<each figure you wrote, exactly as written>"], "limits_paragraph_present": true|false}}
 ```
+
+#### `po_ludzku.md` (72 wierszy)
+
+**Pola wejściowe:** *(brak)*
 
 #### `recenzent.md` (59 wierszy)
 

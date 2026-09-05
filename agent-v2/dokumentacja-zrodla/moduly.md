@@ -35,12 +35,13 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-7405 wierszy, 135 funkcji na poziomie modułu, 0 klas
+7468 wierszy, 136 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_na_kanal(nazwa)` *(wewn.)* | Wszystko, co ta funkcja zaplaci, ksieguje sie na kanal `nazwa`. |
 | `_blok_przykladow(klucz, gdy_pusto)` *(wewn.)* | Przyklady z niszy jako lista punktow — albo polecenie, gdy ich nie ma. |
+| `_blok_po_ludzku()` *(wewn.)* | Wspolny blok „nie brzmij jak maszyna" — JEDNO zrodlo, nie cztery kopie. |
 | `_pola_wspolne()` *(wewn.)* | Nisza, marka i jezyk — czytane z configu przy KAZDYM wywolaniu. |
 | `_prompt(name, **fields)` *(wewn.)* | — |
 | `recent_angles(conn, limit)` | Ostatnie kąty redakcyjne — wejście do reguły różnorodności. |
@@ -456,7 +457,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3224 wierszy, 35 funkcji na poziomie modułu, 0 klas
+3256 wierszy, 36 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -471,6 +472,7 @@
 | `kotwica_dlugosci(glebokosc)` | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. |
 | `dlugosc_dla(glebokosc)` | Ile slow ma miec artykul o tej glebokosci. |
 | `_tokens_for(chars)` *(wewn.)* | — |
+| `dlugosc_notki(typ)` | Przedział słów dla tego typu notki. Nieznany typ dostaje całe pasmo. |
 | `losowa_postawa()` | Ktora postawa dla TEGO komentarza. Wagi, nie rownomiernie. |
 | `losowe_otwarcie()` | — |
 | `losowa_dlugosc()` | Ile slow ma miec ta konkretna wypowiedz. |

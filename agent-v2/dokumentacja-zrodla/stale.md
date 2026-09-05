@@ -92,6 +92,7 @@
 | `MAX_TOKENS` | `{ # 6 tematow: tytul, pytanie, ZLAMANE PRZEK` | — |
 | `NOTE_MIN_WORDS` | `33` | --- notki i komentarze ------------------------------------------------------ Zmierzone na publicznych analizach Substacka: 33-64 słowa dają |
 | `NOTE_MAX_WORDS` | `64` | — |
+| `DLUGOSC_NOTKI_WG_TYPU` | `{ "SPROSTOWANIE": (33, 42), # najkrótsza: je` | DLUGOSC WG TYPU NOTKI — zeby piec notek na dobe nie bylo piecioma notkami tej samej dlugosci. Reguła „nie pisz wszystkiego tej samej długośc |
 | `NOTE_CANDIDATES` | `1` | Ilu kandydatow generujemy. Dawniej bylo pieciu, potem trzech; dodatkowe warianty tego samego zdania niczego nie dokladaly, a placilismy za n |
 | `DZIEDZINY_CIEKAWOSTEK` | `( # ========================================` | Ile ciekawostek szukamy naraz. Cztery z pięciu notek dziennie stoją na nich, a jedno szukanie kosztuje tyle co jedno — więc bierzemy zapas n |
 | `ILE_DZIEDZIN_NA_PRZEBIEG` | `5` | — |
