@@ -141,10 +141,16 @@ sprawdz("nowa juz nie",
 print()
 print("=== 8. PROG JEST TYM SAMYM, CO W BRAMCE WIEKU ===")
 # Dwie liczby na to samo pytanie rozjezdzaja sie w koncu zawsze.
+# CIALO FUNKCJI, NIE OKNO STALEJ DLUGOSCI. Stalo tu wyciecie 2600 znakow od
+# naglowka i test peknil, gdy do funkcji doszedl komentarz — czyli zglaszal
+# usterke tam, gdzie zmienil sie tylko opis. Okno na znaki mierzy dlugosc
+# komentarzy, a pytanie brzmi, czy funkcja uzywa wspolnego progu.
+_od = zrodlo.index("def karta_dla_pisarza")
+_reszta = zrodlo[_od + 1:]
+_do = _od + 1 + (_reszta.index(chr(10) + "def ") if chr(10) + "def " in _reszta
+                 else len(_reszta))
 sprawdz("uzywamy MAKS_WIEK_ZRODLA_DNI",
-        "config.MAKS_WIEK_ZRODLA_DNI" in
-        zrodlo[zrodlo.index("def karta_dla_pisarza"):
-               zrodlo.index("def karta_dla_pisarza") + 2600],
+        "config.MAKS_WIEK_ZRODLA_DNI" in zrodlo[_od:_do],
         config.MAKS_WIEK_ZRODLA_DNI)
 
 print()

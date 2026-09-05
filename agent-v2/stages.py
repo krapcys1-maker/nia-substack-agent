@@ -593,13 +593,36 @@ def karta_dla_pisarza(card: dict[str, Any],
     MODEL OBSERWUJE, KOD DECYDUJE. Prosba w promptcie juz raz nie wystarczyla.
     Kod nie oddaje pisarzowi zdania, ktorego pisarz nie ma jak obronic.
     """
-    daty = card.get("source_dates")
+    # NAJPIERW ZDEJMUJEMY POLA, KTORE NIE SA DOWODEM — bezwarunkowo, przed
+    # kazda galezia o dacie. Dwa `return card` nizej istnialy zanim to pole
+    # tu doszlo i cicho omijalyby czyszczenie.
+    #
+    # `unused_evidence` NIE JEST dla pisarza. Czyta je `bank_fragmentow()`,
+    # z karty ZAPISANEJ w bazie, zeby odzyskac oplacony research na pozniej.
+    # W prompcie robi trzy zle rzeczy naraz: powtarza fragmenty juz obecne
+    # w syntezie, pokazuje liczby, ktorych uzyc NIE WOLNO (`pisarz.md`: "Every
+    # number you write must appear literally in `citable_numbers`"), i nie
+    # niesie zadnej reguly, ktora by mowila, czym one sa — bo `pisarz.md` nie
+    # wspomina o tym polu ani slowem.
+    #
+    # `ocena_ciekawosci` to WERDYKT O TEJ KARCIE, z uzasadnieniem. Przy
+    # werdykcie ODLOZ pisarz dostaje w materiale zdanie o tym, dlaczego ten
+    # material nie da czytelnikowi powodu do zainteresowania — czyli zadanie
+    # konkurencyjne wobec polecenia "napisz". `gates.py` juz to pole zdejmuje
+    # (`pobrane.pop("ocena_ciekawosci", None)`); pisarz byl jedynym miejscem,
+    # gdzie zostawalo.
+    #
+    # KARTA ZAPISANA ZOSTAJE PELNA. Recenzent tez dostaje pelna — on sprawdza
+    # tekst wobec materialu i ma widziec wszystko, co o materiale wiemy.
+    czysta = {k: v for k, v in card.items()
+              if k not in ("unused_evidence", "ocena_ciekawosci")}
+
+    daty = czysta.get("source_dates")
     if not isinstance(daty, dict) or not str(daty.get("note") or "").strip():
-        return card
+        return czysta
     wiek = wiek_zrodla_w_dniach(daty.get("newest"), teraz=teraz)
     if wiek is None or wiek > config.MAKS_WIEK_ZRODLA_DNI:
-        return card
-    czysta = dict(card)
+        return czysta
     czysta["source_dates"] = dict(daty, note="")
     return czysta
 

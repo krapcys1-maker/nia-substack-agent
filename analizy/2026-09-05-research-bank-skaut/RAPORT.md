@@ -18,7 +18,7 @@ W raporcie rozróżniam:
 - **Wynik odczytu:** przepływ wynika bezpośrednio z kodu lub promptu.
 - **Propozycja:** projekt usprawnienia, którego wpływ na jakość należy sprawdzić porównaniem wyników.
 
-Punktem odniesienia repozytorium był commit 1a711e80b7f81b049e5bdf55ddbd8973c09a2d3f. Podczas audytu pojawiły się równoległe zmiany dotyczące paraleli u pisarza. Nie są moją implementacją; poniższa diagnoza nie opiera się na dawnym obowiązku dodawania paraleli do pustej karty. Nazwy funkcji przy odnośnikach ułatwiają odnalezienie miejsca także po przesunięciu numerów linii.
+Punktem odniesienia repozytorium był commit 1a711e80b7f81b049e5bdf55ddbd8973c09a2d3f. Podczas audytu pojawiły się równoległe zmiany ścieżek pisania i ich dokumentacji, w tym ograniczenie liczby paraleli materiałem karty. Nie są moją implementacją; poniższa diagnoza nie opiera się na dawnym obowiązku dodawania paraleli do pustej karty. Nazwy funkcji przy odnośnikach ułatwiają odnalezienie miejsca także po przesunięciu numerów linii.
 
 **Jedynym pozostawionym przeze mnie rezultatem tego audytu jest ten raport.**
 
@@ -66,7 +66,7 @@ notki_dnia
   → oddanie niewykorzystanej części puli
 ~~~
 
-Źródła: [notki_dnia](<D:/Nia bot/agent-v2/stages.py:3452>), [znajdz_ciekawostki](<D:/Nia bot/agent-v2/stages.py:1605>).
+Źródła: [notki_dnia](<D:/Nia bot/agent-v2/stages.py:3518>), [znajdz_ciekawostki](<D:/Nia bot/agent-v2/stages.py:1628>).
 
 ### 2.2. Artykuł tygodniowy wskazany przez harmonogram
 
@@ -92,7 +92,7 @@ artykul_z_puli.py
 
 W run.py nadal istnieje ścieżka scout → feasibility → pick_topic → research. Jej skaut proponuje tematy, precedensy i ocenę nasycenia z pamięci modelu oraz nagłówków kanałów. Samo wywołanie scout nie włącza wyszukiwania. Feasibility również nie wyszukuje dokumentów.
 
-**Poprawienie samego skaut.md nie zmieni wyboru tematów tygodniowego artykułu z banku.** Są dwa różne mechanizmy wyboru, z różnymi kryteriami. To trzeba uwzględnić przed każdą zmianą promptu. [scout](<D:/Nia bot/agent-v2/stages.py:5782>), [feasibility](<D:/Nia bot/agent-v2/stages.py:5341>), [starsza ścieżka](<D:/Nia bot/agent-v2/run.py:2340>).
+**Poprawienie samego skaut.md nie zmieni wyboru tematów tygodniowego artykułu z banku.** Są dwa różne mechanizmy wyboru, z różnymi kryteriami. To trzeba uwzględnić przed każdą zmianą promptu. [scout](<D:/Nia bot/agent-v2/stages.py:5848>), [feasibility](<D:/Nia bot/agent-v2/stages.py:5407>), [starsza ścieżka](<D:/Nia bot/agent-v2/run.py:2341>).
 
 ### Co warto zachować
 
@@ -106,7 +106,7 @@ RSS ma już pamięć w procesie z terminem 30 minut. Pobieranie używa wspólneg
 
 **Odtworzone.** Gdy notki_dnia dostało użyteczny fakt z banku, powstała jedna notka, ale licznik wywołań wyszukiwania i detektora wydarzeń wyniósł zero.
 
-Detektor znajduje się wewnątrz znajdz_ciekawostki. Pobranie zapasu omija tę funkcję. Komentarz, że „furtka wydarzeń nie ginie”, dotyczy dopiero sytuacji wyczerpania zapasu. W międzyczasie temat z banku może wygrać z premierą, której system nawet nie sprawdził. [notki_dnia](<D:/Nia bot/agent-v2/stages.py:3452>).
+Detektor znajduje się wewnątrz znajdz_ciekawostki. Pobranie zapasu omija tę funkcję. Komentarz, że „furtka wydarzeń nie ginie”, dotyczy dopiero sytuacji wyczerpania zapasu. W międzyczasie temat z banku może wygrać z premierą, której system nawet nie sprawdził. [notki_dnia](<D:/Nia bot/agent-v2/stages.py:3518>).
 
 **Zmiana:** tani odczyt sygnałów powinien być osobnym początkiem przebiegu. Dopiero jego wynik i stan banku decydują o płatnym szukaniu. Pełny bank ma zatrzymywać kupowanie kolejnych podobnych faktów, a nie wyłączać obserwację świata.
 
@@ -114,7 +114,7 @@ Detektor znajduje się wewnątrz znajdz_ciekawostki. Pobranie zapasu omija tę f
 
 **Odtworzone.** Detektor zgłosił premierę Orion 5.1. Model zwrócił fakt o czujniku ciśnienia, bez wzmianki o Orionie. Pamięć wydarzenia dostała ile=1, a następne sprawdzenie nie uznało go za nowe.
 
-Na końcu znajdz_ciekawostki do pamięci wszystkich nowych wydarzeń trafia liczba wszystkich zwróconych faktów. Nie jest to liczba przyjętych do banku pomysłów dotyczących danego wydarzenia. Nawet odrzucony lub już znany materiał może więc zamknąć okazję. [_zapamietaj_wydarzenia](<D:/Nia bot/agent-v2/stages.py:1446>), [znajdz_ciekawostki](<D:/Nia bot/agent-v2/stages.py:1605>).
+Na końcu znajdz_ciekawostki do pamięci wszystkich nowych wydarzeń trafia liczba wszystkich zwróconych faktów. Nie jest to liczba przyjętych do banku pomysłów dotyczących danego wydarzenia. Nawet odrzucony lub już znany materiał może więc zamknąć okazję. [_zapamietaj_wydarzenia](<D:/Nia bot/agent-v2/stages.py:1469>), [znajdz_ciekawostki](<D:/Nia bot/agent-v2/stages.py:1628>).
 
 **Zmiana:** każdy fakt powinien wskazywać event_id. Zapisywać osobno „sprawdzono”, „brak materiału”, „mamy użyteczny kąt”, „opublikowano”. Nieudana próba potrzebuje terminu ponowienia i powodu, zamiast semantycznie udawać obsłużenie wydarzenia.
 
@@ -154,7 +154,7 @@ To selekcja pod określony gatunek opowieści. Utrudnia wybór mocnego wyjaśnie
 
 „Nie przypominam sobie artykułu o tym” nie mierzy faktycznej oryginalności. Feasibility ocenia dostępność dokumentów bez próby pobrania, a dostaje tylko indeks, tytuł i główne pytanie. Prompt każe oceniać również threads, których w przekazanym obiekcie nie ma.
 
-**Zmiana:** tanią ocenę modelu nazywać hipotezą wykonalności. Dla kilku finalistów sprawdzić jeden wskazany dokument i najbliższe wcześniejsze materiały. Oryginalność określać jako różnicę: jakie pytanie lub ustalenie wniesiemy względem znanego tekstu. Nie trzeba robić pełnego researchu całej puli. [feasibility](<D:/Nia bot/agent-v2/stages.py:5341>), [wykonalnosc.md](<D:/Nia bot/agent-v2/prompts/wykonalnosc.md>).
+**Zmiana:** tanią ocenę modelu nazywać hipotezą wykonalności. Dla kilku finalistów sprawdzić jeden wskazany dokument i najbliższe wcześniejsze materiały. Oryginalność określać jako różnicę: jakie pytanie lub ustalenie wniesiemy względem znanego tekstu. Nie trzeba robić pełnego researchu całej puli. [feasibility](<D:/Nia bot/agent-v2/stages.py:5407>), [wykonalnosc.md](<D:/Nia bot/agent-v2/prompts/wykonalnosc.md>).
 
 ### S8. Pytania czytelników i dodatkowe źródła nie zasilają wspólnie wyboru
 
@@ -162,7 +162,7 @@ Pytania są zbierane, ale pytania_dla_skauta jest wywoływane przez starszy scou
 
 Funkcje kandydaci_z_fedreg i osobnego banku notek istnieją, ale w przejrzanych głównych ścieżkach nie znalazłem ich włączenia do tego obiegu. Nie można zaliczać samej obecności modułu jako działającego kanału odkrywania.
 
-**Zmiana:** jedno wejście dla sygnałów z kanałów, rejestrów, pytań czytelników i znalezionych luk. Każdy sygnał zachowuje pochodzenie oraz powód zainteresowania. Dobór źródeł powinien odpowiadać niszy; lokalne konto o raportowaniu liczb nie powinno zależeć od nieistniejących kanałów AI. [pytania_dla_skauta](<D:/Nia bot/agent-v2/stages.py:6524>).
+**Zmiana:** jedno wejście dla sygnałów z kanałów, rejestrów, pytań czytelników i znalezionych luk. Każdy sygnał zachowuje pochodzenie oraz powód zainteresowania. Dobór źródeł powinien odpowiadać niszy; lokalne konto o raportowaniu liczb nie powinno zależeć od nieistniejących kanałów AI. [pytania_dla_skauta](<D:/Nia bot/agent-v2/stages.py:6590>).
 
 ## 4. Bank pomysłów: jakość wejścia, selekcja i życie materiału
 
@@ -172,7 +172,7 @@ Funkcje kandydaci_z_fedreg i osobnego banku notek istnieją, ale w przejrzanych 
 
 Funkcja zapisująca zwraca liczniki, ale wywołujący nie używa wyniku do ograniczenia listy. Notki i artykuł mogą pobrać tę listę bezpośrednio. Materiał świeżo znaleziony ma zatem inną drogę do pisarza niż identyczny materiał odczytany jutro z banku.
 
-To nie dowód, że ten konkretny przykład jest merytorycznie zły. To dowód, że **bramka nie jest wspólnym kontraktem dostępu do materiału**. [znajdz_ciekawostki](<D:/Nia bot/agent-v2/stages.py:1605>), [dopisz_kandydatow](<D:/Nia bot/agent-v2/stages.py:6892>).
+To nie dowód, że ten konkretny przykład jest merytorycznie zły. To dowód, że **bramka nie jest wspólnym kontraktem dostępu do materiału**. [znajdz_ciekawostki](<D:/Nia bot/agent-v2/stages.py:1628>), [dopisz_kandydatow](<D:/Nia bot/agent-v2/stages.py:6958>).
 
 **Zmiana:** po dopisaniu odbierać identyfikatory przyjętych lub już istniejących kandydatów. Wybór zawsze przeprowadzać na jednym, kanonicznym widoku banku. Najpierw poprawić sens kryteriów opisanych poniżej; samo uszczelnienie złej bramki mocniej odetnie dobre pomysły.
 
@@ -182,7 +182,7 @@ ciekawostki.md zabrania wymyślania przekonania czytelnika i dopuszcza fakt stoj
 
 **Odtworzone:** opis działania czujnika z pustym mitem został odrzucony jako „brak przekonania do złamania”. Model otrzymuje więc bodziec do dopisania przekonania, którego istnienia nie sprawdził.
 
-**Zmiana:** wymagane pola zależne od rodzaju pomysłu. Dla wyjaśnienia: pytanie, ustalenie, mechanizm i znaczenie. Dla sprostowania dodatkowo rzeczywista obietnica lub twierdzenie z własnym źródłem. Pole opcjonalne nie może stawać się obowiązkowe w następnej funkcji. [bramka_kandydata](<D:/Nia bot/agent-v2/stages.py:6589>), [ciekawostki.md](<D:/Nia bot/agent-v2/prompts/ciekawostki.md>).
+**Zmiana:** wymagane pola zależne od rodzaju pomysłu. Dla wyjaśnienia: pytanie, ustalenie, mechanizm i znaczenie. Dla sprostowania dodatkowo rzeczywista obietnica lub twierdzenie z własnym źródłem. Pole opcjonalne nie może stawać się obowiązkowe w następnej funkcji. [bramka_kandydata](<D:/Nia bot/agent-v2/stages.py:6655>), [ciekawostki.md](<D:/Nia bot/agent-v2/prompts/ciekawostki.md>).
 
 ### B3. Dozwolony mechanizm fizyczny może przegrać z zakazem słowa
 
@@ -203,7 +203,7 @@ Obowiązek drugiej osoby w consequence ma podobne ograniczenie: mierzy obecnoś�
 
 otrzymały identyczny klucz: „acme context model released tokens window with”.
 
-_klucz_faktu bierze angielskie słowa długości co najmniej czterech znaków, usuwa liczby, sortuje zbiór i zachowuje do 12 słów. Nie jest identyfikatorem twierdzenia. Również _slowa usuwa liczby i skraca słowa do sześciu liter. [klucz faktu](<D:/Nia bot/agent-v2/stages.py:1264>), [_slowa](<D:/Nia bot/agent-v2/stages.py:3158>).
+_klucz_faktu bierze angielskie słowa długości co najmniej czterech znaków, usuwa liczby, sortuje zbiór i zachowuje do 12 słów. Nie jest identyfikatorem twierdzenia. Również _slowa usuwa liczby i skraca słowa do sześciu liter. [klucz faktu](<D:/Nia bot/agent-v2/stages.py:1287>), [_slowa](<D:/Nia bot/agent-v2/stages.py:3224>).
 
 **Skutek:** nowa wersja, próg, data lub wynik mogą wyglądać jak zużyty fakt. Parafraza może natomiast przejść jako nowość, jeżeli dostatecznie zmieni słownictwo.
 
@@ -215,7 +215,7 @@ Deduplikacja przy dopisywaniu porównuje wszystkie rekordy, również odrzucone,
 
 Prompt idzie jeszcze dalej: nazywa powtórką tę samą regulację z innego kąta oraz ten sam mechanizm w sąsiedniej branży. To koliduje z bibliotekarzem, którego zadaniem jest odnajdywanie wartości właśnie w takich połączeniach.
 
-**Zmiana:** przechowywać temat, kąt i dowód jako różne obiekty. Nowy kąt powinien wykazać nową odpowiedź dla czytelnika. Rewizja ma aktualizować kandydata z historią przyczyny, a nie próbować oszukać deduplikator innymi słowami. [dopisz_kandydatow](<D:/Nia bot/agent-v2/stages.py:6892>).
+**Zmiana:** przechowywać temat, kąt i dowód jako różne obiekty. Nowy kąt powinien wykazać nową odpowiedź dla czytelnika. Rewizja ma aktualizować kandydata z historią przyczyny, a nie próbować oszukać deduplikator innymi słowami. [dopisz_kandydatow](<D:/Nia bot/agent-v2/stages.py:6958>).
 
 ### B6. Pobranie z banku jest zapisywane jak zużycie
 
@@ -223,7 +223,7 @@ Prompt idzie jeszcze dalej: nazywa powtórką tę samą regulację z innego kąt
 
 Są funkcje oddawania reszty i część obsługi niepowodzeń. Nie tworzą jednak transakcji obejmującej cały przebieg. Wyjątek po wyborze, zatrzymanie po samym temacie albo niewykonany zwrot może zostawić materiał jako zużyty. Z kolei świeżo wygenerowany fakt, przekazany bezpośrednio z curiosity, zaczyna od innego stanu.
 
-**Zmiana:** oddzielić rezerwację od wykorzystania. Minimalne stany: do sprawdzenia, gotowy, zarezerwowany, szkic gotowy, opublikowany, do aktualizacji, odrzucony. Rezerwacja musi mieć identyfikator zadania, termin i możliwość wznowienia. Po potwierdzeniu publikacji zapisać relację do tekstu, nie tylko boolean. [wez_kandydatow](<D:/Nia bot/agent-v2/stages.py:6998>).
+**Zmiana:** oddzielić rezerwację od wykorzystania. Minimalne stany: do sprawdzenia, gotowy, zarezerwowany, szkic gotowy, opublikowany, do aktualizacji, odrzucony. Rezerwacja musi mieć identyfikator zadania, termin i możliwość wznowienia. Po potwierdzeniu publikacji zapisać relację do tekstu, nie tylko boolean. [wez_kandydatow](<D:/Nia bot/agent-v2/stages.py:7064>).
 
 ### B7. Ranking może nie działać właśnie wtedy, gdy pojawiają się wyniki czytelników
 
@@ -231,7 +231,7 @@ Są funkcje oddawania reszty i część obsługi niepowodzeń. Nie tworzą jedna
 
 Wynik próby: NameError; posortuj_bank zwróciło ocenione=0 i wyrzucone=0; model rankingu nie został wywołany. Błąd jest łapany jako nieudany ranking, więc bot może dalej działać ze starą kolejnością.
 
-**Zmiana:** naprawić przekazanie zależności do funkcji tworzącej tabelę. Ważniejszy warunek odbioru: pojawienie się pierwszego pomiaru nie może wyłączyć selekcji tematów. [co_zadzialalo](<D:/Nia bot/agent-v2/stages.py:7182>), [_tabela_odbioru](<D:/Nia bot/agent-v2/stages.py:7265>), [posortuj_bank](<D:/Nia bot/agent-v2/stages.py:7298>).
+**Zmiana:** naprawić przekazanie zależności do funkcji tworzącej tabelę. Ważniejszy warunek odbioru: pojawienie się pierwszego pomiaru nie może wyłączyć selekcji tematów. [co_zadzialalo](<D:/Nia bot/agent-v2/stages.py:7248>), [_tabela_odbioru](<D:/Nia bot/agent-v2/stages.py:7331>), [posortuj_bank](<D:/Nia bot/agent-v2/stages.py:7364>).
 
 ### B8. Przykłady „zadziałało” i „nie zadziałało” nakładają się
 
@@ -271,7 +271,7 @@ bank_pelny liczy nowość statusu, epokę konfiguracji i termin wpisu. Nie spraw
 
 Wspólne 7 dni oznacza, że trwałe wyjaśnienie i bieżąca cena tracą przydatność kandydatury według tego samego zegara. Obcinanie całego pliku do ostatnich 600 wpisów liczy również odrzucone i wykorzystane; kolejność dodania zastępuje politykę retencji.
 
-**Zmiana:** mierzyć zapas w liczbie gotowych, różnych kątów na najbliższe publikacje. Osobno przechowywać termin okazji redakcyjnej, termin ponownej weryfikacji twierdzenia i termin rezerwacji. Archiwizować metadane, zachowywać wartościowe dokumenty i dowody. [bank_pelny](<D:/Nia bot/agent-v2/stages.py:7530>), [_zapisz_indeks](<D:/Nia bot/agent-v2/stages.py:6794>).
+**Zmiana:** mierzyć zapas w liczbie gotowych, różnych kątów na najbliższe publikacje. Osobno przechowywać termin okazji redakcyjnej, termin ponownej weryfikacji twierdzenia i termin rezerwacji. Archiwizować metadane, zachowywać wartościowe dokumenty i dowody. [bank_pelny](<D:/Nia bot/agent-v2/stages.py:7596>), [_zapisz_indeks](<D:/Nia bot/agent-v2/stages.py:6860>).
 
 ### B13. Atomowy zapis pliku nie chroni całej operacji na banku
 
@@ -321,7 +321,7 @@ Oficjalny komunikat firmy jest pierwotnym źródłem tego, co firma ogłosiła. 
 
 W drugiej próbie classify przyjęło 15 fragmentów po 1000 znaków, mimo konfiguracji 12 × 700. Filtruje niepuste napisy, ale nie egzekwuje obu tych ograniczeń.
 
-**Zmiana:** walidować schemat, zakresy, unikalne identyfikatory i budżet po parsowaniu, zanim wynik uruchomi następny koszt. Zachować oryginalny URL oraz kanoniczną tożsamość dokumentu; przy canonicalizacji nie usuwać parametrów zmieniających wersję lub zakres danych. [discovery](<D:/Nia bot/agent-v2/stages.py:5185>), [classify](<D:/Nia bot/agent-v2/stages.py:4851>).
+**Zmiana:** walidować schemat, zakresy, unikalne identyfikatory i budżet po parsowaniu, zanim wynik uruchomi następny koszt. Zachować oryginalny URL oraz kanoniczną tożsamość dokumentu; przy canonicalizacji nie usuwać parametrów zmieniających wersję lub zakres danych. [discovery](<D:/Nia bot/agent-v2/stages.py:5251>), [classify](<D:/Nia bot/agent-v2/stages.py:4917>).
 
 ### R6. Pobranie strony nie tworzy trwałego, wersjonowanego źródła
 
@@ -329,7 +329,7 @@ Tabela sources zapisuje URL, tytuł, klasę i sukces pobrania. Nie zapisuje teks
 
 To utrudnia odpowiedź: „który dokument dokładnie przeczytano, co się w nim zmieniło i czy trzeba ponownie zapłacić za ekstrakcję?”. Pobrane wcześniej źródło nie jest wspólnym zasobem następnych artykułów i notek.
 
-**Zmiana:** rejestr wersji źródeł z tekstem, metadanymi, hashem i sposobem pobrania. Ekstrakcję cache'ować względem wersji dokumentu oraz wersji zadania, a nie samego URL. Trafilatura udostępnia również ścieżki zwracające strukturę dokumentu i metadane; wykorzystanie ich wymaga kontroli jakości dat, nie bezwarunkowego zaufania polu. [fetch](<D:/Nia bot/agent-v2/stages.py:4982>), [schemat sources](<D:/Nia bot/agent-v2/db.py:101>), [dokumentacja Trafilatura](https://trafilatura.readthedocs.io/en/latest/corefunctions.html).
+**Zmiana:** rejestr wersji źródeł z tekstem, metadanymi, hashem i sposobem pobrania. Ekstrakcję cache'ować względem wersji dokumentu oraz wersji zadania, a nie samego URL. Trafilatura udostępnia również ścieżki zwracające strukturę dokumentu i metadane; wykorzystanie ich wymaga kontroli jakości dat, nie bezwarunkowego zaufania polu. [fetch](<D:/Nia bot/agent-v2/stages.py:5048>), [schemat sources](<D:/Nia bot/agent-v2/db.py:101>), [dokumentacja Trafilatura](https://trafilatura.readthedocs.io/en/latest/corefunctions.html).
 
 ### R7. Ucinanie początku dokumentu może usuwać najlepszy dowód
 
@@ -337,7 +337,7 @@ Klasyfikator dostaje pierwsze 90 000 znaków. PDF jest czytany do 40. strony, a 
 
 Pobieranie i klasyfikacja są sekwencyjne. Długie timeouty kolejnych hostów kumulują opóźnienie. Historyczna lista nieskutecznych hostów nie ma okna czasu ani terminu ponowienia: dwie rzeczywiste porażki i zero sukcesów mogą stale zniechęcać discovery do danego hosta.
 
-**Zmiana:** rozpoznawać sekcje i strony, wybierać fragmenty według pytań, zachować sąsiedztwo tabeli i definicji. Najpierw używać istniejącego tekstu; OCR tylko dla potrzebnego dokumentu lub stron. Pobierać z małą kontrolowaną współbieżnością między hostami, nadal przestrzegając odstępów na jednym hoście. Błędy dostępności przechowywać per URL i przyczyna, z ponowieniem po czasie. [_tekst_z_pdf](<D:/Nia bot/agent-v2/stages.py:6548>), [historia hostów](<D:/Nia bot/agent-v2/stages.py:5143>).
+**Zmiana:** rozpoznawać sekcje i strony, wybierać fragmenty według pytań, zachować sąsiedztwo tabeli i definicji. Najpierw używać istniejącego tekstu; OCR tylko dla potrzebnego dokumentu lub stron. Pobierać z małą kontrolowaną współbieżnością między hostami, nadal przestrzegając odstępów na jednym hoście. Błędy dostępności przechowywać per URL i przyczyna, z ponowieniem po czasie. [_tekst_z_pdf](<D:/Nia bot/agent-v2/stages.py:6614>), [historia hostów](<D:/Nia bot/agent-v2/stages.py:5209>).
 
 ### R8. Cytat istnieje dlatego, że model powiedział, że go skopiował
 
@@ -345,7 +345,7 @@ Pobieranie i klasyfikacja są sekwencyjne. Długie timeouty kolejnych hostów ku
 
 Prompt bardzo dobrze opisuje obowiązek dosłownego kopiowania. Kod nie sprawdza obecności fragmentu w tekście. Nie ma też pozycji cytatu, więc kolejny etap nie odtworzy go automatycznie.
 
-**Zmiana:** numerować fragmenty wejściowe, a modelowi zlecać wybór ich identyfikatorów i zakresów. Kod ma odtwarzać cytat z przechowanego tekstu. Na początek można zastosować sprawdzenie dosłownego dopasowania z kontrolowaną normalizacją białych znaków; nie wolno normalizować liczb, negacji ani jednostek. Dopasowanie cytatu potwierdza jego istnienie, a nie jeszcze prawdziwość całego twierdzenia. [classify](<D:/Nia bot/agent-v2/stages.py:4851>).
+**Zmiana:** numerować fragmenty wejściowe, a modelowi zlecać wybór ich identyfikatorów i zakresów. Kod ma odtwarzać cytat z przechowanego tekstu. Na początek można zastosować sprawdzenie dosłownego dopasowania z kontrolowaną normalizacją białych znaków; nie wolno normalizować liczb, negacji ani jednostek. Dopasowanie cytatu potwierdza jego istnienie, a nie jeszcze prawdziwość całego twierdzenia. [classify](<D:/Nia bot/agent-v2/stages.py:4917>).
 
 ### R9. Synteza nie zamyka dowodzenia relacji „cytat → całe twierdzenie”
 
@@ -353,7 +353,7 @@ synteza.md trafnie ostrzega przed dodawaniem do poprawnego cytatu nieudokumentow
 
 Późniejsze sprawdzanie gotowego tekstu może złapać błąd, lecz wtedy opłacono już syntezę i pisanie. Same cyfry obecne gdzieś w karcie nie dowodzą, że liczba ma właściwą jednostkę, próbę, okres i znaczenie.
 
-**Zmiana:** osobne, krótkie sprawdzenie kluczowych twierdzeń na etapie karty. Wejście: twierdzenie, wskazane fragmenty oraz warunki jego prawdziwości. Wynik: wspierane, zbyt szerokie, sprzeczne lub nierozstrzygnięte. Mocniejszy model kierować do niejasności i sporów; dopasowanie cytatu i liczb wykonywać kodem. [synthesis](<D:/Nia bot/agent-v2/stages.py:4799>), [synteza.md](<D:/Nia bot/agent-v2/prompts/synteza.md>).
+**Zmiana:** osobne, krótkie sprawdzenie kluczowych twierdzeń na etapie karty. Wejście: twierdzenie, wskazane fragmenty oraz warunki jego prawdziwości. Wynik: wspierane, zbyt szerokie, sprzeczne lub nierozstrzygnięte. Mocniejszy model kierować do niejasności i sporów; dopasowanie cytatu i liczb wykonywać kodem. [synthesis](<D:/Nia bot/agent-v2/stages.py:4865>), [synteza.md](<D:/Nia bot/agent-v2/prompts/synteza.md>).
 
 ### R10. Daty są wymagane w syntezie, ale nie są systematycznie dostarczane
 
@@ -379,7 +379,7 @@ Bramki liczące korpus rozpoznają not_fetched, więc nie twierdzę, że kod ju�
 
 Nie oznacza to, że historyczny fakt jest nieprzydatny. Oznacza, że etykieta modyfikacji lub zakończenia nie wymaga w tej funkcji dowodu modyfikacji lub zakończenia. CONFIRMS z treścią o bezskutecznym szukaniu również nie jest logicznie równoważne potwierdzeniu, że nic się nie zmieniło.
 
-**Zmiana:** stan twierdzenia oddzielić od wyniku wyszukiwania. „Nie znaleziono aktualizacji” to wynik ograniczonej próby; „nadal obowiązuje” wymaga właściwego dokumentu i zakresu. Kontrolę wieku dobierać do rodzaju twierdzenia. [swiezosc_faktu](<D:/Nia bot/agent-v2/stages.py:2151>).
+**Zmiana:** stan twierdzenia oddzielić od wyniku wyszukiwania. „Nie znaleziono aktualizacji” to wynik ograniczonej próby; „nadal obowiązuje” wymaga właściwego dokumentu i zakresu. Kontrolę wieku dobierać do rodzaju twierdzenia. [swiezosc_faktu](<D:/Nia bot/agent-v2/stages.py:2174>).
 
 ### R13. Niepełna lista aktualności staje się fałszywym katalogiem całego świata
 
@@ -403,7 +403,15 @@ zweryfikuj uruchamia osobne wyszukiwanie dla napisanego tekstu. Potrzeba tego et
 
 Nie należy oszczędzać przez wyłączenie kontroli. Należy najpierw rozpoznać: zdanie wierne sprawdzonemu ustaleniu, nowe twierdzenie, rozszerzona interpretacja, stan wymagający odświeżenia. W sieci sprawdzać przede wszystkim nowe lub zmienne elementy.
 
-W obecnym kodzie część awarii zwraca nie_sprawdzone=True równocześnie z safe_to_post=True; twierdzenia unverified bez cyfr mogą przechodzić. To istniejąca polityka publikacji, której audyt nie zmienia. Wniosek architektoniczny jest konkretny: **nie można zakładać, że późniejszy factcheck zawsze nadrobi brak dowodu we wcześniejszych etapach.** [zweryfikuj](<D:/Nia bot/agent-v2/stages.py:4045>).
+W obecnym kodzie część awarii zwraca nie_sprawdzone=True równocześnie z safe_to_post=True; twierdzenia unverified bez cyfr mogą przechodzić. To istniejąca polityka publikacji, której audyt nie zmienia. Wniosek architektoniczny jest konkretny: **nie można zakładać, że późniejszy factcheck zawsze nadrobi brak dowodu we wcześniejszych etapach.** [zweryfikuj](<D:/Nia bot/agent-v2/stages.py:4111>).
+
+### R16. Ocena materiału może dostać urwaną kartę i nie zamyka pętli uzupełnienia
+
+warto_pisac próbuje skrócić zbyt dużą kartę przez ograniczenie wybranych list do sześciu elementów. Następnie i tak przekazuje pierwsze 14 000 znaków serializacji. Duże unused_evidence nie jest wśród skracanych pól. W efekcie model może dostać urwany JSON i niepełny obraz materiału.
+
+Werdykt DOLOZ nie prowadzi do researchu wskazanej luki; uruchamia opisane dalej ogólne grupowanie banku. Po dołożeniu mechanizmów ocena nie jest ponawiana, więc dobór głębokości nadal może korzystać ze stanu sprzed uzupełnienia. ODLOZ jest doradczy i nie oznacza automatycznego odłożenia pisania.
+
+**Zmiana:** oceniać zwartą mapę pytań i twierdzeń, z jawną informacją o pominiętych materiałach. Przy dołożeniu dowodu aktualizować pokrycie właściwego pytania, a następnie format i zakres tekstu. Polecenie „dołóż” powinno kończyć się informacją, czego faktycznie przybyło. [warto_pisac](<D:/Nia bot/agent-v2/stages.py:6390>), [_napisz_i_zapisz](<D:/Nia bot/agent-v2/artykul_z_puli.py:1181>).
 
 ## 6. Bank researchu i bibliotekarz: dlaczego zapłacona wiedza nie pracuje dalej
 
@@ -421,7 +429,7 @@ bank_fragmentow czyta articles.evidence. Nie jest rejestrem wszystkich udanych e
 
 Data fragmentu pochodzi z created_at artykułu, a nie z publikacji źródła. Identyfikator jest wyliczany od nowa podczas odczytu. To słabe podstawy do trwałych odwołań, odświeżania i ustalania, co już sprawdzono.
 
-**Zmiana:** zapisywać dokumenty i dowody po każdym udanym etapie, niezależnie od losu tekstu. Publikacja jest odbiorcą wiedzy, nie warunkiem jej istnienia w banku. [bank_fragmentow](<D:/Nia bot/agent-v2/stages.py:6140>).
+**Zmiana:** zapisywać dokumenty i dowody po każdym udanym etapie, niezależnie od losu tekstu. Publikacja jest odbiorcą wiedzy, nie warunkiem jej istnienia w banku. [bank_fragmentow](<D:/Nia bot/agent-v2/stages.py:6206>).
 
 ### K3. Bibliotekarz nie zna artykułu, który ma ratować
 
@@ -429,7 +437,7 @@ Przy DOLOZ kod wysyła bibliotekarzowi cały bank, bez bieżącego pytania, mech
 
 Grupa może być poprawna sama w sobie i nadal zupełnie nie pomagać temu artykułowi. „Znaleziono dwa mechanizmy” nie oznacza „uzupełniono brakujący dowód”.
 
-**Zmiana:** wyszukać mały zestaw fragmentów pod konkretne pytanie i brak. Bibliotekarz powinien wskazać dopasowanie do bieżącego mechanizmu, granicę analogii oraz dowody obu stron. Przyjąć tylko propozycje, które rozwiązują określoną potrzebę. [_napisz_i_zapisz](<D:/Nia bot/agent-v2/artykul_z_puli.py:1181>), [bibliotekarz](<D:/Nia bot/agent-v2/stages.py:6181>).
+**Zmiana:** wyszukać mały zestaw fragmentów pod konkretne pytanie i brak. Bibliotekarz powinien wskazać dopasowanie do bieżącego mechanizmu, granicę analogii oraz dowody obu stron. Przyjąć tylko propozycje, które rozwiązują określoną potrzebę. [_napisz_i_zapisz](<D:/Nia bot/agent-v2/artykul_z_puli.py:1181>), [bibliotekarz](<D:/Nia bot/agent-v2/stages.py:6247>).
 
 ### K4. Dwie domeny nie muszą oznaczać dwóch dowodów
 
