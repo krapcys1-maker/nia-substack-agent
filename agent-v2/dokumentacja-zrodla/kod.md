@@ -2129,6 +2129,12 @@ def restackuj_w_kanale(
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
                     continue
+                # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
+                if not w_rewirze(notka["tekst"]):
+                    wynik["poza_rewirem"] = wynik.get("poza_rewirem", 0) + 1
+                    print(f"    pomijam (poza rewirem): {notka.get('autor', '?')[:30]}",
+                          flush=True)
+                    continue
                 wynik["rozwazone"] += 1
                 ocena = decyzja(notka)
                 if not ocena.get("restack"):

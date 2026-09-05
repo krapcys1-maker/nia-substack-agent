@@ -2351,6 +2351,13 @@ MIN_WIEK_POSTA_MIN = (90, 900)      # od poltorej godziny do pietnastu
 # Nadal czekamy — bo odpowiedz piec sekund po notce zdradza automat, i to
 # wlasciciel zauwazyl pierwszy — ale tyle, ile trwa przeczytanie, nie pol dnia.
 MIN_WIEK_NOTKI_MIN = (20, 90)       # od dwudziestu minut do poltorej godziny
+# GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego
+# dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod notke sprzed
+# 30 dni (43 662 minuty), znaleziona szukaniem po hasle. Notka gasnie tego
+# samego dnia, artykul czyta sie tygodniami; trzy tygodnie to granica, za
+# ktora komentarz jest juz rozmowa z pustym pokojem. Nieznana data nie
+# blokuje (jak przy dolnej granicy).
+MAKS_WIEK_CELU_DNI = 21
 
 # ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala
 # posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto dwudziesty

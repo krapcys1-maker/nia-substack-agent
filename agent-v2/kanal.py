@@ -67,6 +67,18 @@ def _za_swiezy(post: dict, widelki: tuple[int, int] | None = None) -> bool:
     return _wiek_minut(post.get("data", "")) < prog
 
 
+def _za_stary(post: dict) -> bool:
+    """Cel starszy niz `config.MAKS_WIEK_CELU_DNI` — rozmowa juz sie skonczyla.
+
+    Nieznana data (`_wiek_minut` oddaje 1e9) NIE blokuje, tak samo jak przy
+    dolnej granicy: brak daty to brak dowodu, a nie dowod starosci.
+    """
+    wiek = _wiek_minut(post.get("data", ""))
+    if wiek >= 1e9:
+        return False
+    return wiek > config.MAKS_WIEK_CELU_DNI * 1440
+
+
 def wartosc_celu(x: dict) -> tuple:
     """Klucz sortowania celow: WCZESNIE przed GLOSNO.
 
@@ -164,7 +176,7 @@ def posty_z_kanalu(ile: int = 25) -> list[dict[str, Any]]:
     try:
         dane = browser.api_json(page, "/api/v1/reader/posts") or {}
         posty = []
-        odrzucone = {"swieze": 0, "za_czesto": 0}
+        odrzucone = {"swieze": 0, "stare": 0, "za_czesto": 0}
         for x in (dane.get("posts") or [])[:ile]:
             if not isinstance(x, dict):
                 continue
@@ -191,6 +203,9 @@ def posty_z_kanalu(ile: int = 25) -> list[dict[str, Any]]:
             if _za_swiezy(kandydat):
                 odrzucone["swieze"] += 1
                 continue
+            if _za_stary(kandydat):
+                odrzucone["stare"] += 1
+                continue
             if _za_niedawno_u_nich(kandydat):
                 odrzucone["za_czesto"] += 1
                 continue
@@ -205,6 +220,7 @@ def posty_z_kanalu(ile: int = 25) -> list[dict[str, Any]]:
 
         print(f"  [kanał] postów: {len(posty)}   nowych autorów: {nowi}"
               f"   odrzucone: {odrzucone['swieze']} za świeżych,"
+              f" {odrzucone['stare']} za starych,"
               f" {odrzucone['za_czesto']} bo niedawno tam komentowaliśmy",
               flush=True)
         return posty
@@ -228,6 +244,7 @@ def notki_z_kanalu(ile: int = 25) -> list[dict]:
         dane = browser.api_json(page, "/api/v1/reader/feed?tab=for-you&type=base") or {}
         notki = []
         odrzucone = 0
+        stare = 0
         for x in (dane.get("items") or [])[:ile * 2]:
             c = (x or {}).get("comment") or {}
             if not c.get("body") or c.get("post_id"):
@@ -247,6 +264,9 @@ def notki_z_kanalu(ile: int = 25) -> list[dict]:
             if _za_swiezy(kandydat, config.MIN_WIEK_NOTKI_MIN):
                 odrzucone += 1
                 continue
+            if _za_stary(kandydat):
+                stare += 1
+                continue
             notki.append(kandydat)
         # Najzywsze najpierw: tam nasza uwaga zostanie przeczytana.
         # Pod notkami liczy sie to samo co pod artykulami: zywa publicznosc,
@@ -254,7 +274,7 @@ def notki_z_kanalu(ile: int = 25) -> list[dict]:
         notki.sort(key=lambda n: wartosc_celu(
             {"komentarze": n["odpowiedzi"], "reakcje": n["reakcje"]}))
         print(f"  [notki innych] {len(notki)} do rozwazenia"
-              f"   ({odrzucone} odrzuconych jako za swieze)", flush=True)
+              f"   ({odrzucone} odrzuconych jako za swieze, {stare} jako za stare)", flush=True)
         return notki[:ile]
     finally:
         page.close()
@@ -282,7 +302,7 @@ def szukaj_nowych(ile: int = 20) -> list[dict]:
     p, br, ctx = browser.podlacz_sie()
     page = ctx.new_page()
     znalezione: dict[str, dict] = {}
-    odrzucone = {"swieze": 0, "za_czesto": 0, "nasze": 0}
+    odrzucone = {"swieze": 0, "stare": 0, "za_czesto": 0, "nasze": 0}
     try:
         for haslo in hasla:
             dane = browser.api_json(
@@ -332,6 +352,9 @@ def szukaj_nowych(ile: int = 20) -> list[dict]:
                               if kandydat["rodzaj"] == "notka" else None):
                     odrzucone["swieze"] += 1
                     continue
+                if _za_stary(kandydat):
+                    odrzucone["stare"] += 1
+                    continue
                 if _za_niedawno_u_nich(kandydat):
                     odrzucone["za_czesto"] += 1
                     continue
@@ -341,6 +364,7 @@ def szukaj_nowych(ile: int = 20) -> list[dict]:
         print(f"  [szukanie] hasla: {', '.join(hasla)}", flush=True)
         print(f"  [szukanie] nowych celow: {len(wynik)}"
               f"   (odrzucone: {odrzucone['swieze']} świeżych,"
+              f" {odrzucone['stare']} starych,"
               f" {odrzucone['za_czesto']} znanych, {odrzucone['nasze']} naszych)",
               flush=True)
         return wynik

@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **26 plików**, 33 323 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **26 plików**, 33 416 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 162 zestawów
-testów, 4054 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 163 zestawów
+testów, 4088 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -177,7 +177,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8269 wierszy, 145 funkcji na poziomie modułu, 0 klas
+8288 wierszy, 145 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -329,7 +329,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5372 wierszy, 97 funkcji na poziomie modułu, 1 klas
+5409 wierszy, 98 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -429,6 +429,7 @@ wiec nie da sie go rozjechac z kodem.
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `read_pages(urls)` | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
+| `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
@@ -598,7 +599,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-350 wierszy, 12 funkcji na poziomie modułu, 0 klas
+374 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -607,6 +608,7 @@ wiec nie da sie go rozjechac z kodem.
 | `klucz_publikacji(post)` | Kim jest autor posta. Z ADRESU, bo nazwa publikacji bywa pusta w kanale. |
 | `_wiek_minut(data)` *(wewn.)* | — |
 | `_za_swiezy(post, widelki)` *(wewn.)* | Czy post jest na tyle swiezy, ze komentarz wygladalby jak czujka bota. |
+| `_za_stary(post)` *(wewn.)* | Cel starszy niz `config.MAKS_WIEK_CELU_DNI` — rozmowa juz sie skonczyla. |
 | `wartosc_celu(x)` | Klucz sortowania celow: WCZESNIE przed GLOSNO. |
 | `_za_niedawno_u_nich(post)` *(wewn.)* | Czy komentowalismy u tej publikacji w ostatnich dniach. |
 | `nasz_cel(kandydat)` | Czy ten cel jest NASZ — po adresie ALBO po uchwycie autora. |
@@ -677,7 +679,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3470 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3477 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -771,7 +773,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-483 wierszy, 11 funkcji na poziomie modułu, 0 klas
+489 wierszy, 11 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -8542,6 +8544,12 @@ def restackuj_w_kanale(
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
                     continue
+                # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
+                if not w_rewirze(notka["tekst"]):
+                    wynik["poza_rewirem"] = wynik.get("poza_rewirem", 0) + 1
+                    print(f"    pomijam (poza rewirem): {notka.get('autor', '?')[:30]}",
+                          flush=True)
+                    continue
                 wynik["rozwazone"] += 1
                 ocena = decyzja(notka)
                 if not ocena.get("restack"):
@@ -12024,8 +12032,8 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `TEST_LIMIT_USD_BAZA` | `3.00` | SUFIT TORU TESTOWEGO — osobny od produkcyjnego i CELOWO NIE NIESKONCZONY. Wlasciciel: „nie licz budzetu do testow, to cos osobnego". Zgoda c |
 | `TEST_LIMIT_USD` | `TEST_LIMIT_USD_BAZA` | — |
 | `MONTHLY_LIMIT_USD` | `40.00` | — |
-| `PONOWIENIA` | `2` | Sufit na JEDEN przebieg. Działa ZAWSZE, także przy AGENT_V2_NO_LIMIT=1. „Bez limitu na budowę" miało znaczyć „nie blokuj eksperymentów", a n |
-| `PONOWIENIE_ODSTEP_S` | `8` | — |
+| `PONOWIENIA` | `4` | Sufit na JEDEN przebieg. Działa ZAWSZE, także przy AGENT_V2_NO_LIMIT=1. „Bez limitu na budowę" miało znaczyć „nie blokuj eksperymentów", a n |
+| `PONOWIENIE_ODSTEP_S` | `15` | — |
 | `RUN_LIMIT_USD` | `1.60` | — |
 | `TOPIC_COUNT` | `6` | --- skaut i różnorodność ---------------------------------------------------- |
 | `DIVERSITY_LOOKBACK` | `5` | — |
@@ -12136,6 +12144,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `CZAS_DZIALANIA_S` | `240` | Ile trwa samo dzialanie poza przerwa: napisanie, sprawdzenie faktow, wystawienie i potwierdzenie u zrodla. Z realnych przebiegow. |
 | `MIN_WIEK_POSTA_MIN` | `(90, 900)` | NIE KOMENTUJEMY SWIEZYCH POSTOW. Wlasciciel opisal to najlepiej: napisal notke i piec sekund pozniej ktos odpisal ogolnikowa zgoda — i to zd |
 | `MIN_WIEK_NOTKI_MIN` | `(20, 90)` | NOTKA TO NIE ARTYKUL i zyje godziny, nie dni. Ten sam prog co dla artykulow oznaczal, ze pod notki wchodzilismy zawsze PO koncu rozmowy: prz |
+| `MAKS_WIEK_CELU_DNI` | `21` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
 | `KOMFORTOWO_KOMENTARZY` | `25` | ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto |
 | `ODSTEP_DNI_NA_PUBLIKACJE` | `4` | Ile dni odstepu przed kolejnym komentarzem pod TA SAMA publikacja. Komentarz pod kazdym kolejnym tekstem tej samej osoby to drugi najczyteln |
 | `NISZA` | `""` | HASLA, KTORYMI AGENT SZUKA NOWYCH KONT. Kanal czytelnika pokazuje tylko to, co juz znamy, wiec sam z siebie nie przyprowadzi nikogo nowego — |

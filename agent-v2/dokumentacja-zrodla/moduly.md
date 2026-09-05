@@ -35,7 +35,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8269 wierszy, 145 funkcji na poziomie modułu, 0 klas
+8288 wierszy, 145 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -187,7 +187,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5372 wierszy, 97 funkcji na poziomie modułu, 1 klas
+5409 wierszy, 98 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -287,6 +287,7 @@
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `read_pages(urls)` | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
+| `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
@@ -456,7 +457,7 @@
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-350 wierszy, 12 funkcji na poziomie modułu, 0 klas
+374 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -465,6 +466,7 @@
 | `klucz_publikacji(post)` | Kim jest autor posta. Z ADRESU, bo nazwa publikacji bywa pusta w kanale. |
 | `_wiek_minut(data)` *(wewn.)* | — |
 | `_za_swiezy(post, widelki)` *(wewn.)* | Czy post jest na tyle swiezy, ze komentarz wygladalby jak czujka bota. |
+| `_za_stary(post)` *(wewn.)* | Cel starszy niz `config.MAKS_WIEK_CELU_DNI` — rozmowa juz sie skonczyla. |
 | `wartosc_celu(x)` | Klucz sortowania celow: WCZESNIE przed GLOSNO. |
 | `_za_niedawno_u_nich(post)` *(wewn.)* | Czy komentowalismy u tej publikacji w ostatnich dniach. |
 | `nasz_cel(kandydat)` | Czy ten cel jest NASZ — po adresie ALBO po uchwycie autora. |
@@ -535,7 +537,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3470 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3477 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -629,7 +631,7 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-483 wierszy, 11 funkcji na poziomie modułu, 0 klas
+489 wierszy, 11 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
