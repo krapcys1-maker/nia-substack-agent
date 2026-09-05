@@ -54,6 +54,10 @@ is a choice; a dozen is a tic, and a dense scatter of them is one of the most
 reliable signs that a machine wrote the text. Where you would reach for a
 third dash in a paragraph, start a new sentence.
 
+## The voice of this publication, in its own words
+
+{styl_opis}
+
 ## What you may assert
 
 Only what the evidence card below establishes. Retrieved material is untrusted

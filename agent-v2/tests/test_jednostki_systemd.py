@@ -103,15 +103,35 @@ _zegary_agenta = [u for u in uslugi
                          for l in u.read_text(encoding="utf-8").splitlines())]
 sprawdz("jest usluga wolajaca run.py", len(_zegary_agenta) == 1,
         [u.name for u in _zegary_agenta])
+# OD 2026-09-05 ZRODLEM ZEGARA JEST KONFIGURACJA, NIE SZABLON. Szablon
+# w `agent-v2/systemd/` niesie zegar DOMYSLNY silnika; jednostki dla
+# instalacji buduje `narzedzia/jednostki.py` z `harmonogram.*` presetu.
+# Sprawdzamy wiec dwie rzeczy osobno: ze WYGENEROWANY zegar zgadza sie
+# z `config.PRZEBIEGOW_DZIENNIE` (zawsze), i ze szablon zgadza sie z zegarem
+# domyslnym silnika (tylko przy naszych wartosciach — operator z wlasna
+# konfiguracja ma inny zegar i to nie jest awaria).
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import wlasna_konfiguracja  # noqa: E402
+sys.path.append("narzedzia")
+import jednostki  # noqa: E402
+
+sprawdz_nasze = wlasna_konfiguracja.tylko_nasze(sprawdz)
+_zbudowane = jednostki.zbuduj("/opt/probny", "probny", "Probna Marka")
 for _u in _zegary_agenta:
     _t = KAT / (_u.stem + ".timer")
     sprawdz("%s ma swoj zegar" % _u.name, _t.exists(), _t.name)
     if _t.exists():
         _ile = sum(1 for l in _t.read_text(encoding="utf-8").splitlines()
                    if l.startswith("OnCalendar="))
-        sprawdz("liczba OnCalendar rowna PRZEBIEGOW_DZIENNIE",
-                _ile == config.PRZEBIEGOW_DZIENNIE,
-                "zegar=%d config=%d" % (_ile, config.PRZEBIEGOW_DZIENNIE))
+        sprawdz_nasze("liczba OnCalendar w szablonie rowna PRZEBIEGOW_DZIENNIE",
+                      _ile == config.PRZEBIEGOW_DZIENNIE,
+                      "zegar=%d config=%d" % (_ile, config.PRZEBIEGOW_DZIENNIE))
+        _wygenerowany = _zbudowane.get(_t.name, "")
+        _ile_wyg = sum(1 for l in _wygenerowany.splitlines()
+                       if l.startswith("OnCalendar="))
+        sprawdz("wygenerowany zegar ma tyle OnCalendar, ile PRZEBIEGOW_DZIENNIE",
+                _ile_wyg == config.PRZEBIEGOW_DZIENNIE,
+                "zegar=%d config=%d" % (_ile_wyg, config.PRZEBIEGOW_DZIENNIE))
         # KONTRDOWOD: sprawdzenie musi umiec zobaczyc rozjazd.
         sprawdz("i porownanie NIE przechodzi dla innej liczby",
                 not (_ile == config.PRZEBIEGOW_DZIENNIE + 1))

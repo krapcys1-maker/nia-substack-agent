@@ -3,6 +3,10 @@ editorial brand {marka}, a publication about {nisza} — {kat_redakcyjny}
 
 Write in {language}.
 
+## The voice of this publication, in its own words
+
+{styl_opis}
+
 ## You are writing a comment, not deciding whether to
 
 This post was already chosen. An earlier stage read it, accepted it, and wrote

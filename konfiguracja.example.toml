@@ -249,6 +249,32 @@ blokowane_hosty = [
 
 
 # -----------------------------------------------------------------------------
+# STYL — glos redakcji
+# -----------------------------------------------------------------------------
+# Do 2026-09-05 styl byl wspolnym zestawem plikow o stalych nazwach. Teraz
+# kazde z tych miejsc jest polem, wiec dwa presety moga brzmiec inaczej.
+[styl]
+# Glos opisany slowami. Idzie DOSLOWNIE do briefow pisarza, notki, komentarza
+# i odpowiedzi jako `{styl_opis}`. Pusty znaczy „bez uwag dodatkowych".
+opis = ""
+
+# Profile stylu (pozytywny: do czego dazymy; negatywny: czego nie wolno).
+# Sciezki wzgledem korzenia repozytorium.
+profil_pozytywny = "style-profiles/ARTICLE_STYLE_PROFILE_V1.md"
+profil_negatywny = "style-profiles/ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md"
+
+# Plik korpusu stylu (.txt, akapity oddzielone pusta linia). Pusty = pierwszy
+# .txt w agent-v2/prompts/styl/. Korpus trzeba przypiac:
+#   python narzedzia/przypnij_styl.py --pokaz
+korpus = ""
+
+# Czy pisarz artykulu ma ODMOWIC bez przypietego korpusu. `true` to
+# dotychczasowe zachowanie. `false` pozwala pisac z samych profili i opisu —
+# uczciwy start dla konta, ktore nie ma jeszcze wlasnych tekstow.
+wymagaj_korpusu = true
+
+
+# -----------------------------------------------------------------------------
 # MODELE — ktora rola na ktorym modelu
 # -----------------------------------------------------------------------------
 # Podajesz TYLKO te role, ktore chcesz zmienic. Reszta zostaje z `config.py`.
@@ -267,6 +293,16 @@ role = { }
 # przyklad — same notki na tanszy model:
 # role = { note = "deepseek-v4-pro" }
 
+# Model okladki artykulu. PUSTY NAPIS WYLACZA OKLADKE (zero wywolan OpenAI).
+# Podany ustawia naraz rolę `obraz` i model w ladunku zadania — do 2026-09-05
+# byly to dwie osobne stale i potrafily sie rozjechac.
+obraz = "gpt-image-1.5"
+
+# Na jaki model wraca pisarz artykulu, gdy skonfigurowany padnie. Pusty napis
+# znaczy „nie wracaj, zatrzymaj sie" — research jest wtedy stracony, ale nic
+# nie idzie na droższy model bez decyzji.
+zapasowy_pisarz = "claude-opus-5"
+
 
 # -----------------------------------------------------------------------------
 # WOLUMENY — ile czego dziennie
@@ -275,12 +311,42 @@ role = { }
 # Losowane raz na dobe z ziarnem z daty, wiec wszystkie przebiegi doby licza
 # ten sam budzet, a kolejne dni rozny.
 [wolumeny]
+# LICZBA SLOTOW NOTEK NA DOBE — jedna dla zwyklego dnia i dnia artykulu.
+# Sloty wypelnia `publikowanie.miks_notek` po kolei; notka promujaca artykul
+# ZAJMUJE slot w tej kwocie, nie powieksza jej. Zero wylacza notki.
+notki_dziennie = 5
+
+# ILE ARTYKULOW NA TYDZIEN. Zero wylacza sciezke artykulu: zegar artykulu nie
+# powstaje, `artykul_z_puli.py` odmawia, promocja nie ma czego promowac.
+# Dni wybiera `harmonogram.dni_artykulu`.
+artykuly_tygodniowo = 1
+
+# Widelki [od, do]; `[0, 0]` wylacza dane dzialanie.
 komentarze_dziennie = [15, 23]
 lajki_dziennie = [10, 16]
 restacki_dziennie = [1, 2]
 follow_miesiecznie = [10, 16]
 subskrypcje_miesiecznie = [12, 20]
+
+# Musi zgadzac sie z liczba godzin w `harmonogram.godziny_przebiegow_utc`.
 przebiegow_dziennie = 5
+
+
+# -----------------------------------------------------------------------------
+# HARMONOGRAM — zegar w UTC, z ktorego `narzedzia/jednostki.py` buduje timery
+# -----------------------------------------------------------------------------
+# Do 2026-09-05 godziny staly tylko w szablonach `agent-v2/systemd/*.timer`,
+# wiec zmiana liczby przebiegow w konfiguracji nie zmieniala zegara.
+[harmonogram]
+# Godziny rutyny dnia (`run.py --dzien --wyslij`), po jednej na przebieg.
+godziny_przebiegow_utc = ["11:20", "17:00", "19:20", "21:30", "23:40"]
+
+# Dni artykulu (Mon..Sun) — tyle, ile `wolumeny.artykuly_tygodniowo`.
+# Mozna pominac: wtedy dni dobiera silnik (1 -> Tue, 2 -> Tue i Fri, ...).
+dni_artykulu = ["Tue"]
+
+# O ktorej (UTC) startuje przebieg artykulu w te dni.
+godzina_artykulu_utc = "14:00"
 
 
 # -----------------------------------------------------------------------------

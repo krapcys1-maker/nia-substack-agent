@@ -119,6 +119,23 @@ def wyslij(klucz: str, temat: str, tresc: str) -> bool:
         return False
 
 
+def brak_presetu() -> str | None:
+    """Silnik bez podlaczonego presetu ODMAWIA startu z zegara — to ma byc alarm, nie cisza.
+
+    Po `python narzedzia/presety.py odlacz` zegary systemd nadal odpalaja
+    `run.py --dzien --wyslij` piec razy dziennie, a kazdy przebieg konczy sie
+    odmowa w kilkanascie milisekund. Wlasciciel, ktory zapomnial podlaczyc
+    nastepny preset, dowiadywalby sie o tym po tygodniu ciszy — a kontrola
+    `cisza` mowi wtedy tylko „agent milczy", nie dlaczego.
+    """
+    if getattr(config, "W_TESCIE", False):
+        return None
+    if getattr(config, "PRESET_AKTYWACJA", None) is not None:
+        return None
+    return ("Brak aktywnego presetu: run.py i artykul_z_puli.py odmawiaja startu. "
+            "python narzedzia/presety.py lista, potem podlacz <nazwa>.")
+
+
 def artykul_zalegly() -> str | None:
     """Czy gotowy artykul lezy na dysku niewystawiony dluzej niz dobe.
 
@@ -708,6 +725,9 @@ def bank_bez_tematow() -> str | None:
 def sprawdz_wszystko() -> list[str]:
     """Uruchamia komplet kontroli i alarmuje o tym, co znalazl."""
     kontrole = (
+        # Pierwsza, bo tlumaczy wszystkie nastepne: bez presetu nic nie wyszlo
+        # i nic nie wyjdzie, a `cisza` powiedzialaby tylko, ze jest cicho.
+        ("preset", "BRAK AKTYWNEGO PRESETU", brak_presetu),
         ("cisza", "Agent milczy", cisza),
         ("zawieszone", "Przebiegi wisialy w RUNNING", zawieszone),
         ("dysk", "Dysk sie konczy", dysk),

@@ -131,11 +131,15 @@ def _na_kanal(nazwa: str):
 # SKLADANY Z CONFIGU, nie wpisany. Poprzednia wersja miala nazwe konta rozbita
 # miedzy dwa literaly i przetrwala dzieki temu caly przebieg czyszczenia
 # tozsamosci — zaden skan po pelnej nazwie jej nie widzial.
+# KAT REDAKCYJNY Z KONFIGURACJI, NIE WPISANY. Do 2026-09-05 komunikat
+# objasnial KAZDA nisze przez „how they are built, and who decides what they
+# are allowed to be" — czyli linia jednego profilu szla do skauta niezaleznie
+# od tego, co preset ustawil w `kat_redakcyjny` (C2 audytu). Teraz skaut
+# dostaje to samo zdanie, co pozostale komunikaty i briefy.
 SCOUT_SYSTEM = (
     f"You are a topic scout for the {config.ARTICLE_LANGUAGE}-language Substack "
-    f"'{config.NAZWA_MARKI}', a publication about {config.NISZA}: what these "
-    f"things are, how they are built, and who decides what they are allowed to "
-    f"be. Return only valid JSON."
+    f"'{config.NAZWA_MARKI}', a publication about {config.NISZA} — "
+    f"{config.KAT_REDAKCYJNY} Return only valid JSON."
 )
 
 SEED_HISTORY = config.PROMPTS_DIR / "historia_startowa.json"
@@ -164,7 +168,21 @@ POLA_WSPOLNE = frozenset({
     # Blok „nie brzmij jak maszyna" — wspolny dla krotkich form.
     # Patrz `SEKCJE_WSPOLNE` i `_blok_po_ludzku`.
     "po_ludzku",
+    # Glos redakcji opisany slowami — z presetu (`styl.opis`). Patrz `_blok_stylu`.
+    "styl_opis",
 })
+
+
+def _blok_stylu() -> str:
+    """Opis glosu z presetu — albo jawne „bez uwag", zeby sekcja nie byla pusta.
+
+    Pusty `{styl_opis}` zostawialby w briefie naglowek bez tresci, a model
+    czyta to jako zadanie do zgadniecia. Zdanie zastepcze mowi wprost, ze
+    glos opisuja profile i przyklady, i nic wiecej.
+    """
+    opis = str(getattr(config, "STYL_OPIS", "") or "").strip()
+    return opis or ("(no additional voice notes for this publication — the "
+                    "profiles and the rules above are the whole instruction)")
 
 
 def _blok_przykladow(klucz: str, gdy_pusto: str) -> str:
@@ -282,6 +300,9 @@ def _pola_wspolne() -> dict[str, Any]:
         # na te sama wartosc to ta sama wada, co uchwyt konta w dwoch stalych:
         # rozjezdzaja sie i nikt tego nie zglasza.
         "language": config.ARTICLE_LANGUAGE,
+        # GLOS Z PRESETU. Styl byl wspolnym zestawem plikow o stalych nazwach;
+        # preset nie mial jak powiedziec pisarzowi, jak ma brzmiec (C4 audytu).
+        "styl_opis": _blok_stylu(),
     }
 
 
@@ -743,11 +764,16 @@ def write(
           % (ruch_nazwa, ile_paraleli), flush=True)
     import style
 
-    examples = style.load_examples()
+    # KORPUS WEDLE PRESETU. `load_examples` odmawia bez przypietego korpusu
+    # i tak zostaje, gdy preset go wymaga; preset, ktory korpusu nie ma,
+    # mowi to wprost (`styl.wymagaj_korpusu = false`) i pisarz dostaje same
+    # profile plus opis glosu — z jawnym zdaniem, ze przykladow nie ma.
+    examples = style.przyklady_albo_pusto()
     positive, negative = style.load_profiles()
     rendered = "\n\n".join(
         f"### {e['function']}\n{e['text']}" for e in examples
-    )
+    ) or ("(no pinned style examples for this publication — follow the two "
+          "profiles and the voice notes, and do not imitate any author)")
     prompt = _prompt(
         "pisarz.md",
         target_words=dl["cel"],
@@ -1061,6 +1087,13 @@ def grafika(
     poprawne wobec briefu i martwe. Scena odpowiada na pytania, na które
     eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
     """
+    # OKLADKA WYLACZONA W PRESECIE (`modele.obraz = ""`): ani briefu, ani
+    # obrazu, ani jednego platnego wywolania. Decyzja, nie awaria — wiec bez
+    # slowa „NIE POWSTALA" w logu.
+    if not getattr(config, "OBRAZ_WLACZONY", True):
+        print("  [grafika] okladka wylaczona w presecie — artykul wychodzi bez naglowka",
+              flush=True)
+        return {"pominieta": "okladka wylaczona w presecie"}
     # GRAFIKA NIGDY NIE ZABIJA ARTYKUŁU. Zasada właściciela mówi wprost: gdy
     # temat jest wybrany, a research zrobiony i opłacony, artykuł MUSI powstać.
     # Nagłówek jest ozdobą, artykuł produktem — więc gdy zabraknie budżetu na
@@ -3142,7 +3175,11 @@ def zapamietaj_niewystawiony(sciezka: Any, powod: str) -> None:
         NIEWYSTAWIONY.parent.mkdir(parents=True, exist_ok=True)
         NIEWYSTAWIONY.write_text(json.dumps(
             {"sciezka": str(sciezka), "powod": powod[:300], "proby": 0,
-             "kiedy": _dt.now(_tz.utc).isoformat(timespec="seconds")},
+             "kiedy": _dt.now(_tz.utc).isoformat(timespec="seconds"),
+             # WLASCICIEL ZADANIA. Gotowy tekst czeka na wystawienie przez
+             # pieć przebiegow dziennie; po przelaczeniu presetu ma go
+             # wystawic TYLKO ta sama instancja (S5 audytu).
+             "instancja": getattr(config, "INSTANCJA", "")},
             ensure_ascii=False, indent=1), encoding="utf-8")
     except Exception as exc:
         print("  [artykul] nie zapisalem znacznika (%s)" % type(exc).__name__,
@@ -3155,7 +3192,19 @@ def niewystawiony_artykul() -> dict[str, Any] | None:
         if not NIEWYSTAWIONY.exists():
             return None
         dane = json.loads(NIEWYSTAWIONY.read_text(encoding="utf-8"))
-        return dane if isinstance(dane, dict) and dane.get("sciezka") else None
+        if not (isinstance(dane, dict) and dane.get("sciezka")):
+            return None
+        # CUDZE ZADANIE NIE WYCHODZI. Znacznik z innej instancji (albo bez
+        # instancji, gdy preset jest podlaczony) zostaje na dysku do decyzji
+        # czlowieka, ale rutyna dnia go nie wystawia — tekst byl pisany pod
+        # inny temat, styl i konto.
+        moja = getattr(config, "INSTANCJA", "")
+        if moja and str(dane.get("instancja") or "") != moja:
+            print("  [artykul] znacznik niewystawionego artykulu nalezy do instancji %r,"
+                  " nie %r — pomijam" % (dane.get("instancja") or "(brak)", moja),
+                  flush=True)
+            return None
+        return dane
     except Exception:
         return None
 
@@ -3194,7 +3243,9 @@ def zapisz_do_promocji(url: str, tytul: str, tekst: str) -> None:
     # tak samo jak opublikowany dzis.
     dane.append({"url": url, "tytul": tytul, "tekst": tekst[:9000],
                  "wystawione": 0, "ostatnia": None,
-                 "dodane": datetime.now(timezone.utc).strftime("%Y-%m-%d")})
+                 "dodane": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                 # Kto ma prawo ten artykul promowac — patrz `artykul_do_promocji`.
+                 "instancja": getattr(config, "INSTANCJA", "")})
     PROMOCJA.parent.mkdir(parents=True, exist_ok=True)
     PROMOCJA.write_text(json.dumps(dane, ensure_ascii=False, indent=1),
                         encoding="utf-8")
@@ -3245,8 +3296,14 @@ def artykul_do_promocji() -> dict[str, Any] | None:
         return None             # dzisiejsza notka promujaca juz poszla
     granica = (datetime.now(timezone.utc)
                - timedelta(days=config.OKNO_PROMOCJI_DNI)).strftime("%Y-%m-%d")
+    moja = getattr(config, "INSTANCJA", "")
     for a in reversed(kolejka):
         if a.get("wystawione", 0) >= config.NOTEK_PROMUJACYCH:
+            continue
+        # PROMUJEMY TYLKO WLASNE. Artykul z innej instancji (inny preset, inny
+        # temat) nie dostaje notki promujacej od tej — to jest dokladnie
+        # „artykul sprzed zmiany tematu w kolejce", tylko z nazwanym wlascicielem.
+        if moja and str(a.get("instancja") or "") != moja:
             continue
         # OKNO WAZNOSCI. Wpis bez `dodane` pochodzi sprzed tej reguly, wiec z
         # definicji nie jest dzisiejszy — traktujemy go jak przeterminowany.

@@ -370,38 +370,27 @@ def zapisz_toml(dane: dict) -> str:
     ktorego bot nie przyjmie — i dowiedzialbys sie o tym przy pierwszym
     uruchomieniu, nie tutaj.
     """
-    sekcje: dict[str, list[str]] = {}
-    for sciezka, wartosc in dane.items():
-        sekcja, pole = sciezka.split(".", 1)
-        sekcje.setdefault(sekcja, []).append("%s = %s" % (pole, _toml(wartosc)))
-    kolejnosc = ["konto", "temat", "zrodla", "modele", "wolumeny",
-                 "publikowanie", "pieniadze"]
-    linie = [
+    # JEDEN SERIALIZER, W LOADERZE. Ten plik mial wlasny, ze stala lista
+    # sekcji (pomijal `stan_dziedziny` i `harmonogram`, nawet gdy dostal je
+    # jako dane) i bez ucieczki nowej linii w napisie — dwuwierszowa nisza
+    # dawala TOML, ktorego `tomllib` nie czytal (proby T07 i T08 audytu).
+    # `konfiguracja.zapisz_toml` zna kazda sekcje z `POLA` i cytuje poprawnie.
+    naglowek = [
         "# Written by narzedzia/kreator.py. Safe to edit by hand afterwards —",
         "# every field is validated on load, and an unknown key is a hard error.",
         "#",
         "# No API keys here, on purpose. They live in agent-v2/.env, which is",
         "# gitignored. This file is meant to be shareable.",
+        "#",
+        "# To run the bot from this file, turn it into a preset:",
+        "#     python narzedzia/presety.py importuj-konfiguracje --nazwa <name>",
     ]
-    for sekcja in kolejnosc:
-        if sekcja not in sekcje:
-            continue
-        linie.append("")
-        linie.append("[%s]" % sekcja)
-        linie.extend(sorted(sekcje[sekcja]))
-    return "\n".join(linie) + "\n"
+    return konfiguracja.zapisz_toml(dane, naglowek)
 
 
 def _toml(v) -> str:
-    if isinstance(v, bool):
-        return "true" if v else "false"
-    if isinstance(v, (int, float)):
-        return repr(v)
-    if isinstance(v, dict):
-        return "{ %s }" % ", ".join('"%s" = %s' % (k, _toml(x)) for k, x in sorted(v.items()))
-    if isinstance(v, (list, tuple)):
-        return "[%s]" % ", ".join(_toml(x) for x in v)
-    return '"%s"' % str(v).replace("\\", "\\\\").replace('"', '\\"')
+    """Zachowane dla zgodnosci z wolajacymi; deleguje do loadera."""
+    return konfiguracja.toml_wartosc(v)
 
 
 def zapisz_env(o: Odpowiadacz) -> list[str]:

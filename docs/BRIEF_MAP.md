@@ -30,13 +30,13 @@ through a variable this scan cannot see. Check before cutting.
 | `grafika.md` | 98 | `stages.grafika` | `grafika` | 3 | 0 | 3 | 0 |
 | `klasyfikacja.md` | 55 | `stages.classify` | `classify` | 5 | 1 | 4 | 0 |
 | `kogo_odpowiedziec.md` | 48 | `stages.wybierz_do_odpowiedzi` | `wybor` | 5 | 0 | 5 | 0 |
-| `komentarz.md` | 142 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
+| `komentarz.md` | 146 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
 | `mysl.md` | 129 | `stages.note` | `—` | 3 | 1 | 2 | 0 |
 | `naprawa.md` | 39 | `stages.napraw_obalone` | `—` | 0 | 0 | 0 | 0 |
-| `notka.md` | 159 | `stages.note` | `—` | 4 | 1 | 3 | 0 |
-| `odpowiedz.md` | 125 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
+| `notka.md` | 163 | `stages.note` | `—` | 4 | 1 | 3 | 0 |
+| `odpowiedz.md` | 129 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
 | `OSWIADCZENIE_AUTORSTWA.md` | 56 | **nothing** | — | 0 | — | — | — |
-| `pisarz.md` | 300 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
+| `pisarz.md` | 304 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
 | `po_ludzku.md` | 53 | **nothing** | — | 0 | — | — | — |
 | `recenzent.md` | 56 | `stages.review` | `review` | 6 | 1 | 5 | 0 |
 | `restack.md` | 69 | `stages.ocen_restack` | `restack` | 4 | 3 | 1 | 0 |

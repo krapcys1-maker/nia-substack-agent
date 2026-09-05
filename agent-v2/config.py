@@ -66,6 +66,22 @@ def _korpus_stylu() -> Path:
 STYLE_CORPUS = _korpus_stylu()
 STYLE_PROFILES_DIR = REPO_ROOT / "style-profiles"
 
+# PROFILE STYLU SA POLEM PRESETU (`styl.profil_pozytywny`, `styl.profil_negatywny`).
+# Do 2026-09-05 `style.load_profiles` mialo obie nazwy plikow wpisane w kod,
+# wiec dwa presety o roznych glosach czytaly ten sam profil (C4 audytu).
+STYLE_PROFILE_POSITIVE = STYLE_PROFILES_DIR / "ARTICLE_STYLE_PROFILE_V1.md"
+STYLE_PROFILE_NEGATIVE = STYLE_PROFILES_DIR / "ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md"
+
+# Czy pisarz artykulu ODMAWIA bez przypietego korpusu. Tak bylo zawsze i tak
+# zostaje domyslnie; preset moze to wylaczyc (`styl.wymagaj_korpusu = false`)
+# i pisac z samych profili plus opisu glosu — patrz `style.przyklady_albo_pusto`.
+STYL_WYMAGAJ_KORPUSU = True
+
+# GLOS OPISANY SLOWAMI (`styl.opis`). Idzie do briefow pisarza, notki,
+# komentarza i odpowiedzi jako `{styl_opis}` — patrz `stages._pola_wspolne`.
+# Pusty znaczy „bez uwag dodatkowych": profile i korpus dzialaja jak dotad.
+STYL_OPIS = ""
+
 # GDZIE NAPRAWDE LEZY PRODUKCJA. Zapamietane TERAZ, przed jakimkolwiek
 # przekierowaniem, bo po przestawieniu `DATA_DIR` nie da sie juz odtworzyc,
 # gdzie bylo naprawde. Wszystkie zapory nizej pytaja o TE sciezke, nie o
@@ -342,6 +358,18 @@ if _writer:
 # byloby zmyslona wartoscia w pliku, ktory ma byc jedynym zrodlem prawdy.
 MODEL_FOR["obraz"] = IMAGE_MODEL
 BEZ_TOKENOW = {"obraz"}
+
+# CZY OKLADKA W OGOLE POWSTAJE. Preset wylacza ja pustym `modele.obraz`;
+# `stages.grafika` wtedy nie wola ani briefu, ani OpenAI. Do 2026-09-05
+# jedynym sposobem na brak okladki byl brak klucza — czyli awaria udajaca
+# decyzje.
+OBRAZ_WLACZONY = True
+
+# NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py`
+# i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec
+# zmiana pisarza w konfiguracji nie mowila nic o tym, co stanie sie po jego
+# awarii (M3 audytu). Pusty napis znaczy: nie wracaj, zatrzymaj sie.
+ZAPASOWY_PISARZ = CLAUDE
 
 # --- cennik ------------------------------------------------------------------
 # USD za milion tokenów. `verified` mówi, czy stawka została potwierdzona realnym
@@ -754,10 +782,17 @@ KOTWICE_DLUGOSCI = {
     # mowilo wiec pisarzowi, ze teksty przyjete przez to konto sa dwuipolkrotnie
     # dluzsze od tego, co ma napisac — czyli pracowalo PRZECIW jedynemu
     # mechanizmowi skalowania dlugosci, jaki tu zbudowano.
-    "RICH": ("the two longest pieces this publication has approved both run "
-             "past a thousand words, and neither felt long"),
-    "SINGLE": ("this subject carries one mechanism, well documented. Our longer "
-               "pieces run past a thousand words because they carry two. Shorter "
+    #
+    # BEZ HISTORII PUBLIKACJI, KTOREJ MOZE NIE BYC. Kotwica RICH mowila
+    # o „dwoch najdluzszych tekstach, ktore ta publikacja zaakceptowala" —
+    # to byl fakt o JEDNYM koncie, podawany kazdemu presetowi jako jego
+    # wlasna historia (C3 audytu). Uzasadnienie dlugosci idzie teraz
+    # z rodzaju materialu, nie z wymyslonych zatwierdzen.
+    "RICH": ("this subject carries a second mechanism, or the same one in more "
+             "than one field, and that is what earns the length — a thousand "
+             "words spent on two things does not feel long"),
+    "SINGLE": ("this subject carries one mechanism, well documented. A piece "
+               "runs past a thousand words only when it carries two. Shorter "
                "here is the right size, not a shortfall"),
     "THIN": ("this is the shortest form we publish, and it is the honest one for "
              "a finding this size. A longer text would be the same finding said "
@@ -1866,6 +1901,12 @@ def losowy_ksztalt_mysli() -> str:
     return random.choice(list(KSZTALTY_MYSLI))
 NOTE_MIX_OTHER_DAY = ("CIEKAWOSTKA", "CIEKAWOSTKA", "DYSKUSJA", "SPROSTOWANIE", "MYSL")
 
+# LICZBA SLOTOW NOTEK NA DOBE — jedna dla obu rodzajow dnia. Wyprowadzona
+# z miksu, a nie wpisana obok niego: `konfiguracja.zastosuj` ustawia ja RAZEM
+# z obiema listami (`wolumeny.notki_dziennie`), wiec nie ma jak sie z nimi
+# rozjechac. Zero znaczy: notki wylaczone.
+NOTKI_DZIENNIE = len(NOTE_MIX_OTHER_DAY)
+
 # --- zachowanie spoleczne: widelki, nie stale liczby -------------------------
 # Stala liczba dziennie wyglada jak robot, bo czlowiek nie ma normy. Losujemy
 # w tych granicach, osobno na kazdy dzien.
@@ -2148,6 +2189,49 @@ RESTACK_MAX_SLOW = 40
 # Przy pieciu przebiegach na przebieg przypadaja 4 komentarze i 1 notka, co
 # miesci sie z zapasem.
 PRZEBIEGOW_DZIENNIE = 5
+
+# --- HARMONOGRAM Z KONFIGURACJI, NIE Z SZABLONU ZEGARA ----------------------
+#
+# Do 2026-09-05 godziny przebiegow staly WYLACZNIE w `systemd/nia-agent.timer`,
+# a dzien artykulu w `systemd/nia-artykul.timer`. `PRZEBIEGOW_DZIENNIE` mialo
+# sie z zegarem zgadzac, ale nic go z zegara nie wyprowadzalo, a generator
+# jednostek podstawial tylko katalog, uzytkownika i marke (W2 audytu). Preset
+# z inna liczba przebiegow dostawal wiec zegar o piecu godzinach.
+#
+# Teraz to sa pola presetu (`harmonogram.*`), a `narzedzia/jednostki.py`
+# buduje `OnCalendar=` z `zegar_agenta_on_calendar()` i
+# `zegar_artykulu_on_calendar()`. Wartosci ponizej to dotychczasowy zegar,
+# zapisany jawnie — patrz komentarze w szablonach `.timer` o tym, skad sie
+# wziely te godziny.
+GODZINY_PRZEBIEGOW_UTC = ("11:20", "17:00", "19:20", "21:30", "23:40")
+
+# ILE ARTYKULOW NA TYDZIEN I W KTORE DNI. Zero wylacza sciezke artykulu:
+# zegar artykulu nie powstaje, `artykul_z_puli.py` odmawia, promocja nie ma
+# czego promowac. Dni w postaci, ktora rozumie systemd (`Mon`..`Sun`).
+ARTYKULY_TYGODNIOWO = 1
+DNI_ARTYKULU = ("Tue",)
+GODZINA_ARTYKULU_UTC = "14:00"
+
+
+def dzis_dzien_artykulu(kiedy=None) -> bool:
+    """Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu."""
+    from datetime import datetime, timezone
+
+    kiedy = kiedy or datetime.now(timezone.utc)
+    dzien = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[kiedy.weekday()]
+    return ARTYKULY_TYGODNIOWO > 0 and dzien in DNI_ARTYKULU
+
+
+def zegar_agenta_on_calendar() -> list[str]:
+    """Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu."""
+    import konfiguracja as _k
+    return _k.on_calendar_agenta(GODZINY_PRZEBIEGOW_UTC)
+
+
+def zegar_artykulu_on_calendar() -> list[str]:
+    """Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma."""
+    import konfiguracja as _k
+    return _k.on_calendar_artykulu(DNI_ARTYKULU, GODZINA_ARTYKULU_UTC, ARTYKULY_TYGODNIOWO)
 
 # ILE CZASU MA PRZEBIEG. Musi zgadzac sie z `TimeoutStartSec` w pliku uslugi —
 # to jedyne miejsce, gdzie ta sama liczba stoi dwa razy, i pilnuje tego test,
@@ -3346,10 +3430,11 @@ def co_teraz_w_reku(kiedy=None) -> str:
 # w nazwie pola, jest gorsza od jej braku: bot chodzi, robi co innego, niz
 # napisano, i nikt tego nie zauwaza.
 import konfiguracja as _konf   # noqa: E402
+import preset as _preset       # noqa: E402
 
 KONFIGURACJA_PLIK = _konf.sciezka(AGENT_DIR)
 
-# `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA.
+# `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI I NARZEDZI, NIE DLA BOTA.
 #
 # `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE siedzi
 # tozsamosc konta. Uruchomiony u operatora czytal jego `konfiguracja.toml`
@@ -3359,10 +3444,66 @@ KONFIGURACJA_PLIK = _konf.sciezka(AGENT_DIR)
 #
 # Furtka jest zmienna srodowiskowa, nie polem konfiguracji, i to jest celowe:
 # ma byc widoczna w wywolaniu i niemozliwa do wlaczenia przez przypadek
-# w pliku, ktory sama wylacza.
+# w pliku, ktory sama wylacza. `narzedzia/presety.py` ustawia ja u siebie,
+# zeby przymierzac presety na NEUTRALNYM silniku, a nie na podlaczonym.
 _BEZ_KONFIGURACJI = _env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower() in {"1", "true", "yes"}
-_dane_konfiguracji = {} if _BEZ_KONFIGURACJI else _konf.wczytaj(KONFIGURACJA_PLIK)
-KONFIGURACJA_ZMIENILA = _konf.zastosuj(_dane_konfiguracji, sys.modules[__name__])
+
+# NEUTRALNA BAZA SILNIKA — zdjecie stalych konta ZANIM cokolwiek je nadpisze.
+# Od niej kompiluje sie kazdy preset: przywroc baze, naloz preset. Bez tego
+# preset B dziedziczyl po A kanaly, przyklady, pisarza i pytanie o stan
+# dziedziny (proba T02 audytu). Uzywane takze przez `narzedzia/presety.py`
+# do pokazania, ktora wartosc pochodzi z pliku, a ktora z silnika.
+DOMYSLNE_SILNIKA = _konf.zdjecie(sys.modules[__name__])
+
+# --- AKTYWNY PRESET ----------------------------------------------------------
+#
+# JEDEN SILNIK, JEDNA INSTANCJA NARAZ, KONTEKST ROZWIAZANY PRZED STARTEM.
+# `agent-v2/aktywny_preset.json` (pisany przez `narzedzia/presety.py podlacz`)
+# mowi, ktory plik presetu i z jakim odciskiem jest podlaczony oraz w ktorym
+# katalogu leza dane tej instancji. Preset zmieniony po aktywacji zatrzymuje
+# start — ma byc podlaczony jeszcze raz, swiadomie. Bez wskaznika bot nie ma
+# tematu ani planu i `run.py` odmawia (`preset.wymagaj_aktywnego`).
+#
+# STARY `konfiguracja.toml` jest czytany TYLKO, gdy nie ma presetu — sciezka
+# zgodnosci na czas przejscia; przy aktywnym presecie jest ignorowany (jedno
+# zrodlo prawdy). W DARMOWYM TESCIE wskaznik nie jest czytany wcale: testy
+# maja pracowac na silniku, a nie na tym, co operator akurat podlaczyl.
+# Jawna zmienna `AGENT_V2_PRESET=<plik>` dziala takze w tescie i sluzy
+# podgladowi promptow oraz sprawdzaniu presetow bez ich podlaczania.
+PRESET = None              # `preset.Preset` albo None
+PRESET_AKTYWACJA = None    # `preset.Aktywacja` albo None
+INSTANCJA = ""             # identyfikator instancji; pusty = brak presetu
+
+
+def _aktywacja_przy_starcie():
+    if _BEZ_KONFIGURACJI:
+        return None
+    if W_TESCIE and not _env(_preset.ZMIENNA):
+        return None
+    return _preset.aktywacja(AGENT_DIR)
+
+
+_aktywacja = _aktywacja_przy_starcie()
+if _aktywacja is not None:
+    KONFIGURACJA_ZMIENILA = _preset.zastosuj(_aktywacja.preset, sys.modules[__name__],
+                                             DOMYSLNE_SILNIKA)
+    PRESET = _aktywacja.preset
+    PRESET_AKTYWACJA = _aktywacja
+    INSTANCJA = _aktywacja.instancja
+    # KATALOG DANYCH INSTANCJI. Nic jeszcze nie jest zaimportowane poza tym
+    # plikiem, wiec kazda sciezka pochodna w innych modulach policzy sie juz
+    # z nowego `DATA_DIR`. Zapory testowe pytaja o TEN katalog — to on jest
+    # teraz produkcja tej instancji.
+    uzyj_katalogu_danych(_aktywacja.katalog_danych,
+                         utworz=(_aktywacja.zrodlo == "wskaznik"))
+    PRODUKCYJNY_KATALOG_DANYCH = DATA_DIR
+    _dane_konfiguracji = {}
+    if KONFIGURACJA_PLIK.exists() and not _w_darmowym_tescie():
+        print("  [preset] %s istnieje, ale przy podlaczonym presecie NIE jest czytany"
+              % KONFIGURACJA_PLIK.name, flush=True)
+else:
+    _dane_konfiguracji = {} if _BEZ_KONFIGURACJI else _konf.wczytaj(KONFIGURACJA_PLIK)
+    KONFIGURACJA_ZMIENILA = _konf.zastosuj(_dane_konfiguracji, sys.modules[__name__])
 
 # --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI -------------------
 #
@@ -3399,6 +3540,9 @@ if DAILY_LIMIT_USD < RUN_LIMIT_USD * 2 and not _w_darmowym_tescie():
           "przebiegow po %.2f — artykul tygodniowy nie powstanie"
           % (DAILY_LIMIT_USD, RUN_LIMIT_USD), flush=True)
 
-if KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():
+if PRESET is not None and not _w_darmowym_tescie():
+    print("  [preset] %s (instancja %s, dane %s): przestawiono %d pozycji"
+          % (PRESET.nazwa, INSTANCJA, DATA_DIR, len(KONFIGURACJA_ZMIENILA)), flush=True)
+elif KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():
     print("  [konfiguracja] %s: przestawiono %d pozycji"
           % (KONFIGURACJA_PLIK.name, len(KONFIGURACJA_ZMIENILA)), flush=True)

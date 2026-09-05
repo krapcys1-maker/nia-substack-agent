@@ -30,6 +30,10 @@ between what a number is called and what it counts. That is the note. The
 system name and the number are how you prove it, and at this length one
 number is usually enough; four names and five numbers is a changelog entry.
 
+## The voice of this publication, in its own words
+
+{styl_opis}
+
 ## Length
 
 **{min_words} to {max_words} words. Count them.** The band comes from the type

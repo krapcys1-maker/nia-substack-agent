@@ -103,9 +103,9 @@
 {{"choices": [{{"index": <number>, "rank": <1 is highest>, "why": "<one sentence>", "kind": "disagreement"|"question"|"correction"|"addition"|"agreement"}}], "skipped_because": "<one sentence about the ones you left out>"}}
 ```
 
-#### `komentarz.md` (142 wierszy)
+#### `komentarz.md` (146 wierszy)
 
-**Pola wejściowe:** `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
+**Pola wejściowe:** `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `styl_opis`, `title`
 
 **Kontrakt wyjścia:**
 
@@ -133,9 +133,9 @@
 {{"text": "the full corrected text", "co_zmienione": "one line: what you changed and what evidence you changed it to"}}
 ```
 
-#### `notka.md` (159 wierszy)
+#### `notka.md` (163 wierszy)
 
-**Pola wejściowe:** `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `type_brief`
+**Pola wejściowe:** `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `styl_opis`, `type_brief`
 
 **Kontrakt wyjścia:**
 
@@ -143,9 +143,9 @@
 {{"note": "<the note>", "words": <integer>, "fact_used": "<the single fact from the evidence this rests on>", "source_url": "<the url that fact came from>"}}
 ```
 
-#### `odpowiedz.md` (125 wierszy)
+#### `odpowiedz.md` (129 wierszy)
 
-**Pola wejściowe:** `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `po_ludzku`, `under_what`
+**Pola wejściowe:** `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `po_ludzku`, `styl_opis`, `under_what`
 
 **Kontrakt wyjścia:**
 
@@ -153,9 +153,9 @@
 {{"reply": "<the reply, or null>", "reason_if_silent": "<one sentence, only when reply is null>", "kind": "answer"|"correction_accepted"|"disagreement"|"built_on"}}
 ```
 
-#### `pisarz.md` (300 wierszy)
+#### `pisarz.md` (304 wierszy)
 
-**Pola wejściowe:** `card_json`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+**Pola wejściowe:** `card_json`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
 **Kontrakt wyjścia:**
 

@@ -1342,8 +1342,14 @@ def artykul_do_promocji() -> dict[str, Any] | None:
         return None             # dzisiejsza notka promujaca juz poszla
     granica = (datetime.now(timezone.utc)
                - timedelta(days=config.OKNO_PROMOCJI_DNI)).strftime("%Y-%m-%d")
+    moja = getattr(config, "INSTANCJA", "")
     for a in reversed(kolejka):
         if a.get("wystawione", 0) >= config.NOTEK_PROMUJACYCH:
+            continue
+        # PROMUJEMY TYLKO WLASNE. Artykul z innej instancji (inny preset, inny
+        # temat) nie dostaje notki promujacej od tej — to jest dokladnie
+        # „artykul sprzed zmiany tematu w kolejce", tylko z nazwanym wlascicielem.
+        if moja and str(a.get("instancja") or "") != moja:
             continue
         # OKNO WAZNOSCI. Wpis bez `dodane` pochodzi sprzed tej reguly, wiec z
         # definicji nie jest dzisiejszy — traktujemy go jak przeterminowany.
@@ -1381,6 +1387,13 @@ def grafika(
     poprawne wobec briefu i martwe. Scena odpowiada na pytania, na które
     eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
     """
+    # OKLADKA WYLACZONA W PRESECIE (`modele.obraz = ""`): ani briefu, ani
+    # obrazu, ani jednego platnego wywolania. Decyzja, nie awaria — wiec bez
+    # slowa „NIE POWSTALA" w logu.
+    if not getattr(config, "OBRAZ_WLACZONY", True):
+        print("  [grafika] okladka wylaczona w presecie — artykul wychodzi bez naglowka",
+              flush=True)
+        return {"pominieta": "okladka wylaczona w presecie"}
     # GRAFIKA NIGDY NIE ZABIJA ARTYKUŁU. Zasada właściciela mówi wprost: gdy
     # temat jest wybrany, a research zrobiony i opłacony, artykuł MUSI powstać.
     # Nagłówek jest ozdobą, artykuł produktem — więc gdy zabraknie budżetu na

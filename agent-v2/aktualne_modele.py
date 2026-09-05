@@ -105,14 +105,28 @@ def _swieze(dane: dict[str, Any]) -> bool:
 
 
 def wczytaj() -> dict[str, Any]:
-    """Ostatnia zapisana odpowiedz. Pusty slownik, gdy nie ma albo jest zepsuta."""
+    """Ostatnia zapisana odpowiedz NA TO SAMO PYTANIE. Pusty slownik, gdy nie ma,
+    jest zepsuta albo dotyczy innego pytania.
+
+    Plik mial kontrole WIEKU, ale nie TOZSAMOSCI: po zmianie niszy (i po
+    wylaczeniu odpytywania) bot dostawal „stan dziedziny" poprzedniego
+    tematu jako biezacy (proba T11 audytu). Katalog danych jest dzis osobny
+    dla kazdej instancji; ten warunek domyka zmiane `o_co_pytac` w tej samej
+    instancji. Wpis sprzed tej poprawki (bez pola `pytanie`) jest traktowany
+    jak pytanie o co innego — lepiej zaplacic za jedno odswiezenie niz
+    podawac pisarzowi liste nie wiadomo o czym.
+    """
     if not PLIK.exists():
         return {}
     try:
         dane = json.loads(PLIK.read_text(encoding="utf-8"))
     except Exception:
         return {}
-    return dane if isinstance(dane, dict) else {}
+    if not isinstance(dane, dict):
+        return {}
+    if str(dane.get("pytanie") or "") != config.pytanie_o_stan_dziedziny():
+        return {}
+    return dane
 
 
 def pobierz(conn=None, run_id: int | None = None,
@@ -163,6 +177,8 @@ def pobierz(conn=None, run_id: int | None = None,
             wlasne.close()
 
     dane["_pobrane"] = teraz.isoformat()
+    # O CO PYTALISMY — zeby odpowiedz nie przezyla zmiany pytania. Patrz `wczytaj`.
+    dane["pytanie"] = config.pytanie_o_stan_dziedziny()
     try:
         PLIK.parent.mkdir(parents=True, exist_ok=True)
         PLIK.write_text(json.dumps(dane, ensure_ascii=False, indent=1),

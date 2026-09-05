@@ -1,7 +1,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2933 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2955 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -35,11 +35,12 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8162 wierszy, 142 funkcji na poziomie modułu, 0 klas
+8219 wierszy, 143 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_na_kanal(nazwa)` *(wewn.)* | Wszystko, co ta funkcja zaplaci, ksieguje sie na kanal `nazwa`. |
+| `_blok_stylu()` *(wewn.)* | Opis glosu z presetu — albo jawne „bez uwag", zeby sekcja nie byla pusta. |
 | `_blok_przykladow(klucz, gdy_pusto)` *(wewn.)* | Przyklady z niszy jako lista punktow — albo polecenie, gdy ich nie ma. |
 | `_blok_po_ludzku()` *(wewn.)* | Wspolny blok „nie brzmij jak maszyna" — JEDNO zrodlo, nie cztery kopie. |
 | `_pola_wspolne()` *(wewn.)* | Nisza, marka i jezyk — czytane z configu przy KAZDYM wywolaniu. |
@@ -365,24 +366,83 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-364 wierszy, 14 funkcji na poziomie modułu, 1 klas
+895 wierszy, 38 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
 | `_napis(v, gdzie)` *(wewn.)* | — |
+| `_napis_moze_pusty(v, gdzie)` *(wewn.)* | Napis, ktory WOLNO zostawic pusty. |
 | `_data_albo_pusto(v, gdzie)` *(wewn.)* | Dzien w postaci RRRR-MM-DD albo pusty napis znaczacy „nigdy". |
 | `_liczba(v, gdzie)` *(wewn.)* | — |
+| `_kwota(v, gdzie)` *(wewn.)* | Kwota w USD: skonczona i nieujemna. Ujemny sufit przechodzil (T05). |
+| `_calkowita_nieujemna(v, gdzie)` *(wewn.)* | Licznosc: ile czego. Zero jest poprawne i znaczy „wylaczone". |
+| `_calkowita_dodatnia(v, gdzie)` *(wewn.)* | Licznosc, ktora nie ma sensu jako zero (przebiegi na dobe). |
 | `_prawda(v, gdzie)` *(wewn.)* | — |
-| `_napis_moze_pusty(v, gdzie)` *(wewn.)* | Napis, ktory WOLNO zostawic pusty. |
+| `_strefa(v, gdzie)` *(wewn.)* | Nazwa strefy IANA, ktora NAPRAWDE istnieje w bazie stref. |
 | `_sekwencja_napisow(v)` *(wewn.)* | Lista albo krotka napisow — ale NIE sam napis. |
 | `_lista_napisow(v, gdzie)` *(wewn.)* | — |
 | `_lista_napisow_moze_pusta(v, gdzie)` *(wewn.)* | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. |
-| `_widelki(v, gdzie)` *(wewn.)* | Zakres [od, do]. Wolumeny sa losowane z widelek, nie stale. |
+| `_widelki(v, gdzie)` *(wewn.)* | Zakres [od, do] nieujemnych liczb calkowitych. `[0, 0]` wylacza dzialanie. |
+| `_godziny(v, gdzie)` *(wewn.)* | Para godzin doby [od, do] w zakresie 0-24. Godzina 98 przechodzila (T05). |
+| `_godzina_utc(v, gdzie)` *(wewn.)* | Godzina zegara `HH:MM` w UTC — postac, ktora rozumie `OnCalendar=`. |
+| `_lista_godzin_utc(v, gdzie)` *(wewn.)* | Niepusta lista godzin `HH:MM` bez powtorzen, w kolejnosci doby. |
+| `_dzien_tygodnia(v, gdzie)` *(wewn.)* | — |
+| `_lista_dni_tygodnia(v, gdzie)` *(wewn.)* | Lista dni tygodnia; pusta znaczy „bez artykulow". |
+| `_sciezka(v, gdzie)` *(wewn.)* | Sciezka do pliku wzgledem korzenia repozytorium (albo bezwzgledna). |
+| `_sciezka_moze_pusta(v, gdzie)` *(wewn.)* | — |
 | `_slownik_list(v, gdzie)` *(wewn.)* | Tablica `klucz = [napisy]`. Pusta lista jest DOZWOLONA i coś znaczy. |
 | `_slownik_napisow(v, gdzie)` *(wewn.)* | — |
 | `sciezka(agent_dir)` | — |
+| `splaszcz(dane, nazwa)` | `{"temat": {"nisza": ...}}` na `{"temat.nisza": ...}` — jeden poziom. |
+| `sprawdz_plaskie(plaskie, nazwa)` | Nieznane pole to blad; kazde znane przechodzi przez swoj walidator. |
+| `wczytaj_tekst(tekst, nazwa)` | Surowy TOML (napis) -> zwalidowane pola plaskie. Wymaga Pythona 3.11. |
 | `wczytaj(plik)` | Surowa zawartosc pliku, sprawdzona co do ksztaltu. Brak pliku = pusto. |
+| `zdjecie(cfg)` | Kopia stalych konta z modulu `config`, do pozniejszego przywrocenia. |
+| `przywroc(cfg, zdj)` | Przywraca stan ze `zdjecie`. Slowniki W MIEJSCU, bo inne moduly trzymaja |
+| `_rozloz_godziny(ile, baza)` *(wewn.)* | Godziny zegara dla `ile` przebiegow, gdy preset podal tylko liczbe. |
+| `_sciezka_w_repo(cfg, napis)` *(wewn.)* | — |
+| `_plan(dane, cfg)` *(wewn.)* | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. |
 | `zastosuj(dane, cfg)` | Wklada wartosci do modulu `config`. Oddaje liste tego, co przestawiono. |
+| `on_calendar_agenta(godziny)` | Zegar rutyny dnia: jedna linia na godzine UTC. |
+| `on_calendar_artykulu(dni, godzina, ile)` | Zegar artykulu; pusta lista, gdy artykulow nie ma. |
+| `_toml_napis(v)` *(wewn.)* | Napis w cudzyslowie z ucieczkami. Nowa linia w niszy dawala plik, ktorego |
+| `toml_wartosc(v)` | — |
+| `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | Pola plaskie -> tekst TOML. `sekcje_dodatkowe` (np. `[preset]`) ida na poczatek. |
+
+### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
+
+708 wierszy, 28 funkcji na poziomie modułu, 4 klas
+
+| funkcja | co robi |
+|---|---|
+| `korzen(agent_dir)` | — |
+| `katalog_presetow(agent_dir)` | — |
+| `katalog_instancji(agent_dir)` | — |
+| `wskaznik(agent_dir)` | — |
+| `_wzgledna(p, baza)` *(wewn.)* | Sciezka wzgledem `baza` (posix), a gdy lezy poza nia — bezwzgledna. |
+| `_bezwzgledna(napis, baza)` *(wewn.)* | — |
+| `_kanoniczne(x)` *(wewn.)* | — |
+| `odcisk(pola, schema)` | SHA-256 rozwiazanych pol. Zmiana dowolnej wartosci zmienia odcisk. |
+| `wczytaj_tekst(tekst, nazwa_pliku, plik)` | Tekst TOML presetu -> `Preset`. Kazdy blad to `BladPresetu`. |
+| `wczytaj(plik)` | — |
+| `proba_konfiguracji(cfg, baza)` | Kopia stalych `config` do bezpiecznego przymierzenia presetu. |
+| `rozwiaz(preset, cfg, baza)` | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). |
+| `pochodzenie(preset, cfg, baza)` | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". |
+| `_dostawca(model)` *(wewn.)* | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. |
+| `sprawdz(preset, cfg, baza, srodowisko)` | Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli. |
+| `zastosuj(preset, cfg, baza)` | Neutralna baza, potem preset. Oddaje meldunki `konfiguracja.zastosuj`. |
+| `_zapisz_atomowo(plik, tekst)` *(wewn.)* | — |
+| `_teraz()` *(wewn.)* | — |
+| `_dopisz_do_dziennika(katalog, wpis)` *(wewn.)* | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. |
+| `czytaj_wskaznik(agent_dir)` | Surowa tresc wskaznika (bez wczytywania presetu) albo None. |
+| `aktywacja(agent_dir, srodowisko)` | Co jest podlaczone. `None` = nic. Zly wskaznik albo zmieniony preset = wyjatek. |
+| `podlacz(plik, agent_dir, cfg, baza, instancja, srodowisko)` | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. |
+| `odlacz(agent_dir)` | Usuwa wskaznik. Oddaje jego tresc (co bylo podlaczone) albo None. |
+| `wymagaj_aktywnego(cfg, co)` | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. |
+| `lista(agent_dir)` | Presety operatora (`presety/*.toml`) i przyklady (`presety/przyklady/`). |
+| `znajdz(nazwa, agent_dir)` | Preset po nazwie (wlasne przed przykladami) albo po sciezce do pliku. |
+| `z_konfiguracji(tekst_toml, nazwa, opis)` | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). |
+| `eksportuj(preset)` | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). |
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
@@ -405,7 +465,7 @@
 
 ### `alarm.py` — kontrola sesji, zdrowia i alarm do właściciela
 
-1056 wierszy, 25 funkcji na poziomie modułu, 0 klas
+1076 wierszy, 26 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -414,6 +474,7 @@
 | `_ostatnio(klucz)` *(wewn.)* | — |
 | `_zapisz(klucz)` *(wewn.)* | — |
 | `wyslij(klucz, temat, tresc)` | Wysyła alarm. `klucz` identyfikuje RODZAJ problemu, nie pojedynczy wypadek. |
+| `brak_presetu()` | Silnik bez podlaczonego presetu ODMAWIA startu z zegara — to ma byc alarm, nie cisza. |
 | `artykul_zalegly()` | Czy gotowy artykul lezy na dysku niewystawiony dluzej niz dobe. |
 | `sprawdz_sesje_i_ostrzez()` | Pilnuje jedynej rzeczy, która zatrzymuje agenta bez żadnego błędu. |
 | `sprawdz_przebiegi_i_ostrzez(ile)` | Alarmuje, gdy agent pada raz za razem. |
@@ -437,7 +498,7 @@
 
 ### `style.py` — korpus stylu dla pisarza
 
-208 wierszy, 8 funkcji na poziomie modułu, 1 klas
+225 wierszy, 9 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -447,7 +508,8 @@
 | `bajty_kanoniczne(raw)` | Bajty korpusu niezależne od tego, jak git zmaterializował plik. |
 | `wczytaj_przypiecia()` | Przypięcia korpusu z pliku obok niego. Brak pliku = czytelny błąd. |
 | `load_examples()` | Zwraca zatwierdzone fragmenty stylu albo rzuca, jeśli korpus się nie zgadza. |
-| `load_profiles()` | Profil pozytywny i negatywny stylu artykułu. |
+| `przyklady_albo_pusto()` | Fragmenty stylu — albo pusta lista, gdy preset nie wymaga korpusu. |
+| `load_profiles()` | Profil pozytywny i negatywny stylu artykułu — z plikow wskazanych przez preset. |
 | `_z_marka(tekst)` *(wewn.)* | Podstawia `{marka}` w profilu stylu. Profil bez pola zostaje bez zmian. |
 
 ### `kopia_subskrybentow.py` — kopia jedynego aktywa, którego nie da się odtworzyć
@@ -463,7 +525,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3404 wierszy, 38 funkcji na poziomie modułu, 0 klas
+3548 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -488,6 +550,9 @@
 | `normy_dzienne()` | Ile czego POWINNO wychodzic dziennie — srodek widelek. |
 | `_cisza_z_hasza(dzien)` *(wewn.)* | — |
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
+| `dzis_dzien_artykulu(kiedy)` | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. |
+| `zegar_agenta_on_calendar()` | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. |
+| `zegar_artykulu_on_calendar()` | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
 | `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. |
@@ -505,6 +570,7 @@
 | `losowa_liczba_paraleli(glebokosc, dostepne)` | Ile paraleli w drugim akcie. Krotki artykul nigdy nie bierze trzech, |
 | `losowe_generatory(ile)` | Ktore wzorce w tym przebiegu. Ten sam generator dwa dni z rzedu daje |
 | `co_teraz_w_reku(kiedy)` | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. |
+| `_aktywacja_przy_starcie()` *(wewn.)* | — |
 
 ### `statystyki.py` — co przyniosła każda pozycja: wejścia, reakcje, subskrypcje
 
@@ -566,18 +632,18 @@
 
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci
 
-217 wierszy, 4 funkcji na poziomie modułu, 0 klas
+233 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_swieze(dane)` *(wewn.)* | Czy zapisana odpowiedz jest jeszcze wazna. |
-| `wczytaj()` | Ostatnia zapisana odpowiedz. Pusty slownik, gdy nie ma albo jest zepsuta. |
+| `wczytaj()` | Ostatnia zapisana odpowiedz NA TO SAMO PYTANIE. Pusty slownik, gdy nie ma, |
 | `pobierz(conn, run_id, wymus)` | Aktualny stan modeli. Z pliku, gdy swiezy; inaczej pyta na nowo. |
 | `jako_tekst(dane)` | Stan modeli w postaci, ktora wchodzi do promptu. |
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1524 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1553 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

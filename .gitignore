@@ -131,6 +131,17 @@ konfiguracja.toml
 **/konfiguracja.toml
 !konfiguracja.example.toml
 
+# === presety operatora i stan aktywacji ===
+# Preset niesie uchwyt konta, nazwe marki i temat — TOZSAMOSC, ta sama klasa
+# co `konfiguracja.toml`. Przyklady w `presety/przyklady/` sa w gicie
+# (placeholdery zamiast konta); wlasne presety operatora nie.
+# `aktywny_preset.json` i `instancje/` to stan JEDNEJ instalacji: ktory preset
+# jest podlaczony i dane (baza, bank, cache, szkice) kazdej instancji.
+presety/*.toml
+!presety/przyklady/
+agent-v2/aktywny_preset.json
+agent-v2/instancje/
+
 # === lista wlasnych tozsamosci do pilnowania ===
 # Wzorce, ktorych audyt szuka w drzewie: poprzedni uchwyt konta, adres
 # serwera, tytuly opublikowanych tekstow. Lista rzeczy, ktorych nie

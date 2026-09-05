@@ -21,6 +21,7 @@ import config
 import db
 import gates
 import llm
+import preset
 import stages
 
 # DWA WYJATKI, KTORE NIE SA AWARIA JEDNEGO WYWOLANIA, TYLKO STANEM KONTA.
@@ -73,8 +74,14 @@ def cached(stage: str, produce: Callable[[], Any], use_cache: bool) -> Any:
     """Zapisuje wynik etapu i oddaje go z dysku zamiast płacić drugi raz.
 
     Zasada z briefu: testując etap N, użyj zapisanego wyniku etapu N-1.
+
+    NAZWA PLIKU NIESIE ODCISK PRESETU. Plik nazwany samym etapem oddawal
+    z `--use-cache` tematy poprzedniego presetu jako biezace (proba T13
+    audytu). Katalog danych jest juz osobny dla kazdej instancji; odcisk
+    w nazwie domyka druga dziure — te sama instancje po zmianie presetu.
     """
-    path = CACHE_DIR / f"{stage}.json"
+    odcisk = config.PRESET.odcisk[:8] if getattr(config, "PRESET", None) else "bez-presetu"
+    path = CACHE_DIR / f"{stage}.{odcisk}.json"
     if use_cache and path.exists():
         print(f"  [{stage}] z pamięci podręcznej — bez opłaty", flush=True)
         return json.loads(path.read_text(encoding="utf-8"))
@@ -2285,6 +2292,15 @@ def main() -> int:
     parser.add_argument("--wyslij", action="store_true",
                         help="NAPRAWDĘ wystaw treści (domyślnie tylko pokazuje)")
     args = parser.parse_args()
+    # BRAMA PRESETU — PRZED BAZA, PRZED PRZEGLADARKA, PRZED PIERWSZYM CENTEM.
+    # Bez podlaczonego presetu silnik nie ma tematu, stylu ani planu; zegar,
+    # ktory odpali ten plik po `odlacz`, ma dostac odmowe, nie wbudowany
+    # profil. W darmowym tescie brama sie nie odzywa — patrz `preset.wymagaj_aktywnego`.
+    try:
+        preset.wymagaj_aktywnego(config, "run.py")
+    except preset.BrakPresetu as exc:
+        print(str(exc), flush=True)
+        return 3
     # Musi stac PO parse_args (inaczej `args` jeszcze nie istnieje) i PRZED
     # pierwszym dotknieciem bazy — zeby kopia testowa odpadala, zanim
     # cokolwiek zapisze.
@@ -2606,12 +2622,18 @@ def main() -> int:
             # `PreflightFailed` — jedno wywolanie po nic i wyjatek na koniec.
             raise
         except Exception as exc:
-            # Jedno powtórzenie na Opusie, bo tu ginie cały opłacony research.
-            # Opus jest sprawdzonym pisarzem tego potoku; jeśli skonfigurowany
-            # model odmówił albo padł, powtórka na nim ma największą szansę.
+            # Jedno powtórzenie na pisarzu ZAPASOWYM Z PRESETU, bo tu ginie cały
+            # opłacony research. Do 2026-09-05 stal tu `config.CLAUDE` na sztywno,
+            # wiec preset nie mial jak powiedziec, co ma sie stac po awarii
+            # pisarza (M3 audytu). Pusty `modele.zapasowy_pisarz` znaczy: nie
+            # powtarzaj, zatrzymaj sie — i wyjatek idzie dalej.
+            if not config.ZAPASOWY_PISARZ:
+                print(f"  [awaria] pisarz ({config.MODEL_FOR['write']}) padł: {exc}"
+                      f" — preset nie ma pisarza zapasowego, zatrzymuję", flush=True)
+                raise
             print(
                 f"  [awaria] pisarz ({config.MODEL_FOR['write']}) padł: {exc}"
-                f" — powtarzam na {config.CLAUDE}",
+                f" — powtarzam na {config.ZAPASOWY_PISARZ}",
                 flush=True,
             )
             # NADPISANIE NA CZAS JEDNEGO WYWOLANIA, POTEM Z POWROTEM.
@@ -2626,7 +2648,7 @@ def main() -> int:
             # przypadkiem, nie z konstrukcji.
             _pisarz = config.MODEL_FOR["write"]
             try:
-                config.MODEL_FOR["write"] = config.CLAUDE
+                config.MODEL_FOR["write"] = config.ZAPASOWY_PISARZ
                 draft = stages.write(conn, run_id, card, glebokosc)
             finally:
                 config.MODEL_FOR["write"] = _pisarz

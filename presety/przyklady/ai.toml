@@ -1,0 +1,181 @@
+# =============================================================================
+# PRESET PRZYKLADOWY — sztuczna inteligencja, po angielsku, dwie notki dziennie.
+#
+# To jest odpowiedz na pytanie „jak ma wygladac preset": jeden plik, ktory
+# mowi silnikowi O CZYM pisac (temat), JAK (styl), ILE (wolumeny), KIEDY
+# (harmonogram), CZYM (modele) i ZA ILE (pieniadze). Nic z tego nie jest
+# wpisane w kod; po `odlacz` silnik o tym wszystkim zapomina.
+#
+#     python narzedzia/presety.py sprawdz ai       # co jeszcze trzeba uzupelnic
+#     python narzedzia/presety.py podglad ai       # prompty, jakie zobaczy model
+#     python narzedzia/presety.py podlacz ai
+#
+# Przed podlaczeniem podmien [konto] na swoje. Temat pochodzi z wsadu
+# `packs/ai-and-machine-learning.toml`; wsady daja TYLKO temat i zrodla,
+# preset daje cala reszte.
+# =============================================================================
+
+[preset]
+nazwa = "ai"
+opis = "AI i uczenie maszynowe po angielsku: 2 notki dziennie, 1 artykul w tygodniu, mocny pisarz"
+schema = 1
+wersja = "2026-09-05"
+na_podstawie = "packs/ai-and-machine-learning.toml"
+
+# -----------------------------------------------------------------------------
+# KONTO — podmien na swoje. Uchwyt to czesc przed `.substack.com`.
+# -----------------------------------------------------------------------------
+[konto]
+uchwyt = "your-handle"
+nazwa_marki = "Your AI Publication"
+strefa_czytelnika = "America/New_York"
+data_przestawienia = ""
+
+# -----------------------------------------------------------------------------
+# TEMAT — o czym jest to konto i po czym poznac, ze cos nalezy do rewiru.
+# -----------------------------------------------------------------------------
+[temat]
+nisza = "how AI systems are built, measured and regulated"
+jezyk = "English"
+kat_redakcyjny = "what the benchmark actually measured, what the training data actually contained, what the licence actually permits, and who carries the cost when the answer is wrong."
+znaki_niszy = [
+    "model", "train", "benchmark", "dataset", "eval", "inference", "gpu",
+    "compute", "token", "licens", "safety", "regulat", "chip", "context",
+    "fine-tun", "prompt", "agent", "hallucin", "weight", "latenc",
+]
+hasla_szukania = [
+    "model benchmarks", "training data licensing", "open weight models",
+    "inference costs", "gpu supply", "dataset provenance",
+    "evaluation methodology", "context window limits", "fine-tuning results",
+    "compute scaling", "ai regulation", "model safety testing",
+    "token pricing", "chip export controls", "agent frameworks",
+    "hallucination rates", "prompt injection", "model deprecation",
+    "inference latency", "benchmark contamination",
+]
+dziedziny = [
+    "a benchmark score, and what the benchmark does not measure",
+    "a number quoted from a paper whose setup nobody reproduces",
+    "what a licence on model weights actually permits",
+    "the gap between a demo and the same system under load",
+    "a dataset whose contents were never fully described",
+    "an evaluation that a system passes for the wrong reason",
+    "the cost of one request, and who ends up paying it",
+    "a capability that appeared, and the measurement that caught it late",
+    "a deprecation with a date, and what depended on it",
+    "a safety test, and the behaviour it does not cover",
+    "a claim about scale that stopped holding, and where",
+    "hardware constraints that decided a design choice",
+    "an export rule and the architecture it produced",
+    "a context limit and what it silently truncates",
+    "a leaderboard position that moved without the system changing",
+    "a term of art used two incompatible ways in one week",
+    "who is liable when a generated answer causes harm",
+    "an early claim that was right, and ignored at the time",
+    "a hype cycle in this field that resolved, and how",
+    "a measurement that was cheap to fake and expensive to verify",
+]
+puste_slowa = []
+
+# Przyklady z niszy: puste listy sa poprawne (model dostaje polecenie, zeby
+# wyprowadzil odpowiednik sam). Kazda pozycja to jedno zdanie, podawane
+# modelowi doslownie. Wypelnij, gdy znasz swoja dziedzine.
+[temat.przyklady]
+kanon = [
+    "AI will take every job / AI will take no jobs",
+    "the newest model is the best model",
+    "bigger is always better",
+]
+rzeczy = [
+    "a chatbot answer with a confident wrong citation",
+    "a benchmark leaderboard screenshot in a launch announcement",
+    "a monthly bill that doubled without a change in usage",
+]
+seam = []
+przekonania = [
+    "everyone assumes a benchmark score measures usefulness",
+    "everyone assumes a model that passes an exam understands the subject",
+]
+precedensy = []
+
+# -----------------------------------------------------------------------------
+# STAN DZIEDZINY — raz na dobe jedno wywolanie z wyszukiwaniem: co jest aktualne.
+# W tej dziedzinie wiedza modelu starzeje sie najszybciej, wiec zostaje wlaczone.
+# -----------------------------------------------------------------------------
+[stan_dziedziny]
+pytaj = true
+o_co_pytac = "which AI models, APIs, prices and licences are current, what was renamed or deprecated, and what is scheduled to end"
+
+# -----------------------------------------------------------------------------
+# ZRODLA — kanaly YouTube (identyfikatory UC...), hosty, ktorych nie czytamy.
+# -----------------------------------------------------------------------------
+[zrodla]
+kanaly_youtube = { }
+blokowane_hosty = [
+    "sciencedirect.com", "tandfonline.com", "academia.edu", "researchgate.net",
+]
+
+# -----------------------------------------------------------------------------
+# STYL — glos redakcji. `opis` idzie doslownie do briefow pisarza, notki,
+# komentarza i odpowiedzi. Korpus jest OPCJONALNY: bez niego pisarz dostaje
+# profile i ten opis. Gdy masz wlasne teksty, wskaz plik i przypnij go.
+# -----------------------------------------------------------------------------
+[styl]
+opis = """Plain, calm and concrete. Explain what was shown and how it works before saying what it means. Keep the result of a measurement apart from a company's announcement about it, and say which one you are reporting. One specialist term per piece, explained at first use. No hype vocabulary, no doom vocabulary, no verdict on the whole field from one paper."""
+profil_pozytywny = "style-profiles/ARTICLE_STYLE_PROFILE_V1.md"
+profil_negatywny = "style-profiles/ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md"
+korpus = ""
+wymagaj_korpusu = false
+
+# -----------------------------------------------------------------------------
+# MODELE — ktora rola na ktorym modelu. Niewymienione role zostaja na
+# domyslnych silnika (widac je w `python narzedzia/presety.py pokaz ai`).
+# Tansza odmiana: write = "deepseek-v4-pro", note = "deepseek-v4-pro".
+# -----------------------------------------------------------------------------
+[modele]
+role = { write = "claude-fable-5-1", note = "claude-opus-5", note_tani = "deepseek-v4-pro" }
+obraz = "gpt-image-1.5"
+zapasowy_pisarz = "claude-opus-5"
+
+# -----------------------------------------------------------------------------
+# WOLUMENY — ile czego. Zero wylacza dane dzialanie.
+# -----------------------------------------------------------------------------
+[wolumeny]
+notki_dziennie = 2
+artykuly_tygodniowo = 1
+komentarze_dziennie = [3, 5]
+lajki_dziennie = [5, 8]
+restacki_dziennie = [0, 0]
+follow_miesiecznie = [0, 0]
+subskrypcje_miesiecznie = [0, 0]
+przebiegow_dziennie = 3
+
+# -----------------------------------------------------------------------------
+# HARMONOGRAM — zegar w UTC. Z tych pol `narzedzia/jednostki.py` buduje timery.
+# -----------------------------------------------------------------------------
+[harmonogram]
+godziny_przebiegow_utc = ["12:00", "17:30", "21:30"]
+dni_artykulu = ["Tue"]
+godzina_artykulu_utc = "14:00"
+
+# -----------------------------------------------------------------------------
+# PUBLIKOWANIE — okno w strefie czytelnika, proporcje typow notek, promocja.
+# Miks to PROPORCJE: dwa sloty dziennie wypelniaja sie ta lista po kolei,
+# a notka promujaca artykul zajmuje jeden z nich.
+# -----------------------------------------------------------------------------
+[publikowanie]
+okno_et = [7, 22]
+martwe_godziny_et = [12, 13]
+notek_promujacych = 2
+okno_promocji_dni = 7
+miks_notek = ["CIEKAWOSTKA", "DYSKUSJA", "MYSL", "SPROSTOWANIE"]
+ciche_dni_wlaczone = true
+cichy_dzien_na_ile = 8
+
+# -----------------------------------------------------------------------------
+# PIENIADZE — sufity. Miesieczny to jedyna twarda blokada w systemie.
+# -----------------------------------------------------------------------------
+[pieniadze]
+sufit_miesieczny_usd = 20.0
+sufit_dzienny_usd = 3.5
+sufit_przebiegu_usd = 1.60
+sufit_podniesiony_na = ""

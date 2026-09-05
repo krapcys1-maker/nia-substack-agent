@@ -34,9 +34,9 @@ only hard stop.
 
 ```
 agent-v2/            the bot itself
-  prompts/           what the models are told — 25 briefs, 2872 lines
+  prompts/           what the models are told — 25 briefs, 2888 lines
   prompts/styl/      the style corpus. EMPTY in the repo, you supply it
-  tests/             161 test_*.py, no pytest, each runs standalone
+  tests/             162 test_*.py, no pytest, each runs standalone
   tests/platne/      the 9 that cost money. Never run by CI
   systemd/           three services and three timers
   dokumentacja-zrodla/  source of the concatenated JAK_ZBUDOWANY_JEST_BOT.md
@@ -78,6 +78,7 @@ way to learn what this bot has already got wrong.
 | `gates.py` | 535 | what counts as a violation |
 | `jezyki.py` | 257 | the patterns behind those gates, **per language** |
 | `style.py` | 198 | which paragraphs of your corpus the writer sees |
+| `preset.py` | 640 | the preset: one file for the whole publication, its fingerprint, its own data directory, and the gate that refuses to run without one |
 | `korpus_kanalow.py` | 372 | what the field is arguing about this week |
 | `kanal.py` | 295 | who is worth talking to |
 | `artykul_z_puli.py` | 1451 | the long-form path, separate from the daily one |
@@ -97,7 +98,8 @@ way to learn what this bot has already got wrong.
 
 | File | What it does |
 |---|---|
-| `kreator.py` | **the setup program.** Asks everything, writes `konfiguracja.toml` and `.env` |
+| `presety.py` | **plug a preset in or out.** `lista`, `sprawdz`, `pokaz`, `podglad`, `podlacz`, `odlacz`, `status`, `importuj-konfiguracje`, `eksportuj` — see [PRESETY.md](PRESETY.md) (Polish) |
+| `kreator.py` | **the setup program.** Asks everything, writes `konfiguracja.toml` and `.env`; that file is then turned into a preset |
 | `audyt.py` | pre-release audit: identity, secrets, contradictions, git history |
 | `jednostki.py` | builds the systemd units for **your** install: path, user, brand. The files in `agent-v2/systemd/` are templates and still carry the paths of the machine they were written on |
 | `przypnij_styl.py` | pins your style corpus so it cannot be swapped silently |
@@ -111,6 +113,14 @@ way to learn what this bot has already got wrong.
 
 Four kinds of thing tie this bot to one account. They are separated on purpose,
 because they are changed at different times and by different people.
+
+**0. The preset** — since 2026-09-05 the four things below are bundled into
+one file, `presety/<name>.toml`, plugged in with `python narzedzia/presety.py
+podlacz <name>` and unplugged with `odlacz`. Each preset runs in its own data
+directory (`agent-v2/instancje/<name>/`), and without an active preset the
+engine refuses to start — there is no built-in subject to fall back to. The
+fields below are the same fields; `konfiguracja.toml` is the transitional
+form and `importuj-konfiguracje` converts it.
 
 **1. Fields you set once** — `agent-v2/konfiguracja.toml`, written by
 `narzedzia/kreator.py`. Handle, brand, timezone, subject, language, editorial
@@ -141,7 +151,7 @@ INJECTED, GENERATED, TEMPLATE or BY HAND.
 
 ## 5. The prompts, and which stage reads each
 
-25 briefs, 2872 lines. They carry the method and the contracts, not the
+25 briefs, 2888 lines. They carry the method and the contracts, not the
 account's history: what each stage is for, what it may assert, what it must
 return. The measurements, dated incidents and quoted examples from the
 previous account's runs were taken out on 2026-09-05 (CLEANING_LOG.md §12);
@@ -169,7 +179,7 @@ prompt file directly.
 
 ---
 
-## 6. Tests — 161 files, and what a skip means
+## 6. Tests — 162 files, and what a skip means
 
 No pytest. Each file runs standalone (`python agent-v2/tests/test_x.py`) and
 exits non-zero on failure. That is deliberate: a test you can run alone is a

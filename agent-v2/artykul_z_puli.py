@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config      # noqa: E402
 import db          # noqa: E402
 import llm         # noqa: E402
+import preset      # noqa: E402
 import stages      # noqa: E402
 
 # WYJATKI, KTORYCH ZADNA OSLONA W TYM PLIKU NIE MA PRAWA POLKNAC.
@@ -349,6 +350,27 @@ def main() -> int:
     publikacji, wiec prawdziwe zawieszenie utoneloby w szumie. Alarm, ktory
     klamie regularnie, uczy ignorowac alarmy.
     """
+    # BRAMA PRESETU — przed baza i przed pierwszym platnym wywolaniem. Patrz
+    # `run.main` i `preset.wymagaj_aktywnego`.
+    try:
+        preset.wymagaj_aktywnego(config, "artykul_z_puli.py")
+    except preset.BrakPresetu as exc:
+        print(str(exc), flush=True)
+        return 3
+    # PLAN Z PRESETU, NIE Z ZEGARA. Zegar odpala ten plik w dniu artykulu,
+    # ale zegar bywa stary (jednostki zbudowane pod poprzedni preset) albo
+    # reczny. Preset z zerem artykulow na tydzien nie pisze nigdy; preset
+    # z innym dniem nie pisze dzis — chyba ze czlowiek powie `--wymus`.
+    if config.PRESET is not None and "--wymus" not in sys.argv:
+        if config.ARTYKULY_TYGODNIOWO <= 0:
+            print(">> preset %r ma 0 artykulow na tydzien — nie pisze. "
+                  "(`--wymus` omija plan)" % config.PRESET.nazwa, flush=True)
+            return 1
+        if not config.dzis_dzien_artykulu():
+            print(">> dzis nie jest dzien artykulu wedlug presetu %r (dni: %s) — "
+                  "nie pisze. (`--wymus` omija plan)"
+                  % (config.PRESET.nazwa, ", ".join(config.DNI_ARTYKULU)), flush=True)
+            return 1
     conn = db.connect()
     run_id = db.start_run(conn, "artykul-z-puli")
     try:
@@ -1294,10 +1316,17 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
         # obiekt, albo rzuca.
         raise
     except Exception as exc:
-        # Jedno powtorzenie na Opusie, tak jak w `run.py`: tu ginie caly
-        # oplacony research, a Opus jest sprawdzonym pisarzem tego potoku.
+        # Jedno powtorzenie na pisarzu zapasowym Z PRESETU, tak jak w `run.py`:
+        # tu ginie caly oplacony research. Pusty `modele.zapasowy_pisarz`
+        # znaczy „zatrzymaj sie" i wyjatek idzie dalej.
+        if not config.ZAPASOWY_PISARZ:
+            print("  [awaria] pisarz (%s) padl: %s — preset nie ma pisarza "
+                  "zapasowego, zatrzymuje" % (config.MODEL_FOR.get("write"),
+                                             str(exc)[:120]), flush=True)
+            raise
         print("  [awaria] pisarz (%s) padl: %s — powtarzam na %s"
-              % (config.MODEL_FOR.get("write"), str(exc)[:120], config.CLAUDE),
+              % (config.MODEL_FOR.get("write"), str(exc)[:120],
+                 config.ZAPASOWY_PISARZ),
               flush=True)
         # NADPISANIE NA CZAS JEDNEGO WYWOLANIA — patrz ten sam blok
         # w `run.py`. Globalna zmiana konfiguracji uzyta jako lokalne
@@ -1306,7 +1335,7 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
         # najdrozszy bez decyzji.
         _pisarz = config.MODEL_FOR["write"]
         try:
-            config.MODEL_FOR["write"] = config.CLAUDE
+            config.MODEL_FOR["write"] = config.ZAPASOWY_PISARZ
             draft = stages.write(conn, run_id, card, glebokosc)
         finally:
             config.MODEL_FOR["write"] = _pisarz

@@ -123,18 +123,84 @@ def podstaw(tresc: str, katalog_stary: str, katalog_nowy: str,
     return tresc
 
 
-def zbuduj(katalog: str, uzytkownik: str, marka: str) -> dict[str, str]:
-    """Nazwa pliku -> tresc jednostki dla tej instalacji."""
+def _exec_start(tresc_uslugi: str) -> str:
+    for linia in tresc_uslugi.splitlines():
+        if linia.startswith("ExecStart="):
+            return linia
+    return ""
+
+
+def zegar_z_konfiguracji(nazwa_zegara: str, tresc: str, uslugi: dict[str, str],
+                         cfg) -> str | None:
+    """Zegar z liniami `OnCalendar=` Z HARMONOGRAMU PRESETU. `None` = zegar ma nie powstac.
+
+    Do 2026-09-05 godziny w szablonie byly jedynym harmonogramem: preset
+    z trzema przebiegami na dobe dostawal zegar o pieciu godzinach, a preset
+    bez artykulow — zegar artykulu (W2 audytu). Ktory zegar czego pilnuje,
+    rozpoznajemy po TRESCI sparowanej uslugi (`ExecStart`), tak samo jak
+    `config.usluga_agenta()` — nie po nazwie pliku.
+    """
+    import konfiguracja
+
+    usluga = uslugi.get(nazwa_zegara[: -len(".timer")] + ".service", "")
+    start = _exec_start(usluga)
+    if "run.py" in start and "--dzien" in start:
+        linie = konfiguracja.on_calendar_agenta(cfg.GODZINY_PRZEBIEGOW_UTC)
+    elif "artykul_z_puli.py" in start:
+        linie = konfiguracja.on_calendar_artykulu(
+            cfg.DNI_ARTYKULU, cfg.GODZINA_ARTYKULU_UTC, cfg.ARTYKULY_TYGODNIOWO)
+    else:
+        return tresc                     # zegar, ktorego preset nie opisuje (alarm)
+    if not linie:
+        return None
+    wyjscie: list[str] = []
+    wstawione = False
+    for w in tresc.split("\n"):
+        if w.startswith("OnCalendar="):
+            if not wstawione:
+                wyjscie.extend("OnCalendar=%s" % linia for linia in linie)
+                wstawione = True
+            continue
+        wyjscie.append(w)
+        if w.strip() == "[Timer]" and not wstawione and "OnCalendar=" not in tresc:
+            wyjscie.extend("OnCalendar=%s" % linia for linia in linie)
+            wstawione = True
+    return "\n".join(wyjscie)
+
+
+def zbuduj(katalog: str, uzytkownik: str, marka: str, cfg=None) -> dict[str, str]:
+    """Nazwa pliku -> tresc jednostki dla tej instalacji.
+
+    Zegary dostaja godziny z konfiguracji (`cfg`, domyslnie `config`, czyli
+    aktywny preset). Zegar, ktorego preset wylacza (zero artykulow na
+    tydzien), NIE POWSTAJE — razem ze swoja usluga, bo usluga bez zegara
+    i bez `[Install]` wyglada na wdrozona, a nie uruchomi sie nigdy.
+    """
+    if cfg is None:
+        import config as cfg
     stary_katalog = katalog_szablonu()
     stary_uzytkownik = uzytkownik_szablonu()
-    wynik = {}
+    uslugi: dict[str, str] = {}
+    zegary: dict[str, str] = {}
     for p in sorted(SZABLONY.iterdir()):
         if p.suffix not in (".service", ".timer") or not p.is_file():
             continue
-        wynik[p.name] = podstaw(p.read_text(encoding="utf-8"),
-                                stary_katalog, katalog,
-                                stary_uzytkownik, uzytkownik, marka)
-    return wynik
+        tresc = podstaw(p.read_text(encoding="utf-8"),
+                        stary_katalog, katalog,
+                        stary_uzytkownik, uzytkownik, marka)
+        (uslugi if p.suffix == ".service" else zegary)[p.name] = tresc
+    wynik: dict[str, str] = {}
+    pominiete: set[str] = set()
+    for nazwa, tresc in zegary.items():
+        z_konfiguracji = zegar_z_konfiguracji(nazwa, tresc, uslugi, cfg)
+        if z_konfiguracji is None:
+            pominiete.add(nazwa[: -len(".timer")] + ".service")
+            continue
+        wynik[nazwa] = z_konfiguracji
+    for nazwa, tresc in uslugi.items():
+        if nazwa not in pominiete:
+            wynik[nazwa] = tresc
+    return dict(sorted(wynik.items()))
 
 
 def main() -> int:
@@ -193,6 +259,11 @@ def main() -> int:
     print("  katalog instalacji : %s" % katalog)
     print("  uzytkownik         : %s" % (uzytkownik or "(z szablonu)"))
     print("  marka w Description: %s" % marka)
+    print("  preset             : %s" % (config.PRESET.nazwa if config.PRESET
+                                          else "(brak — zegar z domyslnych silnika)"))
+    print("  zegar agenta (UTC) : %s" % ", ".join(config.GODZINY_PRZEBIEGOW_UTC))
+    print("  zegar artykulu     : %s" % (", ".join(config.zegar_artykulu_on_calendar())
+                                         or "WYLACZONY (0 artykulow na tydzien)"))
     print()
     print("SPRAWDZ PRZED WGRANIEM — te trzy rzeczy musza istniec NA SERWERZE:")
     print("  %s/.venv/bin/python" % katalog)

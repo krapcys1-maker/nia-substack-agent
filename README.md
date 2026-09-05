@@ -11,7 +11,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 161 tests · 12 gates on every finished text
+26 model roles · 162 tests · 12 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -88,7 +88,7 @@ cannot see.
 | **[docs/INSTALL.md](docs/INSTALL.md)** | zero to running, step by step — including the one step no software can do for you |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | how it works and where everything lives: both pipelines, all 26 roles, every directory |
 | **[docs/BRIEF_MAP.md](docs/BRIEF_MAP.md)** | what each of the 24 briefs is responsible for: what calls it, what model it runs on, and — for every field it tells the model to return — whether a gate reads it, something reads it, or **nobody does**. Generated |
-| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **575 functions** in 25 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
+| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **634 functions** in 26 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
 | **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | split in two: what will bite you on a fresh clone, and what already bit us and is fixed. **Read before your first run** |
 | **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
 | **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
@@ -102,7 +102,7 @@ behind each entry, is [docs/ROZWIAZYWANIE_PROBLEMOW.md](docs/ROZWIAZYWANIE_PROBL
 The bot's own design documents are in `agent-v2/` and are in Polish:
 `DOKTRYNA.md` (what it must and must not do — canonical, and its closing
 "Discrepancies" section is part of the document), `JAK_DZIALA_V2.md`
-(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,078 lines,
+(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,192 lines,
 **generated from the code** and guarded by a test so it cannot drift.
 
 **A word on the language, before you open a file.** Everything written *for
@@ -125,9 +125,27 @@ want to know *why* a particular line is the way it is.
 
 ```bash
 pip install -r requirements-dev.txt
-python narzedzia/kreator.py        # asks everything, writes the config and .env
+python narzedzia/presety.py lista        # what presets exist; `ai` is a full example
+python narzedzia/presety.py sprawdz ai   # errors and warnings, no paid calls
+python narzedzia/presety.py podlacz ai   # plug it in — the engine refuses to run without one
+python agent-v2/alarm.py                # health check
+```
+
+**A preset is the whole publication in one file** — subject, voice, sources,
+model per role, notes per day, articles per week, schedule, money — and it can
+be unplugged again (`odlacz`). Each preset gets its own data directory under
+`agent-v2/instancje/`, so switching from one to another carries over no bank of
+ideas, no cache and no half-written article. Without an active preset there is
+no built-in subject to fall back to: `run.py` stops with the commands to fix
+it. See [presety/README.md](presety/README.md) and, in Polish,
+[docs/PRESETY.md](docs/PRESETY.md).
+
+The older path still works during the transition:
+
+```bash
+python narzedzia/kreator.py        # asks everything, writes konfiguracja.toml and .env
 python narzedzia/pakiety.py        # or: start from a subject pack
-python agent-v2/alarm.py           # health check
+python narzedzia/presety.py importuj-konfiguracje --nazwa moje   # turn that file into a preset
 ```
 
 The setup program asks for the account, the subject, the language, the sources,
@@ -283,7 +301,7 @@ figure had reached 137:
 | `+ playwright install chromium` | the last three |
 | `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_jednostki_systemd` needs systemd |
 
-Measured on this copy (2026-09-05): of 161 test files, **159 pass and 2 fail**;
+Measured on this copy (2026-09-05): of 162 test files, **159 pass and 2 fail**;
 five of the passing ones skip part of their work and say so, line by line. Both
 failures are impossible to fix on a Windows install and neither says anything
 about the code. Each is listed with its cause in

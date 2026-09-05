@@ -160,11 +160,28 @@ def load_examples() -> list[dict[str, str]]:
     return examples
 
 
+def przyklady_albo_pusto() -> list[dict[str, str]]:
+    """Fragmenty stylu — albo pusta lista, gdy preset nie wymaga korpusu.
+
+    Do 2026-09-05 pisarz artykulu ODMAWIAL bez przypietego korpusu i to
+    zostaje domyslnym zachowaniem (`config.STYL_WYMAGAJ_KORPUSU = True`).
+    Preset, ktory dopiero zaczyna, moze uczciwie powiedziec, ze korpusu nie
+    ma (`styl.wymagaj_korpusu = false`): pisarz dostaje wtedy profile
+    i opis glosu, a brief mowi mu wprost, ze przykladow nie dostal. Korpus
+    ISTNIEJACY jest przy tym nadal sprawdzany co do skrotu — wylaczenie
+    wymogu nie wylacza kontroli podmiany.
+    """
+    if config.STYL_WYMAGAJ_KORPUSU:
+        return load_examples()
+    if not Path(config.STYLE_CORPUS).exists() or not _plik_przypiec().exists():
+        return []
+    return load_examples()
+
+
 def load_profiles() -> tuple[str, str]:
-    """Profil pozytywny i negatywny stylu artykułu."""
-    base = config.STYLE_PROFILES_DIR
-    positive = base / "ARTICLE_STYLE_PROFILE_V1.md"
-    negative = base / "ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md"
+    """Profil pozytywny i negatywny stylu artykułu — z plikow wskazanych przez preset."""
+    positive = Path(config.STYLE_PROFILE_POSITIVE)
+    negative = Path(config.STYLE_PROFILE_NEGATIVE)
     for path in (positive, negative):
         if not path.exists():
             raise StyleError(f"brak profilu stylu: {path}")

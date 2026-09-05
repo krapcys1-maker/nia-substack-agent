@@ -49,15 +49,15 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 31 438 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **26 plików**, 32 982 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 25 plików zamiast dziesięciu.** Najbliższe usunięciu:
-`style.py` (208 wierszy, wołany tylko z `stages.py`) i
+**WADA — 26 plików zamiast dziesięciu.** Najbliższe usunięciu:
+`style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
 
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 161 zestawów
-testów, 3903 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 162 zestawów
+testów, 4002 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -143,7 +143,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2933 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2955 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -177,11 +177,12 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8162 wierszy, 142 funkcji na poziomie modułu, 0 klas
+8219 wierszy, 143 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_na_kanal(nazwa)` *(wewn.)* | Wszystko, co ta funkcja zaplaci, ksieguje sie na kanal `nazwa`. |
+| `_blok_stylu()` *(wewn.)* | Opis glosu z presetu — albo jawne „bez uwag", zeby sekcja nie byla pusta. |
 | `_blok_przykladow(klucz, gdy_pusto)` *(wewn.)* | Przyklady z niszy jako lista punktow — albo polecenie, gdy ich nie ma. |
 | `_blok_po_ludzku()` *(wewn.)* | Wspolny blok „nie brzmij jak maszyna" — JEDNO zrodlo, nie cztery kopie. |
 | `_pola_wspolne()` *(wewn.)* | Nisza, marka i jezyk — czytane z configu przy KAZDYM wywolaniu. |
@@ -507,24 +508,83 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-364 wierszy, 14 funkcji na poziomie modułu, 1 klas
+895 wierszy, 38 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
 | `_napis(v, gdzie)` *(wewn.)* | — |
+| `_napis_moze_pusty(v, gdzie)` *(wewn.)* | Napis, ktory WOLNO zostawic pusty. |
 | `_data_albo_pusto(v, gdzie)` *(wewn.)* | Dzien w postaci RRRR-MM-DD albo pusty napis znaczacy „nigdy". |
 | `_liczba(v, gdzie)` *(wewn.)* | — |
+| `_kwota(v, gdzie)` *(wewn.)* | Kwota w USD: skonczona i nieujemna. Ujemny sufit przechodzil (T05). |
+| `_calkowita_nieujemna(v, gdzie)` *(wewn.)* | Licznosc: ile czego. Zero jest poprawne i znaczy „wylaczone". |
+| `_calkowita_dodatnia(v, gdzie)` *(wewn.)* | Licznosc, ktora nie ma sensu jako zero (przebiegi na dobe). |
 | `_prawda(v, gdzie)` *(wewn.)* | — |
-| `_napis_moze_pusty(v, gdzie)` *(wewn.)* | Napis, ktory WOLNO zostawic pusty. |
+| `_strefa(v, gdzie)` *(wewn.)* | Nazwa strefy IANA, ktora NAPRAWDE istnieje w bazie stref. |
 | `_sekwencja_napisow(v)` *(wewn.)* | Lista albo krotka napisow — ale NIE sam napis. |
 | `_lista_napisow(v, gdzie)` *(wewn.)* | — |
 | `_lista_napisow_moze_pusta(v, gdzie)` *(wewn.)* | Lista napisow, w ktorej PUSTA jest poprawna odpowiedzia. |
-| `_widelki(v, gdzie)` *(wewn.)* | Zakres [od, do]. Wolumeny sa losowane z widelek, nie stale. |
+| `_widelki(v, gdzie)` *(wewn.)* | Zakres [od, do] nieujemnych liczb calkowitych. `[0, 0]` wylacza dzialanie. |
+| `_godziny(v, gdzie)` *(wewn.)* | Para godzin doby [od, do] w zakresie 0-24. Godzina 98 przechodzila (T05). |
+| `_godzina_utc(v, gdzie)` *(wewn.)* | Godzina zegara `HH:MM` w UTC — postac, ktora rozumie `OnCalendar=`. |
+| `_lista_godzin_utc(v, gdzie)` *(wewn.)* | Niepusta lista godzin `HH:MM` bez powtorzen, w kolejnosci doby. |
+| `_dzien_tygodnia(v, gdzie)` *(wewn.)* | — |
+| `_lista_dni_tygodnia(v, gdzie)` *(wewn.)* | Lista dni tygodnia; pusta znaczy „bez artykulow". |
+| `_sciezka(v, gdzie)` *(wewn.)* | Sciezka do pliku wzgledem korzenia repozytorium (albo bezwzgledna). |
+| `_sciezka_moze_pusta(v, gdzie)` *(wewn.)* | — |
 | `_slownik_list(v, gdzie)` *(wewn.)* | Tablica `klucz = [napisy]`. Pusta lista jest DOZWOLONA i coś znaczy. |
 | `_slownik_napisow(v, gdzie)` *(wewn.)* | — |
 | `sciezka(agent_dir)` | — |
+| `splaszcz(dane, nazwa)` | `{"temat": {"nisza": ...}}` na `{"temat.nisza": ...}` — jeden poziom. |
+| `sprawdz_plaskie(plaskie, nazwa)` | Nieznane pole to blad; kazde znane przechodzi przez swoj walidator. |
+| `wczytaj_tekst(tekst, nazwa)` | Surowy TOML (napis) -> zwalidowane pola plaskie. Wymaga Pythona 3.11. |
 | `wczytaj(plik)` | Surowa zawartosc pliku, sprawdzona co do ksztaltu. Brak pliku = pusto. |
+| `zdjecie(cfg)` | Kopia stalych konta z modulu `config`, do pozniejszego przywrocenia. |
+| `przywroc(cfg, zdj)` | Przywraca stan ze `zdjecie`. Slowniki W MIEJSCU, bo inne moduly trzymaja |
+| `_rozloz_godziny(ile, baza)` *(wewn.)* | Godziny zegara dla `ile` przebiegow, gdy preset podal tylko liczbe. |
+| `_sciezka_w_repo(cfg, napis)` *(wewn.)* | — |
+| `_plan(dane, cfg)` *(wewn.)* | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. |
 | `zastosuj(dane, cfg)` | Wklada wartosci do modulu `config`. Oddaje liste tego, co przestawiono. |
+| `on_calendar_agenta(godziny)` | Zegar rutyny dnia: jedna linia na godzine UTC. |
+| `on_calendar_artykulu(dni, godzina, ile)` | Zegar artykulu; pusta lista, gdy artykulow nie ma. |
+| `_toml_napis(v)` *(wewn.)* | Napis w cudzyslowie z ucieczkami. Nowa linia w niszy dawala plik, ktorego |
+| `toml_wartosc(v)` | — |
+| `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | Pola plaskie -> tekst TOML. `sekcje_dodatkowe` (np. `[preset]`) ida na poczatek. |
+
+### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
+
+708 wierszy, 28 funkcji na poziomie modułu, 4 klas
+
+| funkcja | co robi |
+|---|---|
+| `korzen(agent_dir)` | — |
+| `katalog_presetow(agent_dir)` | — |
+| `katalog_instancji(agent_dir)` | — |
+| `wskaznik(agent_dir)` | — |
+| `_wzgledna(p, baza)` *(wewn.)* | Sciezka wzgledem `baza` (posix), a gdy lezy poza nia — bezwzgledna. |
+| `_bezwzgledna(napis, baza)` *(wewn.)* | — |
+| `_kanoniczne(x)` *(wewn.)* | — |
+| `odcisk(pola, schema)` | SHA-256 rozwiazanych pol. Zmiana dowolnej wartosci zmienia odcisk. |
+| `wczytaj_tekst(tekst, nazwa_pliku, plik)` | Tekst TOML presetu -> `Preset`. Kazdy blad to `BladPresetu`. |
+| `wczytaj(plik)` | — |
+| `proba_konfiguracji(cfg, baza)` | Kopia stalych `config` do bezpiecznego przymierzenia presetu. |
+| `rozwiaz(preset, cfg, baza)` | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). |
+| `pochodzenie(preset, cfg, baza)` | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". |
+| `_dostawca(model)` *(wewn.)* | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. |
+| `sprawdz(preset, cfg, baza, srodowisko)` | Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli. |
+| `zastosuj(preset, cfg, baza)` | Neutralna baza, potem preset. Oddaje meldunki `konfiguracja.zastosuj`. |
+| `_zapisz_atomowo(plik, tekst)` *(wewn.)* | — |
+| `_teraz()` *(wewn.)* | — |
+| `_dopisz_do_dziennika(katalog, wpis)` *(wewn.)* | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. |
+| `czytaj_wskaznik(agent_dir)` | Surowa tresc wskaznika (bez wczytywania presetu) albo None. |
+| `aktywacja(agent_dir, srodowisko)` | Co jest podlaczone. `None` = nic. Zly wskaznik albo zmieniony preset = wyjatek. |
+| `podlacz(plik, agent_dir, cfg, baza, instancja, srodowisko)` | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. |
+| `odlacz(agent_dir)` | Usuwa wskaznik. Oddaje jego tresc (co bylo podlaczone) albo None. |
+| `wymagaj_aktywnego(cfg, co)` | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. |
+| `lista(agent_dir)` | Presety operatora (`presety/*.toml`) i przyklady (`presety/przyklady/`). |
+| `znajdz(nazwa, agent_dir)` | Preset po nazwie (wlasne przed przykladami) albo po sciezce do pliku. |
+| `z_konfiguracji(tekst_toml, nazwa, opis)` | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). |
+| `eksportuj(preset)` | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). |
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
@@ -547,7 +607,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `alarm.py` — kontrola sesji, zdrowia i alarm do właściciela
 
-1056 wierszy, 25 funkcji na poziomie modułu, 0 klas
+1076 wierszy, 26 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -556,6 +616,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_ostatnio(klucz)` *(wewn.)* | — |
 | `_zapisz(klucz)` *(wewn.)* | — |
 | `wyslij(klucz, temat, tresc)` | Wysyła alarm. `klucz` identyfikuje RODZAJ problemu, nie pojedynczy wypadek. |
+| `brak_presetu()` | Silnik bez podlaczonego presetu ODMAWIA startu z zegara — to ma byc alarm, nie cisza. |
 | `artykul_zalegly()` | Czy gotowy artykul lezy na dysku niewystawiony dluzej niz dobe. |
 | `sprawdz_sesje_i_ostrzez()` | Pilnuje jedynej rzeczy, która zatrzymuje agenta bez żadnego błędu. |
 | `sprawdz_przebiegi_i_ostrzez(ile)` | Alarmuje, gdy agent pada raz za razem. |
@@ -579,7 +640,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `style.py` — korpus stylu dla pisarza
 
-208 wierszy, 8 funkcji na poziomie modułu, 1 klas
+225 wierszy, 9 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -589,7 +650,8 @@ wiec nie da sie go rozjechac z kodem.
 | `bajty_kanoniczne(raw)` | Bajty korpusu niezależne od tego, jak git zmaterializował plik. |
 | `wczytaj_przypiecia()` | Przypięcia korpusu z pliku obok niego. Brak pliku = czytelny błąd. |
 | `load_examples()` | Zwraca zatwierdzone fragmenty stylu albo rzuca, jeśli korpus się nie zgadza. |
-| `load_profiles()` | Profil pozytywny i negatywny stylu artykułu. |
+| `przyklady_albo_pusto()` | Fragmenty stylu — albo pusta lista, gdy preset nie wymaga korpusu. |
+| `load_profiles()` | Profil pozytywny i negatywny stylu artykułu — z plikow wskazanych przez preset. |
 | `_z_marka(tekst)` *(wewn.)* | Podstawia `{marka}` w profilu stylu. Profil bez pola zostaje bez zmian. |
 
 ### `kopia_subskrybentow.py` — kopia jedynego aktywa, którego nie da się odtworzyć
@@ -605,7 +667,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3404 wierszy, 38 funkcji na poziomie modułu, 0 klas
+3548 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -630,6 +692,9 @@ wiec nie da sie go rozjechac z kodem.
 | `normy_dzienne()` | Ile czego POWINNO wychodzic dziennie — srodek widelek. |
 | `_cisza_z_hasza(dzien)` *(wewn.)* | — |
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
+| `dzis_dzien_artykulu(kiedy)` | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. |
+| `zegar_agenta_on_calendar()` | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. |
+| `zegar_artykulu_on_calendar()` | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
 | `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. |
@@ -647,6 +712,7 @@ wiec nie da sie go rozjechac z kodem.
 | `losowa_liczba_paraleli(glebokosc, dostepne)` | Ile paraleli w drugim akcie. Krotki artykul nigdy nie bierze trzech, |
 | `losowe_generatory(ile)` | Ktore wzorce w tym przebiegu. Ten sam generator dwa dni z rzedu daje |
 | `co_teraz_w_reku(kiedy)` | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. |
+| `_aktywacja_przy_starcie()` *(wewn.)* | — |
 
 ### `statystyki.py` — co przyniosła każda pozycja: wejścia, reakcje, subskrypcje
 
@@ -708,18 +774,18 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci
 
-217 wierszy, 4 funkcji na poziomie modułu, 0 klas
+233 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_swieze(dane)` *(wewn.)* | Czy zapisana odpowiedz jest jeszcze wazna. |
-| `wczytaj()` | Ostatnia zapisana odpowiedz. Pusty slownik, gdy nie ma albo jest zepsuta. |
+| `wczytaj()` | Ostatnia zapisana odpowiedz NA TO SAMO PYTANIE. Pusty slownik, gdy nie ma, |
 | `pobierz(conn, run_id, wymus)` | Aktualny stan modeli. Z pliku, gdy swiezy; inaczej pyta na nowo. |
 | `jako_tekst(dane)` | Stan modeli w postaci, ktora wchodzi do promptu. |
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1524 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1553 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -7674,8 +7740,14 @@ def artykul_do_promocji() -> dict[str, Any] | None:
         return None             # dzisiejsza notka promujaca juz poszla
     granica = (datetime.now(timezone.utc)
                - timedelta(days=config.OKNO_PROMOCJI_DNI)).strftime("%Y-%m-%d")
+    moja = getattr(config, "INSTANCJA", "")
     for a in reversed(kolejka):
         if a.get("wystawione", 0) >= config.NOTEK_PROMUJACYCH:
+            continue
+        # PROMUJEMY TYLKO WLASNE. Artykul z innej instancji (inny preset, inny
+        # temat) nie dostaje notki promujacej od tej — to jest dokladnie
+        # „artykul sprzed zmiany tematu w kolejce", tylko z nazwanym wlascicielem.
+        if moja and str(a.get("instancja") or "") != moja:
             continue
         # OKNO WAZNOSCI. Wpis bez `dodane` pochodzi sprzed tej reguly, wiec z
         # definicji nie jest dzisiejszy — traktujemy go jak przeterminowany.
@@ -7713,6 +7785,13 @@ def grafika(
     poprawne wobec briefu i martwe. Scena odpowiada na pytania, na które
     eksponat nie mógł: gdzie to jest i co się tu przed chwilą działo.
     """
+    # OKLADKA WYLACZONA W PRESECIE (`modele.obraz = ""`): ani briefu, ani
+    # obrazu, ani jednego platnego wywolania. Decyzja, nie awaria — wiec bez
+    # slowa „NIE POWSTALA" w logu.
+    if not getattr(config, "OBRAZ_WLACZONY", True):
+        print("  [grafika] okladka wylaczona w presecie — artykul wychodzi bez naglowka",
+              flush=True)
+        return {"pominieta": "okladka wylaczona w presecie"}
     # GRAFIKA NIGDY NIE ZABIJA ARTYKUŁU. Zasada właściciela mówi wprost: gdy
     # temat jest wybrany, a research zrobiony i opłacony, artykuł MUSI powstać.
     # Nagłówek jest ozdobą, artykuł produktem — więc gdy zabraknie budżetu na
@@ -9791,13 +9870,17 @@ Return only valid JSON:
 
 #### `prompts/komentarz.md`
 
-**142 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
+**146 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `styl_opis`, `title`
 
 ````markdown
 You are writing a comment under someone else's Substack post, as the anonymous
 editorial brand {marka}, a publication about {nisza} — {kat_redakcyjny}
 
 Write in {language}.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
 
 ## You are writing a comment, not deciding whether to
 
@@ -10128,7 +10211,7 @@ Return only:
 
 #### `prompts/notka.md`
 
-**159 wierszy.** Pola wejsciowe: `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `type_brief`
+**163 wierszy.** Pola wejsciowe: `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `styl_opis`, `type_brief`
 
 ````markdown
 Write a Substack Note for the anonymous editorial brand {marka}, a publication
@@ -10162,6 +10245,10 @@ the assumption it breaks, the thing everyone is quietly trusting, the gap
 between what a number is called and what it counts. That is the note. The
 system name and the number are how you prove it, and at this length one
 number is usually enough; four names and five numbers is a changelog entry.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
 
 ## Length
 
@@ -10296,7 +10383,7 @@ account is consistent. They think it is a machine working through a backlog.
 
 #### `prompts/odpowiedz.md`
 
-**125 wierszy.** Pola wejsciowe: `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `po_ludzku`, `under_what`
+**129 wierszy.** Pola wejsciowe: `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `po_ludzku`, `styl_opis`, `under_what`
 
 ````markdown
 Someone has replied to you. Write the response, as the anonymous editorial
@@ -10304,6 +10391,10 @@ brand {marka}.
 
 Write in {language}, unless the comment is in another language; then reply in
 that language if you can do so naturally, otherwise return null.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
 
 ## You are the host here
 
@@ -10430,7 +10521,7 @@ Author of the comment: {commenter}
 
 #### `prompts/pisarz.md`
 
-**300 wierszy.** Pola wejsciowe: `card_json`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+**304 wierszy.** Pola wejsciowe: `card_json`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
 ````markdown
 You write for the anonymous editorial brand {marka}, a publication about
@@ -10488,6 +10579,10 @@ Go easy on em dashes and semicolons. A handful of dashes in a thousand words
 is a choice; a dozen is a tic, and a dense scatter of them is one of the most
 reliable signs that a machine wrote the text. Where you would reach for a
 third dash in a paragraph, start a new sentence.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
 
 ## What you may assert
 
@@ -11836,6 +11931,10 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `STYLE_CORPUS_DIR` | `PROMPTS_DIR / "styl"` | Korpus stylu. Przypięty hashem, bo to jedyna rzecz odróżniająca to konto od tysiąca innych — loader ma odmówić, jeśli ktoś po cichu podmieni |
 | `STYLE_CORPUS` | `_korpus_stylu()` | — |
 | `STYLE_PROFILES_DIR` | `REPO_ROOT / "style-profiles"` | — |
+| `STYLE_PROFILE_POSITIVE` | `STYLE_PROFILES_DIR / "ARTICLE_STYLE_PROFILE_` | PROFILE STYLU SA POLEM PRESETU (`styl.profil_pozytywny`, `styl.profil_negatywny`). Do 2026-09-05 `style.load_profiles` mialo obie nazwy plik |
+| `STYLE_PROFILE_NEGATIVE` | `STYLE_PROFILES_DIR / "ARTICLE_NEGATIVE_STYLE` | — |
+| `STYL_WYMAGAJ_KORPUSU` | `True` | Czy pisarz artykulu ODMAWIA bez przypietego korpusu. Tak bylo zawsze i tak zostaje domyslnie; preset moze to wylaczyc (`styl.wymagaj_korpusu |
+| `STYL_OPIS` | `""` | GLOS OPISANY SLOWAMI (`styl.opis`). Idzie do briefow pisarza, notki, komentarza i odpowiedzi jako `{styl_opis}` — patrz `stages._pola_wspoln |
 | `PRODUKCYJNY_KATALOG_DANYCH` | `DATA_DIR` | GDZIE NAPRAWDE LEZY PRODUKCJA. Zapamietane TERAZ, przed jakimkolwiek przekierowaniem, bo po przestawieniu `DATA_DIR` nie da sie juz odtworzy |
 | `ANTHROPIC_API_KEY` | `_env("ANTHROPIC_API_KEY")` | — |
 | `DEEPSEEK_API_KEY` | `_env("DEEPSEEK_API_KEY")` | — |
@@ -11863,6 +11962,8 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `DEEPSEEK_EFFORT` | `"low"` | Głębokość rozumowania DeepSeeka na /responses. Tokeny rozumowania liczą się do sufitu wyjścia, więc przy `high` model kończy budżet na szuka |
 | `CHEAP_MODE` | `_env("AGENT_V2_CHEAP", "0").lower() in {"1",` | Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override zostawia u Claude'a. Sluzy do testowania HYDRAULIKI — czy lancuch |
 | `BEZ_TOKENOW` | `{"obraz"}` | — |
+| `OBRAZ_WLACZONY` | `True` | CZY OKLADKA W OGOLE POWSTAJE. Preset wylacza ja pustym `modele.obraz`; `stages.grafika` wtedy nie wola ani briefu, ani OpenAI. Do 2026-09-05 |
+| `ZAPASOWY_PISARZ` | `CLAUDE` | NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py` i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec zmia |
 | `PRICING` | `{ CLAUDE: {"in": 5.00, "out": 25.00, "verifi` | — |
 | `STAWKI_PRZED_PODWYZKA` | `{ DEEPSEEK: {"in": 0.14, "out": 0.28, "cache` | --- taryfa szczytowa DeepSeeka ----------------------------------------------- Od 2026-08-16 16:00 UTC DeepSeek wprowadza ceny szczytowe i p |
 | `TARYFA_SZCZYTOWA_OD` | `"2026-08-16T16:00:00+00:00"` | — |
@@ -11960,6 +12061,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `NOTE_MIX_ARTICLE_DAY` | `("ARTYKUL", "ARTYKUL", "CIEKAWOSTKA", "SPROS` | MIESZANKA DNIA. Ostatnia pozycja to MYSL — notka bez zadnego dowodu. Powod jest w NOTE_TYPES przy samym typie: wszystkie pozostale wymagaja  |
 | `KSZTALTY_MYSLI` | `{ "PYTANIE": ( "Ask something nobody can set` | KSZTALTY NOTKI TYPU MYSL. Losowane w kodzie i podawane jako PRZYDZIAL. Powod jest zmierzony: opis typu wymienial pytanie i obserwacje jako d |
 | `NOTE_MIX_OTHER_DAY` | `("CIEKAWOSTKA", "CIEKAWOSTKA", "DYSKUSJA", "` | — |
+| `NOTKI_DZIENNIE` | `len(NOTE_MIX_OTHER_DAY)` | LICZBA SLOTOW NOTEK NA DOBE — jedna dla obu rodzajow dnia. Wyprowadzona z miksu, a nie wpisana obok niego: `konfiguracja.zastosuj` ustawia j |
 | `LAJKI_DZIENNIE` | `(10, 16)` | --- zachowanie spoleczne: widelki, nie stale liczby ------------------------- Stala liczba dziennie wyglada jak robot, bo czlowiek nie ma no |
 | `KOMENTARZE_DZIENNIE` | `(15, 23)` | Osiemnascie komentarzy dziennie pod cudzymi tekstami to nie jest tempo czytelnika, tylko podpis bota — i kosztuje najwiecej po pisaniu, bo k |
 | `FOLLOW_MIESIECZNIE` | `(10, 16)` | ZEROWANE 2026-08-23, PRZYWROCONE 2026-09-01 — BO WNIOSEK BYL FALSZYWY. Stalo tu `(0, 0)` z uzasadnieniem „Substack zdjal Follow ze stron pro |
@@ -11973,6 +12075,10 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `RESTACK_DZIENNIE` | `(1, 2)` | Zjechane z 2-4 na 1-2 (2026-08-20). Restack stawia NASZE nazwisko obok cudzego tekstu — to najmocniejszy gest w calym repertuarze i jedyny,  |
 | `RESTACK_MAX_SLOW` | `40` | Dopisek do cudzej notki. Powyzej tego to juz nie dopisek, tylko wlasna notka doczepiona do czyjegos tekstu — a wtedy lepiej napisac wlasna n |
 | `PRZEBIEGOW_DZIENNIE` | `5` | Pierwszy miesiac na dolnej polowie widelek. Nowe konto z jednym artykulem, ktore nagle obserwuje dwadziescia osob, wyglada dokladnie jak far |
+| `GODZINY_PRZEBIEGOW_UTC` | `("11:20", "17:00", "19:20", "21:30", "23:40"` | --- HARMONOGRAM Z KONFIGURACJI, NIE Z SZABLONU ZEGARA ---------------------- Do 2026-09-05 godziny przebiegow staly WYLACZNIE w `systemd/nia |
+| `ARTYKULY_TYGODNIOWO` | `1` | ILE ARTYKULOW NA TYDZIEN I W KTORE DNI. Zero wylacza sciezke artykulu: zegar artykulu nie powstaje, `artykul_z_puli.py` odmawia, promocja ni |
+| `DNI_ARTYKULU` | `("Tue",)` | — |
+| `GODZINA_ARTYKULU_UTC` | `"14:00"` | — |
 | `PROB_PUBLIKACJI_ARTYKULU` | `3` | ILE CZASU MA PRZEBIEG. Musi zgadzac sie z `TimeoutStartSec` w pliku uslugi — to jedyne miejsce, gdzie ta sama liczba stoi dwa razy, i pilnuj |
 | `PRZERWA_MIEDZY_PROBAMI_ARTYKULU_S` | `120` | — |
 | `PROB_ZALEGLEGO_ARTYKULU` | `12` | ILE RAZY RUTYNA DNIA PROBUJE DOWIEZC ZALEGLY ARTYKUL, zanim przestanie. Piec przebiegow dziennie razy dwanascie prob to dwa i pol dnia dobij |
@@ -12030,8 +12136,11 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `KANDYDATOW_NA_PRZEBIEG` | `25` | Ile kandydatow-jednolinijkowcow zamawiamy, zanim cokolwiek napiszemy. Nadprodukcja jest obowiazkowa: piec notek z piatki pomyslow to mediana |
 | `W_TYM_MIESIACU` | `{ 1: "year-ahead plans and budgets being pub` | --- co czytelnik trzyma w reku W TYM MIESIACU ------------------------------- Najtansza dzwignia, jaka mamy, i nie mielismy jej wcale. Zwykl |
 | `KONFIGURACJA_PLIK` | `_konf.sciezka(AGENT_DIR)` | — |
-| `_BEZ_KONFIGURACJI` | `_env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower` | `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE s |
-| `KONFIGURACJA_ZMIENILA` | `_konf.zastosuj(_dane_konfiguracji, sys.modul` | — |
+| `_BEZ_KONFIGURACJI` | `_env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower` | `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI I NARZEDZI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytori |
+| `DOMYSLNE_SILNIKA` | `_konf.zdjecie(sys.modules[__name__])` | NEUTRALNA BAZA SILNIKA — zdjecie stalych konta ZANIM cokolwiek je nadpisze. Od niej kompiluje sie kazdy preset: przywroc baze, naloz preset. |
+| `PRESET` | `None` | --- AKTYWNY PRESET ---------------------------------------------------------- JEDEN SILNIK, JEDNA INSTANCJA NARAZ, KONTEKST ROZWIAZANY PRZED |
+| `PRESET_AKTYWACJA` | `None` | — |
+| `INSTANCJA` | `""` | — |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |

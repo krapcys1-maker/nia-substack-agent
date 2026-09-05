@@ -11,6 +11,10 @@
 | `STYLE_CORPUS_DIR` | `PROMPTS_DIR / "styl"` | Korpus stylu. Przypięty hashem, bo to jedyna rzecz odróżniająca to konto od tysiąca innych — loader ma odmówić, jeśli ktoś po cichu podmieni |
 | `STYLE_CORPUS` | `_korpus_stylu()` | — |
 | `STYLE_PROFILES_DIR` | `REPO_ROOT / "style-profiles"` | — |
+| `STYLE_PROFILE_POSITIVE` | `STYLE_PROFILES_DIR / "ARTICLE_STYLE_PROFILE_` | PROFILE STYLU SA POLEM PRESETU (`styl.profil_pozytywny`, `styl.profil_negatywny`). Do 2026-09-05 `style.load_profiles` mialo obie nazwy plik |
+| `STYLE_PROFILE_NEGATIVE` | `STYLE_PROFILES_DIR / "ARTICLE_NEGATIVE_STYLE` | — |
+| `STYL_WYMAGAJ_KORPUSU` | `True` | Czy pisarz artykulu ODMAWIA bez przypietego korpusu. Tak bylo zawsze i tak zostaje domyslnie; preset moze to wylaczyc (`styl.wymagaj_korpusu |
+| `STYL_OPIS` | `""` | GLOS OPISANY SLOWAMI (`styl.opis`). Idzie do briefow pisarza, notki, komentarza i odpowiedzi jako `{styl_opis}` — patrz `stages._pola_wspoln |
 | `PRODUKCYJNY_KATALOG_DANYCH` | `DATA_DIR` | GDZIE NAPRAWDE LEZY PRODUKCJA. Zapamietane TERAZ, przed jakimkolwiek przekierowaniem, bo po przestawieniu `DATA_DIR` nie da sie juz odtworzy |
 | `ANTHROPIC_API_KEY` | `_env("ANTHROPIC_API_KEY")` | — |
 | `DEEPSEEK_API_KEY` | `_env("DEEPSEEK_API_KEY")` | — |
@@ -38,6 +42,8 @@
 | `DEEPSEEK_EFFORT` | `"low"` | Głębokość rozumowania DeepSeeka na /responses. Tokeny rozumowania liczą się do sufitu wyjścia, więc przy `high` model kończy budżet na szuka |
 | `CHEAP_MODE` | `_env("AGENT_V2_CHEAP", "0").lower() in {"1",` | Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override zostawia u Claude'a. Sluzy do testowania HYDRAULIKI — czy lancuch |
 | `BEZ_TOKENOW` | `{"obraz"}` | — |
+| `OBRAZ_WLACZONY` | `True` | CZY OKLADKA W OGOLE POWSTAJE. Preset wylacza ja pustym `modele.obraz`; `stages.grafika` wtedy nie wola ani briefu, ani OpenAI. Do 2026-09-05 |
+| `ZAPASOWY_PISARZ` | `CLAUDE` | NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py` i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec zmia |
 | `PRICING` | `{ CLAUDE: {"in": 5.00, "out": 25.00, "verifi` | — |
 | `STAWKI_PRZED_PODWYZKA` | `{ DEEPSEEK: {"in": 0.14, "out": 0.28, "cache` | --- taryfa szczytowa DeepSeeka ----------------------------------------------- Od 2026-08-16 16:00 UTC DeepSeek wprowadza ceny szczytowe i p |
 | `TARYFA_SZCZYTOWA_OD` | `"2026-08-16T16:00:00+00:00"` | — |
@@ -135,6 +141,7 @@
 | `NOTE_MIX_ARTICLE_DAY` | `("ARTYKUL", "ARTYKUL", "CIEKAWOSTKA", "SPROS` | MIESZANKA DNIA. Ostatnia pozycja to MYSL — notka bez zadnego dowodu. Powod jest w NOTE_TYPES przy samym typie: wszystkie pozostale wymagaja  |
 | `KSZTALTY_MYSLI` | `{ "PYTANIE": ( "Ask something nobody can set` | KSZTALTY NOTKI TYPU MYSL. Losowane w kodzie i podawane jako PRZYDZIAL. Powod jest zmierzony: opis typu wymienial pytanie i obserwacje jako d |
 | `NOTE_MIX_OTHER_DAY` | `("CIEKAWOSTKA", "CIEKAWOSTKA", "DYSKUSJA", "` | — |
+| `NOTKI_DZIENNIE` | `len(NOTE_MIX_OTHER_DAY)` | LICZBA SLOTOW NOTEK NA DOBE — jedna dla obu rodzajow dnia. Wyprowadzona z miksu, a nie wpisana obok niego: `konfiguracja.zastosuj` ustawia j |
 | `LAJKI_DZIENNIE` | `(10, 16)` | --- zachowanie spoleczne: widelki, nie stale liczby ------------------------- Stala liczba dziennie wyglada jak robot, bo czlowiek nie ma no |
 | `KOMENTARZE_DZIENNIE` | `(15, 23)` | Osiemnascie komentarzy dziennie pod cudzymi tekstami to nie jest tempo czytelnika, tylko podpis bota — i kosztuje najwiecej po pisaniu, bo k |
 | `FOLLOW_MIESIECZNIE` | `(10, 16)` | ZEROWANE 2026-08-23, PRZYWROCONE 2026-09-01 — BO WNIOSEK BYL FALSZYWY. Stalo tu `(0, 0)` z uzasadnieniem „Substack zdjal Follow ze stron pro |
@@ -148,6 +155,10 @@
 | `RESTACK_DZIENNIE` | `(1, 2)` | Zjechane z 2-4 na 1-2 (2026-08-20). Restack stawia NASZE nazwisko obok cudzego tekstu — to najmocniejszy gest w calym repertuarze i jedyny,  |
 | `RESTACK_MAX_SLOW` | `40` | Dopisek do cudzej notki. Powyzej tego to juz nie dopisek, tylko wlasna notka doczepiona do czyjegos tekstu — a wtedy lepiej napisac wlasna n |
 | `PRZEBIEGOW_DZIENNIE` | `5` | Pierwszy miesiac na dolnej polowie widelek. Nowe konto z jednym artykulem, ktore nagle obserwuje dwadziescia osob, wyglada dokladnie jak far |
+| `GODZINY_PRZEBIEGOW_UTC` | `("11:20", "17:00", "19:20", "21:30", "23:40"` | --- HARMONOGRAM Z KONFIGURACJI, NIE Z SZABLONU ZEGARA ---------------------- Do 2026-09-05 godziny przebiegow staly WYLACZNIE w `systemd/nia |
+| `ARTYKULY_TYGODNIOWO` | `1` | ILE ARTYKULOW NA TYDZIEN I W KTORE DNI. Zero wylacza sciezke artykulu: zegar artykulu nie powstaje, `artykul_z_puli.py` odmawia, promocja ni |
+| `DNI_ARTYKULU` | `("Tue",)` | — |
+| `GODZINA_ARTYKULU_UTC` | `"14:00"` | — |
 | `PROB_PUBLIKACJI_ARTYKULU` | `3` | ILE CZASU MA PRZEBIEG. Musi zgadzac sie z `TimeoutStartSec` w pliku uslugi — to jedyne miejsce, gdzie ta sama liczba stoi dwa razy, i pilnuj |
 | `PRZERWA_MIEDZY_PROBAMI_ARTYKULU_S` | `120` | — |
 | `PROB_ZALEGLEGO_ARTYKULU` | `12` | ILE RAZY RUTYNA DNIA PROBUJE DOWIEZC ZALEGLY ARTYKUL, zanim przestanie. Piec przebiegow dziennie razy dwanascie prob to dwa i pol dnia dobij |
@@ -205,8 +216,11 @@
 | `KANDYDATOW_NA_PRZEBIEG` | `25` | Ile kandydatow-jednolinijkowcow zamawiamy, zanim cokolwiek napiszemy. Nadprodukcja jest obowiazkowa: piec notek z piatki pomyslow to mediana |
 | `W_TYM_MIESIACU` | `{ 1: "year-ahead plans and budgets being pub` | --- co czytelnik trzyma w reku W TYM MIESIACU ------------------------------- Najtansza dzwignia, jaka mamy, i nie mielismy jej wcale. Zwykl |
 | `KONFIGURACJA_PLIK` | `_konf.sciezka(AGENT_DIR)` | — |
-| `_BEZ_KONFIGURACJI` | `_env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower` | `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytorium, GDZIE s |
-| `KONFIGURACJA_ZMIENILA` | `_konf.zastosuj(_dane_konfiguracji, sys.modul` | — |
+| `_BEZ_KONFIGURACJI` | `_env("AGENT_V2_BEZ_KONFIGURACJI", "0").lower` | `AGENT_V2_BEZ_KONFIGURACJI=1` — DLA GENERATOROW DOKUMENTACJI I NARZEDZI, NIE DLA BOTA. `narzedzia/mapa_tozsamosci.py` wypisuje do repozytori |
+| `DOMYSLNE_SILNIKA` | `_konf.zdjecie(sys.modules[__name__])` | NEUTRALNA BAZA SILNIKA — zdjecie stalych konta ZANIM cokolwiek je nadpisze. Od niej kompiluje sie kazdy preset: przywroc baze, naloz preset. |
+| `PRESET` | `None` | --- AKTYWNY PRESET ---------------------------------------------------------- JEDEN SILNIK, JEDNA INSTANCJA NARAZ, KONTEKST ROZWIAZANY PRZED |
+| `PRESET_AKTYWACJA` | `None` | — |
+| `INSTANCJA` | `""` | — |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |

@@ -53,6 +53,7 @@ MODULY = [
     ("db.py", "schemat i zapis"),
     ("jezyki.py", "wzorce bramek zalezne od jezyka; przy jezyku bez wzorcow bramka jest JAWNIE wylaczona zamiast cicho nic nie lapac"),
     ("konfiguracja.py", "wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`"),
+    ("preset.py", "preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`"),
     ("kanal.py", "pamięć o cudzych publikacjach"),
     ("alarm.py", "kontrola sesji, zdrowia i alarm do właściciela"),
     ("style.py", "korpus stylu dla pisarza"),

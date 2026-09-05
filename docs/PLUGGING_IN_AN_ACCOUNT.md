@@ -3,6 +3,15 @@
 One page. Everything you decide about a publication, and the one place each
 decision goes.
 
+> **Since 2026-09-05 the recommended form is a preset**: the same fields plus
+> a `[preset]` header, in `presety/<name>.toml`, plugged in with
+> `python narzedzia/presety.py podlacz <name>`. Presets add a voice section,
+> notes per day, articles per week and the schedule, get their own data
+> directory, and can be unplugged. `konfiguracja.toml` still loads when no
+> preset is active; `python narzedzia/presety.py importuj-konfiguracje`
+> converts it. Full description: [PRESETY.md](PRESETY.md) (Polish),
+> [../presety/README.md](../presety/README.md) (English).
+
 **Almost all of it is one file.** Copy the template, edit it, done:
 
 ```bash
@@ -328,5 +337,5 @@ ledger and nowhere else is the failure this step is here to catch.
 | the order of a day | `agent-v2/run.py`, `dzien()` |
 | anything about Substack itself | `agent-v2/browser.py`, `agent-v2/kanal.py` |
 
-Full function-level index: [FUNCTION_MAP.md](FUNCTION_MAP.md) — 575 functions,
+Full function-level index: [FUNCTION_MAP.md](FUNCTION_MAP.md) — 634 functions,
 which of them cost money and for which stage, and who calls each one.

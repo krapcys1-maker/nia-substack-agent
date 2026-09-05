@@ -1083,13 +1083,17 @@ Return only valid JSON:
 
 #### `prompts/komentarz.md`
 
-**142 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
+**146 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `styl_opis`, `title`
 
 ````markdown
 You are writing a comment under someone else's Substack post, as the anonymous
 editorial brand {marka}, a publication about {nisza} — {kat_redakcyjny}
 
 Write in {language}.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
 
 ## You are writing a comment, not deciding whether to
 
@@ -1420,7 +1424,7 @@ Return only:
 
 #### `prompts/notka.md`
 
-**159 wierszy.** Pola wejsciowe: `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `type_brief`
+**163 wierszy.** Pola wejsciowe: `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `note_type`, `ostatnie_otwarcia_json`, `po_ludzku`, `styl_opis`, `type_brief`
 
 ````markdown
 Write a Substack Note for the anonymous editorial brand {marka}, a publication
@@ -1454,6 +1458,10 @@ the assumption it breaks, the thing everyone is quietly trusting, the gap
 between what a number is called and what it counts. That is the note. The
 system name and the number are how you prove it, and at this length one
 number is usually enough; four names and five numbers is a changelog entry.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
 
 ## Length
 
@@ -1588,7 +1596,7 @@ account is consistent. They think it is a machine working through a backlog.
 
 #### `prompts/odpowiedz.md`
 
-**125 wierszy.** Pola wejsciowe: `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `po_ludzku`, `under_what`
+**129 wierszy.** Pola wejsciowe: `cel_slow`, `comment`, `commenter`, `evidence`, `language`, `marka`, `otwarcie`, `po_ludzku`, `styl_opis`, `under_what`
 
 ````markdown
 Someone has replied to you. Write the response, as the anonymous editorial
@@ -1596,6 +1604,10 @@ brand {marka}.
 
 Write in {language}, unless the comment is in another language; then reply in
 that language if you can do so naturally, otherwise return null.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
 
 ## You are the host here
 
@@ -1722,7 +1734,7 @@ Author of the comment: {commenter}
 
 #### `prompts/pisarz.md`
 
-**300 wierszy.** Pola wejsciowe: `card_json`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+**304 wierszy.** Pola wejsciowe: `card_json`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
 ````markdown
 You write for the anonymous editorial brand {marka}, a publication about
@@ -1780,6 +1792,10 @@ Go easy on em dashes and semicolons. A handful of dashes in a thousand words
 is a choice; a dozen is a tic, and a dense scatter of them is one of the most
 reliable signs that a machine wrote the text. Where you would reach for a
 third dash in a paragraph, start a new sentence.
+
+## The voice of this publication, in its own words
+
+{styl_opis}
 
 ## What you may assert
 

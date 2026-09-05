@@ -72,6 +72,18 @@ def _probka(pole: str, sprawdzacz) -> object:
     if pole == "modele.role":
         rola = sorted(config.MODEL_FOR)[0]
         return {rola: config.MODEL_FOR[rola]}
+    if pole == "modele.obraz":
+        return config.IMAGE_MODEL
+    # PARY POWIAZANE: liczba przebiegow musi zgadzac sie z liczba godzin,
+    # a artykuly na tydzien z liczba dni — `zastosuj` sprawdza to W CALOSCI.
+    if pole == "wolumeny.przebiegow_dziennie":
+        return 1
+    if pole == "harmonogram.godziny_przebiegow_utc":
+        return ["11:20"]
+    if pole == "wolumeny.artykuly_tygodniowo":
+        return 1
+    if pole == "harmonogram.dni_artykulu":
+        return ["Tue"]
     if nazwa == "_slownik_napisow":
         return {"Probny": "UCprobnyprobnyprobny01"}
     if nazwa == "_slownik_list":
@@ -80,13 +92,27 @@ def _probka(pole: str, sprawdzacz) -> object:
         return ["probna"]
     if nazwa == "_lista_napisow_moze_pusta":
         return []
-    if nazwa == "_widelki":
+    if nazwa in ("_widelki", "_godziny"):
         return [1, 2]
-    if nazwa == "_liczba":
+    if nazwa in ("_liczba", "_calkowita_nieujemna", "_calkowita_dodatnia"):
         return 1
+    if nazwa == "_kwota":
+        return 1.0
     if nazwa == "_prawda":
         return True
     if nazwa == "_data_albo_pusto":
+        return ""
+    if nazwa == "_strefa":
+        return "UTC"
+    if nazwa == "_godzina_utc":
+        return "14:00"
+    if nazwa == "_lista_godzin_utc":
+        return ["11:20"]
+    if nazwa == "_lista_dni_tygodnia":
+        return ["Tue"]
+    if nazwa == "_sciezka":
+        return "style-profiles/ARTICLE_STYLE_PROFILE_V1.md"
+    if nazwa == "_sciezka_moze_pusta":
         return ""
     return "probna"
 
@@ -105,21 +131,15 @@ for pole, wartosc in _dane.items():
     except konfiguracja.BledKonfiguracji as exc:
         sprawdz("probka dla %s przechodzi walidacje" % pole, False, exc)
 
-_stan = {n: getattr(config, n) for n, _ in konfiguracja.POLA.values()
-         if n is not None and hasattr(config, n)}
-_miks = config.NOTE_MIX_OTHER_DAY
-_przyklady = dict(config.PRZYKLADY_NISZY)
-_modele = dict(config.MODEL_FOR)
+# ZDJECIE CALOSCI, NIE LISTA NAZW. `konfiguracja.zdjecie` obejmuje kazda
+# stala, ktora `zastosuj` potrafi ruszyc (takze te ustawiane posrednio:
+# miks dnia artykulu, model okladki, zegar), wiec test nie zostawia po sobie
+# zmienionego `config` innym sekcjom.
+_zdjecie = konfiguracja.zdjecie(config)
 try:
     zmienione = konfiguracja.zastosuj(_gotowe, config)
 finally:
-    for n, w in _stan.items():
-        setattr(config, n, w)
-    config.NOTE_MIX_OTHER_DAY = _miks
-    config.PRZYKLADY_NISZY.clear()
-    config.PRZYKLADY_NISZY.update(_przyklady)
-    config.MODEL_FOR.clear()
-    config.MODEL_FOR.update(_modele)
+    konfiguracja.przywroc(config, _zdjecie)
 
 _zameldowane = {w.split(" -> ")[0] for w in zmienione}
 _zgubione = sorted(set(_gotowe) - _zameldowane)

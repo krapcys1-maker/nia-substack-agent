@@ -133,8 +133,15 @@ podstawka.write_text(
     "sys.argv = ['run.py', '--dzien']\n"
     "sys.exit(run.main())\n", encoding="utf-8")
 
+# PODPROCES NIE JEST DARMOWYM TESTEM (argv[0] lezy w katalogu tymczasowym),
+# wiec brama presetu w `run.main` obowiazuje. Dostaje jawny preset przykladowy
+# przez zmienna srodowiskowa — tak samo, jak robi to podglad promptow — i nic
+# nie jest podlaczane na stale.
+_srodowisko = dict(os.environ)
+_srodowisko["AGENT_V2_PRESET"] = os.path.abspath("presety/przyklady/zgodnosc.toml")
 proc = subprocess.Popen([sys.executable, str(podstawka)],
-                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                        env=_srodowisko)
 time.sleep(6)
 proc.send_signal(signal.SIGTERM)
 try:

@@ -103,6 +103,12 @@ ZAKAZANE_PLIKI = [
     # a nie w kopie. Audyt krzyczacy na wlasny kod uczy ignorowania audytu.
     (r"subskrybenci.*\.(csv|json|txt)$", "lista subskrybentow (cudze adresy e-mail)"),
     (r"(^|/)konfiguracja\.toml$", "konfiguracja instalacji (uchwyt konta)"),
+    # PRESET OPERATORA to ta sama klasa co `konfiguracja.toml`: uchwyt, marka,
+    # temat. Przyklady w `presety/przyklady/` maja placeholdery i sa w gicie
+    # celowo — wzorzec omija je, bo maja o jeden segment sciezki wiecej.
+    (r"^presety/[^/]+\.toml$", "wlasny preset operatora (uchwyt konta, temat)"),
+    (r"(^|/)aktywny_preset\.json$", "wskaznik aktywnego presetu (stan instalacji)"),
+    (r"(^|/)instancje/", "dane instancji presetu (baza, bank, szkice)"),
     (r"\.db$", "baza danych"),
     (r"dziennik\.jsonl$", "dziennik dzialan"),
     (r"(^|/)kopie/", "kopie list subskrybentow"),
