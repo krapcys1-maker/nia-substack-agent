@@ -23,8 +23,8 @@ agent-v2/              the bot. Everything that runs is here
   llm.py               transport to model providers, and cost accounting
   db.py                four tables, narrow column migrations
   gates.py             deterministic checks on finished text
-  prompts/             24 prompt files, read from disk on every call
-  tests/               150 free tests, 9 paid ones in tests/platne/
+  prompts/             25 prompt files, read from disk on every call
+  tests/               151 free tests, 9 paid ones in tests/platne/
   systemd/             three services, three timers
   dokumentacja-zrodla/ the generator for the reconstruction document
   data/                database, journal, session — gitignored, never committed
@@ -195,7 +195,7 @@ failed six tests for reasons that had nothing to do with the code.
 
 ### Prompts: on disk, but not all of them
 
-The 24 files in `agent-v2/prompts/` are read from disk **on every model call**,
+The 25 files in `agent-v2/prompts/` are read from disk **on every model call**,
 so editing one takes effect immediately. But alongside them sit **22 system
 messages as Python constants** in `stages.py` (`SCOUT_SYSTEM`, `WRITER_SYSTEM`,
 `NOTE_SYSTEM`…). Those are not read from disk and cannot be swapped without

@@ -75,8 +75,12 @@ RUSZTOWANIE = {
     "grafika.md": {
         "why_this_scene": "zmusza do wyboru sceny Z TEKSTU, nie ilustracji tematu",
     },
+    "mysl.md": {
+        "words": "wlasna deklaracja dlugosci; prawdziwa liczy kod",
+        "why_no_note": "wyjscie awaryjne dla pomyslu, ktory potrzebowal faktu — model ma NAZWAC brakujacy dowod zamiast go wymyslic; nikt tego nie czyta, bo notka i tak wtedy nie powstaje, ale sam obowiazek nazwania jest zapora",
+    },
     "notka.md": {
-        "fact_used": "model ma wskazac fakt, na ktorym stoi notka — zapora przed zmysleniem",
+        "fact_used": "model ma wskazac fakt, na ktorym stoi notka — zapora przed zmysleniem; MYSL tego pola NIE dostaje (patrz mysl.md), bo zapora przed zmyslaniem postawiona typowi bez faktow zaprasza do zmyslenia faktu",
         "source_url": "to samo, dla zrodla",
         "words": "wlasna deklaracja dlugosci; prawdziwa liczy kod",
     },

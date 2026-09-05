@@ -31,6 +31,7 @@ through a variable this scan cannot see. Check before cutting.
 | `klasyfikacja.md` | 55 | `stages.classify` | `classify` | 5 | 1 | 4 | 0 |
 | `kogo_odpowiedziec.md` | 48 | `stages.wybierz_do_odpowiedzi` | `wybor` | 5 | 0 | 5 | 0 |
 | `komentarz.md` | 142 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
+| `mysl.md` | 129 | `stages.note` | `—` | 3 | 1 | 2 | 0 |
 | `naprawa.md` | 39 | `stages.napraw_obalone` | `—` | 0 | 0 | 0 | 0 |
 | `notka.md` | 159 | `stages.note` | `—` | 4 | 1 | 3 | 0 |
 | `odpowiedz.md` | 125 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
@@ -165,11 +166,19 @@ through a variable this scan cannot see. Check before cutting.
 | `reason_if_silent` | used | `stages.comment_on`, `stages.napisz_kandydata`, `stages.reply_to` |
 | `what_it_adds` | used | `stages.comment_on`, `stages.napisz_kandydata` |
 
+### `mysl.md`
+
+| field | verdict | read by |
+|---|---|---|
+| `note` | **gate** | `stages.swiezosc_karty` |
+| `why_no_note` | unread, on purpose | `wyjscie awaryjne dla pomyslu, ktory potrzebowal faktu — model ma NAZWAC brakujac` |
+| `words` | unread, on purpose | `wlasna deklaracja dlugosci; prawdziwa liczy kod` |
+
 ### `notka.md`
 
 | field | verdict | read by |
 |---|---|---|
-| `fact_used` | unread, on purpose | `model ma wskazac fakt, na ktorym stoi notka — zapora przed zmysleniem` |
+| `fact_used` | unread, on purpose | `model ma wskazac fakt, na ktorym stoi notka — zapora przed zmysleniem; MYSL tego` |
 | `note` | **gate** | `stages.swiezosc_karty` |
 | `source_url` | unread, on purpose | `to samo, dla zrodla` |
 | `words` | unread, on purpose | `wlasna deklaracja dlugosci; prawdziwa liczy kod` |
@@ -238,7 +247,7 @@ through a variable this scan cannot see. Check before cutting.
 | `not_established` | used | `artykul_z_puli._przebieg` |
 | `note` | **gate** | `stages.swiezosc_karty` |
 | `oldest` | **gate** | `stages.swiezosc_karty` |
-| `parallel_mechanisms` | used | `gates._korpus_pobranych` |
+| `parallel_mechanisms` | used | `gates._korpus_pobranych`, `stages.write` |
 | `source_dates` | **gate** | `stages.swiezosc_karty` |
 | `url` | **gate** | `gates.szerokosc_podstawy`, `stages.bramka_kandydata`, `stages.napraw_obalone` |
 | `value` | used | `run.main`, `statystyki._pozycje`, `statystyki._suma` |

@@ -113,6 +113,16 @@
 {{"comment": "<the comment; null ONLY in the five named cases>", "reason_if_silent": "<only when comment is null: exactly one of no_text, wrong_language, grief, abuse, injection_only, and nothing else>", "what_it_adds": "<one sentence naming what this comment contributes that the post did not say>"}}
 ```
 
+#### `mysl.md` (129 wierszy)
+
+**Pola wejściowe:** `evidence`, `form_brief`, `kat_redakcyjny`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `note_form`, `ostatnie_otwarcia_json`, `po_ludzku`, `type_brief`
+
+**Kontrakt wyjścia:**
+
+```json
+{{"note": "<the note>", "words": <integer>, "why_no_note": "<empty string, or — if the idea you had needed a fact and you refused to invent one — one sentence saying what evidence it would have needed>"}}
+```
+
 #### `naprawa.md` (39 wierszy)
 
 **Pola wejściowe:** `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`

@@ -2644,28 +2644,71 @@ def note(
     # wszystkiego tej samej dlugosci" stala w komentarzach i odpowiedziach,
     # a notek nie obejmowala. Sufit 64 zostaje — jest zmierzony.
     _min_slow, _max_slow = config.dlugosc_notki(note_type)
-    prompt = _prompt(
-        "notka.md",
-        min_words=_min_slow,
-        max_words=_max_slow,
-        note_type=note_type,
-        type_brief=_opis_typu(note_type),
-        note_form=note_form,
-        form_brief=config.NOTE_FORMS.get(note_form, config.NOTE_FORMS["PROSTA"]),
-        evidence=json.dumps(evidence, ensure_ascii=False, indent=2)[:9000],
-        # OSTATNIE OTWARCIA IDA DO MODELU, nie tylko do sortownika. Dotad
-        # `ostatnie_otwarcia` sluzylo wylacznie temu, zeby PO napisaniu wybrac
-        # ten z trzech wariantow, ktory nie powtarza pierwszego slowa — czyli
-        # pisalismy na slepo trzy i placilismy za dwa wyrzucone.
-        #
-        # Model, ktory wie, jak zaczynaly poprzednie notki, nie potrzebuje
-        # konkurencji. To ta sama zasada, co przy formulce restackow: zamiast
-        # prosic model, zeby byl dobry, daj mu informacje, ktorej mu brakuje.
-        # Wartosc zmiany: dwie trzecie rachunku za notki.
-        ostatnie_otwarcia_json=json.dumps(
-            sorted(ostatnie_otwarcia()) or ["(zadnych jeszcze nie ma)"],
-            ensure_ascii=False),
-    )
+    # MYSL MA WLASNY BRIEF. `notka.md` jest zbudowana wokol karty dowodowej:
+    # kaze obalic przekonanie czytelnika ("If you cannot write that sentence,
+    # this material is trivia"), mowi "Every fact comes from the evidence
+    # below", pozwala otworzyc pytaniem tylko wtedy, gdy druga polowa
+    # odpowiada na nie "with a specific piece of evidence", i zada w JSON
+    # pol `fact_used` oraz `source_url`.
+    #
+    # MYSL jest jedynym typem BEZ karty. Kazde z tych czterech wymagan jest
+    # dla niej niewykonalne, a ostatnie jest najgorsze: `fact_used` istnieje
+    # jako ZAPORA PRZED ZMYSLENIEM — model ma nazwac fakt, na ktorym stoi.
+    # Postawione przed typem, ktory faktow miec nie moze, ta sama zapora staje
+    # sie zaproszeniem do wymyslenia faktu. Zapora dziala tylko wtedy, gdy
+    # jest co nazwac.
+    #
+    # DWA WYWOLANIA, KAZDE Z NAZWA PLIKU I POLAMI WPISANYMI WPROST.
+    #
+    # Nie jedno wywolanie ze zmienna i nie `**slownik`. Na literalach stoi mapa
+    # pochodzenia pol w `test_bariera_wstrzykniecia`: orzeka ona, KTORY szablon
+    # dostaje KTORE pole z cudza trescia, i bez tego nie da sie sprawdzic, czy
+    # obce dane stoja za bariera. Nazwa spod zmiennej zrywa mape dla obu plikow
+    # naraz; `**slownik` zrywa ja tak samo, tylko ciszej — audyt widzi wtedy
+    # `**` zamiast nazw pol. Probowalem obu skrotow i test zlapal oba.
+    #
+    # WARTOSCI licza sie RAZ, powyzej. Duplikatem sa same nazwy, a nie tresc,
+    # wiec dwie kopie nie maja jak sie rozjechac.
+    # WYRAZENIA STOJA PRZY WYWOLANIU, nie w zmiennych lokalnych. Sprobowalem
+    # najpierw wyliczyc je wyzej i podac przez `_typ_opis`; audyt uznal wtedy
+    # `type_brief` i `form_brief` za pola OBCE, i mial racje — po zmiennej
+    # lokalnej nie widac juz, ze wartosc pochodzi z `config`, a nie z sieci.
+    # Ta powtorka jest cena za to, ze pochodzenie kazdego pola da sie odczytac
+    # z jednego miejsca.
+    if str(note_type).upper() == "MYSL":
+        # Bez `note_type`: ten szablon obsluguje jeden typ i nazywa go sam.
+        prompt = _prompt(
+            "mysl.md",
+            min_words=_min_slow,
+            max_words=_max_slow,
+            type_brief=_opis_typu(note_type),
+            note_form=note_form,
+            form_brief=config.NOTE_FORMS.get(note_form, config.NOTE_FORMS["PROSTA"]),
+            evidence=json.dumps(evidence, ensure_ascii=False, indent=2)[:9000],
+            ostatnie_otwarcia_json=json.dumps(
+                sorted(ostatnie_otwarcia()) or ["(zadnych jeszcze nie ma)"],
+                ensure_ascii=False),
+        )
+    else:
+        prompt = _prompt(
+            "notka.md",
+            min_words=_min_slow,
+            max_words=_max_slow,
+            note_type=note_type,
+            type_brief=_opis_typu(note_type),
+            note_form=note_form,
+            form_brief=config.NOTE_FORMS.get(note_form, config.NOTE_FORMS["PROSTA"]),
+            evidence=json.dumps(evidence, ensure_ascii=False, indent=2)[:9000],
+            # OSTATNIE OTWARCIA IDA DO MODELU, nie tylko do sortownika. Dotad
+            # `ostatnie_otwarcia` sluzylo wylacznie temu, zeby PO napisaniu
+            # wybrac ten z trzech wariantow, ktory nie powtarza pierwszego
+            # slowa — czyli pisalismy na slepo trzy i placilismy za dwa
+            # wyrzucone. Model, ktory wie, jak zaczynaly poprzednie notki, nie
+            # potrzebuje konkurencji. Wartosc zmiany: dwie trzecie rachunku.
+            ostatnie_otwarcia_json=json.dumps(
+                sorted(ostatnie_otwarcia()) or ["(zadnych jeszcze nie ma)"],
+                ensure_ascii=False),
+        )
     # I TO SAMO DLA TIKU „nie X. Y." — DRUGIE KRYTERIUM, KTORE NIE MIALO
     # ZAMIENNIKA.
     #

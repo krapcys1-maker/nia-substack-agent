@@ -11,7 +11,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 150 tests · 12 gates on every finished text
+26 model roles · 151 tests · 12 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -102,7 +102,7 @@ behind each entry, is [docs/ROZWIAZYWANIE_PROBLEMOW.md](docs/ROZWIAZYWANIE_PROBL
 The bot's own design documents are in `agent-v2/` and are in Polish:
 `DOKTRYNA.md` (what it must and must not do — canonical, and its closing
 "Discrepancies" section is part of the document), `JAK_DZIALA_V2.md`
-(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 11,880 lines,
+(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,027 lines,
 **generated from the code** and guarded by a test so it cannot drift.
 
 **A word on the language, before you open a file.** Everything written *for
@@ -283,7 +283,7 @@ figure had reached 137:
 | `+ playwright install chromium` | the last three |
 | `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_jednostki_systemd` needs systemd |
 
-Measured on this copy (2026-09-05): of 150 test files, **148 pass and 2 fail**;
+Measured on this copy (2026-09-05): of 151 test files, **149 pass and 2 fail**;
 five of the passing ones skip part of their work and say so, line by line. Both
 failures are impossible to fix on a Windows install and neither says anything
 about the code. Each is listed with its cause in
