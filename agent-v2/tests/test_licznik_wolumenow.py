@@ -78,8 +78,15 @@ sprawdz("norma pochodzi z configu",
 # LICZBA POCHODZI Z CONFIGU, nie jest wpisana na sztywno: norma zmienila sie
 # 30 sierpnia z 10 na 19 i wpisane 70 zaczelo znaczyc 53 procent zamiast stu.
 # Test ma sprawdzac, czy licznik dobrze DZIELI, a nie pamietac stara norme.
-sprawdz("realizacja liczona wobec normy", d["komentarz"]["realizacja"] == 100,
-        d["komentarz"])
+# NORMA BYWA ULAMKOWA i wtedy stu procent nie da sie trafic co do jednego:
+# przy normie 2,5 tydzien to 17,5 komentarza, a `int()` wyzej robi z tego 17,
+# czyli 97%. Do 5 wrzesnia 2026 stalo tu `== 100` i kazdy operator z ulamkowa
+# norma dostawal oblany test za poprawnie dzialajacy licznik.
+#
+# Tolerancja nie rozbraja asercji: awaria, przed ktora ona stoi — licznik
+# dzielacy przez STARA norme — dawala 53%, nie 97%.
+sprawdz("realizacja liczona wobec normy",
+        abs(d["komentarz"]["realizacja"] - 100) <= 3, d["komentarz"])
 
 print()
 print("=== 2. CUDZE REAKCJE TO NIE NASZE DZIALANIA ===")

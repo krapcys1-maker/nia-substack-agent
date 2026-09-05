@@ -126,8 +126,16 @@ for nazwa in ("LAJKI_DZIENNIE", "KOMENTARZE_DZIENNIE", "RESTACK_DZIENNIE",
     # wylaczona. Widelki w rodzaju (0, 5) albo (5, 0) to zawsze literowka,
     # a nie decyzja, i te loop ma dalej lapac.
     wylaczone = (dol, gora) == (0, 0)
-    sprawdz("%-24s dół <= góra, oba > 0 albo jawne (0, 0)" % nazwa,
-            wylaczone or 0 < dol <= gora, (dol, gora))
+    # PRAWO POWSZECHNE: odwrocone widelki to bug u KAZDEGO operatora.
+    sprawdz("%-24s dół <= góra" % nazwa, dol <= gora, (dol, gora))
+    # NASZ GUST, NIE PRAWO NATURY. "Zero tylko jako (0, 0)" chroni przed
+    # literowka w rodzaju (0, 5), ale (0, 1) to czytelna decyzja "czasem raz,
+    # czasem wcale" — i operator ma prawo tak ustawic. Do 5 wrzesnia 2026 ta
+    # asercja szla przez `sprawdz`, wiec kazdy, kto skonfigurowal bota pod
+    # swoj temat, dostawal oblany test bez zadnej wskazowki, ze tak ma byc.
+    # Linia wyzej w tym samym pliku uzywala juz `sprawdz_nasze`; tu zabraklo.
+    sprawdz_nasze("%-24s oba > 0 albo jawne (0, 0)" % nazwa,
+                  wylaczone or 0 < dol <= gora, (dol, gora))
     if wylaczone:
         # Wylaczona zdolnosc musi miec napisany POWOD przy stalej. Bez tego
         # zero jest nieodroznialne od pomylki i za pol roku nikt nie bedzie

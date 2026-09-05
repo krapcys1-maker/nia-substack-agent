@@ -435,6 +435,24 @@ def _deepseek_pick_from_urls(
             # co mowil MODEL_FOR — a koszt ksiegowalismy po stawce pro.
             "model": config.MODEL_FOR[purpose],
             "max_tokens": config.MAX_TOKENS[purpose],
+            # BEZ `reasoning` — I TO JEST ZMIERZONE, NIE PRZEOCZONE.
+            #
+            # Wygladalo na przeoczenie: sciezka z wyszukiwaniem wysyla
+            # `reasoning: {effort: low}`, ta nie wysylala nic. Dopisalem to
+            # samo tutaj i zmierzylem ten sam prompt w obie strony:
+            #
+            #     bez `reasoning`:  1 151 tokenow wyjscia, $0,00079
+            #     z `reasoning`:    4 000 tokenow wyjscia, $0,00267  (sufit!)
+            #
+            # Na `/chat/completions` wyslanie `reasoning` WLACZA rozumowanie,
+            # ktore domyslnie jest wylaczone — wiec „ograniczenie do low"
+            # podnioslo koszt 3,4 raza i uderzylo w sufit tokenow. Na sciezce
+            # `/responses` jest odwrotnie: tam rozumowanie chodzi zawsze i
+            # `effort` je PRZYCINA.
+            #
+            # Dwie sciezki, dwa znaczenia tego samego pola. Zostawiamy tak,
+            # jak jest, i zapisujemy pomiar, zeby nikt nie „naprawil" tego
+            # drugi raz.
             "messages": [
                 {"role": "system", "content": system},
                 {

@@ -34,15 +34,20 @@ only hard stop.
 
 ```
 agent-v2/            the bot itself
-  prompts/           what the models are told — 24 briefs, 2738 lines
+  prompts/           what the models are told — 24 briefs, 2743 lines
   prompts/styl/      the style corpus. EMPTY in the repo, you supply it
-  tests/             147 test_*.py, no pytest, each runs standalone
+  tests/             148 test_*.py, no pytest, each runs standalone
   tests/platne/      the 9 that cost money. Never run by CI
   systemd/           three services and three timers
   dokumentacja-zrodla/  source of the concatenated JAK_ZBUDOWANY_JEST_BOT.md
   pomiary/           one-off measurements kept for their conclusions
 docs/                these maps, INSTALL, TROUBLESHOOTING, ARCHITECTURE
 narzedzia/           tools that operate ON the bot, never part of a run
+analizy/             dated working notes. `odtworzone/` holds prompts rendered
+                     exactly as a model receives them — useful when you want to
+                     read the real input rather than the template; `propozycje/`
+                     holds drafts that were NOT adopted. Nothing here is loaded
+                     at runtime
 style-profiles/      two prose profiles: the voice to aim at, the voice to avoid
 data/                created at runtime. Gitignored — see §7
 ```
@@ -136,7 +141,7 @@ INJECTED, GENERATED, TEMPLATE or BY HAND.
 
 ## 5. The prompts, and which stage reads each
 
-24 briefs, 2738 lines. They carry the method and the contracts, not the
+24 briefs, 2743 lines. They carry the method and the contracts, not the
 account's history: what each stage is for, what it may assert, what it must
 return. The measurements, dated incidents and quoted examples from the
 previous account's runs were taken out on 2026-09-05 (CLEANING_LOG.md §12);
@@ -164,7 +169,7 @@ prompt file directly.
 
 ---
 
-## 6. Tests — 147 files, and what a skip means
+## 6. Tests — 148 files, and what a skip means
 
 No pytest. Each file runs standalone (`python agent-v2/tests/test_x.py`) and
 exits non-zero on failure. That is deliberate: a test you can run alone is a

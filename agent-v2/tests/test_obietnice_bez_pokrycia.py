@@ -29,6 +29,7 @@ import sys
 
 sys.path.insert(0, "agent-v2")
 import config   # noqa: E402
+import wlasna_konfiguracja  # noqa: E402
 
 zdane = oblane = 0
 
@@ -41,6 +42,9 @@ def sprawdz(nazwa, warunek, szczegol=""):
     else:
         oblane += 1
         print("  BLAD  %s   %s" % (nazwa, szczegol))
+
+
+sprawdz_nasze = wlasna_konfiguracja.tylko_nasze(sprawdz)
 
 
 run_src = pathlib.Path("agent-v2/run.py").read_text(encoding="utf-8")
@@ -107,7 +111,11 @@ deepseekowe = [p for p in config.EFFORT
 claudowe = [p for p in config.EFFORT
             if not config.MODEL_FOR.get(p, "").startswith("deepseek")]
 sprawdz("sa etapy z EFFORT chodzace na DeepSeeku", bool(deepseekowe), deepseekowe)
-sprawdz("i sa chodzace na Claude", bool(claudowe), claudowe)
+# DWAJ DOSTAWCY TO NASZ UKLAD, NIE PRAWO NATURY. Ta para asercji dowodzi,
+# ze `EFFORT` obejmuje obie rodziny modeli — sensowne, dopoki konto stoi na
+# dwoch. Operator, ktory postawil wszystko na jednym dostawcy (choćby po to,
+# zeby bylo taniej), dostawal tu oblany test bez slowa wyjasnienia.
+sprawdz_nasze("i sa chodzace na Claude", bool(claudowe), claudowe)
 
 if deepseekowe:
     wyjscie = _co_wypisze(deepseekowe[0])

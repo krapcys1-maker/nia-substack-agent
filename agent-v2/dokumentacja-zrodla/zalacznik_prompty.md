@@ -1083,7 +1083,7 @@ Return only valid JSON:
 
 #### `prompts/komentarz.md`
 
-**137 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
+**142 wierszy.** Pola wejsciowe: `author`, `body`, `cel_slow`, `kat_redakcyjny`, `language`, `marka`, `nisza`, `ostatnie_otwarcia_json`, `otwarcie`, `po_ludzku`, `postawa`, `postawa_opis`, `title`
 
 ````markdown
 You are writing a comment under someone else's Substack post, as the anonymous
@@ -1189,6 +1189,11 @@ reply, and eight honest words under a one-line post is a good comment.
 
 **Opening: {otwarcie}** This instruction changes every time on purpose; a
 fixed opening shape is as readable a tell as a fixed length.
+
+**These are the words our last comments opened with. Do not open with any
+of them:**
+
+  {ostatnie_otwarcia_json}
 
 ## Output
 
