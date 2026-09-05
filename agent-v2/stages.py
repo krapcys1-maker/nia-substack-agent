@@ -5418,14 +5418,42 @@ def discovery(
         source["host"] = host
         kept.append(source)
 
+    # TEN SAM ADRES RAZ. Model potrafi oddac ten sam URL kilkakrotnie, a nizej
+    # nie ma nikogo, kto by to scalil: `fetch` idzie `for source in sources`
+    # bez odsiewu, wiec kazda kopia to osobne pobranie TEJ SAMEJ strony, osobny
+    # wpis w korpusie i osobne wejscie do platnej klasyfikacji. Odstep miedzy
+    # zadaniami do jednego hosta jeszcze to mnozy: kopie dziela host, wiec
+    # kazda dokłada `ODSTEP_TEN_SAM_HOST_S` czekania za nic.
+    bez_powtorek, widziane = [], set()
+    for source in kept:
+        u = source.get("url", "")
+        if u in widziane:
+            continue
+        widziane.add(u)
+        bez_powtorek.append(source)
+
+    # LIMIT BYL PROSBA, NIE BRAMKA. `config.DISCOVERY_MAX_RESULTS` szedl do
+    # promptu jako `{max_results}` i na tym sie konczyl — kod nie przycinal
+    # listy ani razu. Odtworzone: przy limicie 10 przechodzilo 15 pozycji.
+    #
+    # Bierzemy POCZATEK listy, bo tam stoi to, co model uznal za najlepsze:
+    # docstring tej funkcji opisuje odwrotny mechanizm — „gdy dokumenty
+    # pierwotne sie koncza, dopycha liste omowieniami" — wiec nadmiar to
+    # wlasnie ogon.
+    if len(bez_powtorek) > config.DISCOVERY_MAX_RESULTS:
+        print("  [dyskoveria] %d po odsiewie powtorek, przycinam do %d"
+              % (len(bez_powtorek), config.DISCOVERY_MAX_RESULTS), flush=True)
+        bez_powtorek = bez_powtorek[:config.DISCOVERY_MAX_RESULTS]
+
     print(
         f"  [dyskoveria] {len(real_urls)} wyników wyszukiwania -> "
-        f"{len(sources)} zaproponowanych -> {len(kept)} po filtrze",
+        f"{len(sources)} zaproponowanych -> {len(kept)} po filtrze -> "
+        f"{len(bez_powtorek)} bez powtórek",
         flush=True,
     )
-    if not kept:
+    if not bez_powtorek:
         raise ValueError("dyskoveria nie zwróciła ani jednego wiarygodnego adresu")
-    return kept
+    return bez_powtorek
 
 
 # Ile adresow SPOZA wynikow wyszukiwania wolno przepuscic w jednym przebiegu.
