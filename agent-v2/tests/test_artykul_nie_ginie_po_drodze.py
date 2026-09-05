@@ -223,7 +223,11 @@ class AtrapaStages:
         return len(kandydaci)
 
     # --- research (uzywane tylko w sekcji 5) --------------------------------
-    def discovery(self, conn, run_id, pytanie, recent):
+    # `tylko_pierwotne` doszlo, gdy `artykul_z_puli` dostal druga runde
+    # pytajaca o DOKUMENTY, a nie tylko o liczbe zrodel — atrapa musi
+    # przyjmowac te sama sygnature, co prawdziwe `stages.discovery`.
+    def discovery(self, conn, run_id, pytanie, recent,
+                  tylko_pierwotne=False):
         return [{"url": "https://example.org/a"}]
 
     def fetch(self, conn, run_id, sources):

@@ -2743,14 +2743,45 @@ def note(
         sufiks = ogon if (ogon and text.endswith(ogon)) else ""
         proza = text[: -len(sufiks)] if sufiks else text
 
-        poprawka = napraw_obalone(
-            conn, run_id, proza, audyt,
-            kontekst=kontekst,
-            min_slow=config.NOTE_MIN_WORDS,
-            max_slow=config.NOTE_MAX_WORDS,
-            etap="naprawa",
-            zapora=_zapora_notki,
-        )
+        # MYSL NIE IDZIE DO NAPRAWY — bo nie ma czego naprawiac.
+        #
+        # `weryfikacja.md` kaze oznaczyc KAZDA liczbe w notce typu MYSL jako
+        # `refuted`. To nie jest zarzut o falsz, tylko o zlamanie kontraktu:
+        # mysl ma stac na rozumowaniu, nie na danych. `napraw_obalone` z zasady
+        # NIE USUWA zdania, tylko poprawia je z materialu — a materialu tu nie
+        # ma (`what_the_source_says` jest puste, bo nie bylo zrodla).
+        #
+        # Wywolanie konczylo sie wiec jednym z dwojga i oba sa zle: model
+        # dopisywal liczbe, ktorej nikt nie sprawdzil, albo naprawa odpadala —
+        # a ponowne sprawdzenie z wyszukiwaniem bylo juz oplacone. Dwa platne
+        # wywolania na zdarzenie, ktorego wlasciwa reakcja jest przepisanie
+        # notki BEZ liczby, czego `naprawa.md` wprost zabrania.
+        if str(note_type).upper() == "MYSL":
+            if audyt.get("claims"):
+                print("  [MYSL] zarzuty do liczb nie ida do naprawy —"
+                      " mysl stoi na rozumowaniu, nie na danych", flush=True)
+            poprawka = None
+        else:
+            # PASMO GLOBALNE, NIE PASMO TYPU — i to jest rozstrzygniecie, nie
+            # niedopatrzenie.
+            #
+            # Probowalem tu podac `config.dlugosc_notki(note_type)`, zeby
+            # naprawa znala te sama granice, ktora dostal pisarz. Zlapal to
+            # `test_naprawa_zamiast_ciecia`: SPROSTOWANIE o 54 slowach
+            # PRZESZLO (`length_ok` pyta o pasmo globalne 33-64), a jego
+            # naprawa zostala odrzucona jako „poza 33-42".
+            #
+            # Czyli naprawa bylaby trzymana OSTRZEJ niz tekst, ktory zastepuje,
+            # i poprawna notka nie dalaby sie naprawic nigdy. Pasmo typu jest
+            # WSKAZOWKA dla pisarza; kontraktem jest to, czego pilnuje bramka.
+            poprawka = napraw_obalone(
+                conn, run_id, proza, audyt,
+                kontekst=kontekst,
+                min_slow=config.NOTE_MIN_WORDS,
+                max_slow=config.NOTE_MAX_WORDS,
+                etap="naprawa",
+                zapora=_zapora_notki,
+            )
         if poprawka:
             # Zapis trzyma OBIE wersje. Bez tego nie da sie pozniej sprawdzic,
             # czy naprawy poprawiaja, czy tylko przemieszczaja falsz.
@@ -3424,7 +3455,13 @@ def notki_dnia(
     #     razy, SkladnikA siedem, PortalModeli piec. To z takiego banku wyszly
     #     trzy notki o tej samej rzeczy w jeden dzien.
     #
-    # Wolamy PRZED wzieciem materialu i tylko wtedy, gdy jest co sortowac.
+    # Wolamy PRZED wzieciem materialu i tylko wtedy, gdy jest co sortowac —
+    # WARUNEK STOI W `posortuj_bank`, nie tutaj. Do 5 wrzesnia 2026 to zdanie
+    # opisywalo zabezpieczenie, ktorego nie bylo w zadnym z tych dwoch miejsc:
+    # sprawdzone drzewem skladni, wywolanie nie mialo nad soba zadnego `if`.
+    # `notki_dnia` chodzi piec razy na dobe, bank zmienia sie raz — wiec ten
+    # sam wpis dostawal piec szans na trwaly werdykt `wyrzuc`.
+    #
     # Awaria sedziego nie moze zabrac dnia: bank nieposortowany jest gorszy
     # od posortowanego, ale duzo lepszy od braku notek.
     try:
@@ -7087,6 +7124,29 @@ def posortuj_bank(conn: sqlite3.Connection, run_id: int | None = None,
         print("  [bank] za malo kandydatow do rankingu (%d)" % len(wolni),
               flush=True)
         return {"ocenione": 0, "wyrzucone": 0}
+
+    # NIE SORTUJEMY BANKU, KTORY SIE NIE ZMIENIL.
+    #
+    # Wolajacy (`notki_dnia`) ma nad soba komentarz „wolamy (...) tylko wtedy,
+    # gdy jest co sortowac" — i takiego warunku NIE BYLO ani tam, ani tutaj.
+    # Sprawdzone drzewem skladni: wywolanie nie mialo nad soba zadnego `if`.
+    # Komentarz opisywal zabezpieczenie, ktorego nie ma, czyli dokladnie ta
+    # klase wady, ktora ten projekt sciga u siebie od tygodni.
+    #
+    # Skutek byl podwojny. Pieniadze sa drobne (flash, ~0,003 USD za wywolanie),
+    # ale bank zmienia sie najwyzej RAZ NA DOBE (`SZUKANIE_BANKU_NA_DOBE = 1`),
+    # a `notki_dnia` chodzi PIEC razy — wiec ten sam wpis dostawal piec
+    # niezaleznych losowan, a werdykt `wyrzuc` jest TRWALY. Zapory chronia
+    # partie (prog polowy kasowan, veto NO_MECHANISM), nie pojedynczy wpis.
+    #
+    # „Jest co sortowac" znaczy: przyszedl material, ktorego jeszcze nie
+    # oceniano. Wpis bez `ranga` to wpis, ktorego sedzia nie widzial.
+    nieocenione = [k for k in wolni if k.get("ranga") is None]
+    if not nieocenione:
+        print("  [bank] wszystkie %d wpisow ma juz range — nie sortuje"
+              % len(wolni), flush=True)
+        return {"ocenione": 0, "wyrzucone": 0}
+
     wolni = wolni[:ile]
 
     opis = "\n\n".join(

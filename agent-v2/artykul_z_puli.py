@@ -581,13 +581,35 @@ def _przebieg(conn, run_id: int) -> int:
     print()
     print("-- pobieranie --", flush=True)
     corpus = stages.fetch(conn, run_id, sources)
-    # Druga runda, gdy material chudy — tak samo jak w run.py.
-    if len([c for c in corpus if c.get("text")]) < 4:
+    # DRUGA RUNDA — teraz naprawde tak samo jak w run.py.
+    #
+    # Komentarz mowil „tak samo jak w run.py" i to bylo nieprawda w dwoch
+    # miejscach naraz, a to TEN plik stoi na wtorkowym zegarze i pisze
+    # produkcyjny artykul:
+    #
+    #   1. Warunek pytal wylacznie o LICZBE pobranych, nie o to, czy wsrod nich
+    #      jest jakikolwiek DOKUMENT. `run.py` dokladal `bez_rekordow` po tym,
+    #      jak zmierzono przebiegi z dziewiecioma pobranymi zrodlami i JEDNYM
+    #      pierwotnym — pisarz dostawal dziewiec tekstow o dokumencie i ani
+    #      jednego dokumentu. Tutaj ta poprawka nigdy nie dotarla.
+    #   2. Brakowalo `tylko_pierwotne`, wiec nawet gdy runda sie odpalala,
+    #      dyskoveria szukala czegokolwiek zamiast rekordow.
+    #
+    # Przy okazji: `4` bylo wpisane obok stalej, ktora znaczy dokladnie to samo
+    # (`MIN_ZRODEL_DO_PISANIA`). Dwie kopie jednej liczby zawsze sie rozjezdzaja.
+    pobrane = [c for c in corpus if c.get("text")]
+    pierwotnych = sum(1 for s in corpus if s.get("class") == "PRIMARY")
+    za_chudo = len(pobrane) < config.MIN_ZRODEL_DO_PISANIA
+    bez_rekordow = pierwotnych < config.MIN_PRIMARY_SOURCES
+    if za_chudo or bez_rekordow:
         print()
-        print("-- za chudo — druga runda --", flush=True)
+        print("-- druga runda: pobranych %d/%d, pierwotnych %d/%d --"
+              % (len(pobrane), config.MIN_ZRODEL_DO_PISANIA,
+                 pierwotnych, config.MIN_PRIMARY_SOURCES), flush=True)
         juz = {c.get("url") for c in corpus}
         dodatkowe = [s for s in stages.discovery(conn, run_id,
-                                                 pytanie_do_researchu, recent)
+                                                 pytanie_do_researchu, recent,
+                                                 tylko_pierwotne=bez_rekordow)
                      if s.get("url") not in juz]
         if dodatkowe:
             corpus = corpus + stages.fetch(conn, run_id, dodatkowe)
@@ -617,6 +639,30 @@ def _przebieg(conn, run_id: int) -> int:
         print("  synteza padla (%s) — karta zapasowa" % type(exc).__name__,
               flush=True)
         card = stages.fallback_card(brief["question"], evidence)
+
+    # FRAGMENTY, KTORYCH ARTYKUL NIE ZUZYL — zaplacone i do tej pory nieczytane
+    # na TEJ sciezce.
+    #
+    # `run.py` ustawia to pole od poczatku; `artykul_z_puli.py` nie ustawial go
+    # nigdy, a to WLASNIE ON stoi na wtorkowym zegarze i pisze produkcyjny
+    # artykul. Skutek: `stages.bank_fragmentow` czyta `articles.evidence.
+    # unused_evidence`, wiec dla kazdego artykulu z tej sciezki widzial pustke —
+    # galaz DOLOZ konczyla sie na „bank pusty", bibliotekarz nie ruszal ani razu,
+    # a kilkadziesiat ocytowanych fragmentow na artykul szlo do kosza mimo ze
+    # kosztowaly tyle samo, co te uzyte.
+    #
+    # NIE MYLIC z komentarzem przy `_ratuj_tekst` (~linia 822): tam brak tego
+    # pola jest SWIADOMA cena za niewstawianie wiersza do `articles`, opisana
+    # wprost. Tu nie bylo zadnego powodu, tylko brakujaca linia.
+    #
+    # Przy `--z-karty` karta przychodzi z pliku i tego pola nie ma — i tak ma
+    # byc: material zostal juz raz przypisany do swojego artykulu.
+    card["unused_evidence"] = [
+        {"url": s["url"], "publisher": s.get("publisher"),
+         "excerpts": s["excerpts"], "numbers": s["numbers"]}
+        for s in (evidence if isinstance(evidence, list) else [])
+        if isinstance(s, dict) and s.get("url")
+    ]
 
     # Fakt wyjsciowy zostaje w karcie: to on byl powodem, dla ktorego ten temat
     # w ogole wybralismy, i pisarz ma go widziec razem z reszta dowodow.
