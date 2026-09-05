@@ -261,6 +261,58 @@ Two more things live elsewhere by nature:
 8. `python agent-v2/run.py --dzien` — no `--wyslij`, so nothing reaches the world
 9. `python narzedzia/audyt.py` — 28 checks, including that no previous
    account's identity survived your edit
+10. Prove it can publish — see the next section. Nothing above this line ever
+    puts a word on your account, so until you do this you have tested
+    everything except the one thing your readers will see.
+
+---
+
+## Proving it can publish
+
+Two stages, in this order. Measured end to end on 2026-09-05 against a live
+Substack account; the outputs below are real, not illustrative.
+
+**Stage 1 — fill the field, click nothing.** `wyslij=False` types the note into
+the real composer on the real site and stops:
+
+```bash
+python -c "import sys; sys.path.insert(0,'agent-v2'); import browser; print(browser.wystaw_notke('short test sentence', wyslij=False))"
+```
+
+```
+  wpisane w pole notki: 23 słów
+  przycisk wysyłki: 'Post'
+  przycisk wysyłki widoczny: True
+  (nie wysyłam — tryb sprawdzenia)
+```
+
+`przycisk wysyłki widoczny: True` is the line that matters. It says the code
+found the composer, typed into the right field, and located the send button.
+Everything except the click has now been proven, and nothing is public.
+
+**Stage 2 — actually send it.** This needs `DRY_RUN=false`, and that is
+deliberate: `agent-v2/.env` ships with `DRY_RUN=true` so that a fresh clone
+cannot publish by accident. The flag blocks model calls **and** the browser —
+an earlier version blocked only the models, and a "dry" run went on to like two
+strangers' posts.
+
+```bash
+DRY_RUN=false python -c "import sys; sys.path.insert(0,'agent-v2'); import browser; print(browser.wystaw_notke('short test sentence', wyslij=True))"
+```
+
+```
+  NOTKA PRZYJETA (odpowiedz Substacka: 200)
+  id notki: 330261956
+```
+
+If you see `DRY_RUN — NIE wysylam, mimo ze proszono`, the flag is still on. That
+message is the bot refusing out loud rather than reporting a success it did not
+achieve.
+
+**Then check it from outside.** The id in the output builds a public URL —
+`https://substack.com/@YOUR_HANDLE/note/c-330261956` — and you should open it in
+a browser where you are *not* logged in. A note that exists in the bot's own
+ledger and nowhere else is the failure this step is here to catch.
 
 ---
 

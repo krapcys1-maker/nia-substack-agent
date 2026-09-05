@@ -135,6 +135,20 @@ Limit dwóch terminów specjalistycznych na cały tekst może wymuszać nieprecy
 
 **Zmiana:** pierwsze użycie terminu wyjaśnia jego sens, kolejne zachowują tę samą nazwę. Pierwsze istotne użycie pomiaru określa producenta i warunki. Następne zdania muszą mieć jednoznaczną atrybucję, ale nie zawsze potrzebują powtórzenia pełnej nazwy instytucji. Zmiana źródła wymaga jawnego oznaczenia. To zachowuje rygor i pozwala pisać płynnie.
 
+### 3.6. Karta dla pisarza miesza dowody, archiwum i ocenę własnej wartości
+
+Tu potrzebne jest doprecyzowanie wcześniejszej odpowiedzi w rozmowie: pisarz **nie jest ograniczony wyłącznie do ośmiu twierdzeń**. Limit dotyczy `confirmed_claims`, lecz ścieżka artykułu dodaje `unused_evidence` ze wszystkimi przekazanymi fragmentami i liczbami po klasyfikacji. Nie odejmuje fragmentów użytych w syntezie. To etykieta archiwalna, a nie rzeczywisty wynik pomiaru, czego artykuł nie wykorzystał — tekst jeszcze nie istnieje.
+
+Następnie dopisywane jest `ocena_ciekawosci`, czyli cały wynik oceny, razem z `werdykt`, powodami i wskazówką ratunku. `karta_dla_pisarza()` usuwa w pewnych warunkach wyłącznie uwagę o dacie. Pozostałe pola docierają do `write()`. Odtworzenie na syntetycznej karcie potwierdziło, że pola `unused_evidence` i `ocena_ciekawosci` pozostają w wejściu pisarza.
+
+Powstają trzy problemy związane bezpośrednio z pisaniem:
+
+1. Fragmenty mogą się powtarzać w syntezie i archiwum, powiększając wejście bez dostarczenia nowego materiału.
+2. Pisarz widzi dodatkowe liczby, ale ogólna instrukcja pozwala używać tylko `citable_numbers`. Nie ma jasnej reguły, czy wolno mu samodzielnie wydobyć nowy fakt z dodatkowego fragmentu, czy ma uznać go za odłożony.
+3. Model z zadaniem „napisz” może dostać w karcie werdykt `ODLOZ` i wyjaśnienie, dlaczego materiał nie daje czytelnikowi powodu do zainteresowania. To nie jest dowód o świecie ani gotowa decyzja redakcyjna. To konkurencyjne zadanie, które może skłaniać do asekuracji i metakomentarza o słabości materiału.
+
+**Zmiana:** zapisywana karta archiwalna może pozostać bogata. Widok pisarza powinien być osobnym, świadomie złożonym obiektem: zatwierdzony zakres, wybrane dowody z identyfikatorami, konkretna interpretacja do rozwinięcia i ograniczenia. Ocena przydatności steruje formatem przed pisaniem; do pisarza wchodzi decyzja „wyjaśnij ten jeden mechanizm w krótkiej formie”, a nie surowa ocena „nie ma tu ciekawości”. Nie należy przerzucać magazynu do promptu tylko dlatego, że oba obiekty są słownikami.
+
 ## 4. Rzeczywiste próbki stylu uczą czegoś innego niż reguły
 
 `style.load_examples()` zawsze zwraca po jednym przypiętym akapicie dla pięciu funkcji. To stały zestaw, nie dobór do pytania, rodzaju artykułu lub potrzeb konkretnego fragmentu. Trzy z pięciu próbek dotyczą tej samej dyskusji o cenach i przypisywaniu ich wzrostu chciwości firm. Jest to wąski zestaw sposobów myślenia, nawet jeśli same akapity są sprawne.
@@ -188,6 +202,16 @@ Automatyczny zarzut za brak osobistego „reader moment” skłania każdy artyk
 Powstaje pętla: reguła wymaga „czytelnika przyłapanego”, tekst go nie ma, następny dostaje zarzut i zaczyna go dodawać. Potem profil zaczyna być monotonny, więc dochodzi nowy zakaz. Liczba reguł rośnie, a nie powstaje stabilny głos.
 
 **Zmiana:** pamięć redakcyjna przechowuje zaakceptowany problem, warunki jego wystąpienia i krótką skuteczną poprawkę. Pisarz dostaje najwyżej kilka uwag pasujących do obecnego zadania. Hipoteza automatycznego sędziego nie staje się trwałą regułą tylko dlatego, że pojawiła się dwa razy.
+
+### 5.4. Docelowy głos redakcyjny jest za wąski względem deklarowanego tematu
+
+Zestaw ocen stale szuka tych samych właściwości: człowiek lub instytucja decydująca, błędne przekonanie, wyczuwalna wielkość, inny obszar, koszt, osobisty związek czytelnika. To pasuje do publicystyki o regułach i bodźcach. Nie obejmuje równie dobrze tekstu wyjaśniającego działanie zjawiska, historii odkrycia albo porównania sposobów rozumowania.
+
+Dobry tekst o tym, dlaczego pewna metoda działa, może nie mieć winnego, poszkodowanego, drugiego kraju ani błędnego przekonania masowego odbiorcy. Może zainteresować przez pokazanie precyzyjnego związku. Obecny stos traktuje brak własnych ulubionych elementów jako brak głębi, a potem każe je dokładać.
+
+**Proponowana definicja głosu:** ciekawy świata, konkretny, zdolny do wyjaśnienia związku i postawienia własnego wniosku; ostry wtedy, gdy wniosek wymaga ostrości. **Proponowana definicja rozwoju tekstu:** zmiana rozumienia przez przyczynę, warunek, rozróżnienie, przebieg zdarzeń, porównanie albo kontrargument. Demaskowanie jest jednym z ruchów, nie warunkiem autorskości.
+
+Warto pokazać sędziemu dopuszczalne gatunki, aby nie oceniał wszystkich jedną miarą. Wyjaśnienie mechanizmu ocenia się przez kompletność związku i zrozumiałość. Porównanie przez uczciwe wspólne kryterium. Rekonstrukcję zdarzeń przez to, czy kolejne zdarzenia zmieniają sytuację. Polemikę przez trafne przedstawienie stanowiska i rzeczywistą odpowiedź. Nie trzeba dopasowywać świata do jednego formularza.
 
 ## 6. Komentarze i odpowiedzi: kosztowne losowanie osobowości
 
@@ -289,6 +313,24 @@ Oddzielny prompt dla MYSL powinien jawnie dopuszczać puste pola `fact_used` i `
 
 To zmienia pytanie z „czy artykuł ma wszystkie nasze zabiegi?” na „co w konkretnym miejscu przeszkadza czytelnikowi i co warto zachować?”.
 
+### Przykład różnicy na tym samym materiale
+
+Poniższe dane są **wymyślonym przypadkiem demonstracyjnym**, nie twierdzeniem o konkretnym produkcie i nie wynikiem wywołania modelu. Karta zawiera test tego samego modelu na tych samych 100 pytaniach: 60 poprawnych odpowiedzi bez dostępu do źródła, 80 z dostępem; brak pomiarów innych zadań. Warunki poza dostępem do źródła są takie same.
+
+Wersja ilustrująca wymuszoną retorykę:
+
+> You think a better score means a smarter model. It doesn't. It means better access. The real intelligence was in the setup all along.
+
+Problemy: przypisuje czytelnikowi nieudokumentowane przekonanie, uogólnia pojedynczy test i kończy efektownym zdaniem o „prawdziwej inteligencji”, którego karta nie ustala. Usunięcie pauz lub zmiana pierwszego słowa nie naprawi niczego z tej listy.
+
+Wersja ilustrująca pożądany kierunek:
+
+> Give the same model its source material and, in this test, correct answers rose from 60 to 80 out of 100. The result belongs to a setup: the model, the questions and what it could consult.
+
+Druga wersja zachowuje warunek „w tym teście” i podaje konkret. Ostatnie zdanie wnosi interpretację: przy porównaniu wyniku liczy się także konfiguracja zadania. Nie dopisuje niezbadanego przekonania czytelnika ani wszechobejmującej tezy o inteligencji. Może nie wygrać każdego porównania stylistycznego; pokazuje kryterium jakości, które da się wskazać w zdaniach.
+
+W artykule rozwinięcie nie wymagałoby automatycznie analogii z inną branżą. Przy wystarczającym materiale można wyjaśnić, do czego model miał dostęp, jak zadano pytania, co uznano za poprawną odpowiedź i czego to porównanie nie rozdziela. To rozwija ten sam problem. Jeśli karta tego nie zawiera, forma powinna pozostać krótka.
+
 Nie przenosiłbym bezwarunkowego zakazu każdego słowa z `Banned vocabulary`. Na przykład „robust” może być pustym przymiotnikiem albo precyzyjnym określeniem omawianej własności. Redaktor powinien usuwać pustą funkcję słowa, a nie wymuszać mniej trafny synonim. Zakazy oczywistych pustych formuł pozostają użytecznym zabezpieczeniem, ale nie stanowią definicji głosu.
 
 ## 10. Jak udowodnić poprawę bez kupowania wielkiego eksperymentu
@@ -305,6 +347,43 @@ Drugi etap to mały test na identycznych materiałach, nie porównanie różnych
 6. Na dwóch kartach powtórzyć generację, żeby pojedynczy szczęśliwy wynik nie rozstrzygnął całości. Rozszerzać próbkę dopiero, gdy wynik jest niejednoznaczny.
 
 Po wyborze promptu można przeprowadzić drugie porównanie: ten sam poprawiony kontrakt na dwóch modelach. Najpierw trzeba przestać płacić modelowi za rozstrzyganie sprzecznych instrukcji. W tym projekcie to bardziej uzasadniony pierwszy krok niż podnoszenie klasy modelu lub dokładanie jeszcze jednej rundy recenzji.
+
+### Gdzie dokładnie szukać oszczędności
+
+| Zmiana | Co może zmniejszyć koszt | Co chroni jakość |
+|---|---|---|
+| Oddzielny prompt MYSL | Mniej niepasujących instrukcji i prób spełnienia kontraktu faktograficznego | Własna specyfikacja refleksji bez wymuszonych liczb |
+| Dobór formy po materiale | Mniej prób ponawianych po niewykonalnym zleceniu | Forma nie wymaga faktów spoza materiału |
+| Osobny widok karty dla pisarza | Mniej powtórzonych cytatów i administracyjnego JSON-a | Zachowanie wszystkich fragmentów potrzebnych bieżącemu wywodowi |
+| Usunięcie niezależnego losowania otwarć | Mniej ponowień z powodów powierzchownych | Wkład komentarza określa adekwatne pierwsze zdanie |
+| Redaktor zwracający tylko istotne problemy | Mniej wyjścia kopiującego wszystkie zdania artykułu | Konkretny cytat, problem i najmniejsza poprawka; test wykrywalności błędów przed łączeniem etapów |
+| Krótki stały głos | Mniej powtarzanego wejścia | Zachowanie dobrych próbek i precyzyjnych granic twierdzeń |
+
+Nie ma podstaw do podania procentowej oszczędności całego rachunku przed pomiarem. Różni dostawcy inaczej rozliczają wejście, wyjście, rozumowanie i cache. Szczególnie ważne: nie usuwać tanich dowodów lub próbek tylko po to, żeby zredukować wejście, jeśli skutkiem będzie dodatkowe kosztowne pisanie.
+
+## Mapa miejsc do sprawdzenia w kodzie
+
+Odnośniki wskazują lokalne pliki. Numery linii dotyczą stanu odczytanego przy końcowej weryfikacji; podczas analizy w repozytorium istniały także zmiany z innych prac.
+
+| Obserwacja | Miejsce |
+|---|---|
+| Co naprawdę ładuje się jako styl | [style.load_profiles](<D:/Nia bot/agent-v2/style.py:163>) |
+| Pięć stałych próbek | [style.load_examples](<D:/Nia bot/agent-v2/style.py:116>) |
+| Składanie całego promptu artykułu | [stages.write](<D:/Nia bot/agent-v2/stages.py:653>) |
+| Karta z archiwum i oceną | [karta_dla_pisarza](<D:/Nia bot/agent-v2/stages.py:556>), [dodawanie fragmentów](<D:/Nia bot/agent-v2/artykul_z_puli.py:664>) |
+| Przydział form przed materiałem | [notki_dnia](<D:/Nia bot/agent-v2/stages.py:3447>) |
+| Drugi kształt dla MYSL | [_opis_typu](<D:/Nia bot/agent-v2/stages.py:2611>) |
+| Pamięć otwarć i blok antykupletowy | [note](<D:/Nia bot/agent-v2/stages.py:2627>) |
+| Losowanie postawy komentarza | [losowa_postawa](<D:/Nia bot/agent-v2/config.py:1355>) |
+| Niezależne losowanie otwarcia | [losowe_otwarcie](<D:/Nia bot/agent-v2/config.py:1377>) |
+| Losowanie finału artykułu | [losowy_ruch_koncowy](<D:/Nia bot/agent-v2/config.py:3077>) |
+| Brak zera w liczbie paraleli | [losowa_liczba_paraleli](<D:/Nia bot/agent-v2/config.py:3085>) |
+| Licznik przekonań i obowiązek czytelnika | [uwagi_z_formy](<D:/Nia bot/agent-v2/gates.py:380>) |
+| Informacja zwrotna dla kolejnego pisarza | [ostatnie_uwagi](<D:/Nia bot/agent-v2/stages.py:411>) |
+| Obowiązek obalania przekonania | [notka.md](<D:/Nia bot/agent-v2/prompts/notka.md:77>) |
+| Presja na postęp zamiast wsparcia | [pisarz.md](<D:/Nia bot/agent-v2/prompts/pisarz.md:163>) |
+| Nakaz jednego akapitu granic | [pisarz.md](<D:/Nia bot/agent-v2/prompts/pisarz.md:218>) |
+| Zwolnienie interpretacji z oceny | [recenzent.md](<D:/Nia bot/agent-v2/prompts/recenzent.md:26>) |
 
 ## Kolejność pracy
 
