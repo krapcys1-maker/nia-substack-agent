@@ -4951,6 +4951,32 @@ CLASSIFY_SYSTEM = (
 )
 
 
+_TYPOGRAFIA = {
+    "‘": "'", "’": "'", "“": '"', "”": '"',
+    "–": "-", "—": "-", "−": "-", " ": " ",
+    "…": "...",
+}
+
+
+def _plaski(t: str) -> str:
+    """Tekst do porownania cytatu ze zrodlem — BIALE ZNAKI I TYPOGRAFIA, koniec.
+
+    Normalizujemy dokladnie to, co drukarnia zmienia bez pytania: rodzaj
+    cudzyslowu, dlugosc myslnika, spacje nierozdzielajace, wielokropek. NIE
+    ruszamy cyfr, jednostek, przeczen ani wielkosci liter — bo wtedy „12"
+    i „21", „nie mniej" i „mniej", „US" i „us" zaczynaja byc tym samym,
+    a wlasnie po to to sprawdzenie istnieje.
+    """
+    for zle, dobre in _TYPOGRAFIA.items():
+        t = (t or "").replace(zle, dobre)
+    return " ".join(t.split())
+
+
+def _jest_w_dokumencie(cytat: str, dokument: str) -> bool:
+    """Czy fragment naprawde stoi w tekscie, ktory model dostal."""
+    return _plaski(cytat) in _plaski(dokument)
+
+
 @_na_kanal("artykul")
 def classify(
     conn: sqlite3.Connection, run_id: int, question: str, corpus: list[dict[str, Any]]
@@ -4983,7 +5009,41 @@ def classify(
 
         relevance = float(data.get("relevance", 0) or 0)
         klass = data.get("class", "ODPAD")
-        excerpts = [e for e in data.get("excerpts", []) if isinstance(e, str) and e.strip()]
+        # CYTAT ISTNIEJE, GDY JEST W DOKUMENCIE — nie gdy model tak powiedzial.
+        #
+        # Stalo tu wylacznie `isinstance(e, str) and e.strip()`, czyli caly
+        # dowod na dosloownosc fragmentu brzmial „to niepusty napis".
+        # `klasyfikacja.md` bardzo dokladnie opisuje obowiazek kopiowania slowo
+        # w slowo — i to byla cala ochrona. Odtworzone: dokument mowiacy „The
+        # only documented number is 12" oddal fragment „A study found 97
+        # percent effectiveness", a klasyfikacja zachowala go jako dowod.
+        #
+        # Fragment, ktorego w dokumencie nie ma, jest gorszy niz brak
+        # fragmentu: idzie dalej z etykieta zrodla, wchodzi do karty jako
+        # `evidence` i do banku jako material do ponownego uzycia, a kazdy
+        # nastepny etap traktuje go jak cytat.
+        odrzucone_cytaty = []
+        excerpts = []
+        for e in data.get("excerpts", []):
+            if not isinstance(e, str) or not e.strip():
+                continue
+            if _jest_w_dokumencie(e, text):
+                excerpts.append(e)
+            else:
+                odrzucone_cytaty.append(e)
+        if odrzucone_cytaty:
+            print("  [klasyfikacja] %d fragment(ow) NIE MA w dokumencie — "
+                  "odrzucam: %s" % (len(odrzucone_cytaty),
+                                    odrzucone_cytaty[0][:70]), flush=True)
+        # LIMITY BYLY PROSBA, NIE BRAMKA — tak samo jak w dyskoverii. Ida do
+        # promptu jako `{max_excerpts}` i `{max_excerpt_chars}`, a kod przyjmowal,
+        # ile model dal. Odtworzone: 15 fragmentow po 1000 znakow przy 12 x 700.
+        # Kazdy nadmiarowy znak to wejscie do syntezy, ktora jest platna.
+        if len(excerpts) > config.CLASSIFY_MAX_EXCERPTS:
+            print("  [klasyfikacja] %d fragmentow, przycinam do %d"
+                  % (len(excerpts), config.CLASSIFY_MAX_EXCERPTS), flush=True)
+            excerpts = excerpts[:config.CLASSIFY_MAX_EXCERPTS]
+        excerpts = [e[:config.CLASSIFY_MAX_EXCERPT_CHARS] for e in excerpts]
         print(
             f"  [klasyfikacja] {klass:11} trafność={relevance:.2f} "
             f"fragmentów={len(excerpts):2}  liczb={len(data.get('numbers', [])):2}  "
