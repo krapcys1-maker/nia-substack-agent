@@ -3096,6 +3096,17 @@ RUCH_KONCOWY_MIX = ("DO_SPRAWDZENIA", "KTO_NA_TYM_STOI", "POWROT_DO_ZACZEPU",
 ILE_PARALELI_WAGI = {1: 4, 2: 4, 3: 3}
 
 OPIS_LICZBY_PARALELI = {
+    # ZERO BYLO NIEWYRAZALNE. Slownik zaczynal sie od jedynki, a wagi nie mialy
+    # zera na ZADNEJ glebokosci — wiec kazdy artykul dostawal nakaz porownania
+    # z inna dziedzina, takze wtedy, gdy karta miala `parallel_mechanisms: []`.
+    # Model, ktory nie ma drugiej dziedziny w materiale, a ma polecenie ja
+    # rozwinac, musi ja wymyslic. To nie jest usterka stylu, tylko zaproszenie
+    # do zmyslania — i to w miejscu, ktore sprawdzacz faktow lapie dopiero po
+    # oplaceniu calego artykulu.
+    0: ("NO outside parallel. This card has no second domain in it, so do not "
+        "reach for one: an invented comparison would be the least supported "
+        "thing in the article. Spend that room on the mechanism you can "
+        "actually document — what it is, what it rests on, where it stops."),
     1: ("ONE parallel, developed properly — two paragraphs on a single other "
         "domain where this logic runs, close enough to follow all the way "
         "down. One thought, not a catalogue."),
@@ -3115,13 +3126,22 @@ def losowy_ruch_koncowy() -> tuple[str, str]:
     return nazwa, RUCHY_KONCOWE[nazwa]
 
 
-def losowa_liczba_paraleli(glebokosc: str = "RICH") -> tuple[int, str]:
-    """Ile paraleli w drugim akcie. Krotki artykul nigdy nie bierze trzech."""
+def losowa_liczba_paraleli(glebokosc: str = "RICH",
+                           dostepne: int | None = None) -> tuple[int, str]:
+    """Ile paraleli w drugim akcie. Krotki artykul nigdy nie bierze trzech,
+    a zaden artykul nie bierze wiecej, niz karta niesie."""
     import random
 
     wagi = dict(ILE_PARALELI_WAGI)
     if (glebokosc or "").upper() != "RICH":
         wagi = {1: 5, 2: 3}
+    # SUFITEM JEST MATERIAL, NIE LOSOWANIE. `dostepne` to liczba mechanizmow
+    # rownoleglych na karcie. Nie zamawiamy dwoch porownan z karty, ktora ma
+    # jedno, ani jednego z karty, ktora nie ma zadnego.
+    if dostepne is not None:
+        wagi = {k: v for k, v in wagi.items() if k <= max(0, int(dostepne))}
+        if not wagi:
+            return 0, OPIS_LICZBY_PARALELI[0]
     ile = random.choices(list(wagi), weights=list(wagi.values()), k=1)[0]
     return ile, OPIS_LICZBY_PARALELI[ile]
 

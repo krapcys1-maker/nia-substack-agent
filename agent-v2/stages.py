@@ -670,7 +670,12 @@ def write(
     # zamawial go doslownie: ten sam drogowskaz, trzy paralele, to samo
     # zamkniecie. Powtarzalna forma zdradza maszyne tak samo jak powtarzana tresc.
     ruch_nazwa, ruch_opis = config.losowy_ruch_koncowy()
-    ile_paraleli, opis_paraleli = config.losowa_liczba_paraleli(glebokosc)
+    # KARTA USTAWIA SUFIT. Do tej pory liczba paraleli byla losowana z samej
+    # glebokosci i nie ogladala materialu, wiec artykul z pusta lista
+    # `parallel_mechanisms` i tak dostawal polecenie rozwiniecia porownania
+    # z inna dziedzina. Nie ma z czego go zrobic — zostaje zmyslenie.
+    ile_paraleli, opis_paraleli = config.losowa_liczba_paraleli(
+        glebokosc, dostepne=len(card.get("parallel_mechanisms") or []))
     print("  [pisanie] glebokosc %s -> cel %s slow (%s-%s)"
           % (glebokosc, dl["cel"], dl["min"], dl["max"]), flush=True)
     print("  [pisanie] zakonczenie %s, paraleli: %d"
