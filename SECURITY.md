@@ -24,6 +24,14 @@ All are gitignored from the first commit. The session file and the subscriber
 exports are written `0600` — readable only by the account that owns them,
 because on a shared machine "in my home directory" is not privacy.
 
+**On Windows that sentence is not true, and the bot now says so.** Windows has
+no POSIX permissions, so `chmod` does nothing and the session cookie sits at
+`0666` — readable by any account on the machine. Measured, not assumed. The
+code no longer passes over this in silence: it prints a warning once per
+process. Production runs on Linux, where the permissions apply; but the machine
+where you first create the session is often a laptop, and that file is full
+control of the account.
+
 `python narzedzia/audyt.py --historia` fails if any of them appears in the
 working tree **or anywhere in git history**, along with real API keys, IP
 addresses and ssh commands. Section 9 of that audit is a counterproof: it

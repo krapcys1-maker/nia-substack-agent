@@ -2592,16 +2592,37 @@ def _znacznik_klienta(marka: str) -> str:
 # W calym repozytorium byl DOKLADNIE JEDEN `chmod`, przy kopii subskrybentow,
 # i to LINIJKE PO zapisaniu pliku — czyli po otwarciu okna, w ktorym plik jest
 # czytelny dla wszystkich. Sesja przegladarki nie miala go wcale.
-def tylko_dla_wlasciciela(sciezka) -> None:
-    """Prawa 0600 na tym pliku. Cicho przechodzi tam, gdzie ich nie ma.
+_BEZ_PRAW_POWIEDZIANE = False
 
-    Windows nie ma tych praw i to nie jest powod, zeby stracic plik — wiec
-    bledy zmiany praw sa polykane. Na serwerze, gdzie to ma znaczenie, dzialaja.
+
+def tylko_dla_wlasciciela(sciezka) -> None:
+    """Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz.
+
+    Windows nie ma praw POSIX i to nie jest powod, zeby stracic plik, wiec
+    bledu nie podnosimy. Ale CISZA byla tu wada.
+
+    `SECURITY.md` twierdzil bezwarunkowo, ze ciastko sesji i eksporty
+    subskrybentow sa pisane `0600`, „czytelne tylko dla konta, ktore je
+    posiada". Zmierzone na Windowsie: `storage-state.json` ma `0666`. Zdanie
+    bylo prawdziwe na serwerze i falszywe na maszynie, na ktorej ktos wlasnie
+    zaklada sesje — a to jest ten plik, ktory daje PELNA WLADZE nad kontem.
+
+    Zabezpieczenie, ktore milczy, gdy go nie ma, jest gorsze od jego braku:
+    operator czyta dokumentacje i uwaza, ze jest chroniony. Mowimy wiec RAZ NA
+    PROCES, zeby nie zagluszyc reszty logu.
     """
     try:
         _os.chmod(str(sciezka), 0o600)
     except OSError:
         pass
+    global _BEZ_PRAW_POWIEDZIANE
+    if _os.name == "nt" and not _BEZ_PRAW_POWIEDZIANE:
+        _BEZ_PRAW_POWIEDZIANE = True
+        print("  ! PRAWA 0600 NIE DZIALAJA NA WINDOWSIE. Pliki z sekretami"
+              " (ciastko sesji, eksporty subskrybentow) sa czytelne dla kazdego"
+              " konta na tej maszynie. Na serwerze POSIX dzialaja normalnie;"
+              " tutaj chroni je tylko konto systemowe i szyfrowanie dysku.",
+              flush=True)
 
 
 def otworz_tylko_dla_wlasciciela(sciezka, tryb: str = "w"):

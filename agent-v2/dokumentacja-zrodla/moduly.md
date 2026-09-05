@@ -458,7 +458,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3261 wierszy, 36 funkcji na poziomie modułu, 0 klas
+3282 wierszy, 36 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -483,7 +483,7 @@
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
-| `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku. Cicho przechodzi tam, gdzie ich nie ma. |
+| `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. |
 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. |
 | `pytanie_o_stan_dziedziny()` | O co pytamy, sprawdzajac stan dziedziny. |
 | `usluga_agenta()` | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. |

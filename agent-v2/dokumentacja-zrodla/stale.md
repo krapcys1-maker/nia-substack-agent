@@ -179,6 +179,7 @@
 | `FETCH_TIMEOUT_S` | `30.0` | — |
 | `ODSTEP_TEN_SAM_HOST_S` | `2.0` | ODSTEP MIEDZY POBRANIAMI Z TEGO SAMEGO HOSTA. Dotyczy WYLACZNIE powtorzonego hosta — rozne serwisy nie czekaja na siebie, bo to jedno zadani |
 | `FETCH_MIN_CHARS` | `1500` | ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO. Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu. Zmierzone  |
+| `_BEZ_PRAW_POWIEDZIANE` | `False` | --- JEDNOSTKI SYSTEMD ------------------------------------------------------ NAZWA JEDNOSTKI NALEZY DO INSTALACJI, nie do bota: kto postawi  |
 | `STAN_DZIEDZINY_PYTAJ` | `True` | --- STAN DZIEDZINY: CO JEST AKTUALNE DZISIAJ ------------------------------- Model nie ma jak zauwazyc, ze fakt sie przeterminowal: jego wie |
 | `STAN_DZIEDZINY_PYTANIE` | `""` | — |
 | `TYTUL_SEKCJI_ZRODEL` | `"Sources"` | --- SEKCJA ZRODEL POD ARTYKULEM -------------------------------------------- Naglowek pisze KOD (`stages.save` i sciezka ratunku), a potem r |

@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **25 plików**, 30 744 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **25 plików**, 30 765 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -600,7 +600,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3261 wierszy, 36 funkcji na poziomie modułu, 0 klas
+3282 wierszy, 36 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -625,7 +625,7 @@ wiec nie da sie go rozjechac z kodem.
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
-| `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku. Cicho przechodzi tam, gdzie ich nie ma. |
+| `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. |
 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. |
 | `pytanie_o_stan_dziedziny()` | O co pytamy, sprawdzajac stan dziedziny. |
 | `usluga_agenta()` | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. |
@@ -11807,6 +11807,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `FETCH_TIMEOUT_S` | `30.0` | — |
 | `ODSTEP_TEN_SAM_HOST_S` | `2.0` | ODSTEP MIEDZY POBRANIAMI Z TEGO SAMEGO HOSTA. Dotyczy WYLACZNIE powtorzonego hosta — rozne serwisy nie czekaja na siebie, bo to jedno zadani |
 | `FETCH_MIN_CHARS` | `1500` | ILE ZNAKOW MUSI ODDAC STRONA, ZEBY LICZYC SIE JAKO ZRODLO. Bylo 400 i to bylo za malo w sposob, ktory widac dopiero na przebiegu. Zmierzone  |
+| `_BEZ_PRAW_POWIEDZIANE` | `False` | --- JEDNOSTKI SYSTEMD ------------------------------------------------------ NAZWA JEDNOSTKI NALEZY DO INSTALACJI, nie do bota: kto postawi  |
 | `STAN_DZIEDZINY_PYTAJ` | `True` | --- STAN DZIEDZINY: CO JEST AKTUALNE DZISIAJ ------------------------------- Model nie ma jak zauwazyc, ze fakt sie przeterminowal: jego wie |
 | `STAN_DZIEDZINY_PYTANIE` | `""` | — |
 | `TYTUL_SEKCJI_ZRODEL` | `"Sources"` | --- SEKCJA ZRODEL POD ARTYKULEM -------------------------------------------- Naglowek pisze KOD (`stages.save` i sciezka ratunku), a potem r |
