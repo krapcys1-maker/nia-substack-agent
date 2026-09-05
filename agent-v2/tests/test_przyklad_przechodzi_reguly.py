@@ -106,6 +106,39 @@ sprawdz("profile stylu wskazuja do katalogu kartridza",
 sprawdz("w gicie zostaje placeholder konta, nie prawdziwy uchwyt",
         ai.pola.get("konto.uchwyt") == "your-handle", ai.pola.get("konto.uchwyt"))
 
+# KORPUS STYLU KARTRIDZA: przypiety, o wolnej licencji, z manifestem. Pisarz
+# artykulu odmawia bez przypietego korpusu (`styl.wymagaj_korpusu = true`),
+# wiec kartridz, ktory deklaruje korpus, musi go miec w stanie gotowym do
+# uzycia — inaczej pierwszy artykul konczy sie na etapie `write`.
+import style  # noqa: E402
+
+_korpus = pathlib.Path(proba.STYLE_CORPUS)
+sprawdz("kartridz deklaruje korpus w swoim katalogu i plik istnieje",
+        _korpus.is_file() and _korpus.parent == (KARTRIDZ / "styl").resolve(), _korpus)
+sprawdz("obok korpusu lezy manifest zrodel z licencjami",
+        (_korpus.parent / "KORPUS_ZRODLA.md").is_file()
+        and "CC BY" in (_korpus.parent / "KORPUS_ZRODLA.md").read_text(encoding="utf-8"))
+_stan = (config.STYLE_CORPUS, config.STYL_WYMAGAJ_KORPUSU)
+try:
+    config.STYLE_CORPUS = _korpus
+    config.STYL_WYMAGAJ_KORPUSU = True
+    try:
+        _przyklady = style.load_examples()
+        _blad = ""
+    except style.StyleError as exc:
+        _przyklady, _blad = [], str(exc)
+    sprawdz("korpus jest przypiety i loader oddaje piec funkcji retorycznych",
+            [e["function"] for e in _przyklady] == list(style.FUNKCJE_STYLU), _blad[:160])
+    sprawdz("kazdy przypiety akapit miesci sie w widelkach loadera",
+            all(style.MIN_EXAMPLE_CHARS <= len(e["text"]) <= style.MAX_EXAMPLE_CHARS for e in _przyklady))
+    # KONTRDOWOD: korpus podmieniony o jeden znak przestaje sie zgadzac ze skrotem.
+    import hashlib  # noqa: E402
+    _skrot = hashlib.sha256(style.bajty_kanoniczne(_korpus.read_bytes() + b" ")).hexdigest()
+    sprawdz("kontrdowod: dopisana spacja zmienia skrot, ktory loader sprawdza",
+            _skrot != style.wczytaj_przypiecia()["korpus_sha256"])
+finally:
+    config.STYLE_CORPUS, config.STYL_WYMAGAJ_KORPUSU = _stan
+
 print()
 print("=== 4. KONTRDOWOD: SZABLON I ZATRUTY KARTRIDZ MUSZA TU POLEC ===")
 szablon = pathlib.Path("presety") / preset.NAZWA_SZABLONU

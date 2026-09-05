@@ -14,7 +14,8 @@ presety/<name>/
   prompty/*.md       editorial blocks injected into the engine's briefs:
                      linia_redakcyjna, glos_artykulu, glos_notki,
                      glos_komentarza, okladka, kogo_szukamy, oswiadczenie
-  styl/*.md          the positive and negative style profiles (+ optional corpus)
+  styl/*.md          the positive and negative style profiles (+ optional corpus
+                     with its pins and a source manifest, see presety/ai/styl/)
 ```
 
 ```bash

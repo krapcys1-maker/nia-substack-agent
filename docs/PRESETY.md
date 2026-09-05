@@ -26,7 +26,7 @@ publikację od drugiej:
 | `prompty/kogo_szukamy.md` | pod czyimi postami komentujemy, a pod czyimi nie |
 | `prompty/oswiadczenie.md` | publiczne oświadczenie o autorstwie (ustawienie konta) |
 | `styl/profil_pozytywny.md`, `styl/profil_negatywny.md` | do czego dąży pisarz i czego mu nie wolno |
-| `styl/korpus.txt` (opcjonalnie) | własne teksty do przypięcia |
+| `styl/korpus.txt` (opcjonalnie) | teksty do przypięcia: własne albo o wolnej licencji, z manifestem źródeł `styl/KORPUS_ZRODLA.md` i przypięciami `styl/przypiecia.json` obok (wzór: `presety/ai/styl/`) |
 
 Każdy plik w `prompty/` jest opcjonalny: brak daje w briefie jawne zdanie
 zastępcze („preset nie dostarczył...”), nigdy pustkę i nigdy cudzą treść.

@@ -1,0 +1,32 @@
+{
+  "plik": "korpus.txt",
+  "korpus_sha256": "0fef47d251e4b4ca5f333947073c7ea3d3a5c286f1b07910b46516e1f036c8d7",
+  "akapitow": 81,
+  "przyklady": [
+    {
+      "funkcja": "OPENING",
+      "akapit": 7,
+      "skrot": "bf2937bf52"
+    },
+    {
+      "funkcja": "CONCRETE_TO_SYSTEM",
+      "akapit": 70,
+      "skrot": "be12a1077f"
+    },
+    {
+      "funkcja": "MECHANISM",
+      "akapit": 9,
+      "skrot": "0e2ec8644c"
+    },
+    {
+      "funkcja": "COUNTERARGUMENT",
+      "akapit": 11,
+      "skrot": "1411c9c471"
+    },
+    {
+      "funkcja": "ENDING",
+      "akapit": 13,
+      "skrot": "07a8f72ed5"
+    }
+  ]
+}

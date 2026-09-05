@@ -514,3 +514,14 @@ Still tied to the previous subject, and still on purpose: the version-name
 pattern `WZORZEC_WERSJI`, and the measurement narratives in `config.py`
 comments and in the documentation, which are the reasons behind the constants
 rather than material any model sees.
+
+The same branch adds a style corpus to the example cartridge, which section 6
+might make look like a step backwards. It is not the same kind of file. The
+corpus removed in section 6 was one author's published columns, copied without
+a licence. The corpus in `presety/ai/styl/korpus.txt` is 81 paragraphs from
+works in the public domain (U.S. federal agencies and a federal court opinion)
+or under CC BY 4.0, CC BY-SA 4.0 and the Open Government Licence, each listed
+with its licence and URL in `presety/ai/styl/KORPUS_ZRODLA.md` next to it,
+with the five pinned paragraphs in `styl/przypiecia.json`. Every paragraph was
+checked against the private list of the previous account's identity before
+the commit, and none of the sources appears on it.

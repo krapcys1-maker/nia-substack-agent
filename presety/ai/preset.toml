@@ -272,8 +272,11 @@ opis = """Plain and exact. Say what was measured before saying what it means, an
 # Profile z tego kartridza (sciezki wzgledem katalogu presetu).
 profil_pozytywny = "styl/profil_pozytywny.md"
 profil_negatywny = "styl/profil_negatywny.md"
-# Korpus wlasnych tekstow: opcjonalny. Gdy go dodasz (styl/korpus.txt,
-# akapity oddzielone pusta linia), wskaz plik i przypnij go:
-#   python narzedzia/przypnij_styl.py --pokaz
-korpus = ""
-wymagaj_korpusu = false
+# Korpus stylu: akapity tekstow w domenie publicznej i na CC BY (Epoch AI,
+# Our World in Data, FTC, Census, NIST, opinia sadu w sprawie zmyslonych
+# cytowan, Copyright Office, CMA, Nature, arXiv) — atrybucja i licencje
+# w styl/KORPUS_ZRODLA.md. Pisarz dostaje piec przypietych akapitow
+# (styl/przypiecia.json). Zamiana na wlasne teksty: podmien plik i przypnij:
+#   python narzedzia/przypnij_styl.py --korpus presety/ai/styl/korpus.txt --pokaz
+korpus = "styl/korpus.txt"
+wymagaj_korpusu = true

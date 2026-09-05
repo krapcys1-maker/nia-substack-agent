@@ -310,6 +310,12 @@ class Domyslne(dict):
 def render(nazwa):
     tekst = (config.PROMPTS_DIR / nazwa).read_text(encoding="utf-8")
     pola = Domyslne(stages._pola_wspolne())
+    # PRZYPIETE PRZYKLADY STYLU renderowane tak, jak robi to stages.write():
+    # podglad ma pokazac to, co pisarz naprawde dostanie, a nie znacznik.
+    przyklady = style.przyklady_albo_pusto()
+    pola["style_examples"] = (chr(10) * 2).join(
+        "### " + e["function"] + chr(10) + e["text"] for e in przyklady
+    ) or "(no pinned style examples for this publication)"
     return tekst.format_map(pola)
 
 print("=" * 72)
