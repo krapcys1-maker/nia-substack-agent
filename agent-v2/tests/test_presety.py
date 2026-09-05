@@ -612,6 +612,17 @@ sprawdz("Atom: data z published, link z rel=alternate",
         len(z_atom) == 1 and z_atom[0]["data"] == "2026-09-03" and z_atom[0]["url"] == "https://b.example/e1", z_atom)
 sprawdz("ten sam ksztalt slownika co z YouTube", set(z_rss[0]) == set(z_atom[0]) >= {"temat", "kanal", "data", "url"})
 sprawdz("zepsuty XML daje pusta liste, nie wyjatek", korpus_kanalow.wpisy_z_kanalu("X", b"<rss") == [])
+# OGON BEZ TYTULU. Kanal doklejal do kazdego tytulu „| AI at Meta", a jeden film
+# mial tylko ten ogon — i przechodzil jako temat z czterech „slow".
+OGON = b"""<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><title>Lab</title>
+<entry><title>| AI at Meta</title><published>2026-02-26T18:52:14Z</published><link rel="alternate" href="https://b.example/e2"/></entry>
+<entry><title>Introducing a unified model for audio separation across four benchmarks | AI at Meta</title>
+<published>2026-02-25T18:52:14Z</published><link rel="alternate" href="https://b.example/e3"/></entry>
+</feed>"""
+_ogon = korpus_kanalow.wpisy_z_kanalu("Lab", OGON)
+sprawdz("tytul zlozony z samego ogona kanalu odpada", all("e2" not in w["url"] for w in _ogon), _ogon)
+sprawdz("a prawdziwy tytul z tym samym ogonem zostaje", len(_ogon) == 1 and "audio separation" in _ogon[0]["temat"], _ogon)
+sprawdz("kontrdowod: liczenie tokenow puszczaloby ogon", len("| AI at Meta".split()) >= 4)
 duzo = [{"temat": "arxiv paper number %d about a thing" % i, "kanal": "arXiv", "data": "2026-09-05", "url": "u%d" % i}
         for i in range(30)]
 malo = [{"temat": "video about a benchmark result %d" % i, "kanal": "Wideo", "data": "2026-09-0%d" % (4 - i), "url": "v%d" % i}

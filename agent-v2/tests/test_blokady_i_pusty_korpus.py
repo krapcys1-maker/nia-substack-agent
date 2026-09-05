@@ -145,5 +145,23 @@ sprawdz("i nadal minimum pierwotnych",
         config.MIN_PRIMARY_SOURCES >= 1, config.MIN_PRIMARY_SOURCES)
 
 print()
+print()
+print("=== 7. FALLBACK PO BLOKADZIE CZYTA TA SAMA PRZEGLADARKA, KTORA PUBLIKUJE ===")
+# Zmierzone 2026-09-05: bezglowe Chromium bez sesji dostawalo z openai.com
+# karte systemowa o dlugosci 0 znakow i z reuters.com 0 znakow, a prawdziwy
+# Chrome wlasciciela (CDP) 4602 i 6136. Fallback „do przegladarki" po 403
+# oddawal wiec pustke dokladnie tam, gdzie mial ratowac zrodlo.
+import ast as _ast  # noqa: E402
+_drzewo = _ast.parse(pathlib.Path("agent-v2/browser.py").read_text(encoding="utf-8"))
+_rp = next(w for w in _ast.walk(_drzewo) if isinstance(w, _ast.FunctionDef) and w.name == "read_pages")
+_zrodlo_rp = _ast.unparse(_rp)
+sprawdz("read_pages podlacza sie przez podlacz_sie (Chrome po CDP, gdy jest)",
+        "podlacz_sie()" in _zrodlo_rp)
+sprawdz("i nie odpala juz wlasnego bezglowego Chromium bez sesji",
+        "launch(headless=True)" not in _zrodlo_rp)
+sprawdz("kontrdowod: publikacja notki tez idzie przez podlacz_sie",
+        "podlacz_sie()" in _ast.unparse(next(w for w in _ast.walk(_drzewo)
+                                            if isinstance(w, _ast.FunctionDef) and w.name == "wystaw_notke")))
+
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 sys.exit(1 if oblane else 0)

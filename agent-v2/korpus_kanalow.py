@@ -104,7 +104,11 @@ def oczysc(tytul: str) -> str:
     t = tytul
     for w in OPRAWA:
         t = re.sub(w, " ", t, flags=re.IGNORECASE)
-    t = re.sub(r"\s{2,}", " ", t).strip(" .,-–—…")
+    # KRESKA PIONOWA TEZ JEST OPRAWA. Kanaly doklejaja do tytulu wlasna nazwe
+    # („... | AI at Meta"), a bywa, ze film ma TYLKO ten ogon: surowy tytul
+    # „| AI at Meta" przechodzil dalej jako cztery „slowa" i zajmowal skautowi
+    # jedno z trzydziestu miejsc (zmierzone 2026-09-05 na kanale AI at Meta).
+    t = re.sub(r"\s{2,}", " ", t).strip(" .,-–—…|")
     return t
 
 
@@ -119,7 +123,9 @@ def _kandydaci(pozycje: list[tuple[str, str, str, str]]) -> list[dict[str, Any]]
         if not surowy or NIE_TEMAT.search(surowy):
             continue
         czysty = oczysc(surowy)
-        if len(czysty.split()) < 4:
+        # SLOWA, NIE TOKENY: „|", „—" czy „#3" nie sa slowami, a liczyly sie
+        # jak slowa — przez co ogon bez tytulu wygladal na temat.
+        if len(re.findall(r"[a-z0-9]+", czysty.lower())) < 4:
             continue
         klucz = re.sub(r"[^a-z0-9 ]", "", czysty.lower())[:60]
         if klucz in widziane:

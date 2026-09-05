@@ -5134,15 +5134,18 @@ def read_pages(urls: list[str]) -> list[dict[str, Any]]:
     Jedna instancja przeglądarki na całą listę — start Chromium to sekundy,
     a stron bywa kilkanaście.
     """
-    from playwright.sync_api import sync_playwright
-
+    # TA SAMA PRZEGLADARKA, KTORA PUBLIKUJE. Do 2026-09-05 ta funkcja
+    # otwierala WLASNE bezglowe Chromium bez sesji — a bezglowy tryb jest
+    # dokladnie tym, co Cloudflare odrzuca (patrz `podlacz_sie`). Zmierzone
+    # 5 wrzesnia na trzech adresach, ktore czytnik httpx dostal z kodem 403/401:
+    #   bezglowe Chromium:  openai.com/news 2404 zn., karta systemowa 0 zn., reuters 0 zn.
+    #   prawdziwy Chrome:   2404 / 4602 / 6136 zn.
+    # Czyli fallback „do przegladarki" po blokadzie 403 oddawal pustke tam,
+    # gdzie prawdziwa przegladarka czyta. `podlacz_sie` wybiera sam: Chrome
+    # wlasciciela po CDP, gdy odpowiada; inaczej bezglowa z zapisana sesja.
     out: list[dict[str, Any]] = []
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context(
-            user_agent=config.FETCH_USER_AGENT,
-            viewport={"width": 1280, "height": 900},
-        )
+    p, browser, context = podlacz_sie()
+    try:
         page = context.new_page()
         for url in urls:
             entry: dict[str, Any] = {"url": url, "text": "", "title": "", "error": None}
@@ -5160,8 +5163,11 @@ def read_pages(urls: list[str]) -> list[dict[str, Any]]:
                 f"{'  ' + entry['error'] if entry['error'] else ''}",
                 flush=True,
             )
-        context.close()
+        page.close()
+    finally:
+        # NIE `context.close()`: przy CDP to kontekst Chrome'a wlasciciela.
         browser.close()
+        p.stop()
     return out
 
 
