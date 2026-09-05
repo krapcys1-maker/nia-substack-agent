@@ -271,7 +271,11 @@ def wybierz_fakt(conn, run_id, ile: int = 8) -> dict:
     # prowadzi petle u siebie i rozlicza kazda runde osobno. Nie da sie tego
     # ograniczyc parametrem (`max_uses` i `max_tool_calls` sa ignorowane), wiec
     # jedyny sposob na tanszy artykul to NIE SZUKAC, kiedy nie trzeba.
-    fakty = stages.wez_kandydatow(ile)
+    # NA ARTYKUL, WIEC PROSIMY O KANDYDATOW NA ARTYKUL. Bez tego
+    # argumentu ta funkcja brala pierwszy fakt bez kolizji z historia,
+    # a pole `na_artykul` — ocena, za ktora sedzia banku dostal
+    # zaplacone — nie mialo zadnego czytelnika.
+    fakty = stages.wez_kandydatow(ile, na_artykul=True)
     if fakty:
         print("  [temat] z indeksu: %d kandydatow (bez wyszukiwania)"
               % len(fakty), flush=True)

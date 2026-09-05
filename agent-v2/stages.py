@@ -7296,7 +7296,8 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
     return licznik
 
 
-def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
+def wez_kandydatow(ile: int = 1,
+                   na_artykul: bool = False) -> list[dict[str, Any]]:
     """Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych.
 
     Znaczymy przy wyjmowaniu, nie po publikacji — ta sama zasada co w banku
@@ -7367,8 +7368,23 @@ def wez_kandydatow(ile: int = 1) -> list[dict[str, Any]]:
     # Ranking modelu ustawia jakosc, ale przy rownej jakosci pierwszenstwo ma to,
     # o czym mowi sie w tym tygodniu — bo to jest jedyne, czego model nie ma z
     # wlasnej pamieci.
-    swiezi.sort(key=lambda para: (not para[0].get("z_kanalu"),
-                                  para[0].get("ranga", 10 ** 6)))
+    # OCENA „NA ARTYKUL" WRESZCIE COS ROBI.
+    #
+    # Sedzia banku dostaje polecenie zaznaczenia, ktore fakty uniosa dluga
+    # forme, i pole `na_artykul` jest zapisywane przy kazdym wpisie. Nie czytal
+    # go NIKT: ani to sortowanie, ani `artykul_z_puli.wybierz_fakt`, ktory bral
+    # pierwszy fakt bez kolizji z historia. Platna ocena szla wiec do pliku
+    # i tam zostawala.
+    #
+    # PREFERENCJA, NIE FILTR. Gdy zaden kandydat nie jest oznaczony, artykul
+    # ma powstac mimo to — doktryna tego repo mowi wprost, ze po oplaconym
+    # researchu tekst MUSI powstac, a odsiew do zera zamienilby brak oceny
+    # w brak artykulu. Pozostale kryteria zostaja nietkniete jako rozstrzygajace
+    # remisy.
+    swiezi.sort(key=lambda para: (
+        (not para[0].get("na_artykul")) if na_artykul else False,
+        not para[0].get("z_kanalu"),
+        para[0].get("ranga", 10 ** 6)))
 
     # BLIZNIAKI W JEDNEJ PARTII. Ranking ustawia kandydatow wzgledem siebie, ale
     # nie pyta, czy dwaj sasiedzi nie mowia tego samego — i nie zapyta, bo to

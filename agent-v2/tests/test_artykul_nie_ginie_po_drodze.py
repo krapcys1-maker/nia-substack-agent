@@ -474,8 +474,12 @@ class StagesZIndeksem(AtrapaStages):
         self.szukania += 1
         return []
 
-    def wez_kandydatow(self, ile=1):
-        return _stages.wez_kandydatow(ile)
+    def wez_kandydatow(self, ile=1, na_artykul=False):
+        # Podpis MUSI isc za prawdziwym: atrapa z wezszym podpisem zamienia
+        # zmiane sygnatury w TypeError dopiero na produkcji, a tutaj wyglada
+        # jak zielony test. Argument przekazujemy dalej, bo sciezka artykulu
+        # naprawde go podaje.
+        return _stages.wez_kandydatow(ile, na_artykul=na_artykul)
 
     def zwroc_kandydatow(self, kandydaci):
         self.oddane_do_puli.extend(kandydaci)

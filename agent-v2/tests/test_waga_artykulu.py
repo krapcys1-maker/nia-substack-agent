@@ -128,7 +128,9 @@ print("=== 6. ARTYKUL TEZ SIEGA NAJPIERW DO SPIZARNI ===")
 # szukaniu. Zywy test tego samego wieczora: 18 wyszukiwan, 450 tys. tokenow
 # wejscia i 0,127 USD po to, zeby wybrac jeden fakt — podczas gdy w indeksie
 # lezaly gotowe, oplacone i przepuszczone przez bramke.
-i_spizarnia = src.find("stages.wez_kandydatow(ile)")
+# Argument `na_artykul=True` doszedl 5 wrzesnia 2026: wczesniej sciezka
+# artykulu bral pierwszy fakt bez kolizji i nie czytala oceny sedziego.
+i_spizarnia = src.find("stages.wez_kandydatow(ile, na_artykul=True)")
 # PO WLASNOSCI, NIE PO DOKLADNYM NAPISIE. Stalo tu szukanie calego wywolania
 # z lista argumentow — i wystrzelilo, gdy do wywolania doszedl argument
 # `na_artykul=True`. Asercja pilnuje KOLEJNOSCI (spizarnia przed platnym
