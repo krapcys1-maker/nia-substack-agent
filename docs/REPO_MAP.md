@@ -43,6 +43,11 @@ agent-v2/            the bot itself
   pomiary/           one-off measurements kept for their conclusions
 docs/                these maps, INSTALL, TROUBLESHOOTING, ARCHITECTURE
 narzedzia/           tools that operate ON the bot, never part of a run
+analizy/             dated working notes. `odtworzone/` holds prompts rendered
+                     exactly as a model receives them — useful when you want to
+                     read the real input rather than the template; `propozycje/`
+                     holds drafts that were NOT adopted. Nothing here is loaded
+                     at runtime
 style-profiles/      two prose profiles: the voice to aim at, the voice to avoid
 data/                created at runtime. Gitignored — see §7
 ```
