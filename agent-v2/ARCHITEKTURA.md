@@ -175,6 +175,7 @@ i **nie da się go cofnąć w oczach tej osoby**. Zanim je zbudujesz, poproś
 właściciela o osobną decyzję i pokaż mu kilkanaście wygenerowanych przykładów
 do oceny, zanim którykolwiek gdziekolwiek trafi.
 
-Notki i komentarze **nie mają jeszcze własnego stylu potwierdzonego produkcją**
-— jest `NOTES_STYLE_PROFILE_V1.md`, ale żadna notka nigdy nie powstała. Traktuj
-ten profil jako punkt wyjścia, nie jako sprawdzony wzorzec.
+Notki i komentarze **nie mają osobnego profilu stylu** — ich reguły stoją
+w samych briefach (`prompts/notka.md`, `prompts/komentarz.md`) i we wspólnym
+bloku `prompts/po_ludzku.md`. Traktuj je jako punkt wyjścia, nie jako
+sprawdzony produkcją wzorzec.

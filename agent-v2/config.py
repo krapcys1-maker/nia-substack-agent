@@ -1320,10 +1320,10 @@ POSTAWY_KOMENTARZA = {
         "that agrees with everything."
     )),
     "KOREKTA": (1, (
-        "The 'you got X right, but you skipped Y' move. It was the default and "
-        "it became a tic — three comments word for word in this shape. It is "
-        "allowed here, once in a while, when the omission genuinely changes the "
-        "conclusion. Not when it merely lets you look thorough."
+        "The 'you got X right, but you skipped Y' move. Used by default it "
+        "becomes a tic, the same shape under every post. It is allowed here, "
+        "once in a while, when the omission genuinely changes the conclusion. "
+        "Not when it merely lets you look thorough."
     )),
     "ZGODA_Z_DOPOWIEDZENIEM": (1, (
         "Agree — and earn it by adding exactly one thing the author did not "
@@ -1428,8 +1428,6 @@ NOTE_FORMS = {
         "time. '2009.' alone on a line stops nobody; 'eleven seconds' or "
         "'three dollars a month' or 'two cents a copy' does. "
         "A year may appear later in the note, never as the hook. "
-        "This went wrong live twice: notes opened with 'US2989787' and with "
-        "'2009.', where the good version of the same form opened with '1 drop'. "
         "If the only figures in the material are identifiers or dates, this is "
         "the wrong form for that material."
     ),
@@ -1473,15 +1471,11 @@ NOTE_FORMS = {
         "themselves, today, without our help. Do not promise what they will "
         "find. No personal anecdote — we do not have one and must not invent it. "
         "THE THING MUST ALREADY BE IN THEIR LIFE: something they used this "
-        "week, something sitting on a screen they already look at, a box they "
-        "had to untick. Sending them to read a policy, a technical document "
-        "or a regulator's guidance is homework, and nobody does homework "
-        "from a feed. "
-        "This went wrong live, and the record stays so it does not repeat: a "
-        "note ended by telling the reader to pull up a named official circular "
-        "and count something in it. The same mistake wearing any other field's "
-        "clothes is 'open the technical documentation and see for yourself' — "
-        "newer document, identical homework."
+        "week, something they see every day, a choice they were never shown. "
+        "Sending them to read a policy, a technical document or a regulator's "
+        "guidance is homework, and nobody does homework from a feed; 'open "
+        "the documentation and see for yourself' is the same homework with a "
+        "newer document."
     ),
 }
 
@@ -1504,14 +1498,14 @@ NOTE_TYPES = {
     # a notka, ktora fakt przemyci, oblewa sie sama.
     "MYSL": (
         "A thought, a question, or an observation about what it is like to "
-        "live alongside these systems. NO EVIDENCE CARD, and therefore NO "
+        "live with the subject of this publication. NO EVIDENCE CARD, and therefore NO "
         "FACTS: no number, no date, no named company doing a named thing, no "
         "study, no percentage, nothing a reader could look up and find false. "
         "If your idea needs a fact to stand up, it is a different note type "
         "and you should say so instead of inventing one.\n\n"
         "What is left is the part people actually answer: a question nobody "
-        "can settle, an observation about the shared experience of using this "
-        "stuff, a position you would defend out loud. It may be openly "
+        "can settle, an observation about the shared experience of dealing "
+        "with it, a position you would defend out loud. It may be openly "
         "uncertain. It may be funny. It may admit that you are behind, "
         "confused, or annoyed — those read as human because they are the "
         "things a person says and an account never does.\n\n"
@@ -3151,45 +3145,37 @@ def losowe_generatory(ile: int = 0) -> list[str]:
 # o czyms sezonowym trafia lepiej w swoim sezonie niz poza nim.
 #
 # Miesiace wg polkuli polnocnej, bo tam jest wiekszosc czytelnikow anglojezycznych.
-# RYTM ROKU W TEJ DZIEDZINIE.
-#
-# Stalo tu dwanascie hasel konsumenckich z poprzedniej niszy — rzeczy, ktore
-# czytelnik kupuje albo zalatwia w okreslonej porze roku. Pod publikacje o innej
-# dziedzinie to martwy balast: jej czytelnik nie trzyma w reku niczego, co
-# zalezy od miesiaca.
-#
-# Ale rok w tej dziedzinie MA rytm i jest on realny: konferencje, kwartalne
-# wyniki producentow sprzetu, terminy w przepisach, cykl akademicki. To sa
-# okresy WZMOZONEJ UWAGI, nie fakty do zacytowania — i tak sa opisane, bo
-# terminy sie przesuwaja, a model tego nie czuje. Kazde haslo mowi GDZIE
-# patrzec, a nie CO jest prawda.
+# RYTM ROKU. Hasla opisuja rytm INSTYTUCJI, nie jednej branzy: budzety,
+# sprawozdania, konsultacje, wyniki kwartalne, terminy w przepisach. To sa
+# okresy WZMOZONEJ UWAGI, nie fakty do zacytowania — kazde haslo mowi GDZIE
+# patrzec, a nie CO jest prawda, bo terminy sie przesuwaja, a model tego nie
+# czuje. Publikacja o dziedzinie z wlasnym kalendarzem powinna te hasla
+# przestawic pod siebie.
 W_TYM_MIESIACU = {
-    # PRZYKLAD. Kazde haslo mowi, GDZIE w danym miesiacu patrzec, a nie CO
-    # jest prawda. Przestaw pod wlasna nisze — terminy w kazdej branzy sa
-    # inne, a model ich nie czuje.
-    1: "year-ahead plans and budgets, trade-show product claims, standards "
-       "committees setting their agenda",
-    2: "annual reports from manufacturers, rules with dates attached, "
-       "consultation windows opening",
-    3: "spring product launches, procurement cycles starting, inspection "
-       "and certification renewals",
-    4: "quarterly results, capital spending disclosed to investors, "
-       "regulatory consultations closing",
-    5: "trade fairs and the demonstrations shown at them, seasonal safety "
-       "campaigns, summer construction starting",
-    6: "mid-year rule changes taking effect, summer testing seasons, "
-       "holiday-season product recalls",
-    7: "half-year retrospectives, quiet-period announcements, peak-load "
-       "and heat-related failures",
-    8: "back-to-school and autumn procurement, seasonal standards revisions",
+    1: "year-ahead plans and budgets being published, committees setting "
+       "their agenda for the year, claims made at the season's first events",
+    2: "annual reports landing, rules with dates attached, consultation "
+       "windows opening",
+    3: "spring launches and announcements, procurement cycles starting, "
+       "renewals and re-certifications falling due",
+    4: "first-quarter results, capital spending disclosed to investors, "
+       "consultations closing",
+    5: "conference season and the demonstrations shown at it, seasonal "
+       "campaigns starting",
+    6: "mid-year rule changes taking effect, testing seasons, half-year "
+       "deadlines",
+    7: "half-year retrospectives, quiet-period announcements, peak-load and "
+       "heat-related failures",
+    8: "autumn procurement beginning, revisions to rules and standards "
+       "circulating for comment",
     9: "new rules commencing with the institutional year, autumn launches, "
-       "quarterly results",
+       "third-quarter results",
     10: "earnings season, compliance deadlines arriving, annual inspection "
-        "reports published",
-    11: "end-of-year launches, standards ballots closing, annual safety and "
-        "transparency reporting",
-    12: "year in review everywhere, December committee meetings, budgets "
-        "and supply contracts signed for next year",
+        "and audit reports published",
+    11: "end-of-year launches, ballots and votes closing, annual transparency "
+        "and safety reporting",
+    12: "year in review everywhere, December committee meetings, budgets and "
+        "contracts signed for next year",
 }
 
 

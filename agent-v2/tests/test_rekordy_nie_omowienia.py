@@ -64,8 +64,10 @@ sprawdz("zada, zeby pierwotne byly wiekszoscia",
         "MAJORITY" in brief)
 sprawdz("zakazuje dopychania do liczby",
         "Never add a source to reach a number" in brief)
-sprawdz("i podaje pomiar, a nie sama zasade",
-        "5.1 were primary" in brief and "3.0 were primary" in brief)
+# Pomiar z trzynastu przebiegow poprzedniego konta wyszedl z promptu razem
+# z jego historia; zostal wniosek, ktory z niego plynal.
+sprawdz("i mowi, w co idzie nadmiarowe szukanie",
+        "extra searching goes into padding the list" in brief)
 sprawdz("mowi wprost, ze krotka lista rekordow jest dobra",
         "Six primary sources and" in brief)
 

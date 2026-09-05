@@ -318,8 +318,8 @@ plaski = " ".join(p.split())
 for martwa in ("score_breakdown", "visual_potential", "discussion_potential",
                "non_obvious", "universality"):
     sprawdz("prompt nie prosi już o %s" % martwa, martwa not in plaski)
-sprawdz("i mówi wprost, czemu je usunięto",
-        "Nothing ever read them" in plaski)
+sprawdz("i zakazuje ich wprost",
+        "Do not include scores" in plaski)
 zrodlo = open("agent-v2/stages.py", encoding="utf-8").read()
 sprawdz("kod nadal ich nie czyta (bo ich nie ma)",
         "score_breakdown" not in zrodlo)
@@ -373,8 +373,8 @@ sprawdz("zakazuje fałszowania w OBIE strony",
         "Do not fake this in either direction" in plaski)
 sprawdz("prompt zamawia wymuszony wybor",
         "rank your own list against itself" in plaski)
-sprawdz("i nazywa wprost obserwowana degeneracje",
-        "every answer came back with exactly three items" in plaski)
+sprawdz("i nazywa wprost, czemu ocena bezwzgledna nic nie mowi",
+        "An absolute judgement can be equalised" in plaski)
 sprawdz("mowi, ze porownania nie da sie wyrownac",
         "A forced comparison cannot" in plaski)
 for k in ("most_written_about", "least_written_about", "richest", "thinnest"):
@@ -407,8 +407,8 @@ wyk = (config.PROMPTS_DIR / "wykonalnosc.md").read_text(encoding="utf-8")
 plaski_w = " ".join(wyk.split())
 sprawdz("RICH da się osiągnąć samymi wątkami",
         "three or more separate questions" in plaski_w)
-sprawdz("prompt nazywa starą wadę wprost",
-        "Depth was judged here only sideways" in plaski_w)
+sprawdz("prompt liczy glebokosc takze w pionie",
+        "counts depth in the vertical" in plaski_w)
 sprawdz("i daje przykład, który wcześniej wypadał jako THIN",
         "cannot agree" in plaski_w)
 

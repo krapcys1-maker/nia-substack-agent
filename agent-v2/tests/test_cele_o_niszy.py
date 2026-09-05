@@ -71,10 +71,12 @@ print()
 print("=== 2. STARA REGULA ZNIKNELA ===")
 # To ona wpuszczala rezerwe paliwowa: „nie musi byc tematem posta".
 sprawdz("nie ma juz 'does not have to be the post's subject'",
-        "does not have to be the post's subject" not in brief
-        or "The old rule said" in brief)
-sprawdz("a jesli jest, to jako opis BLEDU",
-        "The old rule said" in brief)
+        "does not have to be the post's subject" not in brief)
+# ZASADA BEZ HISTORII. Stalo tu „a jesli jest, to jako opis BLEDU" z frazą
+# „The old rule said" — prompt czystego bota nie opowiada, jak brzmiala jego
+# poprzednia wersja; niesie regule, ktora z tamtej poprawki wynikla.
+sprawdz("nazywanie mechanizmu nie jest samo w sobie powodem",
+        "Being able to name a mechanism is not a reason to comment" in brief)
 
 print()
 print("=== 3. GRANICA JEST NARYSOWANA, NIE DOMYSLNA ===")
@@ -96,11 +98,15 @@ sprawdz("mowi wprost, ze tytul nie musi nazywac tematu",
         "does NOT mean the post must" in brief)
 
 print()
-print("=== 4. STOI NA POMIARZE ===")
-sprawdz("podaje liczbe komentarzy i odpowiedzi",
-        "82 comments went out and 3 came back" in brief)
-sprawdz("i przyklady tego, co odpadalo",
-        "food labelling" in brief and "Book of Enoch" in brief)
+print("=== 4. MOWI, CZEMU DOBRY KOMENTARZ POD OBCYM TEMATEM NIC NIE DAJE ===")
+# ZASADA, NIE POMIAR. Stal tu wynik z jednego tygodnia jednego konta („82
+# comments went out and 3 came back") i lista tematow, pod ktorymi tamto konto
+# komentowalo. Prompt czystego bota nie niesie historii cudzego konta; niesie
+# regule, ktora z tej historii wynikla — i to jej pilnujemy.
+sprawdz("komentarz moze byc swietny i nic nie przyniesc",
+        "A comment can be excellent and still bring nothing" in brief)
+sprawdz("bo czytelnik czego innego nie ma powodu nas chciec",
+        "has no reason to want us" in brief)
 
 print()
 print("=== 5. ODSTEPU NIE RUSZAMY ===")
@@ -144,8 +150,10 @@ sprawdz("i zada powiedzenia, CZEMU to lada",
         "Say why it lands" in kom)
 sprawdz("numery artykulow tylko gdy sa sednem",
         "when the number IS the point" in kom)
-sprawdz("stoi na prawdziwych przykladach, nie na zasadzie",
-        "Stargate announced" in kom and "GDPR Article 22" in kom)
+# Przyklady z opublikowanych komentarzy poprzedniego konta wyszly z promptu
+# razem z reszta jego historii. Pilnujemy zdania, ktore je zastapilo.
+sprawdz("nazywa wprost, czym rejestr NIE jest",
+        "Not a lecture, not a citation, not a database row" in kom)
 sprawdz("ale nie zamienia bezposredniosci na uprzejmosc",
         "blunt is not the same as formal" in kom)
 sprawdz("i nie kasuje zgody na 'nie wiem'",

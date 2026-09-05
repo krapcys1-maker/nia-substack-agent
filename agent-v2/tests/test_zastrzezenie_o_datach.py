@@ -63,8 +63,11 @@ print("=== 2. STOI NA TYM, CO SIE STALO, A NIE NA ZASADZIE ===")
 sprawdz("podaje oba zdania — ostrozne i za szerokie",
         "undated in the excerpts" in brief
         and "accounts are undated" in brief)
-sprawdz("i mowi, czym to sie skonczylo",
-        "refused to publish" in brief)
+# Opowiesc o zablokowanym artykule wyszla z promptu razem z historia konta.
+# Zostalo rozroznienie, ktore z niej plynelo: zdanie o NASZYM materiale kontra
+# zdanie o CUDZYCH dokumentach.
+sprawdz("i nazywa, czym drugie zdanie jest naprawde",
+        "a claim about documents" in brief)
 
 print()
 print("=== 3. DAJE, CO WOLNO POWIEDZIEC ZAMIAST TEGO ===")

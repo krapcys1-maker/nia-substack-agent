@@ -76,11 +76,15 @@ sprawdz("i mowi, co zrobic przy braku pokrycia",
         "drop the circumstance from the claim" in brief)
 
 print()
-print("=== 2. REGULA STOI NA POMIARZE, NIE NA PRZEKONANIU ===")
-sprawdz("podaje liczbe z pomiaru",
-        "four cards in ninety-three claims" in brief)
-for wzor in ("BEFORE RESULTS ARE RELEASED", "STATE LAWS REQUIRED THEM",
-             "ONLY A SMALL PORTION", "BEFORE THE FINAL VOTE"):
+print("=== 2. REGULA STOI NA PRZYKLADACH, NIE NA SAMYM ZAKAZIE ===")
+# Model nasladuje przyklad, nie regule — wiec prompt pokazuje pary
+# twierdzenie/cytat, w ktorych cytat NIE NIESIE okolicznosci. Liczba z pomiaru
+# jednego konta („four cards in ninety-three claims") zniknela razem z reszta
+# historii tamtego konta; przyklady zostaly, bo to one ucza.
+sprawdz("daje co najmniej dwie pary twierdzenie/cytat",
+        brief.count("claim :") >= 2 and brief.count("quote :") >= 2,
+        (brief.count("claim :"), brief.count("quote :")))
+for wzor in ("BEFORE RESULTS ARE RELEASED", "ONLY A SMALL PORTION"):
     sprawdz("  wpisany przyklad: %s" % wzor.lower()[:34], wzor in brief)
 
 print()
@@ -89,8 +93,8 @@ print("=== 3. NAZYWA PULAPKE, NIE TYLKO ZAKAZUJE ===")
 # DLACZEGO sprawdzenie tego nie lapie.
 sprawdz("mowi, ze sprawdzenie przechodzi mimo wady",
         "the check passes because the quote EXISTS" in brief)
-sprawdz("i przypomina, co to kosztowalo",
-        "In August this cost us an article" in brief)
+sprawdz("i nazywa, czego sprawdzenie nie widzi",
+        "it does not REACH" in brief)
 
 print()
 print("=== 4. STARE REGULY NIE ZGINELY PRZY OKAZJI ===")

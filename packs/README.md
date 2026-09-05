@@ -26,7 +26,7 @@ your publication.
 
 | pack | language | about |
 |---|---|---|
-| `everyday-things-and-regulation` | English | standards, tolerances, certification, liability, procurement — the configuration this bot actually ran on in production |
+| `everyday-things-and-regulation` | English | standards, tolerances, certification, liability, procurement — the default configuration this repository ships with |
 | `ai-and-machine-learning` | English | benchmarks, training data, inference economics, evaluation, and the rules being written around them |
 | `how-things-work` | English | physics, materials, measurement and engineering in ordinary objects |
 | `laws-and-public-money` | English | legislation, procurement, budgets and audit reports, read as documents |
@@ -109,7 +109,7 @@ Both are free: no network, no model calls, no API key.
 ## What makes a pack good rather than merely valid
 
 The rules above stop a pack from being broken. They cannot make it good. From
-the one that ran in production:
+the default pack:
 
 - **Search terms should point at people who publish, not at the topic.** The
   bot uses them to find accounts worth talking to. "materials testing" finds
@@ -119,7 +119,7 @@ the one that ran in production:
   category. The pipeline rotates them, so twenty specific lenses beat sixty
   vague ones.
 - **Cover more than one side of the subject.** Twenty terms about one thing
-  reach the same accounts as three. The production pack deliberately spans how
+  reach the same accounts as three. The default pack deliberately spans how
   a thing is made, who is protected, and who pays.
 - **The editorial angle does the heaviest lifting.** It is the sentence that
   decides what this publication is *for*, and it is what keeps the bot from

@@ -1,72 +1,76 @@
 # ARTICLE_STYLE_PROFILE_V1
 
-Status: ACTIVE
-Zakres: artykuły marki „{marka}”
-Pochodzenie: profil wysokiego poziomu, wyprowadzony z prywatnego korpusu i zasad marki; nie jest instrukcją imitowania konkretnego autora.
+Scope: articles published by {marka}.
+Origin: a high-level description of the voice this publication aims at. It is
+not an instruction to imitate any particular author.
 
-## Cel
+## What a piece is for
 
-Tekst pokazuje, że zwykły rezultat ma historię: stoi za nim mechanizm, decyzja, ograniczenie albo interes. Artykuł ma być przystępny dla ciekawego czytelnika ogólnego, ale jego kręgosłupem pozostaje zamrożone evidence.
+It shows that an ordinary result has a history: a mechanism, a decision, a
+constraint or an interest stands behind it. It is written for a curious
+general reader, and its spine is the evidence card.
 
-## Otwarcie
+## Opening
 
-- Zacznij od konkretnej rzeczy, zachowania, ceny, reguły albo konsekwencji, którą można zobaczyć.
-- Nie zaczynaj od ogólnego opisu epoki ani od deklaracji ważności tematu.
-- Pierwsze akapity mają wytworzyć precyzyjne pytanie, na które odpowiada Research Card.
-- Hook nie może obiecywać sensacji większej niż dowody.
+- Start from a concrete thing, behaviour, price, rule or consequence that can
+  be seen.
+- Do not start from a description of the age we live in, or from a declaration
+  that the subject matters.
+- The first paragraphs produce a precise question the evidence answers. The
+  hook may not promise more than the evidence delivers.
 
-## Ruch argumentu
+## Movement of the argument
 
-- Przejdź od konkretu do większego systemu dopiero po ustaleniu, co dokładnie wymaga wyjaśnienia.
-- Nazwij centralną tezę wcześnie, lecz nie powtarzaj jej mechanicznie.
-- Pokaż sekwencję: widoczny rezultat → mechanizm → decyzje i bodźce → beneficjenci i koszty → ograniczenie.
-- Każdy ważny krok argumentu wiąż z jednym lub kilkoma identyfikatorami frozen evidence.
-- Oddziel to, co wynika ze źródeł, od interpretacji redakcyjnej.
+- Go from the concrete to the larger system only after establishing what
+  exactly needs explaining.
+- Name the central point early, and do not repeat it mechanically.
+- The sequence is: visible result, mechanism, decisions and incentives, who
+  benefits and who pays, the limit of what is known.
+- Keep what follows from the sources apart from editorial interpretation.
 
-## Rytm i struktura
+## Rhythm and structure
 
-- Mieszaj długość zdań i akapitów zgodnie z funkcją fragmentu.
-- Krótkie zdanie może domknąć ważny ruch; nie buduj całego tekstu z równych, efektownych jednostek.
-- Nagłówki stosuj oszczędnie, tylko gdy pomagają czytelnikowi przejść między rzeczywistymi częściami argumentu.
-- Listy są narzędziem informacyjnym, nie domyślnym rytmem prozy.
-- Nie konstruuj mechanicznych triad ani idealnie symetrycznych akapitów.
+- Mix sentence and paragraph length according to what each part does.
+- A short sentence may close an important move; do not build the whole text
+  from equal, showy units.
+- Headings only where they help the reader cross between real parts of the
+  argument. Lists carry information; they are not the default rhythm of prose.
+- No mechanical triads, no perfectly symmetrical paragraphs.
 
-## Fakty, research i opinia
+## Facts, research and opinion
 
-- Używaj wyłącznie faktów i URLs obecnych w frozen evidence.
-- Nie rozszerzaj liczby, zakresu ani pewności twierdzenia poza wsparcie źródła.
-- Uncertain claims i contradictions z briefu są granicą, nie zaproszeniem do uzupełniania z pamięci.
-- Opinia może interpretować mechanizm, ale musi być rozpoznawalna jako interpretacja.
-- Historia służy wyjaśnieniu przyczynowości; nie jest dekoracyjną osią czasu.
+- Only facts and figures that the evidence card carries.
+- Never widen a claim's number, scope or certainty beyond its source.
+- Uncertain claims and contradictions in the card are a boundary, not an
+  invitation to fill in from memory.
+- Opinion may interpret the mechanism, and must be recognisable as
+  interpretation.
+- History serves causation; it is not a decorative timeline.
 
-## Kontrargument i ograniczenie
+## Counterargument and limit
 
-- Przedstaw najmocniejsze istotne ograniczenie, nie papierowego przeciwnika.
-- Wyjaśnij, co kontrargument zmienia w tezie, a czego nie obala.
-- Jeśli evidence pozwala tylko na węższy wniosek, zawęź wniosek.
+- Present the strongest relevant objection, not a paper opponent.
+- Say what the objection changes in the thesis, and what it does not overturn.
+- If the evidence supports only a narrower conclusion, narrow the conclusion.
 
-## Humor
+## Humour
 
-- Humor jest opcjonalny i oszczędny.
-- Może wynikać z trafnej obserwacji lub kontrastu systemowego.
-- Nie kopiuj charakterystycznych żartów, fraz ani metafor z materiałów źródłowych.
-- Nie używaj humoru do pomniejszania osób ponoszących realny koszt.
+- Optional and sparing, arising from an accurate observation or a systemic
+  contrast. Never at the expense of the people carrying the real cost.
 
-## Zakończenie
+## Ending
 
-- Nie streszczaj po raz trzeci całego artykułu.
-- Wróć do konkretu z otwarcia, ale pokaż go po zmianie perspektywy.
-- Zakończ konsekwencją mechanizmu, granicą wiedzy albo pytaniem wynikającym z dowodów.
-- Nie dodawaj sztucznej inspiracji ani wezwania do działania bez podstaw w briefie.
+- Do not summarise the article a third time.
+- Return to the concrete thing from the opening, seen after the change of
+  perspective, or end on the consequence of the mechanism, the limit of what
+  is known, or a question the evidence raises.
+- No manufactured inspiration and no call to action the evidence does not
+  support.
 
-## Język i pierwsza osoba
+## Language and first person
 
-- Używaj precyzyjnego, naturalnego angielskiego bez akademickiego zadęcia.
-- Wyjaśniaj termin przy pierwszym użyciu, gdy czytelnik ogólny może go nie znać.
-- Pierwsza osoba może oznaczać jawne stanowisko redakcyjne, nigdy zmyślone doświadczenie.
-- Nie twórz biografii, wspomnień, rozmów, podróży, relacji rodzinnych ani obserwacji terenowych autora.
-- Anonimowa marka nie udaje konkretnej osoby.
-
-## Warunek ukończenia
-
-Artykuł może przejść dalej tylko wtedy, gdy obejmuje wymagane evidence IDs, respektuje zakazane twierdzenia i przechodzi wszystkie lokalne evaluations. Styl nie może kompensować braków faktograficznych.
+- Precise, natural English without academic stiffness. Explain a term at first
+  use when a general reader may not know it.
+- First person may mark an explicit editorial position, never invented
+  experience: no biography, memories, conversations, travel, family or field
+  observations. An anonymous brand does not impersonate a person.
