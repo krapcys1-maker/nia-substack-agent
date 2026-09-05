@@ -18,9 +18,10 @@ wolnych wpisow.
 Po poprawce te same piec przebiegow to JEDNO wywolanie, a nowy kandydat
 dostaje range.
 
-ZMIERZONE NA ZYWO 5 wrzesnia 2026 na prawdziwych faktach z przebiegu
-finansowego (DeepSeek V4 Flash, $0,0129): fakt bez rangi — inspekcje PCAOB —
-dostal range 1, a sedzia odrzucil definicje zerwania kowenantu.
+ZMIERZONE NA ZYWO 5 wrzesnia 2026 na prawdziwym banku operatora
+(DeepSeek V4 Flash, $0,0129): jedyny wpis bez rangi dostal range 1, a sedzia
+odrzucil jeden z pozostalych. Tresci faktow nie przytaczam — czysty bot nie
+nosi cudzego tematu, takze w komentarzu.
 
 ## Czego ten plik pilnuje w DRUGA strone
 
@@ -72,12 +73,12 @@ def atrapa(ile_w_kolejnosci):
 
 def wpis(tresc, ranga):
     return {"fact": tresc, "status": "nowy", "ranga": ranga, "na_artykul": False,
-            "decision": "d" * 20, "consequence": "c" * 20, "domain": "audit",
+            "decision": "d" * 20, "consequence": "c" * 20, "domain": "przyklad",
             "epoka": getattr(config, "EPOKA_KONTA", None)}
 
 
 def poloz(n_ocenionych, n_nowych):
-    w = [wpis("Znany fakt numer %d o audycie" % i, i) for i in range(n_ocenionych)]
+    w = [wpis("Znany fakt numer %d" % i, i) for i in range(n_ocenionych)]
     w += [wpis("NOWY fakt numer %d" % i, None) for i in range(n_nowych)]
     stages._zapisz_indeks(w)
     return w

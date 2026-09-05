@@ -57,13 +57,13 @@ def sprawdz(nazwa, warunek, szczegol=""):
         print("  BLAD  %s   %s" % (nazwa, szczegol))
 
 
-FRAG = "The rotation rule caps a single audit firm's tenure at ten years."
+FRAG = "The rule caps a single holder's tenure at ten units."
 
 
 def karta():
     return {
-        "working_thesis": "Rotation trades continuity for independence.",
-        "main_mechanism": "A new firm has no memory of prior judgements.",
+        "working_thesis": "The rule trades continuity for independence.",
+        "main_mechanism": "A new holder has no memory of prior judgements.",
         "confirmed_claims": [{"claim": FRAG, "evidence": FRAG, "url": "https://x"}],
         "citable_numbers": [{"value": "ten years", "means": "cap", "url": "https://x"}],
         "source_dates": {"newest": "2026-09-01", "oldest": "2026-08-20",

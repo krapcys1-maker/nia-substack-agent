@@ -8,7 +8,7 @@ wydarzeniu z listy, a `ile` to bylo `len(fakty)` — laczna liczba faktow
 z partii. Dwa wykryte wydarzenia i osiem faktow wylacznie o pierwszym
 zamykalo OBA.
 
-Odtworzone: `orion 5.1` i `vega audit` obie zapisane z `ile: 8`, obie
+Odtworzone: `orion 5.1` i `vega zestaw` obie zapisane z `ile: 8`, obie
 przestaly byc nowe, mimo ze o Vedze nie wrocilo nic.
 
 Kosztem jest PRZEGAPIONA PREMIERA. Furtka wydarzen istnieje po to, zeby bot
@@ -18,8 +18,8 @@ dopiero po `WYDARZENIE_WAZNE_DNI`.
 
 ## Czego ten plik pilnuje w DRUGA strone
 
-Zeby dopasowanie nie bylo zbyt luzne. Przy wydarzeniu `["vega", "audit"]`
-samo slowo „audit" pasuje do niemal kazdego faktu z naszej niszy i zamykaloby
+Zeby dopasowanie nie bylo zbyt luzne. Przy wydarzeniu `["vega", "zestaw"]`
+samo slowo „zestaw" pasuje do niemal kazdego faktu z naszej niszy i zamykaloby
 furtke tak samo skutecznie jak stary blad — tylko ciszej. Stad wymog DWOCH
 slow (albo jednego, gdy wydarzenie ma tylko jedno). Sekcje 2 i 3.
 
@@ -49,13 +49,13 @@ def sprawdz(nazwa, warunek, szczegol=""):
         print("  BLAD  %s   %s" % (nazwa, szczegol))
 
 
-def fakt(tresc, dziedzina="audit"):
+def fakt(tresc, dziedzina="przyklad"):
     return {"fact": tresc, "actually": "", "wrong_belief": "",
             "decision": "", "consequence": "", "domain": dziedzina}
 
 
 ORION = {"o_czym": ["orion", "5.1"], "kanalow": 3, "tytuly": ["Orion 5.1 launch"]}
-VEGA = {"o_czym": ["vega", "audit"], "kanalow": 2, "tytuly": ["Vega audit tool"]}
+VEGA = {"o_czym": ["vega", "zestaw"], "kanalow": 2, "tytuly": ["Vega zestaw"]}
 
 print("=== 1. OBCY MATERIAL NIE ZAMYKA WYDARZENIA ===")
 fakty = [fakt("Orion 5.1 shipped with a doubled context window.")] * 8
@@ -64,13 +64,13 @@ sprawdz("oba wykryte jako nowe", len(nowe) == 2, len(nowe))
 stages._zapamietaj_wydarzenia(nowe, znane, len(fakty), fakty)
 nowe2, _ = stages._nowe_wydarzenia([ORION, VEGA])
 zostaly = [", ".join(w.get("o_czym") or []) for w in nowe2]
-sprawdz("Vega nadal czeka na swoja szanse", "vega, audit" in zostaly, zostaly)
+sprawdz("Vega nadal czeka na swoja szanse", "vega, zestaw" in zostaly, zostaly)
 sprawdz("a Orion zamkniety", "orion, 5.1" not in zostaly, zostaly)
 
 print()
 print("=== 2. WLASNY MATERIAL ZAMYKA ===")
 config.uzyj_katalogu_danych(pathlib.Path(tempfile.mkdtemp()))
-wlasne = [fakt("The Vega audit tool logs every override it applies.")] * 3
+wlasne = [fakt("The Vega zestaw logs every override it applies.")] * 3
 nowe, znane = stages._nowe_wydarzenia([VEGA])
 stages._zapamietaj_wydarzenia(nowe, znane, len(wlasne), wlasne)
 nowe2, _ = stages._nowe_wydarzenia([VEGA])
@@ -78,10 +78,10 @@ sprawdz("po wlasnym materiale przestaje byc nowe", not nowe2, len(nowe2))
 
 print()
 print("=== 3. JEDNO WSPOLNE SLOWO TO ZA MALO ===")
-# KONTRDOWOD NA POPRAWKE: gdyby wystarczylo jedno trafienie, „audit" z niemal
+# KONTRDOWOD NA POPRAWKE: gdyby wystarczylo jedno trafienie, slowo wspolne calej niszy z niemal
 # kazdego naszego faktu zamykalby furtke rownie skutecznie jak stary blad.
 config.uzyj_katalogu_danych(pathlib.Path(tempfile.mkdtemp()))
-ogolne = [fakt("An audit committee reviews the rotation schedule yearly.")] * 5
+ogolne = [fakt("A zestaw of unrelated items is reviewed yearly.")] * 5
 nowe, znane = stages._nowe_wydarzenia([VEGA])
 stages._zapamietaj_wydarzenia(nowe, znane, len(ogolne), ogolne)
 nowe2, _ = stages._nowe_wydarzenia([VEGA])

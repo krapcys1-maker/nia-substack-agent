@@ -56,8 +56,8 @@ A = "Acme released Model 5.1 with a context window of 100000 tokens."
 B = "Acme released Model 5.2 with a context window of 200000 tokens."
 C = "Acme's Model 5.1 offers a context window of one hundred thousand tokens."
 D = "Vega shipped Model 7.0 with a context window of 300000 tokens."
-P10 = "The audit rotation cap for listed firms stands at 10 years."
-P20 = "The audit rotation cap for listed firms stands at 20 years."
+P10 = "The permitted ceiling for a listed body stands at 10 units."
+P20 = "The permitted ceiling for a listed body stands at 20 units."
 
 print("=== 1. AKTUALIZACJA JEST ROZPOZNAWANA ===")
 sprawdz("nowa wersja produktu", stages._to_aktualizacja(B, A))
@@ -78,12 +78,12 @@ sprawdz("inny produkt o podobnym ksztalcie zdania",
         not stages._to_aktualizacja(D, A), D[:40])
 sprawdz("zdanie identyczne", not stages._to_aktualizacja(A, A))
 sprawdz("zdanie bez zadnych liczb",
-        not stages._to_aktualizacja("The cap was raised for listed firms.",
-                                    "The cap was lowered for listed firms."))
+        not stages._to_aktualizacja("The ceiling was raised.",
+                                    "The ceiling was lowered."))
 sprawdz("wspolna liczba znaczy powtorke",
         not stages._to_aktualizacja(
-            "The cap stands at 10 years and 20 months.",
-            "The cap stands at 10 years and 30 months."))
+            "The ceiling stands at 10 units and 20 parts.",
+            "The ceiling stands at 10 units and 30 parts."))
 
 print()
 print("=== 3. BANK PRZYJMUJE AKTUALIZACJE I WYCOFUJE STARY WPIS ===")
@@ -94,8 +94,8 @@ def kand(f):
             "wrong_belief": "Readers assume the ceiling has never moved at all.",
             "actually": "The ceiling moved and the retender route moved with it.",
             "decision": "The regulator raised the ceiling after a retender review.",
-            "consequence": "Your audit committee has to re-plan the rotation date.",
-            "url": "https://example.org/a", "domena": "audit"}
+            "consequence": "Your team has to re-plan the schedule.",
+            "url": "https://example.org/a", "domena": "przyklad"}
 
 
 stages.dopisz_kandydatow([kand(P10)])

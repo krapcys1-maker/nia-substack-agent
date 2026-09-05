@@ -302,7 +302,7 @@ DRY_RUN=false python -c "import sys; sys.path.insert(0,'agent-v2'); import brows
 
 ```
   NOTKA PRZYJETA (odpowiedz Substacka: 200)
-  id notki: 330261956
+  id notki: 000000000
 ```
 
 If you see `DRY_RUN — NIE wysylam, mimo ze proszono`, the flag is still on. That
@@ -310,7 +310,7 @@ message is the bot refusing out loud rather than reporting a success it did not
 achieve.
 
 **Then check it from outside.** The id in the output builds a public URL —
-`https://substack.com/@YOUR_HANDLE/note/c-330261956` — and you should open it in
+`https://substack.com/@YOUR_HANDLE/note/c-<THE ID FROM YOUR OWN OUTPUT>` — open it in
 a browser where you are *not* logged in. A note that exists in the bot's own
 ledger and nowhere else is the failure this step is here to catch.
 

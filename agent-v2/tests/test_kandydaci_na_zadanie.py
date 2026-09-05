@@ -92,7 +92,7 @@ print("=== 1. PIERWSZY PRZECHODZI -> JEDNO WYWOLANIE ===")
 stages.bez_wstrzykniecia = lambda t: (True, "")
 wywolania["n"] = 0
 wywolania["prompty"] = []
-atrapa([komentarz("Auditors sign off on this without reading it.")])
+atrapa([komentarz("Reviewers sign off on this without reading it.")])
 wynik = stages.comment_on(CONN, 1, POST)
 sprawdz("model wolany raz, nie %d" % config.COMMENT_CANDIDATES,
         wywolania["n"] == 1, wywolania["n"])
@@ -138,7 +138,7 @@ print("=== 4. POWTORZONE OTWARCIE NADAL ODRZUCA ===")
 # Sortowanie zniklo; sprawdzenie ma dzialac dalej, tylko taniej.
 stages.bez_wstrzykniecia = lambda t: (True, "")
 wywolania["n"] = 0
-atrapa([komentarz("The auditors sign off without reading."),
+atrapa([komentarz("The reviewers sign off without reading."),
         komentarz("Cash flow can still be gamed.")])
 wynik = stages.comment_on(CONN, 1, POST)
 sprawdz("powtorzone 'The' kosztowalo druga probe", wywolania["n"] == 2,

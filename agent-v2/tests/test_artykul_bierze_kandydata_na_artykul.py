@@ -10,11 +10,10 @@ czytal go nikt:
   * `wez_kandydatow` sortowalo po `(not z_kanalu, ranga)`;
   * `artykul_z_puli.wybierz_fakt` bralo pierwszy fakt bez kolizji z historia.
 
-Platna ocena szla wiec do pliku i tam zostawala. Zmierzone na PRAWDZIWYM
-banku z przebiegu finansowego (4 wpisy, jeden oznaczony `na_artykul=True`):
-stara kolejnosc oddawala definicje ujawnienia o kontynuacji dzialalnosci
-(`na_artykul=False`, ranga 0), nowa oddaje rotacje firm audytorskich w UE —
-czyli ten jeden wpis, ktory sedzia uznal za material na dluga forme.
+Platna ocena szla wiec do pliku i tam zostawala. Zmierzone na PRAWDZIWYM banku operatora (4 wpisy, jeden oznaczony
+`na_artykul=True`): stara kolejnosc oddawala wpis o najlepszej randze
+i `na_artykul=False`, nowa oddaje ten jeden, ktory sedzia uznal za material
+na dluga forme. Tresci nie przytaczam — czysty bot nie nosi cudzego tematu.
 
 ## Czego ten plik pilnuje w DRUGA strone
 
@@ -66,10 +65,10 @@ def poloz(wpisy):
 
 # Kolejnosc jak w prawdziwym banku: najlepsza ranga NIE jest kandydatem
 # na artykul — inaczej test przechodzilby przypadkiem.
-BANK = [wpis("Definicja ujawnienia, ranga najlepsza", 0, False),
-        wpis("Rotacja firm audytorskich w UE", 2, True),
-        wpis("Zerwanie kowenantu kredytowego", 3, False),
-        wpis("Inspekcje PCAOB 2025", 1, False)]
+BANK = [wpis("Kandydat A — najlepsza ranga, nieoznaczony", 0, False),
+        wpis("Kandydat B — gorsza ranga, OZNACZONY na artykul", 2, True),
+        wpis("Kandydat C", 3, False),
+        wpis("Kandydat D", 1, False)]
 
 print("=== 1. SCIEZKA ARTYKULU BIERZE OZNACZONEGO ===")
 poloz(BANK)
