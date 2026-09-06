@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Installation and scheduling
+    url: https://github.com/krapcys1-maker/nia-substack-agent/blob/main/docs/INSTALL.md
+    about: Start here for local setup, browser login and Linux server timers.
+  - name: Security reporting
+    url: https://github.com/krapcys1-maker/nia-substack-agent/blob/main/SECURITY.md
+    about: Read the security policy before reporting a sensitive issue.

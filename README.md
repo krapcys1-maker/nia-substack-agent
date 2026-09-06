@@ -1,60 +1,94 @@
 # NIA
 
+**Your autonomous Substack editor. Your publication, your rules.**
+
+NIA researches topics, writes articles and Notes, and runs configurable community
+workflows on your schedule. Run it on **your computer or a Linux server**, with
+your own Substack account, API keys and editorial direction.
+
 [![Tests](https://github.com/krapcys1-maker/nia-substack-agent/actions/workflows/testy.yml/badge.svg)](https://github.com/krapcys1-maker/nia-substack-agent/actions/workflows/testy.yml)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-304a3b)](docs/INSTALL.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-304a3b)](LICENSE)
-
-NIA is a configurable Substack publishing bot with portable editorial presets.
-Choose a subject and writing style, add your own account and API keys, then run
-the agent on your computer or a Linux server.
+[![Early development](https://img.shields.io/badge/status-early_development-ee5b32)](ROADMAP.md)
 
 https://github.com/user-attachments/assets/9ea8388e-5916-46ab-8620-6e7c8ebeaf96
 
-**Press Play above to watch NIA in action — 92 seconds, no download needed.**
-[Demo and live examples](docs/DEMO.md) · [Subtitles: English](docs/media/nia-demo.en.srt) / [Polski](docs/media/nia-demo.pl.srt)
+**Press Play: 92 seconds of NIA in action, right here on GitHub.**
+Real browser footage from the NIA test account, edited for pace, with English
+AI narration. The demo uses the Hidden Bill editorial preset.
 
-Real browser footage from the NIA test account, edited for pace. English AI
-narration; articles, Notes and community actions use the Hidden Bill preset.
+[Get started](docs/INSTALL.md) · [Published examples](docs/DEMO.md) ·
+[Roadmap](ROADMAP.md) · [Subtitles: English](docs/media/nia-demo.en.srt) / [Polski](docs/media/nia-demo.pl.srt)
 
-**The repository distributes the engine and reusable presets. Your account,
-session, drafts, idea bank and spending history belong to your installation.**
+## What NIA can do
 
-[Installation](docs/INSTALL.md) · [Preset catalog](presety/README.md) ·
-[Account and customization](docs/PLUGGING_IN_AN_ACCOUNT.md) ·
-[Architecture and isolation](docs/PRESETY.md) ·
-[Distribution audit — Polish](analizy/2026-09-06-dystrybucja-github/RAPORT.md)
+| Part of the job | What the bot handles |
+|---|---|
+| **Find the next story** | Discover signals from RSS/Atom feeds, YouTube and searches; evaluate ideas and keep a persistent idea bank. |
+| **Research and write** | Retrieve sources, develop articles and Notes, apply editorial and evidence checks, and keep drafts for inspection. |
+| **Publish** | Publish articles and Notes through your logged-in browser; optionally generate article images and Notes promoting an article. |
+| **Join the conversation** | Reply, comment, like and restack. Following authors and free subscriptions are also supported when enabled. |
+| **Keep a rhythm** | Use configured daily and weekly schedules, publishing volumes, community limits and quiet days. |
+| **Keep track** | Save run history, artifacts and model costs; use budget thresholds, health checks and optional email alerts. |
 
-## What the agent does
+![NIA workflow: research, write, review, publish and connect; configured by your editorial preset](docs/media/nia-workflow.svg)
 
-- Finds topic signals in configured RSS/Atom feeds, YouTube channels and searches.
-- Scouts and evaluates ideas, builds an idea bank, retrieves sources and prepares evidence for writing.
-- Writes articles, Notes, comments and replies using the preset's editorial direction and style assets.
-- Applies evidence, structure and publication checks; records generated artifacts and model costs.
-- Supports configurable publishing volumes, model roles, budget thresholds and schedules.
-- Publishes through a browser session you establish yourself. Linux timers can run the workflows automatically.
+## How autonomous is it?
 
-This is a command-line project. Server browser setup and Windows scheduling
-still require operator configuration. Its present writing method and checks are
-primarily designed for evidence-based English nonfiction; a different language
-or genre needs evaluation beyond changing the subject field.
+**After setup, NIA can run scheduled workflows without asking you to approve
+each post.** You choose the subject, sources, voice, enabled actions, model roles
+and limits. The bot selects material, writes, checks and publishes within that
+configuration. Daily workflows and weekly articles have separate entry points.
 
-## Choose a preset
+You can also generate content for inspection before enabling publishing.
+Automatic following and free subscriptions start **off** in the bundled presets;
+other community actions have configurable limits.
 
-| Preset | Editorial focus | Starting plan |
+First login, browser setup and the operating-system scheduler need your
+configuration. A valid session, available model providers and a running machine
+are still required. Source checks help review the writing; they do not guarantee
+factual accuracy. See [setup and operating modes](docs/INSTALL.md#6-first-workflow).
+
+## Run it your way
+
+| | On your computer | On a Linux server |
 |---|---|---|
-| [AI](presety/ai/preset.toml) | What AI systems actually demonstrate, cost and change | 2 Notes/day, 1 article/week |
+| **Best for** | Trying a preset, inspecting drafts and running a personal publication | Scheduled operation while your own computer is off |
+| **Run** | Python CLI and a dedicated Chrome session | The same engine, with a service user and server browser session |
+| **Schedule** | Manual runs; Windows Task Scheduler or Linux systemd | Generated systemd services and timers |
+| **Setup** | Keep the computer awake, online and logged in for scheduled runs | Configure the graphical or virtual display and browser login on the server |
+| **Guide** | [Local installation](docs/INSTALL.md#2-download-and-install) · [Windows scheduling](docs/INSTALL.md#7-schedule-on-your-computer) | [Linux server installation and timers](docs/INSTALL.md#8-schedule-on-a-linux-server) |
+
+NIA is currently a command-line product. A desktop dashboard, a Docker package
+and a one-command server installer are not included in this release.
+
+## Choose your editorial direction
+
+A **preset** packages a subject, sources, writing instructions, style examples,
+model roles and publishing rhythm. You can change that direction without
+rewriting the engine.
+
+| Preset | What it covers | Starting schedule |
+|---|---|---|
+| [AI](presety/ai/preset.toml) | What AI systems demonstrate, cost and change | 2 Notes/day, 1 article/week |
 | [The Hidden Bill](presety/hidden-bill/README.md) | Subscription terms, extra fees, repair restrictions and digital ownership | 2 Notes/day, 1 article/week |
-| [Template](presety/SZABLON/preset.toml) | Build your own subject, sources and voice | Fill in the required fields before activation |
+| [Your own](presety/SZABLON/preset.toml) | Start from the template or customize a private copy | You choose |
 
-These are configured slots and limits, not guaranteed output or audience growth.
-The Hidden Bill includes its own editorial prompts, style corpus, research and
-launch ideas. Its launch document is an operator guide, not an automatic import
-into the idea bank.
+These are configured slots and limits, not guaranteed output. The current
+writing method is designed primarily for evidence-based English nonfiction;
+other languages and genres need their own evaluation.
 
-## Start with your own account
+**The engine and reusable presets are public. Your account settings, session,
+idea bank, drafts and spending history belong to your installation.** Model
+requests still go to the providers you configure.
+[Preset catalog](presety/README.md) · [Customize a preset](docs/PLUGGING_IN_AN_ACCOUNT.md#customize-a-preset) ·
+[Instances and isolation](docs/PRESETY.md)
 
-Use **Python 3.11 or newer**; Python 3.12 is the recommended starting point.
-The preset loader uses `tomllib`, which is not available in Python 3.10.
+## Get started
+
+You need **Python 3.11+**, Git, Chrome, a Substack publication and API access for
+the selected model roles. The bundled presets use Anthropic and DeepSeek for
+text; optional images use OpenAI.
 
 ```bash
 git clone https://github.com/krapcys1-maker/nia-substack-agent.git
@@ -62,148 +96,51 @@ cd nia-substack-agent
 python -m venv .venv
 ```
 
-Activate the environment:
+Then follow the [installation guide](docs/INSTALL.md#2-download-and-install) to
+activate the environment, install dependencies, add your account and keys,
+activate a preset, and save your browser session.
+
+Once setup is complete, with `DRY_RUN=false`:
 
 ```bash
-# Linux / macOS
-source .venv/bin/activate
+# Generate the daily workflow for inspection; model calls can incur charges.
+python agent-v2/run.py --dzien
+
+# Enable publishing and the configured community actions.
+python agent-v2/run.py --dzien --wyslij
+
+# Generate and publish an article from the idea bank.
+python agent-v2/artykul_z_puli.py --wyslij
 ```
 
-```powershell
-# Windows PowerShell
-.\.venv\Scripts\Activate.ps1
-$env:PYTHONIOENCODING = "utf-8"
-```
+`--dzien` means daily workflow; `--wyslij` enables sending/publishing.
+`DRY_RUN=true` skips model calls and blocks Substack writes, but can still read
+the network and create local files. Preset validation and preview do not call
+models. Budget thresholds use local cost records; they are not a spending cap
+enforced by a provider. Start with [your first workflow](docs/INSTALL.md#6-first-workflow).
 
-Install dependencies:
+## New project, ongoing development
 
-```bash
-python -m pip install -r requirements.txt
-python -m playwright install chromium
-```
+NIA is **new and actively being developed**. The public project launched in
+September 2026. Expect improvements to setup, reliability, editorial presets and
+documentation as we learn from real installations.
 
-Copy the environment example (only in a fresh installation):
+Next priorities are a clearer first-run experience, better unattended recovery
+and easier scheduling. See the [roadmap](ROADMAP.md) for current capabilities,
+planned work and ways to help. The demo shows a completed test-account workflow;
+it is not a long-term uptime or writing-quality benchmark.
 
-```bash
-# Linux / macOS
-cp .env.example agent-v2/.env
-```
+## Help shape NIA
 
-```powershell
-# Windows PowerShell: also install the timezone data needed by presets
-python -m pip install tzdata
-Copy-Item .env.example agent-v2/.env
-```
+- **Try it:** report where your first installation gets stuck or share a redacted result.
+- **Bring a subject:** contribute a preset for a field you know.
+- **Improve the engine:** help with browser reliability, setup and operating-system support.
 
-Fill in your `SUBSTACK_HANDLE`, `NAZWA_MARKI` and API keys in that local file.
-Keep `DRY_RUN=true` during setup. The supplied presets use Anthropic and
-DeepSeek for text; OpenAI is used for optional article images. Required keys
-depend on the selected roles. The Hidden Bill starts with images disabled.
+[Contributing](CONTRIBUTING.md) · [Report a bug or propose a feature](https://github.com/krapcys1-maker/nia-substack-agent/issues/new/choose) ·
+[Compare related projects](docs/ALTERNATIVES.md)
 
-Then choose, inspect and activate a preset:
+If you find NIA useful, **give it a star**. To receive release updates, use
+GitHub's **Watch → Custom → Releases** setting.
 
-```bash
-python narzedzia/presety.py lista
-python narzedzia/presety.py sprawdz hidden-bill
-python narzedzia/presety.py podglad hidden-bill
-python narzedzia/presety.py podlacz hidden-bill --instancja moja-publikacja
-python narzedzia/presety.py status
-```
-
-Use `ai` instead of `hidden-bill` to select the AI preset. **You do not edit the
-shared preset to enter your account.** The values from `.env` override its
-account placeholders. Changing the writing style or volumes uses a private copy
-of the preset; see [customization](docs/PLUGGING_IN_AN_ACCOUNT.md).
-
-**Next: [establish the browser session and run the first workflow](docs/INSTALL.md#5-browser-session).**
-Activate the preset **before** saving the session so it is written into the
-correct instance. Activation itself neither logs in nor publishes nor installs a scheduler.
-
-## Engine, preset and instance
-
-```text
-GitHub: reusable engine + public preset packages
-                         |
-                    clone / download
-                         v
-Your installation: engine + selected preset + your .env
-                         |
-                  local activation pointer
-                         v
-Your instance: session, idea bank, drafts, cache, logs and costs
-```
-
-| Layer | Location | Tracked in Git? |
-|---|---|---|
-| Engine and generic prompts | `agent-v2/` | Yes |
-| Public presets and their style assets | `presety/ai/`, `presety/hidden-bill/`, `presety/SZABLON/` | Yes |
-| API keys and account settings | `agent-v2/.env` | No |
-| Active preset pointer | `agent-v2/aktywny_preset.json` | No |
-| Instance data, including the saved session | `agent-v2/instancje/<id>/` | No |
-| Custom preset directories | Other directories under `presety/` | No |
-
-Normal operation writes local runtime data, not the public preset files, and
-does not push anything to GitHub. `.gitignore` excludes the private paths; the
-repository audit also checks tracked files. These rules do not prevent someone
-from deliberately force-adding a private file.
-
-## Switch subjects or start clean
-
-One checkout has one active preset at a time. Stop its scheduled tasks and
-running processes before switching:
-
-```bash
-python narzedzia/presety.py odlacz
-python narzedzia/presety.py podlacz ai --instancja ai-start
-```
-
-Use a **new instance ID** for a fresh bank and history. Reusing the previous ID
-resumes its previous data; detaching does not erase data or remove `.env` and
-browser credentials. It also does not undo anything already published on Substack.
-Rebuild the schedule and verify the browser account after switching.
-
-For separate publications, the clearest current arrangement is **one fresh clone
-per publication**, with its own environment and runtime. Multiple clones on the
-same machine additionally need browser and service isolation: Chrome's port and
-profile and the generated systemd unit names are currently shared defaults.
-See the [audit and remaining work](analizy/2026-09-06-dystrybucja-github/RAPORT.md).
-
-## Costs and operating modes
-
-Budget fields are per-instance thresholds based on the engine's cost records.
-They are not a provider-enforced spending cap, a shared limit across clones or
-a promise to complete the configured schedule. Actual charges depend on model
-availability, provider prices, token usage, search and retries.
-
-| Mode | Model calls | Substack writes |
-|---|---|---|
-| `presety.py sprawdz` / `podglad` | None | None |
-| `DRY_RUN=true` | Skipped | Blocked |
-| `DRY_RUN=false`, workflow without `--wyslij` | Can be paid | No publishing from that workflow |
-| `DRY_RUN=false`, workflow with `--wyslij` | Can be paid | Enabled, subject to runtime checks |
-
-A dry run can still read the network and create local files. Use preset preview
-to inspect prompts without starting a publishing workflow. The engine supports
-the provider adapters implemented in its code; adding a model name alone does
-not add a new provider integration.
-
-## Development and checks
-
-```bash
-python -m pip install -r requirements-dev.txt
-python narzedzia/zaleznosci.py --sprawdz
-python agent-v2/tests/test_presety.py
-python narzedzia/presety.py sprawdz ai
-python narzedzia/presety.py sprawdz hidden-bill
-```
-
-Tests are standalone scripts, not a conventional pytest-only suite. The
-[workflow](.github/workflows/testy.yml) documents its exclusions and history-based
-skips. These checks do not prove live account login, model access or publication
-quality. Run maintenance generators and the full audit in a development checkout,
-not while a production process is using its files.
-
-Further reading: [function map](docs/FUNCTION_MAP.md),
-[engine documentation](agent-v2/JAK_ZBUDOWANY_JEST_BOT.md),
-[technical architecture](docs/ARCHITECTURE.md), [repository map](docs/REPO_MAP.md),
-[troubleshooting](docs/TROUBLESHOOTING.md), [license](LICENSE).
+[Architecture](docs/ARCHITECTURE.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) ·
+[Development checks](CONTRIBUTING.md#change-the-engine) · [Security](SECURITY.md) · [MIT license](LICENSE)

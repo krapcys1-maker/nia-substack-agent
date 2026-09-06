@@ -1,0 +1,49 @@
+name: Bug report
+description: Help reproduce a setup, writing or publishing problem.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Include a small reproducible example. Remove keys, cookies, account identifiers and private content from logs. Report security issues using SECURITY.md.
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Python version, NIA commit or release, and preset name.
+      placeholder: Windows 11, Python 3.12, commit ..., hidden-bill
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Operating mode
+      options:
+        - Preset validation or preview
+        - DRY_RUN=true
+        - Generation without --wyslij
+        - Publishing with --wyslij
+        - Scheduler or browser setup
+        - Another command
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Exact command, relevant setup and the step that failed.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected and actual result
+      description: For publishing problems, say whether content appeared, was duplicated or was missing. A public URL is optional.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Redacted log excerpt
+      description: Include the relevant error, without secrets or private publication data.
+      render: text

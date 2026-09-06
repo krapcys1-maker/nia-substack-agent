@@ -1,0 +1,23 @@
+name: Feature request
+description: Describe a publishing workflow NIA could make easier.
+title: "[Feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe your workflow and where the current behavior gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: What would a successful result look like?
+      description: A concrete before/after example is helpful.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Current workaround or related tools
+      description: Optional. Link an existing issue or an example if useful.

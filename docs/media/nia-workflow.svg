@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="264" viewBox="0 0 1280 264" role="img" aria-labelledby="title desc">
+  <title id="title">NIA: your publication, your rules</title>
+  <desc id="desc">Your editorial preset guides research, writing, review, publishing and community workflows. Run the engine on your computer or a Linux server.</desc>
+  <rect width="1280" height="264" rx="20" fill="#f3f1e8"/>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <rect x="32" y="24" width="28" height="28" rx="8" fill="#ee5b32"/>
+    <path d="M40 45V31L52 45V31" fill="none" stroke="#fffefa" stroke-width="3" stroke-linejoin="round"/>
+    <text x="72" y="44" font-size="18" font-weight="700" fill="#182e26">NIA / YOUR EDITORIAL WORKFLOW</text>
+    <text x="1248" y="44" text-anchor="end" font-size="17" fill="#59645b">YOUR COMPUTER · LINUX SERVER</text>
+    <path d="M130 126H1150" stroke="#aeb7aa" stroke-width="2"/>
+    <g fill="#fffefa" stroke="#d7dbcf">
+      <rect x="32" y="78" width="224" height="100" rx="12"/>
+      <rect x="280" y="78" width="224" height="100" rx="12"/>
+      <rect x="528" y="78" width="224" height="100" rx="12"/>
+      <rect x="1024" y="78" width="224" height="100" rx="12"/>
+    </g>
+    <rect x="776" y="78" width="224" height="100" rx="12" fill="#182e26"/>
+    <g font-size="13" font-weight="600" fill="#59645b" letter-spacing="1.5">
+      <text x="52" y="105">01 / DISCOVER</text><text x="300" y="105">02 / DRAFT</text>
+      <text x="548" y="105">03 / CHECK</text><text x="1044" y="105">05 / COMMUNITY</text>
+    </g>
+    <text x="796" y="105" font-size="13" font-weight="600" letter-spacing="1.5" fill="#c9d5c4">04 / GO LIVE</text>
+    <g font-size="28" font-weight="600" fill="#182e26">
+      <text x="52" y="147">Research</text><text x="300" y="147">Write</text>
+      <text x="548" y="147">Review</text><text x="1044" y="147">Connect</text>
+    </g>
+    <text x="796" y="147" font-size="28" font-weight="600" fill="#fffefa">Publish</text>
+    <path d="M32 203H1248" stroke="#d7dbcf"/>
+    <text x="32" y="237" font-size="18" font-weight="600" fill="#182e26">Your preset sets the direction.</text>
+    <text x="1248" y="237" text-anchor="end" font-size="18" fill="#59645b">Subject · Sources · Voice · Schedule · Limits</text>
+  </g>
+</svg>

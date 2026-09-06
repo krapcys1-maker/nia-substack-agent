@@ -1,0 +1,30 @@
+name: Editorial preset proposal
+description: Bring a subject, source list and original editorial voice.
+title: "[Preset] "
+body:
+  - type: textarea
+    id: audience
+    attributes:
+      label: Subject, audience and language
+      description: Who would read this publication, and what specific questions would it answer?
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources and editorial approach
+      description: Suggest primary sources, feeds, original style examples and boundaries for the writing.
+    validations:
+      required: true
+  - type: textarea
+    id: evaluation
+    attributes:
+      label: How should we judge a good result?
+      description: Suggest sample topics, an expected publishing rhythm and what a reviewer should check.
+    validations:
+      required: true
+  - type: textarea
+    id: contribution
+    attributes:
+      label: How would you like to help?
+      description: Optional. Ideas, subject expertise, reviewing output and code contributions are all useful. Do not include account credentials or private data.

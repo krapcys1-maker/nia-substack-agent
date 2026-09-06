@@ -3,6 +3,12 @@
 Contributions can improve the engine or add a reusable editorial preset.
 Use a development checkout without production sessions, keys or instance data.
 
+You can also help without writing code: describe where installation gets stuck,
+review a sample article in your field, or propose an editorial preset. Start with
+the [issue forms](https://github.com/krapcys1-maker/nia-substack-agent/issues/new/choose)
+and [roadmap](ROADMAP.md). A public or redacted example is enough; never include
+account sessions or private drafts.
+
 ## Add a preset
 
 Start from `presety/SZABLON/` or copy an existing public preset. A modern preset

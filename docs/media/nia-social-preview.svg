@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">NIA — Your autonomous Substack editor</title>
+  <desc id="desc">An open-source publishing bot for articles, Notes and community workflows. Run locally or on a Linux server. Your account, your voice, your schedule. Early development.</desc>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#dfe2d7" stroke-width="0.8"/></pattern>
+  </defs>
+  <rect width="1280" height="640" fill="#f3f1e8"/>
+  <rect width="8" height="640" fill="#ee5b32"/>
+  <rect x="864" width="416" height="640" fill="url(#grid)"/>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <rect x="64" y="52" width="48" height="48" rx="13" fill="#ee5b32"/>
+    <path d="M78 87V65L98 87V65" fill="none" stroke="#fffefa" stroke-width="4.5" stroke-linejoin="round"/>
+    <text x="127" y="86" font-size="33" font-weight="700" fill="#182e26">NIA</text>
+    <text x="204" y="81" font-size="14" letter-spacing="1.4" fill="#59645b">YOUR PUBLICATION. YOUR RULES.</text>
+    <text x="1216" y="81" text-anchor="end" font-size="14" font-weight="600" letter-spacing="1.5" fill="#59645b">OPEN SOURCE / MIT</text>
+    <text x="62" y="231" font-size="68" font-weight="700" letter-spacing="-2.4" fill="#182e26">Your autonomous</text>
+    <text x="62" y="309" font-size="68" font-weight="700" letter-spacing="-2.4" fill="#182e26">Substack editor.</text>
+    <text x="66" y="373" font-size="25" fill="#59645b">Research. Write. Publish. Connect.</text>
+    <text x="66" y="412" font-size="22" fill="#59645b">Your account. Your voice. Your schedule.</text>
+    <rect x="64" y="464" width="172" height="43" rx="21.5" fill="#182e26"/>
+    <text x="150" y="492" text-anchor="middle" font-size="16" font-weight="600" fill="#fffefa">YOUR COMPUTER</text>
+    <rect x="246" y="464" width="170" height="43" rx="21.5" fill="#e0e6d9"/>
+    <text x="331" y="492" text-anchor="middle" font-size="16" font-weight="600" fill="#182e26">LINUX SERVER</text>
+    <g>
+      <rect x="891" y="155" width="325" height="104" rx="14" fill="#fffefa" stroke="#d7dbcf"/>
+      <text x="916" y="185" font-size="12" font-weight="600" letter-spacing="1.5" fill="#59645b">01 / ARTICLES</text>
+      <text x="916" y="224" font-size="23" font-weight="600" fill="#182e26">Stories with sources</text>
+      <path d="M1054 259V281" stroke="#aeb7aa" stroke-width="2"/>
+      <rect x="891" y="281" width="325" height="104" rx="14" fill="#182e26"/>
+      <text x="916" y="311" font-size="12" font-weight="600" letter-spacing="1.5" fill="#c9d5c4">02 / NOTES</text>
+      <text x="916" y="350" font-size="23" font-weight="600" fill="#fffefa">A daily publishing rhythm</text>
+      <path d="M1054 385V407" stroke="#aeb7aa" stroke-width="2"/>
+      <rect x="891" y="407" width="325" height="104" rx="14" fill="#fffefa" stroke="#d7dbcf"/>
+      <text x="916" y="437" font-size="12" font-weight="600" letter-spacing="1.5" fill="#59645b">03 / COMMUNITY</text>
+      <text x="916" y="476" font-size="23" font-weight="600" fill="#182e26">Replies &amp; restacks</text>
+    </g>
+    <path d="M64 556H1216" stroke="#cfd5c7"/>
+    <text x="65" y="595" font-size="17" fill="#59645b">github.com/krapcys1-maker/nia-substack-agent</text>
+    <circle cx="1058" cy="589" r="4" fill="#ee5b32"/>
+    <text x="1216" y="595" text-anchor="end" font-size="15" fill="#59645b">EARLY DEVELOPMENT</text>
+  </g>
+</svg>
