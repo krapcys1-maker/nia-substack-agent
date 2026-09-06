@@ -224,6 +224,7 @@ def publiczny_przyklad_demo(plik: str, identyfikator: str) -> bool:
     return plik == "docs/DEMO.md" and identyfikator in {
         "note/c-329647996", "note/c-330772949",
         "note/c-330795297", "note/c-330802624",
+        "note/c-330869095", "note/c-330884988",
     }
 
 

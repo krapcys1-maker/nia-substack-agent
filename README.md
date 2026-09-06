@@ -24,12 +24,12 @@ AI narration. The demo uses the Hidden Bill editorial preset.
 
 | Part of the job | What the bot handles |
 |---|---|
-| **Find the next story** | Discover signals from RSS/Atom feeds, YouTube and searches; evaluate ideas and keep a persistent idea bank. |
-| **Research and write** | Retrieve sources, develop articles and Notes, apply editorial and evidence checks, and keep drafts for inspection. |
+| **Find the next story** | Discover signals from RSS/Atom feeds, YouTube and searches; rank ideas, remember published topics and reuse a persistent idea bank. |
+| **Research and write** | Retrieve sources, preserve evidence, write articles and Notes, and repair factual problems before checking the revised text again. |
 | **Publish** | Publish articles and Notes through your logged-in browser; optionally generate article images and Notes promoting an article. |
 | **Join the conversation** | Reply, comment, like and restack. Following authors and free subscriptions are also supported when enabled. |
 | **Keep a rhythm** | Use configured daily and weekly schedules, publishing volumes, community limits and quiet days. |
-| **Keep track** | Save run history, artifacts and model costs; use budget thresholds, health checks and optional email alerts. |
+| **Keep track** | Record API attempts and model costs, distinguish unknown usage, inspect the research and memory report, and use budget thresholds and health checks. |
 
 ![NIA workflow: research, write, review, publish and connect; configured by your editorial preset](docs/media/nia-workflow.svg)
 
@@ -48,6 +48,17 @@ First login, browser setup and the operating-system scheduler need your
 configuration. A valid session, available model providers and a running machine
 are still required. Source checks help review the writing; they do not guarantee
 factual accuracy. See [setup and operating modes](docs/INSTALL.md#6-first-workflow).
+
+## Make each run count
+
+- **Reuse the work you paid for.** Keep ideas and source evidence between runs. Article promotion uses the existing article, and unchanged bank rankings are reused.
+- **Recover useful work.** Borrowed ideas return to the bank when drafting fails. Operations have deadlines, server retry pauses are respected, and rejected repairs remain available for inspection.
+- **See where the budget goes.** Inspect spending by stage, failed API attempts, source retrieval and memory with the included audit command. The audit itself makes no paid calls.
+
+Recent live checks published an article and Notes, verified their public pages,
+and exercised bank reuse, ranking and source retrieval. See the
+[dated results and their scope](docs/DEMO.md#latest-live-checks) and
+[execution, costs and quality](docs/RELIABILITY.md).
 
 ## Run it your way
 
@@ -117,6 +128,9 @@ python agent-v2/run.py --dzien --wyslij
 
 # Generate and publish an article from the idea bank.
 python agent-v2/artykul_z_puli.py --wyslij
+
+# Inspect recorded spending, research failures and memory; no paid API calls.
+python agent-v2/audyt_kosztow.py
 ```
 
 `--dzien` means daily workflow; `--wyslij` enables sending/publishing.
