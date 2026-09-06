@@ -30,7 +30,7 @@ python narzedzia/presety.py odlacz           # deactivate; the instance data sta
 
 - `presety/ai/` — a complete cartridge, tracked in git: AI in English, two
   notes a day, one article a week, verified channels and feeds, its own
-  style profiles and editorial blocks. Replace `[konto]` with your account.
+  style profiles and editorial blocks. Your account comes from `agent-v2/.env`.
 - `presety/SZABLON/` — the empty cartridge with every field explained.
   `<<...>>` placeholders make it impossible to plug in unfinished.
 - anything else in `presety/` is **yours** and gitignored: a preset carries
