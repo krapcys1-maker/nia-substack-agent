@@ -3051,6 +3051,15 @@ def note(
             print("    ODRZUCONA PRZED SPRAWDZENIEM: %s" % data.get("odrzucony"),
                   flush=True)
             continue
+        # ARTEFAKTY SZABLONU I ZDANIA O WARSZTACIE — patrz `gates.artefakty_w_tekscie`.
+        import gates as _gates
+        _artefakty = _gates.artefakty_w_tekscie(text)
+        if _artefakty:
+            data["safe_to_post"] = False
+            data["odrzucony"] = "; ".join(a["detail"] for a in _artefakty)[:300]
+            print("    ODRZUCONA PRZED SPRAWDZENIEM (artefakt): %s"
+                  % data["odrzucony"][:150], flush=True)
+            continue
         # SPRAWDZENIE FAKTOW JEST LOGIEM, NIE BRAMKA — tak samo jak przy
         # artykule (patrz `run.py` i `artykul_z_puli.py`). Bylo bramka i to
         # bylo gorsze niz przy artykule: `NOTE_CANDIDATES = 1`, wiec kandydat
@@ -5003,6 +5012,13 @@ def comment_on(
             data["safe_to_post"] = False
             data["odrzucony"] = powod
             print(f"    ODRZUCONY PRZED SPRAWDZENIEM: {powod}", flush=True)
+            continue
+        import gates as _gates
+        _artefakty = _gates.artefakty_w_tekscie(text)
+        if _artefakty:
+            data["safe_to_post"] = False
+            data["odrzucony"] = "; ".join(a["detail"] for a in _artefakty)[:300]
+            print(f"    ODRZUCONY PRZED SPRAWDZENIEM (artefakt): {data['odrzucony'][:150]}", flush=True)
             continue
         # DWIE PODLOGI Z PAMIECI — patrz `_podloga_z_pamieci`, ktorej docstring
         # wymienia „komentarz, odpowiedz, restack". Odpowiedz je miala i

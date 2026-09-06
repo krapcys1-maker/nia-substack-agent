@@ -96,14 +96,23 @@ print("=== 3. ILE JEST ZAPOR ODBIERAJACYCH PRAWO DO PUBLIKACJI ===")
 # Werdykt jest NADPISYWANY przez wolajacych na `True` — patrz `note` i
 # `comment_on` — wiec nie zatrzymuje niczego; liczy sie tu, bo jest
 # przypisaniem do tego samego pola.
+#
+# PIATA I SZOSTA ZAPORA (2026-09-06): artefakty szablonu i zdania o wlasnym
+# warsztacie (`gates.artefakty_w_tekscie`), po jednej w `note` i `comment_on`.
+# To nie jest watpliwosc co do faktu ani ocena jakosci — to tekst, ktory
+# wyglada na blad programu („Figures checked against sources to unknown.",
+# „the excerpts I worked from"), i taki poszedl na konto w artykule 0006.
+# Deterministyczne, darmowe, z powodem w `odrzucony`. Kazda kolejna zapora
+# nadal oblewa ten test.
 zapory = bramki.wstrzymania_publikacji()
 opis = ["%s:%d %s" % (z["plik"], z["linia"], z["funkcja"]) for z in zapory]
-sprawdz("dokladnie cztery przypisania `safe_to_post` inne niz True",
-        len(zapory) == 4, opis)
+sprawdz("dokladnie szesc przypisan `safe_to_post` innych niz True",
+        len(zapory) == 6, opis)
 
 funkcje = sorted(z["funkcja"] for z in zapory)
 sprawdz("i stoja tam, gdzie stac maja",
-        funkcje == ["comment_on", "comment_on", "note", "zweryfikuj"], funkcje)
+        funkcje == ["comment_on", "comment_on", "comment_on", "note", "note", "zweryfikuj"],
+        funkcje)
 
 print()
 print("=== 4. KONTRDOWOD: WYKRYWACZ NAPRAWDE BY ZLAPAL NOWA BRAMKE ===")

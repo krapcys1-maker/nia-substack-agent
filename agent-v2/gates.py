@@ -616,3 +616,53 @@ def zapowiedziany_akapit_granic(body: str) -> str:
         if any(w in poczatek for w in _META_GRANIC):
             return pierwsze[:150]
     return ""
+
+
+# --- ARTEFAKTY SZABLONU I ZDANIA O WARSZTACIE — OSTATNIA BRAMKA -------------
+#
+# Zmierzone 2026-09-06 na artykule 0006 kartridza `ai`, JUZ OPUBLIKOWANYM:
+# pod podtytulem stalo „Figures checked against sources to unknown." (kod
+# wstawil stopke ze slowem zamiast daty), a w srodku „The excerpts I worked
+# from carry no publication dates" i „in the pages I have" — pierwsza osoba
+# o wlasnym warsztacie, wprost zakazana w briefie pisarza. Recenzja nie
+# zablokowala, `zapowiedziany_akapit_granic` patrzy tylko na poczatek akapitu.
+#
+# Ta bramka jest DETERMINISTYCZNA, DARMOWA i stoi na samym koncu: po stopce
+# z data, po recenzji, przed okladka i przed przegladarka. Tekst z takim
+# zdaniem zostaje na dysku z powodem, a nie idzie na konto. To samo pytanie
+# dostaje notka i komentarz przed weryfikacja. Frazy o warsztacie sa w
+# `jezyki.py` (WARSZTAT), reszta to ksztalt, nie slowo: niewypelnione pole
+# `{tytul}` albo `<the scene>`, „to unknown", „as of n/a".
+_WARSZTAT = jezyki.frazy("WARSZTAT", config.ARTICLE_LANGUAGE)
+_POLE_SZABLONU = jezyki.wzorzec("POLE_SZABLONU", config.ARTICLE_LANGUAGE)
+_ZNACZNIK_SZABLONU = jezyki.wzorzec("ZNACZNIK_SZABLONU", config.ARTICLE_LANGUAGE)
+_NIEWYPELNIONA_WARTOSC = jezyki.wzorzec("NIEWYPELNIONA_WARTOSC", config.ARTICLE_LANGUAGE)
+_STOPKA_BEZ_DATY = jezyki.wzorzec("STOPKA_BEZ_DATY", config.ARTICLE_LANGUAGE)
+
+
+def artefakty_w_tekscie(body: str) -> list[dict[str, str]]:
+    """Co w tym tekscie wyglada na blad programu, a nie na zdanie autora.
+
+    Zwraca liste {gate, detail}; pusta = czysto. Kazdy wpis blokuje publikacje —
+    to nie jest uwaga do recenzji, tylko odmowa.
+    """
+    tekst = body or ""
+    wyniki: list[dict[str, str]] = []
+    for wz, nazwa in ((_POLE_SZABLONU, "niewypelnione pole szablonu"),
+                      (_ZNACZNIK_SZABLONU, "znacznik szablonu"),
+                      (_NIEWYPELNIONA_WARTOSC, "wartosc nieznana zamiast daty lub liczby"),
+                      (_STOPKA_BEZ_DATY, "stopka z data bez daty")):
+        for m in wz.finditer(tekst):
+            od = max(0, m.start() - 40)
+            wyniki.append({"gate": "ARTEFAKT_SZABLONU",
+                           "detail": "%s: …%s…" % (nazwa, " ".join(tekst[od:m.end() + 40].split()))})
+    niski = tekst.lower()
+    for fraza in _WARSZTAT:
+        i = niski.find(fraza)
+        if i >= 0:
+            od = max(0, i - 40)
+            wyniki.append({"gate": "WARSZTAT",
+                           "detail": "zdanie o wlasnym warsztacie: …%s…"
+                                     % " ".join(tekst[od:i + len(fraza) + 40].split())})
+    return wyniki
+

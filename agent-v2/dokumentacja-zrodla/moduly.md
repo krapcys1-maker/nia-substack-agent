@@ -35,7 +35,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8312 wierszy, 145 funkcji na poziomie modułu, 0 klas
+8328 wierszy, 145 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -314,7 +314,7 @@
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-618 wierszy, 18 funkcji na poziomie modułu, 0 klas
+668 wierszy, 19 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -336,6 +336,7 @@
 | `frazy_z_instrukcji(body, dlugosc)` | Czy pisarz wklein do tekstu wlasne polecenie. |
 | `verdict(findings)` | Artykuł powstaje ZAWSZE. Decyzja właściciela z 2026-08-15. |
 | `zapowiedziany_akapit_granic(body)` | Czy akapit o granicach zaczyna sie od zdania o samym sobie. |
+| `artefakty_w_tekscie(body)` | Co w tym tekscie wyglada na blad programu, a nie na zdanie autora. |
 
 ### `db.py` — schemat i zapis
 
@@ -357,7 +358,7 @@
 
 ### `jezyki.py` — wzorce bramek zalezne od jezyka; przy jezyku bez wzorcow bramka jest JAWNIE wylaczona zamiast cicho nic nie lapac
 
-289 wierszy, 5 funkcji na poziomie modułu, 0 klas
+323 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -660,7 +661,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1553 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1578 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

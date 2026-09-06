@@ -398,6 +398,9 @@ def main() -> int:
     if kod == KOD_NIEOPUBLIKOWANY:
         db.finish_run(conn, run_id, "NIEOPUBLIKOWANY", "artykul",
                       "tekst gotowy, publikacja nie potwierdzona")
+    elif kod == KOD_ZATRZYMANY:
+        db.finish_run(conn, run_id, "ZATRZYMANY", "artykul",
+                      "bramka artefaktow zatrzymala tekst przed publikacja")
     else:
         db.finish_run(conn, run_id, "DONE" if kod == 0 else "SKIPPED", "artykul")
     return kod
@@ -933,6 +936,10 @@ def _katalog_ratunku() -> Path:
 # Rozny od 0 (udane) i rozny od reszty (pominiete, brak tematu), bo `main`
 # musi umiec ODROZNIC te trzy rzeczy w statusie przebiegu.
 KOD_NIEOPUBLIKOWANY = 3
+# TEKST ZATRZYMANY PRZEZ BRAMKE ARTEFAKTOW: zostaje na dysku z powodem, nie idzie
+# na konto i NIE jest ponawiany przez rutyne dnia (to nie awaria publikacji,
+# tylko odmowa). Patrz `gates.artefakty_w_tekscie`.
+KOD_ZATRZYMANY = 4
 
 URATOWANE: list[Path] = []
 
@@ -1445,6 +1452,24 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     # `stages.wstaw_date_zrodel`. Przed liczeniem dlugosci, zeby licznik slow
     # dotyczyl tekstu, ktory naprawde pojdzie.
     draft["body"] = stages.wstaw_date_zrodel(draft["body"], card)
+
+    # OSTATNIA BRAMKA — PO STOPCE Z DATA, PRZED OKLADKA I PRZEGLADARKA.
+    # Zmierzone 2026-09-06: artykul 0006 poszedl na konto ze zdaniem „Figures
+    # checked against sources to unknown." i z pierwsza osoba o wyciagach.
+    # Zaden etap ponizej nie umie tego cofnac, wiec pytanie pada tutaj —
+    # i pada PRZED okladka, zeby nie placic za obraz do tekstu, ktory nie wyjdzie.
+    artefakty = gates.artefakty_w_tekscie(
+        "%s\n\n%s" % (draft.get("title", ""), draft["body"]))
+    if artefakty:
+        print()
+        print("-- ZATRZYMANY: artefakty w tekscie --", flush=True)
+        for a in artefakty:
+            print("   [%s] %s" % (a["gate"], a["detail"][:170]), flush=True)
+        sciezka = stages.save(conn, run_id, brief, card, draft, "ZATRZYMANY",
+                              "; ".join(a["detail"] for a in artefakty)[:400],
+                              [*uwagi, *artefakty])
+        print(">> zapisano bez publikacji: %s" % sciezka, flush=True)
+        return KOD_ZATRZYMANY
 
     status, blokada = gates.verdict(uwagi)
     notatki = [*uwagi,

@@ -84,7 +84,7 @@ for nazwa, tekst in NIE_LAPIE_SIE:
 
 print()
 print("=== 3. LISTY FRAZ TEZ SA NIEPUSTE ===")
-for nazwa in ("SYGNAL_NIEWIADOMEJ", "META_GRANIC"):
+for nazwa in ("SYGNAL_NIEWIADOMEJ", "META_GRANIC", "WARSZTAT"):
     f = jezyki.frazy(nazwa, "English")
     sprawdz("%s ma frazy" % nazwa, len(f) >= 10, len(f))
 

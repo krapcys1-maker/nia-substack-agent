@@ -37,6 +37,14 @@ import re
 # Kazdy klucz to jedna bramka. Wartosc: (wzorzec, co lapie).
 WZORCE: dict[str, dict[str, tuple[str, str]]] = {
     "English": {
+        # ARTEFAKTY SZABLONU — ksztalt, nie slowo. Zmierzone 2026-09-06 w JUZ
+        # opublikowanym artykule: „Figures checked against sources to unknown.".
+        # Niewypelnione pole `{tytul}` albo `<the scene>`; znacznik TODO/TBD/
+        # [uzupelnic]; „to unknown", „as of n/a"; stopka z data bez daty.
+        "POLE_SZABLONU": (r"\{[a-z_][a-z_ ]{1,40}\}|<[a-z][a-z_ ,]{1,40}>", "niewypelnione pole szablonu w klamrach albo nawiasach katowych"),
+        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\blorem ipsum\b|\bTODO\b|\bTBD\b", "znacznik do uzupelnienia: TODO, TBD, [uzupelnic], lorem ipsum"),
+        "NIEWYPELNIONA_WARTOSC": (r"\b(?:to|as of|since|dated|until|of)\s+(?:unknown|n/?a|none|null|tbd|undefined)\b[.,;:]?", "slowo nieznane/brak w miejscu daty albo liczby"),
+        "STOPKA_BEZ_DATY": (r"Figures checked against sources to (?!\d{4})", "stopka o sprawdzeniu zrodel bez daty po niej"),
         # WZORZEC PRZENIESIONY CO DO ZNAKU ze starego `gates.py`, wyciety
         # z gita, a NIE przepisany. Pierwsza proba byla moja wlasna,
         # "rownowazna" wersja i oblala `test_podlogi_z_pamieci`: nie lapala
@@ -117,6 +125,10 @@ WZORCE: dict[str, dict[str, tuple[str, str]]] = {
     # zadnej pierwszej osoby. Dlatego czasowniki sa WYLICZONE, w obu rodzajach.
     # ------------------------------------------------------------------
     "Polish": {
+        "POLE_SZABLONU": (r"\{[a-z_][a-z_ ]{1,40}\}|<[a-z][a-z_ ,]{1,40}>", "niewypelnione pole szablonu w klamrach albo nawiasach katowych"),
+        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\blorem ipsum\b|\bTODO\b|\bTBD\b", "znacznik do uzupelnienia: TODO, TBD, [uzupelnic], lorem ipsum"),
+        "NIEWYPELNIONA_WARTOSC": (r"\b(?:do|od|na dzie[nń]|z dnia|według stanu na|wedlug stanu na)\s+(?:nieznan[aey]|brak|n/?a|none|null|tbd)\b[.,;:]?", "slowo nieznane/brak w miejscu daty albo liczby"),
+        "STOPKA_BEZ_DATY": (r"Liczby sprawdzone ze (?:źródłami|zrodlami) do (?!\d{4})", "stopka o sprawdzeniu zrodel bez daty po niej"),
         "ZMYSLONE_PRZEZYCIE": (
             r"\b(sta[lł]|widzia[lł]|ogl[aą]da[lł]|posz[lł]|pojecha[lł]|"
             r"jecha[lł]|chodzi[lł]|kupi[lł]|zjad[lł]|jad[lł]|pi[lł]|"
@@ -208,6 +220,19 @@ FRAZY: dict[str, dict[str, tuple[str, ...]]] = {
             "only partly", "in outline", "is not clear", "leaves open",
             "leave open", "not settled", "cannot answer", "is a separate question",
         ),
+        # ZDANIA O WLASNYM WARSZTACIE — model mowi o wyciagach, karcie,
+        # briefie albo o tym, czego nie mogl sprawdzic, zamiast o temacie.
+        # Zmierzone 2026-09-06 w opublikowanym artykule: „the excerpts I
+        # worked from", „in the pages I have". Frazy maloliterowe, szukane
+        # jako podciag w calym tekscie (nie tylko na poczatku akapitu).
+        "WARSZTAT": (
+            "the excerpts i", "the excerpts we", "i worked from", "we worked from",
+            "the pages i have", "the pages we have", "the sources i can cite",
+            "the sources i have", "the material i was given", "the material i have",
+            "the evidence card", "the card says", "the card gives", "the brief says",
+            "as instructed", "i could not verify", "i cannot verify",
+            "i was not able to verify", "from the excerpts", "in the excerpts",
+        ),
         "META_GRANIC": (
             "record", "evidence", "documents", "sources", "the text",
             "worth stating", "leaves open", "leave open", "does not settle",
@@ -226,6 +251,15 @@ FRAZY: dict[str, dict[str, tuple[str, ...]]] = {
         # PIERWSZE SLOWO AKAPITU O OGRANICZENIACH. Regula jest strukturalna:
         # akapit ma zaczynac sie od SAMEGO ograniczenia, a nie od zdania
         # o tym, ze zaraz bedzie akapit o ograniczeniach.
+        "WARSZTAT": (
+            "wyciągi, z których", "wyciagi, z ktorych", "z wyciągów", "z wyciagow",
+            "w materiałach, które mam", "w materialach, ktore mam",
+            "źródła, które mogę zacytować", "zrodla, ktore moge zacytowac",
+            "karta mówi", "karta mowi", "karta podaje", "brief każe", "brief kaze",
+            "zgodnie z instrukcją", "zgodnie z instrukcja",
+            "nie mogę zweryfikować", "nie moge zweryfikowac",
+            "nie udało mi się sprawdzić", "nie udalo mi sie sprawdzic",
+        ),
         "META_GRANIC": (
             "zapis", "dowody", "dokumenty", "źródła", "zrodla", "tekst",
             "materiał", "material", "warto zaznaczyć", "warto zaznaczyc",
