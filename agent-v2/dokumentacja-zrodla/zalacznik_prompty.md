@@ -329,7 +329,7 @@ is visible either way:
 
 #### `prompts/ciekawostki.md`
 
-**250 wierszy.** Pola wejsciowe: `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
+**254 wierszy.** Pola wejsciowe: `domeny_preferowane`, `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
 
 ````markdown
 Find {ile} documented facts worth stopping a stranger mid-scroll.
@@ -536,7 +536,11 @@ has, because the difference itself proves somebody decided.
   every item is true.
 - It survives being looked up. Prefer the primary document (a filing, a
   standard, a regulation, a court record, a company's own statement) over an
-  article describing one.
+  article describing one. In this field the primary documents usually live
+  at: {domeny_preferowane}. When a blog, a newsletter or a tool vendor's post
+  reports a price, a limit or a test result, find the maker's own page or the
+  filing it took it from and put THAT in `url`; keep the secondary page only
+  when the primary one genuinely does not exist.
 
 Avoid facts that trace back to nothing but listicles quoting each other; the
 famous ones a reader has already met three times; anything where the

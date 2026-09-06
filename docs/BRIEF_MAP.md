@@ -23,7 +23,7 @@ through a variable this scan cannot see. Check before cutting.
 | `bank.md` | 97 | `stages.posortuj_bank` | `bank` | 8 | 0 | 8 | 0 |
 | `bibliotekarz.md` | 46 | `stages.bibliotekarz` | `bibliotekarz` | 8 | 1 | 6 | **1** |
 | `cele.md` | 80 | `stages.wybierz_cele` | `cele` | 4 | 0 | 4 | 0 |
-| `ciekawostki.md` | 250 | `stages.znajdz_ciekawostki` | `curiosity` | 12 | 10 | 2 | 0 |
+| `ciekawostki.md` | 254 | `stages.znajdz_ciekawostki` | `curiosity` | 12 | 10 | 2 | 0 |
 | `dyskoveria.md` | 82 | `stages.discovery` | `discovery` | 0 | 0 | 0 | 0 |
 | `fedreg.md` | 82 | `stages.kandydaci_z_fedreg` | `fedreg` | 6 | 5 | 1 | 0 |
 | `forma.md` | 93 | `stages.ocen_forme` | `forma` | 14 | 8 | 6 | 0 |
