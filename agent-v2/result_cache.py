@@ -22,11 +22,16 @@ def read(path: Path, max_age: float):
 
 
 def write(path: Path, value):
+    write_json(path, {'at': time.time(), 'value': value})
+
+
+def write_json(path: Path, value):
+    """Replace a JSON document atomically, keeping the prior file on failure."""
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(dir=path.parent, suffix='.tmp')
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as out:
-            json.dump({'at': time.time(), 'value': value}, out, ensure_ascii=False)
+            json.dump(value, out, ensure_ascii=False)
         os.replace(temporary, path)
     finally:
         if os.path.exists(temporary):

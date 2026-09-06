@@ -87,6 +87,11 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
     if config.DRY_RUN:
         print(f"  [{purpose}] DRY_RUN — wywołanie pominięte", flush=True)
         return ''
+    key = config.DEEPSEEK_API_KEY if provider == 'deepseek' else config.ANTHROPIC_API_KEY
+    pause = retry_policy.path_for(config.DATA_DIR, ('provider', provider, model, key))
+    remaining = retry_policy.remaining(pause)
+    if remaining:
+        raise ProviderDeferred(f'{provider}/{model}: Retry-After, jeszcze {remaining:.0f}s')
     operation = uuid.uuid4().hex
     deadline = time.monotonic() + config.ROLE_DEADLINE_S.get(purpose, config.CALL_DEADLINE_S)
     if runtime.RUN_DEADLINE is not None:
@@ -115,8 +120,15 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
             state.usage['web_searches'] = searches
         except BaseException as exc:
             _settle_attempt(conn, call_id, state, model, started, False, exc)
+            response = getattr(exc, 'response', None)
+            status = getattr(exc, 'status_code', None) or getattr(response, 'status_code', None)
+            server_wait = (retry_policy.retry_after(getattr(response, 'headers', None))
+                           if status == 429 or (isinstance(status, int) and status >= 500)
+                           else None)
+            if server_wait:
+                retry_policy.defer(pause, server_wait)
             if isinstance(exc, Exception) and przejsciowy(exc) and proba <= config.PONOWIENIA:
-                wait = config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1)
+                wait = max(config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1), server_wait or 0)
                 if time.monotonic() + wait >= deadline:
                     raise runtime.DeadlineExceeded('deadline leaves no time for retry') from exc
                 print(f"  [{purpose}] {type(exc).__name__}; ponowienie {proba}/{config.PONOWIENIA} za {wait}s", flush=True)

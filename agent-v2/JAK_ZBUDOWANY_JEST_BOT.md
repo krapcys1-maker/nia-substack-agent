@@ -49,14 +49,14 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **29 plików**, 34 350 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **31 plików**, 34 638 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 29 plików zamiast dziesięciu.** Najbliższe usunięciu:
+**WADA — 31 plików zamiast dziesięciu.** Najbliższe usunięciu:
 `style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 173 zestawów
-testów, 4181 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 174 zestawów
+testów, 4182 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -168,14 +168,26 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `result_cache.py` — cache zalezne od tresci i czasu waznosci
 
-38 wierszy, 4 funkcji na poziomie modułu, 0 klas
+43 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `digest(value)` | — |
 | `read(path, max_age)` | — |
 | `write(path, value)` | — |
+| `write_json(path, value)` | Replace a JSON document atomically, keeping the prior file on failure. |
 | `code_fingerprint(root)` | — |
+
+### `retry_policy.py` — Retry-After i trwale przerwy przed kolejnym zapytaniem do serwera
+
+46 wierszy, 4 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `retry_after(headers, now)` | Retry-After can be seconds or an HTTP date; malformed values are ignored. |
+| `path_for(directory, scope)` | — |
+| `remaining(path)` | — |
+| `defer(path, seconds)` | — |
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
@@ -213,7 +225,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8279 wierszy, 146 funkcji na poziomie modułu, 0 klas
+8330 wierszy, 147 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -294,6 +306,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_o_tym_samym(a, b, min_wspolnych, prog)` *(wewn.)* | Czy dwa teksty mowia o tej samej rzeczy. |
 | `teksty_ostatnich_notek(ile)` | Tresci ostatnich notek — do porownania po NAZWACH WLASNYCH. |
 | `wybierz_material(zapas, unikaj, wczesniej, teksty)` | Bierze fakt, ktory NIE jest o tym samym, co juz dzis wystawiamy. |
+| `_chron_bank_notek()` *(wewn.)* | No publication happens during drafting: restore borrowed ideas on failure. |
 | `notki_dnia(conn, run_id, dzien_artykulu, karta, ciekawostki, link_artykulu, ile, od)` | Do pieciu notek z dziennego planu, kazda z innego materialu. |
 | `ocen_restack(conn, run_id, notka)` | Czy podac te notke dalej i z jakim zdaniem. |
 | `_podloga_z_pamieci(tekst)` *(wewn.)* | Dwie podlogi, ktore dzialaja BEZ karty dowodowej. |
@@ -475,7 +488,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1002 wierszy, 20 funkcji na poziomie modułu, 3 klas
+1019 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -852,7 +865,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci
 
-233 wierszy, 4 funkcji na poziomie modułu, 0 klas
+244 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -921,6 +934,17 @@ wiec nie da sie go rozjechac z kodem.
 |---|---|
 | `etap(nr, nazwa)` | — |
 | `werdykt(nazwa, stan, szczegol)` | — |
+| `main()` | — |
+
+### `audyt_kosztow.py` — odczyt kosztow, odrzucen serwera i pamieci bez wywolan API ani zmian danych
+
+158 wierszy, 4 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `_json(path, default)` *(wewn.)* | — |
+| `_failure(note)` *(wewn.)* | — |
+| `collect(directory, min_run)` | — |
 | `main()` | — |
 
 ### `audyt_systemu.py` — audyt CALEGO systemu na zywych danych: publikowanie, normy, komentarze, statystyki, artykul, pieniadze, pamiec
@@ -6563,6 +6587,11 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
     if config.DRY_RUN:
         print(f"  [{purpose}] DRY_RUN — wywołanie pominięte", flush=True)
         return ''
+    key = config.DEEPSEEK_API_KEY if provider == 'deepseek' else config.ANTHROPIC_API_KEY
+    pause = retry_policy.path_for(config.DATA_DIR, ('provider', provider, model, key))
+    remaining = retry_policy.remaining(pause)
+    if remaining:
+        raise ProviderDeferred(f'{provider}/{model}: Retry-After, jeszcze {remaining:.0f}s')
     operation = uuid.uuid4().hex
     deadline = time.monotonic() + config.ROLE_DEADLINE_S.get(purpose, config.CALL_DEADLINE_S)
     if runtime.RUN_DEADLINE is not None:
@@ -6591,8 +6620,15 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
             state.usage['web_searches'] = searches
         except BaseException as exc:
             _settle_attempt(conn, call_id, state, model, started, False, exc)
+            response = getattr(exc, 'response', None)
+            status = getattr(exc, 'status_code', None) or getattr(response, 'status_code', None)
+            server_wait = (retry_policy.retry_after(getattr(response, 'headers', None))
+                           if status == 429 or (isinstance(status, int) and status >= 500)
+                           else None)
+            if server_wait:
+                retry_policy.defer(pause, server_wait)
             if isinstance(exc, Exception) and przejsciowy(exc) and proba <= config.PONOWIENIA:
-                wait = config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1)
+                wait = max(config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1), server_wait or 0)
                 if time.monotonic() + wait >= deadline:
                     raise runtime.DeadlineExceeded('deadline leaves no time for retry') from exc
                 print(f"  [{purpose}] {type(exc).__name__}; ponowienie {proba}/{config.PONOWIENIA} za {wait}s", flush=True)

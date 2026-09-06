@@ -62,13 +62,15 @@ def do_przegladarki(powod: str) -> bool:
 
 
 print("=== 1. BLOKADY IDA DO PRZEGLADARKI ===")
-for kod in ("HTTP 403", "HTTP 401", "HTTP 429", "HTTP 503"):
+for kod in ("HTTP 403", "HTTP 401"):
     sprawdz("%s ponawiamy" % kod, do_przegladarki(kod))
 sprawdz("bledy sieci tez", do_przegladarki("ConnectError"))
 sprawdz("pusta tresc nadal tak", do_przegladarki("za mało treści (0 znaków)"))
 
 print()
 print("=== 2. A CZEGO NIE PONAWIAMY ===")
+for kod in ("HTTP 429", "HTTP 503"):
+    sprawdz("%s — przerwa serwera, bez natychmiastowego obejscia" % kod, not do_przegladarki(kod))
 sprawdz("404 nie — tam naprawde nic nie ma", not do_przegladarki("HTTP 404"))
 sprawdz("odmowa wprost nie — szanujemy ja",
         not do_przegladarki("host odmówił automatowi"))

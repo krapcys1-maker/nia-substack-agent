@@ -42,6 +42,8 @@ from typing import Any
 
 import config
 import llm
+import retry_policy
+import result_cache
 
 PLIK = config.DATA_DIR / "aktualne_modele.json"
 
@@ -101,7 +103,7 @@ def _swieze(dane: dict[str, Any]) -> bool:
         return False
     if pobrane.tzinfo is None:
         pobrane = pobrane.replace(tzinfo=timezone.utc)
-    return datetime.now(timezone.utc) - pobrane < timedelta(hours=WAZNE_GODZIN)
+    return timedelta(0) <= datetime.now(timezone.utc) - pobrane < timedelta(hours=WAZNE_GODZIN)
 
 
 def wczytaj() -> dict[str, Any]:
@@ -147,6 +149,12 @@ def pobierz(conn=None, run_id: int | None = None,
     if not getattr(config, "STAN_DZIEDZINY_PYTAJ", True):
         return zapisane
 
+    pause = retry_policy.path_for(PLIK.parent, ('field-refresh',
+        config.pytanie_o_stan_dziedziny(), config.MODEL_FOR.get('aktualne_modele'), SYSTEM, PYTANIE))
+    if not wymus and retry_policy.remaining(pause):
+        print("  [stan dziedziny] ostatnia proba nieudana — odswiezenie odlozone, zachowuje stary zapis", flush=True)
+        return zapisane
+
     teraz = datetime.now(timezone.utc)
     # Wlasne polaczenie, gdy nikt nie podal — koszt wywolania ma trafic do
     # bazy tak samo jak kazdy inny. Etap, ktory nie zapisuje kosztu, jest
@@ -169,6 +177,9 @@ def pobierz(conn=None, run_id: int | None = None,
         if not isinstance(dane, dict) or not dane.get("aktualne"):
             raise ValueError("odpowiedz bez listy aktualnych modeli")
     except Exception as exc:
+        # A failed daily refresh used to be ordered again by every caller.
+        # Keep its retry marker separate from the last successful evidence.
+        retry_policy.defer(pause, 3600.)
         print("  [stan dziedziny] nie odswiezylem (%s: %s) — biore ostatnie znane"
               % (type(exc).__name__, str(exc)[:120]), flush=True)
         return zapisane
@@ -180,9 +191,7 @@ def pobierz(conn=None, run_id: int | None = None,
     # O CO PYTALISMY — zeby odpowiedz nie przezyla zmiany pytania. Patrz `wczytaj`.
     dane["pytanie"] = config.pytanie_o_stan_dziedziny()
     try:
-        PLIK.parent.mkdir(parents=True, exist_ok=True)
-        PLIK.write_text(json.dumps(dane, ensure_ascii=False, indent=1),
-                        encoding="utf-8")
+        result_cache.write_json(PLIK, dane)
     except OSError:
         pass
     print("  [stan dziedziny] odswiezone: %d aktualnych, %d wycofanych"
@@ -215,6 +224,8 @@ def jako_tekst(dane: dict[str, Any] | None = None) -> str:
     # niczemu w tym miejscu, a kusza do sprawdzania.
     linie = ["Checked %s. Names and dates only — this is a list to check a name"
              " against, not material." % (dane.get("sprawdzone") or "recently")]
+    if not _swieze(dane):
+        linie.insert(0, "STALE CONTEXT: refresh is unavailable. Verify the current status before using any name below.")
     linie.append("CURRENT: " + ", ".join(
         "%s (%s)" % (m.get("model", "?"), str(m.get("wydany", "?"))[:7])
         for m in (dane.get("aktualne") or [])[:16]))
