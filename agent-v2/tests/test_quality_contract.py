@@ -42,6 +42,12 @@ class QualityContract(unittest.TestCase):
              patch.object(stages,'zweryfikuj',return_value=replacement):
             self.assertIsNone(stages.napraw_obalone(self.conn,self.rid,'Original text',original,
                 kontekst='context',min_slow=1,max_slow=50,etap='naprawa',zapora=lambda x:''))
+        records=list((pathlib.Path(self.temp.name)/'repair-attempts').glob('*.json'))
+        self.assertEqual(len(records),1)
+        saved=json.loads(records[0].read_text(encoding='utf-8'))['value']
+        self.assertFalse(saved['eligible'])
+        self.assertEqual(saved['candidate'],'A changed draft with a different factual error.')
+        self.assertEqual(saved['audit'],replacement)
     def test_article_with_failed_audit_is_not_ready(self):
         draft={'title':'Title','body':'Body'}
         with patch.object(stages,'zweryfikuj',return_value={'safe_to_post':False,'nie_sprawdzone':True}), \

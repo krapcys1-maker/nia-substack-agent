@@ -4234,8 +4234,9 @@ POWODY_CISZY = frozenset({"no_text", "wrong_language", "grief", "abuse",
 
 
 FACTCHECK_SYSTEM = (
-    "You search the web and return only facts you actually found, each with the "
-    "URL it came from. You never fill gaps from memory. Return only valid JSON."
+    "Verify factual claims against retrieved source text, never from memory. "
+    "Distinguish unsupported factual claims from opinions and conditional reasoning. "
+    "Give URLs for evidence and return the requested JSON."
 )
 
 
@@ -4476,32 +4477,7 @@ def zweryfikuj(
         return {"claims": [], "zarzuty": [], "nie_sprawdzone": True,
                 "safe_to_post": False,
                 "verdict": f"weryfikacja nie doszła do skutku ({exc}) — material wymaga ponownej kontroli"}
-    # Próg mieszka tutaj, nie w ocenie modelu.
-    #
-    # ZOSTAJE, bo to decyzja wlasciciela o tym, czym jest to pismo: nieznalezione
-    # to nie nieprawdziwe, a teza o mechanizmach, motywach czy skutkach jest
-    # STANOWISKIEM i ma prawo byc glosne i sporne.
-    #
-    # DOCHODZI ROZROZNIENIE, bo bez niego wyszla nieprawda. 24 sierpnia o 20:53
-    # poszla notka, ktora podawala rok ustanowienia pewnej reguly — o czterdziesci
-    # lat pozniejszy niz prawdziwy. Przeszla przez PLATNE sprawdzanie faktow
-    # z dwunastoma wyszukiwaniami, bo status byl `unverified`, a `unverified`
-    # przechodzilo.
-    #
-    # ROK NIE JEST TEZA. To liczba. Rozdzielamy wiec:
-    #   - twierdzenie NIESPRAWDZALNE (mechanizm, motyw, skutek) — przechodzi,
-    #   - twierdzenie SPRAWDZALNE, ktorego nie potwierdzono — nie przechodzi.
-    # Rozroznikiem jest LICZBA: data, kwota, odsetek, rok sa albo w rekordzie,
-    # albo ich nie ma. Teza o tym, dlaczego instytucja cos robi, liczby nie ma
-    # i miec nie musi.
-    #
-    # `outdated` dolozony do promptu weryfikacji 25 sierpnia byl przez ten kod
-    # ignorowany — czyli tamta naprawa istniala tylko na papierze.
-    def _ma_sprawdzalny_konkret(c: dict) -> bool:
-        """Czy w twierdzeniu jest liczba — data, kwota, odsetek, rok."""
-        tekst = "%s %s" % (c.get("claim") or "", c.get("what_the_source_says") or "")
-        return bool(re.search(r"\d", tekst))
-
+    # Eligibility follows factual support, including nonnumeric premises.
     if not isinstance(out, dict) or not isinstance(out.get('claims'), list):
         return {'claims': [], 'zarzuty': [], 'nie_sprawdzone': True,
                 'safe_to_post': False, 'verdict': 'invalid factcheck schema'}
@@ -4526,8 +4502,7 @@ def zweryfikuj(
         etykieta = {"refuted": "! OBALONE",
                     "outdated": "! NIEAKTUALNE"}.get(
                         status,
-                        "! NIEPOTWIERDZONA LICZBA" if _ma_sprawdzalny_konkret(c)
-                        else "! niepotwierdzone twierdzenie")
+                        "! NIEPOTWIERDZONE TWIERDZENIE")
         print(f"    {etykieta}: {str(c.get('claim'))[:80]}", flush=True)
 
     # ZARZUTY WYCHODZA NA ZEWNATRZ, nie tylko werdykt. Do 1 wrzesnia 2026 ta
@@ -4544,9 +4519,9 @@ def zweryfikuj(
 
 
 NAPRAWA_SYSTEM = (
-    "You correct false statements in short text that is about to be published. "
-    "You change only what you are told is false, you work only from the evidence "
-    "you are given, and you never soften a claim instead of correcting it. "
+    "You correct challenged factual claims in text that is about to be published. "
+    "Use only the supplied evidence. Correct a false claim; narrow or remove an "
+    "unsupported one. Preserve the rest when accurate, including qualifications. "
     "Return only valid JSON."
 )
 
@@ -4737,7 +4712,18 @@ def napraw_obalone(
               % powod, flush=True)
         return None
 
+    # Retain paid rewriting even if the next check fails. These are diagnostic
+    # drafts, never an automatic publication queue.
+    import result_cache
+    repair_path = config.DATA_DIR / 'repair-attempts' / (
+        '%s-%s.json' % (run_id, _NAPRAW_ZUZYTE[run_id]))
+    repair_record = {'original': tekst, 'candidate': nowy, 'eligible': False, 'audit': None}
+    result_cache.write(repair_path, repair_record)
     audyt2 = zweryfikuj(conn, run_id, nowy, kontekst)
+    repair_record['audit'] = audyt2
+    repair_record['eligible'] = bool(audyt2.get('safe_to_post')) and not (
+        audyt2.get('nie_sprawdzone') or audyt2.get('zarzuty'))
+    result_cache.write(repair_path, repair_record)
 
     # SPRAWDZENIE, KTORE SIE NIE ODBYLO, NIE JEST CZYSTYM WYNIKIEM.
     # Poprzednia wersja liczyla tu zarzuty ze slownika awaryjnego, ktory

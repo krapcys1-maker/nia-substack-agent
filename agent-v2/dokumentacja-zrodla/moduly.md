@@ -37,7 +37,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2938 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2926 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -71,7 +71,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8293 wierszy, 146 funkcji na poziomie modułu, 0 klas
+8279 wierszy, 146 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -333,7 +333,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-997 wierszy, 20 funkcji na poziomie modułu, 3 klas
+1002 wierszy, 20 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|

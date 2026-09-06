@@ -57,6 +57,9 @@ still needs evidence. A check that did not complete is recorded as unknown.
 Repairs use the existing per-run quota, pass the content checks and undergo
 verification again. A new unsupported claim is not accepted in exchange for
 removing an old one. An unsuccessful article remains saved, with its reason.
+Paid repair candidates and their checks remain in the private `repair-attempts`
+directory, including when verification fails. They are diagnostic drafts and
+are never treated as a publication queue.
 
 The article reviewer returns one compact decision per numbered text segment.
 NIA reconstructs the original text locally and rejects missing or duplicate

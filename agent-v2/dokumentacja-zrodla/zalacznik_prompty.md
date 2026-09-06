@@ -2135,7 +2135,7 @@ streamline, empower, innovative, groundbreaking, transformative.
 
 #### `prompts/recenzent.md`
 
-**26 wierszy.** Pola wejsciowe: `body`, `card_json`
+**29 wierszy.** Pola wejsciowe: `body`, `card_json`
 
 ````markdown
 Check every numbered segment against the evidence card. The numbers are stable
@@ -2151,6 +2151,9 @@ when they introduce no unestablished factual premises.
 Evidence of a rule does not establish how people usually behave. Evidence of an
 effect does not establish a motive. Preserve scope, jurisdiction, date and the
 conditions of numerical comparisons. Style examples are never factual evidence.
+The card's parallel_mechanisms are research leads, not verified facts. A factual
+comparison with another industry needs its own source and supporting excerpt;
+a plausible mechanism written into that field alone does not establish it.
 
 Return only JSON:
 {{"sentences":[{{"index":1,"class":"FACT","supported":true,"why":""}}],"summary":"one sentence"}}
@@ -2901,10 +2904,10 @@ Return only valid JSON, shaped exactly as:
 
 #### `prompts/weryfikacja.md`
 
-**144 wierszy.** Pola wejsciowe: `context`, `dzis`, `text`
+**152 wierszy.** Pola wejsciowe: `context`, `dzis`, `text`
 
 ````markdown
-Check a short text that is about to be published in public: a comment, a note
+Check a text that is about to be published: an article, a comment, a note
 or a reply. Search for each factual claim it makes and report what you find.
 
 You are not the author and you are not here to be kind. Assume the text is
@@ -2922,6 +2925,9 @@ Pure opinions, interpretations, analogies, questions and predictions are not
 claims. Check any factual premise within them, including what a quoted text
 actually said. A claim can be checkable without containing a number. Do not
 classify a missing source as confirmation or use hedging to hide a false premise.
+An explicitly conditional deduction ("if bids fell, both averages could be
+accurate") is reasoning. Check its empirical premises, without demanding a
+source that states the deduction itself. Keep such reasoning out of `claims`.
 
 ## How to check
 
@@ -2933,6 +2939,8 @@ document when the first search lands on a page that merely reports it. A
 note carries two or three claims, so four to six searches in all; a comment
 usually two. Stop the moment a claim is settled either way. Further searches
 on the same claim cost money and change nothing in the verdict.
+An article may contain more claims. Group repetitions of the same claim and
+reuse a primary document where appropriate, while checking every factual premise.
 
 - `confirmed`: a source states this, and it is still the case today. Give the
   URL.
@@ -2948,6 +2956,10 @@ source is not evidence about now merely because it is accurate. Be exact
 about near-misses: "X excluded Y" and "X did not include Y" can differ in a
 way that matters, and if the text overstates the strength or the intent of
 something a source describes more weakly, that is `refuted`, not `confirmed`.
+For legal proceedings, distinguish a final judgment from a procedural ruling.
+A pending case can have court orders already. Do not silently reinterpret
+"no court has ruled" as "there is no final judgment". Keep the scope and
+attribution of allegations intact, including in the conclusion.
 
 ## A number with somebody's name on it has to come from them
 
@@ -3020,15 +3032,14 @@ hedging" does, and needs a source.
 
 ## The verdict
 
-`safe_to_post` is false when either a source actually **contradicts**
-something the text states as fact, or something the text states as current is
-**`outdated`**. Those two, and nothing else.
+`safe_to_post` is false if any factual claim is `refuted`, `outdated` or
+`unverified`. Lack of evidence is not confirmation. This includes factual
+premises inside a comparison, a causal explanation or an opinion.
 
-An argument that cannot be looked up is not a failure. A claim about
-incentives, motives or consequences is a position, and a position is allowed
-to be wrong out loud the same way a person's is. Do not fail a text because
-it is unproven, unpopular, speculative, one-sided, or because you would have
-hedged it more. Fail it when it asserts something the record says is untrue.
+A pure value judgment, question or clearly stated prediction needs no proof.
+Do not fail it merely because you disagree. Distinguish such a position from
+an assertion about what a company did, what people believe or what caused an
+observed result: those are factual claims even without a number.
 
 ## Output
 
