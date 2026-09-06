@@ -100,6 +100,12 @@ Then follow the [installation guide](docs/INSTALL.md#2-download-and-install) to
 activate the environment, install dependencies, add your account and keys,
 activate a preset, and save your browser session.
 
+For a **fresh installation**, create the account file with
+`cp .env.example agent-v2/.env` on Linux/macOS, or
+`Copy-Item .env.example agent-v2/.env` in Windows PowerShell. Set
+`SUBSTACK_HANDLE`, `NAZWA_MARKI` and your API keys there. Preserve an existing
+configuration file; see [account setup](docs/INSTALL.md#3-set-your-account-and-keys).
+
 Once setup is complete, with `DRY_RUN=false`:
 
 ```bash
