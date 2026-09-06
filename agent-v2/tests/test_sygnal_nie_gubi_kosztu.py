@@ -55,6 +55,10 @@ config.uzyj_katalogu_danych(pathlib.Path(tempfile.mkdtemp()))
 # funkcje, ktora tylko rzuca wyjatkiem, wiec siec nie jest dotykana ani razu.
 config.DRY_RUN = False
 config.WOLNO_WOLAC_MODEL = True
+# Transport nizej jest atrapa. Preflight nadal wymaga niepustego klucza;
+# bez jawnej atrapy czysty CI zatrzymywal sie PRZED badanym wyjatkiem.
+# Test nie moze zalezec od prywatnego .env operatora.
+config.DEEPSEEK_API_KEY = "test-key"
 
 import db    # noqa: E402
 import llm   # noqa: E402

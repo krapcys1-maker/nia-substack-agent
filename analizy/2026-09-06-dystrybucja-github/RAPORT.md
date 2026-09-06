@@ -324,6 +324,18 @@ walidacji obu paczek w środowisku kontrolnym. Test linków dokumentacji równie
 przeszedł. Kontrola historii dotyczy reguł tego audytora; nie stanowi gwarancji
 wykrycia każdego możliwego sekretu.
 
+Po publikacji wykonano także zwykły, świeży klon bez wybierania gałęzi:
+GitHub zwrócił aktualne `main`, oba presety przeszły walidację i podgląd,
+a drzewo robocze pozostało czyste. Wskaźnik aktywacji lokalnej instalacji
+właściciela nie zmienił się podczas prac.
+
+Wcześniejszy czerwony przebieg CI ujawnił ponadto zależność testu
+`test_sygnal_nie_gubi_kosztu.py` od prywatnego klucza. Odtworzono 6 błędów
+w czystym środowisku; test zatrzymywał się na preflight zamiast docierać
+do podstawionej awarii transportu. Dodanie fikcyjnego klucza w samym teście
+dało **11 sprawdzeń zdanych, 0 oblanych**, bez zmian w produkcyjnej zaporze
+i bez sieci. Ten wynik jest dodatkowy względem 436 asercji wymienionych wyżej.
+
 To zakres wybranych kontroli, nie deklaracja przejścia każdego historycznego
 testu ani gotowości produkcyjnej nowego serwera. Repozytorium ma dodatkowy
 workflow CI, pominięcia środowiskowe i testy zależne od dawnych commitów.
