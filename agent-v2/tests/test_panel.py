@@ -124,6 +124,17 @@ class PanelTests(unittest.TestCase):
         self.assertTrue(status['keys']['DEEPSEEK_API_KEY'])
         self.assertNotIn(value, json.dumps(status))
 
+    def test_enabled_images_require_key_before_paid_worker_starts(self):
+        self.panel.account({'DEEPSEEK_API_KEY': 'dummy-deepseek-test', 'ANTHROPIC_API_KEY': 'dummy-anthropic-test'})
+        payload = self.payload()
+        payload['fields']['modele.obraz'] = 'gpt-image-1.5'
+        self.panel.save(payload)
+        self.panel.activate('my-preset', 'example')
+        with patch('panel_core.subprocess.Popen') as spawn:
+            with self.assertRaisesRegex(PanelError, 'OPENAI_API_KEY'):
+                self.panel.start('article-draft')
+        spawn.assert_not_called()
+
     def test_legacy_private_account_survives_editor_save(self):
         self.panel.save(self.payload())
         path = self.root / 'presety/my-preset/preset.toml'

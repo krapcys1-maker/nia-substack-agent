@@ -422,7 +422,9 @@ class Panel:
                 pr, _ = preset.rozwiaz(act.preset, config, config.DOMYSLNE_SILNIKA, self.env())
                 required = {preset._dostawca(model) for role, model in pr.MODEL_FOR.items() if role != 'obraz'}
                 required.add(preset._dostawca(pr.ZAPASOWY_PISARZ))
-                missing = [key for provider, key in [('deepseek', 'DEEPSEEK_API_KEY'), ('anthropic', 'ANTHROPIC_API_KEY')] if provider in required and not self.env().get(key)]
+                if pr.OBRAZ_WLACZONY:
+                    required.add('openai')
+                missing = [key for provider, key in [('deepseek', 'DEEPSEEK_API_KEY'), ('anthropic', 'ANTHROPIC_API_KEY'), ('openai', 'OPENAI_API_KEY')] if provider in required and not self.env().get(key)]
                 if missing:
                     raise PanelError('Missing API keys: ' + ', '.join(missing))
             with file_lock(self.state / 'config.lock'), file_lock(act.katalog_danych / 'agent.lock'):
