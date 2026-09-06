@@ -65,13 +65,17 @@ zrodlo = pathlib.Path("agent-v2/kanal.py").read_text(encoding="utf-8")
 
 def blok(nazwa: str) -> str:
     i = zrodlo.index("def %s(" % nazwa)
-    return zrodlo[i:zrodlo.index("\ndef ", i + 10)]
+    koniec = zrodlo.find("\ndef ", i + 10)          # ostatnia funkcja pliku nie ma nastepnej
+    return zrodlo[i:] if koniec == -1 else zrodlo[i:koniec]
 
 
 for f in ("posty_z_kanalu", "notki_z_kanalu", "szukaj_nowych"):
     b = blok(f)
-    sprawdz("%s odsiewa za stare przed dodaniem do listy" % f,
-            "_za_stary(kandydat)" in b and b.index("_za_stary(kandydat)") < b.index("append(kandydat)"))
+    # szukanie po haslach odklada kandydata do slownika, kanaly do listy
+    dodanie = "append(kandydat)" if "append(kandydat)" in b else 'znalezione[kandydat["url"]] = kandydat'
+    sprawdz("%s odsiewa za stare przed dodaniem do wyniku" % f,
+            "_za_stary(kandydat)" in b and dodanie in b
+            and b.index("_za_stary(kandydat)") < b.index(dodanie), dodanie)
 _szukanie = zrodlo[zrodlo.index("nowych celow") - 4000:zrodlo.index("nowych celow")]
 sprawdz("szukanie po haslach odsiewa za stare", "_za_stary(kandydat)" in _szukanie)
 sprawdz("i mowi w logu, ile odrzucilo jako stare", "za starych" in zrodlo and "za stare" in zrodlo)
