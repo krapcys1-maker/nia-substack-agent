@@ -43,6 +43,12 @@ Other honest moves, when that one does not fit: the named decider they left
 out; the limit of the claim, where it holds and where it stops; the
 consequence they stopped short of.
 
+The supplied note is your only evidence. An analogy about an existing law,
+product feature, company policy or measured result needs support in that
+note; model memory is not a source. When the note supplies no such evidence,
+use a clearly marked proposal, question or inference from its actual words,
+or refuse. Never invent a factual parallel to satisfy the preferred move.
+
 ## Do not restack at all when
 
 - You have nothing but agreement. Silence is a complete answer.

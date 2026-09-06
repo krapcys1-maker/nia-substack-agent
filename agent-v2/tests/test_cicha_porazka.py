@@ -598,11 +598,22 @@ sprawdz("potwierdzenie stoi MIEDZY klknieciem a zapisem",
 sprawdz("stan czytamy z uchwytu wezla, nie z lokatora po nazwie",
         "_uchwyt_wezla(kandydat)" in lajk)
 
-# Zdanie o niezmienionym `name=\"Like\"` — sprawdzenie na zywo nie bylo mozliwe,
-# wiec zostaje jako opisane ryzyko, nie jako slepa zmiana.
-sprawdz("lokator polubien nadal BEZ exact — swiadomie, z opisem dlaczego",
-        'name="Like")' in lajk and "OTWARTE" in lajk,
-        "albo zmieniono na slepo, albo znikl opis ryzyka")
+# Like i Unlike wystepuja obok siebie w rzeczywistym kanale. Wyszukiwanie
+# czesciowe cofaloby juz wykonane polubienie.
+class KanalZPolubionym(StronaKanalu):
+    def get_by_role(self, rola, name=None, exact=False):
+        if name == "Like":
+            return Zbior([nowe_polubienie] if exact else [juz_polubione, nowe_polubienie])
+        return Brak()
+
+
+wyczysc()
+juz_polubione, nowe_polubienie = Lajk(), Lajk()
+podepnij(KanalZPolubionym([juz_polubione, nowe_polubienie]))
+wynik_lajka = browser.polub_w_kanale(1, wyslij=True)
+sprawdz("juz polubiony wpis pozostaje polubiony", not juz_polubione.klikniety)
+sprawdz("nowy wpis dostaje polubienie", nowe_polubienie.klikniety)
+sprawdz("jedna nowa akcja w dzienniku", len(wpisy()) == 1 and wynik_lajka["polubione"] == 1)
 
 # Restack zostaje nietkniety — ale z opisem otwartego ryzyka, nie w milczeniu.
 restack = blok("restackuj_w_kanale")

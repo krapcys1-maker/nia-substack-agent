@@ -66,6 +66,10 @@ SYSTEM = (
 
 PYTANIE = """Today is {dzis}.
 
+## This publication's editorial direction
+
+{linia_redakcyjna}
+
 Here is a documented fact this publication has verified, with its source:
 
   FACT: {fact}
@@ -83,11 +87,17 @@ that way, and what else runs on the same arrangement.**
 The reader has no stake in the specific system. Before writing the question,
 answer privately: what does someone who will never touch this thing now know?
 
+Treat the supplied fact as a research lead. Do not strengthen it: a documented
+outcome does not prove an undocumented implementation or motive. A price or
+legal conclusion retains its date, territory, eligibility and exceptions.
+Sub-questions request evidence; their wording must not pretend we already
+found it. Keep the question within the editorial direction above.
+
 Return only valid JSON:
 
 {{"title": "<the working title, a noun phrase, no colon>",
   "question": "<the one question the article answers, ending in a question mark>",
-  "broken_belief": "<one plain sentence beginning 'Everyone assumes', or empty if the fact breaks no belief>",
+  "broken_belief": "<a specific assumption the source contradicts, or empty if no documented assumption is available; do not invent what everyone believes>",
   "why_they_believe_it": "<one sentence on where that belief comes from, or empty>",
   "the_moment": "<the concrete moment a reader can picture, one sentence>",
   "search_terms": ["<3-6 phrases a researcher should search to document this properly>"],
@@ -115,6 +125,7 @@ def temat_z_faktu(conn, run_id, fakt: dict) -> dict:
         "wybor", SYSTEM,
         PYTANIE.format(
             dzis=datetime.now(timezone.utc).strftime("%d %B %Y"),
+            linia_redakcyjna=stages._blok_presetu("linia_redakcyjna"),
             fact=fakt.get("fact", ""),
             mit=fakt.get("wrong_belief", ""),
             prawda=fakt.get("actually", ""),

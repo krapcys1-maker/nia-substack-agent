@@ -14,3 +14,7 @@ Headlines must name a recognizable purchase or condition and promise only the su
 Numbers must retain their units, dates, location and relevant eligibility. Do not annualize a promotional monthly price without accounting for renewal and mandatory charges. If the evidence cannot support a comparison, narrow it. Link the precise source when the output format allows; preserve the engine's evidence and citation rules.
 
 An ending may settle the practical distinction or expose the remaining uncertainty. It should not turn into a lecture about personal responsibility. Never shame someone for buying convenience, missing fine print or having limited alternatives. No invented biography, product testing, interviews or human review. Respect the engine's length and output contract.
+
+Treat parallel_mechanisms on a card as possible research leads, not verified evidence. A comparison involving another product, warranty, legal rule or insurance policy needs its own quoted source in confirmed_claims. Without that support, stay with the documented purchase. Do not fill the target length with generalized claims about unrelated industries. A compact explanation that answers the headline is preferable.
+
+Paraphrase source material in original prose. Keep direct quotation below 25 words per source and retain any condition that changes its meaning. Explain a technical rating only at the level actually documented; do not turn an enclosure test into a guarantee about each moving part or generalize one rating to every level of its scale.

@@ -329,7 +329,7 @@ is visible either way:
 
 #### `prompts/ciekawostki.md`
 
-**254 wierszy.** Pola wejsciowe: `domeny_preferowane`, `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
+**255 wierszy.** Pola wejsciowe: `domeny_preferowane`, `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
 
 ````markdown
 Find {ile} documented facts worth stopping a stranger mid-scroll.
@@ -500,11 +500,12 @@ out.
 
 {stan_modeli}
 
-Anything not on that list either does not exist yet or is already gone. If a
-source names something you cannot find above, that source is old. Never name a
-version, price, rule or product you have not checked is current, and never
-build on something that is being switched off: anything scheduled to end, the
-reader will have to unlearn within weeks.
+This is a PARTIAL reference list, not a complete inventory. Absence from it
+means unknown, not nonexistent or withdrawn. Check a missing name against its
+current primary source during this search. Verify versions, prices, rules and
+product availability before presenting them as current. A withdrawal or a
+scheduled shutdown can itself be the story: state its status and date clearly,
+and do not describe an ended arrangement as still available.
 
 ## Where attention is pointed this month
 
@@ -1389,7 +1390,7 @@ field in general.
 
 #### `prompts/naprawa.md`
 
-**39 wierszy.** Pola wejsciowe: `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
+**43 wierszy.** Pola wejsciowe: `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
 
 ````markdown
 You are correcting a short text that is about to be published. A fact-check
@@ -1399,9 +1400,11 @@ Your job is to make those claims TRUE. Not to delete them.
 
 RULES
 
-1. Change only what the fact-check challenged. Every other sentence comes back
-   word for word, including the opening: this is a correction, not a rewrite,
-   and the opening line and the rhythm were chosen on purpose.
+1. Correct the challenged claims and preserve the other sentences wherever
+   possible, including the opening and the chosen rhythm. If the correction
+   needs an effective date, exception or eligibility condition, you may tighten
+   surrounding wording to fit the word limit. Preserve its meaning and facts;
+   never drop the condition that makes the correction true.
 
 2. Do not remove the challenged sentence. Correct it. If a number is wrong, put
    the right number in. If a comparison is wrong, state the comparison the
@@ -1419,7 +1422,9 @@ RULES
    sources say", "roughly" and "arguably" are not corrections. If the number was
    wrong, a vaguer version of the wrong number is still wrong.
 
-6. Keep the length between {min_slow} and {max_slow} words.
+6. Keep the length between {min_slow} and {max_slow} whitespace-separated words.
+   Aim several words below the maximum, then count the complete final text.
+   The word limit applies after adding every required qualification.
 
 CONTEXT: {kontekst}
 
@@ -2195,7 +2200,7 @@ Include every sentence in `sentences`. Repeat only the failing ones in
 
 #### `prompts/restack.md`
 
-**73 wierszy.** Pola wejsciowe: `autor`, `glos_komentarza`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
+**79 wierszy.** Pola wejsciowe: `autor`, `glos_komentarza`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
 
 ````markdown
 Somebody else wrote the note below. You are deciding whether to pass it on to
@@ -2242,6 +2247,12 @@ anything else, it is the formula, not a thought.
 Other honest moves, when that one does not fit: the named decider they left
 out; the limit of the claim, where it holds and where it stops; the
 consequence they stopped short of.
+
+The supplied note is your only evidence. An analogy about an existing law,
+product feature, company policy or measured result needs support in that
+note; model memory is not a source. When the note supplies no such evidence,
+use a clearly marked proposal, question or inference from its actual words,
+or refuse. Never invent a factual parallel to satisfy the preferred move.
 
 ## Do not restack at all when
 

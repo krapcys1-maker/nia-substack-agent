@@ -33,7 +33,7 @@
 {{"targets": [{{"index": <number>, "worth_it": true|false, "what_i_would_add": "<one concrete sentence, or empty when worth_it is false>", "why_not": "<one sentence, only when worth_it is false>"}}]}}
 ```
 
-#### `ciekawostki.md` (254 wierszy)
+#### `ciekawostki.md` (255 wierszy)
 
 **Pola wejściowe:** `domeny_preferowane`, `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
 
@@ -123,7 +123,7 @@
 {{"note": "<the note>", "words": <integer>, "why_no_note": "<empty string, or — if the idea you had needed a fact and you refused to invent one — one sentence saying what evidence it would have needed>"}}
 ```
 
-#### `naprawa.md` (39 wierszy)
+#### `naprawa.md` (43 wierszy)
 
 **Pola wejściowe:** `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
 
@@ -177,7 +177,7 @@
 {{"sentences": [{{"text": "<the sentence, verbatim>", "class": "FACT"|"INFERENCE"|"PROSE", "supported": true|false, "why": "<only when class is FACT and supported is false: what is asserted and what the card lacks>"}}], "unsupported_facts": [{{"text": "...", "why": "..."}}], "summary": "<one sentence>"}}
 ```
 
-#### `restack.md` (73 wierszy)
+#### `restack.md` (79 wierszy)
 
 **Pola wejściowe:** `autor`, `glos_komentarza`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
 

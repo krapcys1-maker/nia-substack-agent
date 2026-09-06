@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="540" viewBox="0 0 1280 540" role="img" aria-labelledby="title desc">
+<title id="title">NIA — your publication, your rules</title>
+<desc id="desc">A reusable engine, portable editorial presets, and a private instance for your account. Research, evidence, writing, review, and publishing.</desc>
+<defs><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#dfddd3" stroke-width=".6"/></pattern></defs>
+<rect width="1280" height="540" rx="24" fill="#f3f1e8"/>
+<rect x="760" width="520" height="540" fill="url(#grid)"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<rect x="50" y="44" width="34" height="34" rx="9" fill="#ee5b32"/>
+<path d="M60 54h14M60 60h14M60 66h9" stroke="#fff" stroke-width="3"/>
+<text x="98" y="68" font-size="20" font-weight="700" fill="#252d28">NIA</text>
+<text x="50" y="169" font-size="58" font-weight="700" letter-spacing="-2" fill="#182e26">Your publication.</text>
+<text x="50" y="232" font-size="58" font-weight="700" letter-spacing="-2" fill="#182e26">Your rules.</text>
+<text x="53" y="282" font-size="21" fill="#59645b">Give the engine a subject, a voice and a schedule.</text>
+<text x="53" y="313" font-size="21" fill="#59645b">Run it with your own account and API keys.</text>
+<rect x="52" y="349" width="106" height="32" rx="16" fill="#e2e7dd"/>
+<text x="105" y="370" text-anchor="middle" font-size="13" font-weight="600" fill="#304a3b">LOCAL</text>
+<rect x="168" y="349" width="134" height="32" rx="16" fill="#e2e7dd"/>
+<text x="235" y="370" text-anchor="middle" font-size="13" font-weight="600" fill="#304a3b">LINUX SERVER</text>
+<rect x="312" y="349" width="140" height="32" rx="16" fill="#e2e7dd"/>
+<text x="382" y="370" text-anchor="middle" font-size="13" font-weight="600" fill="#304a3b">OPEN SOURCE</text>
+<rect x="788" y="48" width="424" height="100" rx="15" fill="#fffefa" stroke="#d6d7cb"/>
+<text x="811" y="77" font-size="12" letter-spacing="2" fill="#697467">01 / REUSABLE ENGINE</text>
+<text x="811" y="112" font-size="24" font-weight="600" fill="#182e26">One foundation. Many publications.</text>
+<path d="M1000 148v27" stroke="#adbaa9" stroke-width="2"/>
+<rect x="788" y="175" width="424" height="112" rx="15" fill="#182e26"/>
+<text x="811" y="204" font-size="12" letter-spacing="2" fill="#abc6b2">02 / EDITORIAL PRESET</text>
+<text x="811" y="242" font-size="25" font-weight="600" fill="#fffdf3">The Hidden Bill</text>
+<text x="811" y="267" font-size="14" fill="#c7d4c6">Consumer costs, subscriptions and the fine print.</text>
+<path d="M1000 287v27" stroke="#adbaa9" stroke-width="2"/>
+<rect x="788" y="314" width="424" height="100" rx="15" fill="#fffefa" stroke="#d6d7cb"/>
+<text x="811" y="343" font-size="12" letter-spacing="2" fill="#697467">03 / YOUR PRIVATE INSTANCE</text>
+<text x="811" y="376" font-size="20" font-weight="600" fill="#182e26">Account · idea bank · drafts · cost history</text>
+<path d="M52 448h1160" stroke="#cfd3c7"/>
+<g font-size="16" font-weight="600" fill="#304a3b">
+<text x="53" y="492">Research</text><text x="218" y="492">Evidence</text><text x="383" y="492">Writing</text><text x="548" y="492">Review</text><text x="713" y="492">Publishing</text>
+</g>
+<g fill="#9ba998" font-size="22"><text x="173" y="493">→</text><text x="338" y="493">→</text><text x="503" y="493">→</text><text x="668" y="493">→</text></g>
+<text x="1212" y="490" text-anchor="end" font-size="13" fill="#697467">ENGINE + PRESET + INSTANCE</text>
+</g></svg>

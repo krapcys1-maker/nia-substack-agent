@@ -187,7 +187,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5428 wierszy, 98 funkcji na poziomie modułu, 1 klas
+5524 wierszy, 102 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -251,6 +251,7 @@
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
+| `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |
 | `pobierz_subskrybentow()` | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. |
 | `zloz_wiersze_subskrybentow(surowe)` | Sklada wiersze z komorek tabeli panelu: adres, typ i data rozpoczecia. |
 | `_wiersze_subskrybentow(page)` *(wewn.)* | Czyta komorki tabeli z panelu i oddaje je zlozone. |
@@ -262,6 +263,7 @@
 | `polec_publikacje(fraza, powod, wyslij)` | Dodaje REKOMENDACJE publikacji. Domyslnie wypelnia i NIE zatwierdza. |
 | `zasubskrybuj(handle, wyslij)` | Subskrybuje cudzy profil. Ląduje w skrzynce właściciela, więc wąsko. |
 | `_esc(t)` *(wewn.)* | — |
+| `_html_z_linkami(tekst)` *(wewn.)* | Render inline HTTP(S) Markdown links while escaping all source text. |
 | `rozbierz_artykul(sciezka)` | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. |
 | `wypelnij_artykul(page, artykul, obraz)` | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. |
 | `wstaw_przycisk_subskrypcji(page)` | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. |
@@ -269,6 +271,8 @@
 | `ustaw_oswiadczenie_ai(wyslij)` | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. |
 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. |
 | `potwierdz_artykul(page, tytul)` | Pyta Substacka, czy artykuł naprawdę jest opublikowany. |
+| `_domknij_publikacje_artykulu(page)` *(wewn.)* | Complete Substack's optional subscribe-button prompt after Send. |
+| `_potwierdz_wysylke_artykulu(page, tytul)` *(wewn.)* | Retry reads, never the send; keep the editor open for a late prompt. |
 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | Wystawia artykuł na Substacku. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `_watek_z_paginacja(page, nid, stron)` *(wewn.)* | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. |
 | `potwierdz_odpowiedz(page, note_id, tekst)` | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. |
@@ -292,7 +296,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-989 wierszy, 15 funkcji na poziomie modułu, 3 klas
+1017 wierszy, 16 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -303,7 +307,8 @@
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
 | `_call_claude(purpose, system, user, web_search)` *(wewn.)* | — |
 | `_call_deepseek_responses(purpose, system, user)` *(wewn.)* | DeepSeek przez /responses z server-side `web_search`. |
-| `_deepseek_pick_from_urls(purpose, system, user, urls)` *(wewn.)* | Drugie, tanie wywołanie: wybierz z adresów, które wyszukiwanie już zwróciło. |
+| `_deepseek_pick_from_urls(purpose, system, user, urls)` *(wewn.)* | Reconstruct a search result with the ordinary streamed, billed transport. |
+| `_read_search_sources(urls)` *(wewn.)* | Recover evidence from already-found public URLs, without another search. |
 | `_call_deepseek(purpose, system, user)` *(wewn.)* | — |
 | `przejsciowy(exc)` | Czy ten błąd ma szansę minąć sam. |
 | `call(purpose, system, user)` | Woła model właściwy dla etapu i zapisuje koszt. Zwraca tekst odpowiedzi. |
@@ -671,7 +676,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1578 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1589 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

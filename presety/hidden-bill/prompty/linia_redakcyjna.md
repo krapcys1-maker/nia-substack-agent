@@ -17,3 +17,7 @@ For prices, compare the same product, period, location, eligibility and unavoida
 Reject generic money-saving lists, investment picks, market forecasts, partisan scorekeeping, affiliate shopping lists, unsupported claims about named businesses, fabricated consumer anecdotes, medical advice and instructions to bypass payment or access restrictions. Do not recycle another newsletter's distinctive thesis or prose. Independent research must earn our version of a topic.
 
 The useful ending is often the distinction that makes two offers comparable, a condition to look for, or what evidence would settle the question. Give procedural advice only when the current source supports it for the named jurisdiction. No universal promise of a refund, saving or legal entitlement.
+
+Describe only the mechanism the document establishes. A cartridge that stops working does not, by itself, prove a server-side switch; an ingress rating does not establish which engineering motive produced it. Mark explanations as inferences when the source does not document them. Never invent a publication date for an undated FAQ: an access date is a different fact.
+
+Avoid blanket legal conclusions such as "legal nationwide" from the absence of one federal ban. A regulator lacking authority to ban a practice in all circumstances can still enforce other restrictions. Keep proposals, enforcement policy, statutory prohibitions and their effective dates distinct. If a short format cannot carry the necessary qualification, choose a narrower claim.

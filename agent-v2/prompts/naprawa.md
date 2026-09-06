@@ -5,9 +5,11 @@ Your job is to make those claims TRUE. Not to delete them.
 
 RULES
 
-1. Change only what the fact-check challenged. Every other sentence comes back
-   word for word, including the opening: this is a correction, not a rewrite,
-   and the opening line and the rhythm were chosen on purpose.
+1. Correct the challenged claims and preserve the other sentences wherever
+   possible, including the opening and the chosen rhythm. If the correction
+   needs an effective date, exception or eligibility condition, you may tighten
+   surrounding wording to fit the word limit. Preserve its meaning and facts;
+   never drop the condition that makes the correction true.
 
 2. Do not remove the challenged sentence. Correct it. If a number is wrong, put
    the right number in. If a comparison is wrong, state the comparison the
@@ -25,7 +27,9 @@ RULES
    sources say", "roughly" and "arguably" are not corrections. If the number was
    wrong, a vaguer version of the wrong number is still wrong.
 
-6. Keep the length between {min_slow} and {max_slow} words.
+6. Keep the length between {min_slow} and {max_slow} whitespace-separated words.
+   Aim several words below the maximum, then count the complete final text.
+   The word limit applies after adding every required qualification.
 
 CONTEXT: {kontekst}
 

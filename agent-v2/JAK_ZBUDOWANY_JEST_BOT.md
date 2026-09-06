@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **26 plików**, 33 983 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **26 plików**, 34 118 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 168 zestawów
-testów, 4212 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 171 zestawów
+testów, 4214 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -329,7 +329,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5428 wierszy, 98 funkcji na poziomie modułu, 1 klas
+5524 wierszy, 102 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -393,6 +393,7 @@ wiec nie da sie go rozjechac z kodem.
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
+| `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |
 | `pobierz_subskrybentow()` | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. |
 | `zloz_wiersze_subskrybentow(surowe)` | Sklada wiersze z komorek tabeli panelu: adres, typ i data rozpoczecia. |
 | `_wiersze_subskrybentow(page)` *(wewn.)* | Czyta komorki tabeli z panelu i oddaje je zlozone. |
@@ -404,6 +405,7 @@ wiec nie da sie go rozjechac z kodem.
 | `polec_publikacje(fraza, powod, wyslij)` | Dodaje REKOMENDACJE publikacji. Domyslnie wypelnia i NIE zatwierdza. |
 | `zasubskrybuj(handle, wyslij)` | Subskrybuje cudzy profil. Ląduje w skrzynce właściciela, więc wąsko. |
 | `_esc(t)` *(wewn.)* | — |
+| `_html_z_linkami(tekst)` *(wewn.)* | Render inline HTTP(S) Markdown links while escaping all source text. |
 | `rozbierz_artykul(sciezka)` | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. |
 | `wypelnij_artykul(page, artykul, obraz)` | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. |
 | `wstaw_przycisk_subskrypcji(page)` | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. |
@@ -411,6 +413,8 @@ wiec nie da sie go rozjechac z kodem.
 | `ustaw_oswiadczenie_ai(wyslij)` | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. |
 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. |
 | `potwierdz_artykul(page, tytul)` | Pyta Substacka, czy artykuł naprawdę jest opublikowany. |
+| `_domknij_publikacje_artykulu(page)` *(wewn.)* | Complete Substack's optional subscribe-button prompt after Send. |
+| `_potwierdz_wysylke_artykulu(page, tytul)` *(wewn.)* | Retry reads, never the send; keep the editor open for a late prompt. |
 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | Wystawia artykuł na Substacku. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `_watek_z_paginacja(page, nid, stron)` *(wewn.)* | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. |
 | `potwierdz_odpowiedz(page, note_id, tekst)` | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. |
@@ -434,7 +438,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-989 wierszy, 15 funkcji na poziomie modułu, 3 klas
+1017 wierszy, 16 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -445,7 +449,8 @@ wiec nie da sie go rozjechac z kodem.
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
 | `_call_claude(purpose, system, user, web_search)` *(wewn.)* | — |
 | `_call_deepseek_responses(purpose, system, user)` *(wewn.)* | DeepSeek przez /responses z server-side `web_search`. |
-| `_deepseek_pick_from_urls(purpose, system, user, urls)` *(wewn.)* | Drugie, tanie wywołanie: wybierz z adresów, które wyszukiwanie już zwróciło. |
+| `_deepseek_pick_from_urls(purpose, system, user, urls)` *(wewn.)* | Reconstruct a search result with the ordinary streamed, billed transport. |
+| `_read_search_sources(urls)` *(wewn.)* | Recover evidence from already-found public URLs, without another search. |
 | `_call_deepseek(purpose, system, user)` *(wewn.)* | — |
 | `przejsciowy(exc)` | Czy ten błąd ma szansę minąć sam. |
 | `call(purpose, system, user)` | Woła model właściwy dla etapu i zapisuje koszt. Zwraca tekst odpowiedzi. |
@@ -813,7 +818,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1578 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1589 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6626,6 +6631,20 @@ def call(
         price_verified=int(verified), ok=1, note=None,
     )
     _log(purpose, model, tin, tout, searches, usd, verified)
+    if provider == "deepseek" and web_search:
+        needs_recovery = not text.strip()
+        if purpose in SEARCH_JSON_PURPOSES and text.strip():
+            try:
+                parse_json(text)
+            except (ValueError, TypeError):
+                needs_recovery = True
+        if needs_recovery:
+            if not urls:
+                raise Truncated("Search completed without usable text or URLs; its usage was recorded")
+            print(f"  [{purpose}] odzyskuje JSON z zakonczonego researchu "
+                  f"({len(set(urls))} adresow), bez ponownego wyszukiwania", flush=True)
+            return _deepseek_pick_from_urls(
+                purpose, system, user, urls, conn=conn, run_id=run_id, partial=text)
     return text
 ```
 
@@ -8472,6 +8491,13 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 4000)
+        subscription_labels = ("Subscribed", "Subskrybujesz", "Subskrybowano", "Upgrade")
+        if rodzaj == "subskrypcja" and any(
+                page.get_by_role("button", name=label, exact=True).count()
+                for label in subscription_labels):
+            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
+            print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
+            return wynik
         for nazwa in napisy:
             k = page.get_by_role("button", name=nazwa, exact=True).first
             if k.count() == 0 or not k.is_visible():
@@ -8482,8 +8508,20 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 return wynik
             k.click(timeout=10_000)
             page.wait_for_timeout(5000)
-            # Po kliknieciu napis zmienia sie na stan przeciwny.
-            wynik["zrobione"] = k.count() == 0 or not k.is_visible()
+            if rodzaj == "subskrypcja":
+                _wybierz_darmowy_plan(page)
+                # A navigation to pricing is not a completed subscription.
+                page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
+                          wait_until="domcontentloaded")
+                page.wait_for_timeout(SETTLE_MS + 3000)
+                wynik["zrobione"] = any(
+                    page.get_by_role("button", name=label, exact=True).count()
+                    for label in subscription_labels)
+                wynik["potwierdzone"] = bool(wynik["zrobione"])
+                if not wynik["zrobione"]:
+                    wynik["blad"] = "brak potwierdzenia darmowej subskrypcji na profilu"
+            else:
+                wynik["zrobione"] = k.count() == 0 or not k.is_visible()
             dopisz_wynik(rodzaj, wynik, komu=handle)
             print("  ZROBIONE" if wynik["zrobione"]
                   else "  KLIKNIETE, ALE STAN SIE NIE ZMIENIL", flush=True)
@@ -8499,7 +8537,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         # siedem dni, wygladal w dzienniku jak blok, ktory sie nie odbyl —
         # a on sie odbywal, chodzil po profilach i za kazdym razem odchodzil
         # z pustymi rekami. Tego nie da sie naprawic, czego nie widac.
-        if wyslij:
+        if wyslij and not wynik.get("pominiete"):
             dopisz_wynik(rodzaj, wynik, komu=handle)
         page.close()
         browser.close()
@@ -8510,7 +8548,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
 <!--KOD:browser.restackuj_w_kanale-->
 ```python
 def restackuj_w_kanale(
-    ile: int, decyzja, wyslij: bool = False,
+    ile: int, decyzja, wyslij: bool = False, *, url: str | None = None,
 ) -> dict[str, Any]:
     """Podaje dalej cudze notki z wlasnym zdaniem.
 
@@ -8548,7 +8586,7 @@ def restackuj_w_kanale(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto("https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
+        page.goto(url or "https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
 
@@ -8565,6 +8603,9 @@ def restackuj_w_kanale(
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.
+                kto = _autor_przy_przycisku(kandydat)
+                if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    continue
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
                     continue
@@ -9163,7 +9204,7 @@ is visible either way:
 
 #### `prompts/ciekawostki.md`
 
-**254 wierszy.** Pola wejsciowe: `domeny_preferowane`, `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
+**255 wierszy.** Pola wejsciowe: `domeny_preferowane`, `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
 
 ````markdown
 Find {ile} documented facts worth stopping a stranger mid-scroll.
@@ -9334,11 +9375,12 @@ out.
 
 {stan_modeli}
 
-Anything not on that list either does not exist yet or is already gone. If a
-source names something you cannot find above, that source is old. Never name a
-version, price, rule or product you have not checked is current, and never
-build on something that is being switched off: anything scheduled to end, the
-reader will have to unlearn within weeks.
+This is a PARTIAL reference list, not a complete inventory. Absence from it
+means unknown, not nonexistent or withdrawn. Check a missing name against its
+current primary source during this search. Verify versions, prices, rules and
+product availability before presenting them as current. A withdrawal or a
+scheduled shutdown can itself be the story: state its status and date clearly,
+and do not describe an ended arrangement as still available.
 
 ## Where attention is pointed this month
 
@@ -10223,7 +10265,7 @@ field in general.
 
 #### `prompts/naprawa.md`
 
-**39 wierszy.** Pola wejsciowe: `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
+**43 wierszy.** Pola wejsciowe: `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
 
 ````markdown
 You are correcting a short text that is about to be published. A fact-check
@@ -10233,9 +10275,11 @@ Your job is to make those claims TRUE. Not to delete them.
 
 RULES
 
-1. Change only what the fact-check challenged. Every other sentence comes back
-   word for word, including the opening: this is a correction, not a rewrite,
-   and the opening line and the rhythm were chosen on purpose.
+1. Correct the challenged claims and preserve the other sentences wherever
+   possible, including the opening and the chosen rhythm. If the correction
+   needs an effective date, exception or eligibility condition, you may tighten
+   surrounding wording to fit the word limit. Preserve its meaning and facts;
+   never drop the condition that makes the correction true.
 
 2. Do not remove the challenged sentence. Correct it. If a number is wrong, put
    the right number in. If a comparison is wrong, state the comparison the
@@ -10253,7 +10297,9 @@ RULES
    sources say", "roughly" and "arguably" are not corrections. If the number was
    wrong, a vaguer version of the wrong number is still wrong.
 
-6. Keep the length between {min_slow} and {max_slow} words.
+6. Keep the length between {min_slow} and {max_slow} whitespace-separated words.
+   Aim several words below the maximum, then count the complete final text.
+   The word limit applies after adding every required qualification.
 
 CONTEXT: {kontekst}
 
@@ -11029,7 +11075,7 @@ Include every sentence in `sentences`. Repeat only the failing ones in
 
 #### `prompts/restack.md`
 
-**73 wierszy.** Pola wejsciowe: `autor`, `glos_komentarza`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
+**79 wierszy.** Pola wejsciowe: `autor`, `glos_komentarza`, `kat_redakcyjny`, `nisza`, `obszary_seam`, `rzeczy_czytelnika`, `tekst`
 
 ````markdown
 Somebody else wrote the note below. You are deciding whether to pass it on to
@@ -11076,6 +11122,12 @@ anything else, it is the formula, not a thought.
 Other honest moves, when that one does not fit: the named decider they left
 out; the limit of the claim, where it holds and where it stops; the
 consequence they stopped short of.
+
+The supplied note is your only evidence. An analogy about an existing law,
+product feature, company policy or measured result needs support in that
+note; model memory is not a source. When the note supplies no such evidence,
+use a clearly marked proposal, question or inference from its actual words,
+or refuse. Never invent a factual parallel to satisfy the preferred move.
 
 ## Do not restack at all when
 

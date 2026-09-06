@@ -90,26 +90,19 @@ znaki_niszy = [
     "consumer", "checkout", "loyalty", "repair", "warranty", "ownership",
     "digital purchase", "support", "right to repair", "dark pattern", "review",
     "delivery", "ticket", "broadband", "hotel", "rental", "membership",
-    "personal data", "data broker", "switching", "lock-in", "spare part",
+    "personal data", "data broker", "switching", "lock-in", "spare part", "planned obsolescence",
 ]
-# These queries find relevant people and conversations. Every query contains
-# a niche marker, as required by the engine's target filter.
+# Short phrases tested in Substack search. Broad phrases such as "smart home
+# ownership" retrieved home/lifestyle posts; distinctive terms find the actual
+# consumer-policy and repair conversations. The model still evaluates relevance.
 hasla_szukania = [
-    "subscription cancellation experience", "automatic renewal pricing",
-    "subscription business model", "membership cancellation design",
-    "consumer protection enforcement", "hidden fees at checkout",
-    "hotel resort fee disclosure", "ticket pricing transparency",
-    "delivery service fees", "broadband introductory price",
-    "rental application fees", "consumer refund policy",
-    "loyalty card pricing", "personalized pricing evidence",
-    "surveillance pricing consumer data", "dynamic pricing fairness",
-    "dark patterns in checkout", "consumer privacy and personal data",
-    "right to repair electronics", "repair parts availability",
-    "warranty repair restrictions", "printer subscription cancellation",
-    "software support end of life", "digital purchase ownership",
-    "smart home ownership", "spare parts pricing",
-    "fake reviews marketplace", "consumer switching costs",
-    "platform lock-in consumers", "product repairability testing",
+    "junk fees", "right to repair", "surveillance pricing",
+    "subscription cancellation", "digital ownership",
+    "automatic renewal", "resort fees", "ticket fees",
+    "delivery fees", "broadband pricing", "rental fees",
+    "refund policy", "loyalty pricing", "personalized pricing",
+    "dark patterns", "data brokers", "repair parts",
+    "warranty exclusions", "printer subscription", "planned obsolescence",
 ]
 dziedziny = [
     "the advertised price and the first mandatory charge missing from it",

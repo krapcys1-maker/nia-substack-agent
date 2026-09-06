@@ -1,0 +1,50 @@
+[
+  {
+    "id": "01-intro",
+    "start": 0,
+    "duration": 7,
+    "narration": "A publication starts with a point of view. NIA gives yours a working system."
+  },
+  {
+    "id": "02-preset",
+    "start": 7,
+    "duration": 9,
+    "narration": "Choose a preset, or bring your own subject, sources and voice. The Hidden Bill follows the terms behind everyday purchases."
+  },
+  {
+    "id": "03-research",
+    "start": 16,
+    "duration": 10,
+    "narration": "The agent finds topics, collects sources and builds a bank of ideas. Claims are checked before a draft moves forward."
+  },
+  {
+    "id": "04-article",
+    "start": 26,
+    "duration": 19.0,
+    "narration": "From that research, a full article takes shape, with a headline, source links and an original illustration. Then the bot publishes it to Substack."
+  },
+  {
+    "id": "05-note",
+    "start": 45.0,
+    "duration": 12.0,
+    "narration": "Turn a single useful finding into a Note, and see it appear on the account."
+  },
+  {
+    "id": "06-comment",
+    "start": 57.0,
+    "duration": 15.0,
+    "narration": "Join relevant conversations with a focused comment. Add a like. Restack a useful post with a thought of your own."
+  },
+  {
+    "id": "07-subscribe",
+    "start": 72.0,
+    "duration": 8,
+    "narration": "Subscribe to publications that fit your beat, and keep the conversation moving."
+  },
+  {
+    "id": "08-outro",
+    "start": 80.0,
+    "duration": 12,
+    "narration": "Your account. Your models. Your limits. Run locally or on a server. Start with the open-source engine, and make the publication yours."
+  }
+]

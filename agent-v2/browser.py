@@ -2666,7 +2666,8 @@ def _autor_przy_przycisku(przycisk) -> dict[str, str] | None:
     if not isinstance(dane, dict):
         return None
     nazwa = " ".join(str(dane.get("tekst") or "").split())
-    uchwyt = str(dane.get("href") or "").rsplit("/@", 1)[-1].strip("/")
+    from urllib.parse import urlsplit
+    uchwyt = urlsplit(str(dane.get("href") or "")).path.rsplit("/@", 1)[-1].strip("/")
     if not nazwa and not uchwyt:
         return None
     return {"nazwa": nazwa or uchwyt, "uchwyt": uchwyt}
@@ -2768,7 +2769,8 @@ def potwierdz_polubienie(uchwyt, przed: str | None) -> bool | None:
     return po != przed
 
 
-def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
+def polub_w_kanale(ile: int, wyslij: bool = False, *,
+                    url: str | None = None) -> dict[str, Any]:
     """Polubienia w kanale czytelnika.
 
     Polubienie jest najtańszym uczciwym sygnałem, jaki konto może wysłać, i
@@ -2794,22 +2796,12 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto("https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
+        page.goto(url or "https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
 
-        # OTWARTE, SWIADOMIE NIETKNIETE: ten lokator nie ma `exact=True`, wiec
-        # Playwright dopasowuje po PODCIAGU — zlapie takze „Liked" i „Unlike",
-        # gdyby Substack tak nazywal przycisk po polubieniu. Klikniecie
-        # w polubiony wpis ZDEJMUJE polubienie, a sprawdzenie stanu ponizej
-        # tego nie wylapie: zdjecie polubienia tez zmienia przycisk.
-        # `_klik_na_profilu` ma `exact=True` wlasnie dlatego.
-        #
-        # Nie zmieniam tego bez pomiaru na zywym kanale. Gdyby pelna nazwa
-        # brzmiala inaczej niz „Like", `exact=True` wylaczyloby polubienia
-        # CALKOWICIE i nikt by tego nie zauwazyl — dziennik zapisywalby po
-        # prostu zero prob, czyli to samo, co spokojny dzien.
-        przyciski = page.get_by_role("button", name="Like")
+        # Exact label excludes Unlike/Liked and cannot undo an existing like.
+        przyciski = page.get_by_role("button", name="Like", exact=True)
         wynik["znalezione"] = przyciski.count()
         print(f"  do polubienia w kanale: {wynik['znalezione']}", flush=True)
 
@@ -2839,6 +2831,8 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
                 # Zmierzone przed napisaniem tego kodu: autor stoi JEDEN poziom
                 # nad przyciskiem, 5 na 5 sprawdzonych wpisow w kanale.
                 kto = _autor_przy_przycisku(kandydat)
+                if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    continue
                 # POZA REWIREM NIE LUBIMY. Polubienie nic nie twierdzi, ale
                 # mowi czytelnikowi profilu, co to konto czyta — patrz `w_rewirze`.
                 if not w_rewirze(_notka_przy_przycisku(kandydat).get("tekst", "")):
@@ -2885,6 +2879,8 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
                       flush=True)
                 zapisz_w_dzienniku("polubienie", udane=True,
                                    potwierdzone=bool(potwierdzone), **opis)
+                if wynik["polubione"] >= ile:
+                    break
                 page.wait_for_timeout(
                     int(random.uniform(*config.ODSTEPY["lajk"]) * 1000))
             except Exception as exc:
@@ -2947,6 +2943,13 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 4000)
+        subscription_labels = ("Subscribed", "Subskrybujesz", "Subskrybowano", "Upgrade")
+        if rodzaj == "subskrypcja" and any(
+                page.get_by_role("button", name=label, exact=True).count()
+                for label in subscription_labels):
+            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
+            print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
+            return wynik
         for nazwa in napisy:
             k = page.get_by_role("button", name=nazwa, exact=True).first
             if k.count() == 0 or not k.is_visible():
@@ -2957,8 +2960,20 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 return wynik
             k.click(timeout=10_000)
             page.wait_for_timeout(5000)
-            # Po kliknieciu napis zmienia sie na stan przeciwny.
-            wynik["zrobione"] = k.count() == 0 or not k.is_visible()
+            if rodzaj == "subskrypcja":
+                _wybierz_darmowy_plan(page)
+                # A navigation to pricing is not a completed subscription.
+                page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
+                          wait_until="domcontentloaded")
+                page.wait_for_timeout(SETTLE_MS + 3000)
+                wynik["zrobione"] = any(
+                    page.get_by_role("button", name=label, exact=True).count()
+                    for label in subscription_labels)
+                wynik["potwierdzone"] = bool(wynik["zrobione"])
+                if not wynik["zrobione"]:
+                    wynik["blad"] = "brak potwierdzenia darmowej subskrypcji na profilu"
+            else:
+                wynik["zrobione"] = k.count() == 0 or not k.is_visible()
             dopisz_wynik(rodzaj, wynik, komu=handle)
             print("  ZROBIONE" if wynik["zrobione"]
                   else "  KLIKNIETE, ALE STAN SIE NIE ZMIENIL", flush=True)
@@ -2974,12 +2989,39 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         # siedem dni, wygladal w dzienniku jak blok, ktory sie nie odbyl —
         # a on sie odbywal, chodzil po profilach i za kazdym razem odchodzil
         # z pustymi rekami. Tego nie da sie naprawic, czego nie widac.
-        if wyslij:
+        if wyslij and not wynik.get("pominiete"):
             dopisz_wynik(rodzaj, wynik, komu=handle)
         page.close()
         browser.close()
         p.stop()
     return wynik
+
+
+def _wybierz_darmowy_plan(page) -> bool:
+    """Finish an explicitly free plan; never select a paid/default plan."""
+    for label in ("Continue free", "Continue for free", "Subscribe for free",
+                  "Kontynuuj za darmo", "Subskrybuj za darmo"):
+        button = page.get_by_role("button", name=label, exact=True)
+        if button.count() == 1 and button.is_visible():
+            button.click(timeout=10000)
+            page.wait_for_timeout(4000)
+            return True
+    for label in ("Free", "Darmowy", "Bezpłatnie"):
+        marker = page.get_by_text(label, exact=True)
+        for i in range(marker.count()):
+            container = marker.nth(i)
+            for _ in range(6):
+                container = container.locator("..")
+                select = container.get_by_role("button", name=re.compile(r"^(Select|Wybierz)$"))
+                if select.count() != 1:
+                    continue
+                text = container.inner_text()
+                if re.search(r"[$€£]|\b(?:PLN|USD|EUR)\s*\d|\d\s*(?:/month|/year|/mies)", text, re.I):
+                    break
+                select.click(timeout=10000)
+                page.wait_for_timeout(4000)
+                return True
+    return False
 
 
 def pobierz_subskrybentow() -> dict[str, Any]:
@@ -3585,6 +3627,18 @@ def _esc(t: str) -> str:
     return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _html_z_linkami(tekst: str) -> str:
+    """Render inline HTTP(S) Markdown links while escaping all source text."""
+    czesci = []
+    koniec = 0
+    for m in re.finditer(r"\[([^\]\n]+)\]\((https?://[^\s)]+)\)", tekst):
+        czesci.append(_esc(tekst[koniec:m.start()]))
+        czesci.append(f'<a href="{_esc(m.group(2))}">{_esc(m.group(1))}</a>')
+        koniec = m.end()
+    czesci.append(_esc(tekst[koniec:]))
+    return "".join(czesci)
+
+
 def rozbierz_artykul(sciezka: Path) -> dict[str, Any]:
     """Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML.
 
@@ -3621,16 +3675,16 @@ def rozbierz_artykul(sciezka: Path) -> dict[str, Any]:
                 lista_otwarta = True
             for poz in b.splitlines():
                 poz = poz.strip()[2:].strip()
-                m = re.match(r"\[(.+?)\]\((\S+?)\)$", poz)
-                html.append(
-                    f'<li><a href="{_esc(m.group(2))}">{_esc(m.group(1))}</a></li>'
-                    if m else f"<li>{_esc(poz)}</li>"
-                )
+                html.append(f"<li>{_html_z_linkami(poz)}</li>")
             continue
         if lista_otwarta:
             html.append("</ul>")
             lista_otwarta = False
-        html.append(f"<p>{_esc(' '.join(b.split()))}</p>")
+        tresc = ' '.join(b.split())
+        if tresc.startswith('*') and tresc.endswith('*'):
+            html.append(f"<p><em>{_html_z_linkami(tresc.strip('*'))}</em></p>")
+        else:
+            html.append(f"<p>{_html_z_linkami(tresc)}</p>")
     if lista_otwarta:
         html.append("</ul>")
     return {"tytul": tytul, "podtytul": podtytul, "html": "".join(html)}
@@ -3983,6 +4037,36 @@ def potwierdz_artykul(page, tytul: str) -> bool:
     return any(probka in plaski(x.get("title") or "") and x.get("post_date")
                for x in lista if isinstance(x, dict))
 
+def _domknij_publikacje_artykulu(page) -> bool:
+    """Complete Substack's optional subscribe-button prompt after Send."""
+    for label in ("Publish without buttons", "Opublikuj bez przycisków"):
+        przycisk = page.get_by_role("button", name=label, exact=True)
+        if przycisk.count() == 1 and przycisk.is_visible():
+            przycisk.click(timeout=10_000)
+            print("  potwierdzono publikacje bez dodatkowych przyciskow", flush=True)
+            return True
+    return False
+
+
+def _potwierdz_wysylke_artykulu(page, tytul: str) -> bool:
+    """Retry reads, never the send; keep the editor open for a late prompt."""
+    kontrola = page.context.new_page()
+    try:
+        for proba in range(3):
+            _domknij_publikacje_artykulu(page)
+            try:
+                if potwierdz_artykul(kontrola, tytul):
+                    return True
+            except Exception as exc:
+                print(f"  odczyt publikacji {proba + 1}/3: {type(exc).__name__}",
+                      flush=True)
+            if proba < 2:
+                page.wait_for_timeout(5000)
+        return False
+    finally:
+        kontrola.close()
+
+
 def wystaw_artykul(
     sciezka_md: Path, sciezka_png: Path | None = None, wyslij: bool = False,
 ) -> dict[str, Any]:
@@ -4057,10 +4141,12 @@ def wystaw_artykul(
 
         if wyslij and publikuj is not None:
             publikuj.click()
+            page.wait_for_timeout(2500)
+            _domknij_publikacje_artykulu(page)
             page.wait_for_timeout(15000)
-            wynik["wyslane"] = potwierdz_artykul(page, artykul["tytul"])
-            dopisz_wynik("artykul", wynik,
-                               tytul=artykul["tytul"])
+            wynik["wyslane"] = _potwierdz_wysylke_artykulu(page, artykul["tytul"])
+            if not wynik["wyslane"]:
+                wynik["blad"] = "Substack nie potwierdzil publikacji po 3 odczytach; szkic zachowany. Nie ponawiam wysylki w ciemno."
             print("  ARTYKUŁ POTWIERDZONY U SUBSTACKA" if wynik["wyslane"]
                   else "  KLIKNIĘTE, ALE SUBSTACK GO NIE POKAZUJE", flush=True)
             if wynik["wyslane"]:
@@ -4080,10 +4166,17 @@ def wystaw_artykul(
                                           bez_znacznikow(artykul.get("html", ""))[:2000])
         elif not wyslij:
             print("  (nie wysyłam — tryb sprawdzenia; szkic zapisany)", flush=True)
+        else:
+            wynik["blad"] = "Nie znaleziono przycisku publikacji; szkic zachowany."
     except Exception as exc:
         wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
+        if wyslij and not wynik.get("pominiete"):
+            try:
+                dopisz_wynik("artykul", wynik, tytul=artykul["tytul"])
+            except Exception as exc:
+                print(f"  (nie zapisalem wyniku artykulu: {type(exc).__name__})", flush=True)
         page.close()
         browser.close()
         p.stop()
@@ -5198,7 +5291,7 @@ def read_pages(urls: list[str]) -> list[dict[str, Any]]:
 
 
 def restackuj_w_kanale(
-    ile: int, decyzja, wyslij: bool = False,
+    ile: int, decyzja, wyslij: bool = False, *, url: str | None = None,
 ) -> dict[str, Any]:
     """Podaje dalej cudze notki z wlasnym zdaniem.
 
@@ -5236,7 +5329,7 @@ def restackuj_w_kanale(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto("https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
+        page.goto(url or "https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
 
@@ -5253,6 +5346,9 @@ def restackuj_w_kanale(
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.
+                kto = _autor_przy_przycisku(kandydat)
+                if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    continue
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
                     continue

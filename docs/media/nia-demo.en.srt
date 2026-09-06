@@ -1,0 +1,67 @@
+1
+00:00:00,500 --> 00:00:04,350
+A publication starts with a point of view. NIA gives yours
+
+2
+00:00:04,350 --> 00:00:05,400
+a working system.
+
+3
+00:00:07,500 --> 00:00:11,542
+Choose a preset, or bring your own subject, sources and voice.
+
+4
+00:00:11,542 --> 00:00:14,850
+The Hidden Bill follows the terms behind everyday purchases.
+
+5
+00:00:16,500 --> 00:00:20,708
+The agent finds topics, collects sources and builds a bank of
+
+6
+00:00:20,708 --> 00:00:24,150
+ideas. Claims are checked before a draft moves forward.
+
+7
+00:00:26,500 --> 00:00:30,258
+From that research, a full article takes shape, with a headline,
+
+8
+00:00:30,258 --> 00:00:34,017
+source links and an original illustration. Then the bot publishes it
+
+9
+00:00:34,017 --> 00:00:34,700
+to Substack.
+
+10
+00:00:45,500 --> 00:00:49,020
+Turn a single useful finding into a Note, and see it
+
+11
+00:00:49,020 --> 00:00:50,300
+appear on the account.
+
+12
+00:00:57,500 --> 00:01:01,900
+Join relevant conversations with a focused comment. Add a like. Restack
+
+13
+00:01:01,900 --> 00:01:05,500
+a useful post with a thought of your own.
+
+14
+00:01:12,500 --> 00:01:17,129
+Subscribe to publications that fit your beat, and keep the conversation
+
+15
+00:01:17,129 --> 00:01:17,550
+moving.
+
+16
+00:01:20,500 --> 00:01:24,875
+Your account. Your models. Your limits. Run locally or on a
+
+17
+00:01:24,875 --> 00:01:29,250
+server. Start with the open-source engine, and make the publication yours.

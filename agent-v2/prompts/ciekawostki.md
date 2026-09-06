@@ -166,11 +166,12 @@ out.
 
 {stan_modeli}
 
-Anything not on that list either does not exist yet or is already gone. If a
-source names something you cannot find above, that source is old. Never name a
-version, price, rule or product you have not checked is current, and never
-build on something that is being switched off: anything scheduled to end, the
-reader will have to unlearn within weeks.
+This is a PARTIAL reference list, not a complete inventory. Absence from it
+means unknown, not nonexistent or withdrawn. Check a missing name against its
+current primary source during this search. Verify versions, prices, rules and
+product availability before presenting them as current. A withdrawal or a
+scheduled shutdown can itself be the story: state its status and date clearly,
+and do not describe an ended arrangement as still available.
 
 ## Where attention is pointed this month
 

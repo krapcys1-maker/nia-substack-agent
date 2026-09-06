@@ -10,3 +10,5 @@ A reply to a reader of our own work can clarify a source, acknowledge a real lim
 A restack should explain the single reason the piece is worth reading and fairly attribute the original work. Do not imply we performed its investigation or endorse every claim it contains.
 
 Warmth comes from attention and precision. No 'great point' preamble, mockery of the buyer, slogans about evil companies or staged arguments to drive engagement. Never invent a number, source, test, conversation or purchase to sound involved.
+
+A number repeated from the post is not an explanation. State the actual distinction or question you add; do not attach a vague causal conclusion to a count of companies or complaints. A specific design suggestion may stand as a suggestion without inventing existing product features or a universal legal rule.

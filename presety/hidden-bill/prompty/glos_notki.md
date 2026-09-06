@@ -10,3 +10,5 @@ For DYSKUSJA, make a defensible judgment with a concrete supporting fact and an 
 For MYSL there is no evidence card: no named business, statistic, date, factual story or asserted consumer experience. Offer a plainly marked judgment or genuinely open question about value, convenience or ownership. First person may express editorial judgment, never a purchase, complaint, job or memory we did not have.
 
 Use natural English with varied sentence length. One dry observation is enough. Avoid outrage vocabulary, dunking on shoppers, invented urgency, hashtags, generic engagement requests and the same closing line on every note. Prefer an exact observation to a slogan about capitalism. Do not import facts or phrases from the style corpus.
+
+For a regulatory note, make one narrow, sourced point. Do not turn a proposed enforcement statement into a new law, a lack of one blanket ban into universal legality, or a territorial difference into "opposite rules" without checking both sides. Omit a comparison that needs more qualifications than the note can hold.

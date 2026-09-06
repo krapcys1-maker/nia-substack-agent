@@ -200,6 +200,20 @@ def call(
         price_verified=int(verified), ok=1, note=None,
     )
     _log(purpose, model, tin, tout, searches, usd, verified)
+    if provider == "deepseek" and web_search:
+        needs_recovery = not text.strip()
+        if purpose in SEARCH_JSON_PURPOSES and text.strip():
+            try:
+                parse_json(text)
+            except (ValueError, TypeError):
+                needs_recovery = True
+        if needs_recovery:
+            if not urls:
+                raise Truncated("Search completed without usable text or URLs; its usage was recorded")
+            print(f"  [{purpose}] odzyskuje JSON z zakonczonego researchu "
+                  f"({len(set(urls))} adresow), bez ponownego wyszukiwania", flush=True)
+            return _deepseek_pick_from_urls(
+                purpose, system, user, urls, conn=conn, run_id=run_id, partial=text)
     return text
 ```
 
@@ -2046,6 +2060,13 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 4000)
+        subscription_labels = ("Subscribed", "Subskrybujesz", "Subskrybowano", "Upgrade")
+        if rodzaj == "subskrypcja" and any(
+                page.get_by_role("button", name=label, exact=True).count()
+                for label in subscription_labels):
+            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
+            print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
+            return wynik
         for nazwa in napisy:
             k = page.get_by_role("button", name=nazwa, exact=True).first
             if k.count() == 0 or not k.is_visible():
@@ -2056,8 +2077,20 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 return wynik
             k.click(timeout=10_000)
             page.wait_for_timeout(5000)
-            # Po kliknieciu napis zmienia sie na stan przeciwny.
-            wynik["zrobione"] = k.count() == 0 or not k.is_visible()
+            if rodzaj == "subskrypcja":
+                _wybierz_darmowy_plan(page)
+                # A navigation to pricing is not a completed subscription.
+                page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
+                          wait_until="domcontentloaded")
+                page.wait_for_timeout(SETTLE_MS + 3000)
+                wynik["zrobione"] = any(
+                    page.get_by_role("button", name=label, exact=True).count()
+                    for label in subscription_labels)
+                wynik["potwierdzone"] = bool(wynik["zrobione"])
+                if not wynik["zrobione"]:
+                    wynik["blad"] = "brak potwierdzenia darmowej subskrypcji na profilu"
+            else:
+                wynik["zrobione"] = k.count() == 0 or not k.is_visible()
             dopisz_wynik(rodzaj, wynik, komu=handle)
             print("  ZROBIONE" if wynik["zrobione"]
                   else "  KLIKNIETE, ALE STAN SIE NIE ZMIENIL", flush=True)
@@ -2073,7 +2106,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         # siedem dni, wygladal w dzienniku jak blok, ktory sie nie odbyl —
         # a on sie odbywal, chodzil po profilach i za kazdym razem odchodzil
         # z pustymi rekami. Tego nie da sie naprawic, czego nie widac.
-        if wyslij:
+        if wyslij and not wynik.get("pominiete"):
             dopisz_wynik(rodzaj, wynik, komu=handle)
         page.close()
         browser.close()
@@ -2084,7 +2117,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
 <!--KOD:browser.restackuj_w_kanale-->
 ```python
 def restackuj_w_kanale(
-    ile: int, decyzja, wyslij: bool = False,
+    ile: int, decyzja, wyslij: bool = False, *, url: str | None = None,
 ) -> dict[str, Any]:
     """Podaje dalej cudze notki z wlasnym zdaniem.
 
@@ -2122,7 +2155,7 @@ def restackuj_w_kanale(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto("https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
+        page.goto(url or "https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
 
@@ -2139,6 +2172,9 @@ def restackuj_w_kanale(
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.
+                kto = _autor_przy_przycisku(kandydat)
+                if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    continue
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
                     continue

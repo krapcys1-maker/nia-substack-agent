@@ -12,9 +12,9 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 26 |
-| functions and methods | 662 |
+| functions and methods | 668 |
 | functions that call a paid model | 26 |
-| functions that touch the browser | 62 |
+| functions that touch the browser | 65 |
 | functions that touch the database | 42 |
 
 ## Legend
@@ -43,7 +43,7 @@ For paid calls the verdict comes from
 | [`audyt_systemu.py`](#agent-v2audyt-systemu-py) | 7 | 0 | 1 | 0 | Audyt CALEGO systemu na zywych danych, jednym poleceniem. |
 | [`audyt_tematow.py`](#agent-v2audyt-tematow-py) | 4 | 0 | 0 | 0 | Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem. |
 | [`bramki.py`](#agent-v2bramki-py) | 9 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
-| [`browser.py`](#agent-v2browser-py) | 99 | 0 | 44 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
+| [`browser.py`](#agent-v2browser-py) | 103 | 0 | 47 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
 | [`config.py`](#agent-v2config-py) | 43 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
 | [`db.py`](#agent-v2db-py) | 11 | 0 | 0 | 7 | Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK. |
 | [`gates.py`](#agent-v2gates-py) | 22 | 0 | 0 | 0 | Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu. |
@@ -52,7 +52,7 @@ For paid calls the verdict comes from
 | [`konfiguracja.py`](#agent-v2konfiguracja-py) | 44 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` i pol presetu — jeden kontrakt pol, jeden zapis. |
 | [`kopia_subskrybentow.py`](#agent-v2kopia-subskrybentow-py) | 4 | 0 | 1 | 0 | Kopia listy subskrybentow — jedyne aktywo, ktorego nie da sie odtworzyc. |
 | [`korpus_kanalow.py`](#agent-v2korpus-kanalow-py) | 11 | 0 | 0 | 0 | Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja. |
-| [`llm.py`](#agent-v2llm-py) | 16 | 0 | 0 | 3 | Jedyna warstwa miedzy `run.py` a dostawca. |
+| [`llm.py`](#agent-v2llm-py) | 18 | 0 | 0 | 3 | Jedyna warstwa miedzy `run.py` a dostawca. |
 | [`migracja_okno_promocji.py`](#agent-v2migracja-okno-promocji-py) | 2 | 0 | 0 | 0 | Jednorazowe uzupelnienie pola `dodane` w kolejce promocji. |
 | [`norma.py`](#agent-v2norma-py) | 16 | 0 | 0 | 1 | Ile agent naprawde zrobil, dzien po dniu, wobec normy. |
 | [`preset.py`](#agent-v2preset-py) | 39 | 0 | 0 | 0 | Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem. |
@@ -135,24 +135,24 @@ Artykul bierze temat z tej samej puli, co notki.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 110 | `temat_z_faktu(conn, run_id, fakt)` | **$**(wybor) | Zamienia udokumentowany fakt w brief artykulu. | `artykul_z_puli._przebieg` |
-| 147 | `glebokosc_z_oceny(ocena)` | — | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. | `artykul_z_puli._napisz_i_zapisz` |
-| 185 | `glebokosc_z_oceny._surowy(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny`, `artykul_z_puli.glebokosc_z_oceny._filar` |
-| 193 | `glebokosc_z_oceny._filar(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny` |
-| 209 | `uniesie_artykul(brief)` | — | Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania. | `artykul_z_puli._przebieg` |
-| 243 | `uniesie_artykul._pusty(s)` | — | — | `artykul_z_puli.uniesie_artykul` |
-| 256 | `wybierz_fakt(conn, run_id, ile)` | — | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. | `artykul_z_puli._przebieg` |
-| 328 | `main()` | DB | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. | `artykul_z_puli (poziom modulu)` |
-| 409 | `_zrob_miejsce_na_fakt(card)` | — | Robi miejsce na wstrzykniete twierdzenie, nie tracac zadnego ZRODLA. | `artykul_z_puli._przebieg` |
-| 440 | `_zrob_miejsce_na_fakt._host(c)` | — | — | `artykul_z_puli._zrob_miejsce_na_fakt` |
-| 459 | `_rozszerz_najstarsze(card, data_faktu)` | — | Data wstrzyknietego zrodla wazy — ale TYLKO w strone ostrzezenia. | `artykul_z_puli._przebieg` |
-| 489 | `_przebieg(conn, run_id)` | DB | — | `artykul_z_puli.main` |
-| 916 | `_katalog_ratunku()` | — | Katalog OBOK `ARTICLES_DIR`, nigdy w nim. | `artykul_z_puli._ratuj_tekst` |
-| 947 | `_opublikuj(sciezka)` | WWW | Wystawia gotowy artykul, probujac wiecej niz raz. | `artykul_z_puli._napisz_i_zapisz` |
-| 999 | `_ramka(powod, brak, katalog)` | — | Ostrzezenie, ktore idzie na POCZATEK `.md`, a nie tylko obok niego. | `artykul_z_puli._ratuj_tekst` |
-| 1071 | `_zrodla(card)` | — | Sekcja `## Sources` — bez pytania bazy o nazwy zrodel. | `artykul_z_puli._ratuj_tekst` |
-| 1089 | `_ratuj_tekst(run_id, brief, card, draft, etap, exc, raport)` | — | Gotowy tekst na dysk, gdy budzet albo wylacznik przerywa PO pisaniu. | `artykul_z_puli._napisz_i_zapisz` |
-| 1214 | `_napisz_i_zapisz(conn, run_id, brief, card)` | — | Od bramki „warto pisac" do zapisu i grafiki. | `artykul_z_puli._przebieg` |
+| 120 | `temat_z_faktu(conn, run_id, fakt)` | **$**(wybor) | Zamienia udokumentowany fakt w brief artykulu. | `artykul_z_puli._przebieg` |
+| 158 | `glebokosc_z_oceny(ocena)` | — | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. | `artykul_z_puli._napisz_i_zapisz` |
+| 196 | `glebokosc_z_oceny._surowy(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny`, `artykul_z_puli.glebokosc_z_oceny._filar` |
+| 204 | `glebokosc_z_oceny._filar(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny` |
+| 220 | `uniesie_artykul(brief)` | — | Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania. | `artykul_z_puli._przebieg` |
+| 254 | `uniesie_artykul._pusty(s)` | — | — | `artykul_z_puli.uniesie_artykul` |
+| 267 | `wybierz_fakt(conn, run_id, ile)` | — | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. | `artykul_z_puli._przebieg` |
+| 339 | `main()` | DB | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. | `artykul_z_puli (poziom modulu)` |
+| 420 | `_zrob_miejsce_na_fakt(card)` | — | Robi miejsce na wstrzykniete twierdzenie, nie tracac zadnego ZRODLA. | `artykul_z_puli._przebieg` |
+| 451 | `_zrob_miejsce_na_fakt._host(c)` | — | — | `artykul_z_puli._zrob_miejsce_na_fakt` |
+| 470 | `_rozszerz_najstarsze(card, data_faktu)` | — | Data wstrzyknietego zrodla wazy — ale TYLKO w strone ostrzezenia. | `artykul_z_puli._przebieg` |
+| 500 | `_przebieg(conn, run_id)` | DB | — | `artykul_z_puli.main` |
+| 927 | `_katalog_ratunku()` | — | Katalog OBOK `ARTICLES_DIR`, nigdy w nim. | `artykul_z_puli._ratuj_tekst` |
+| 958 | `_opublikuj(sciezka)` | WWW | Wystawia gotowy artykul, probujac wiecej niz raz. | `artykul_z_puli._napisz_i_zapisz` |
+| 1010 | `_ramka(powod, brak, katalog)` | — | Ostrzezenie, ktore idzie na POCZATEK `.md`, a nie tylko obok niego. | `artykul_z_puli._ratuj_tekst` |
+| 1082 | `_zrodla(card)` | — | Sekcja `## Sources` — bez pytania bazy o nazwy zrodel. | `artykul_z_puli._ratuj_tekst` |
+| 1100 | `_ratuj_tekst(run_id, brief, card, draft, etap, exc, raport)` | — | Gotowy tekst na dysk, gdy budzet albo wylacznik przerywa PO pisaniu. | `artykul_z_puli._napisz_i_zapisz` |
+| 1225 | `_napisz_i_zapisz(conn, run_id, brief, card)` | — | Od bramki „warto pisac" do zapisu i grafiki. | `artykul_z_puli._przebieg` |
 
 ---
 
@@ -232,7 +232,7 @@ Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci.
 
 Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 
-99 funkcji.
+103 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -291,50 +291,54 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 | 2553 | `id_z_odpowiedzi(odpowiedzi)` | — | Identyfikator notki, ktory Substack oddal przy zapisie. | `browser.wystaw_notke` |
 | 2586 | `numer_naszej_notki(page, tekst, prob)` | WWW | Numer notki odczytany z NASZEGO PROFILU po jej tresci. | `browser.potwierdz_notke`, `browser.restackuj_w_kanale`, `browser.wystaw_notke` |
 | 2622 | `potwierdz_notke(page, tekst, prob)` | — | Pyta Substacka, czy notka naprawdę wisi na naszym profilu. | `browser.wystaw_notke` |
-| 2653 | `_autor_przy_przycisku(przycisk)` | — | Kto napisal wpis, przy ktorym stoi ten przycisk. | `browser.polub_w_kanale` |
-| 2701 | `_uchwyt_wezla(lokator)` | — | Uchwyt do KONKRETNEGO wezla DOM, albo None. | `browser.polub_w_kanale` |
-| 2715 | `_stan_przycisku(uchwyt)` | — | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. | `browser.polub_w_kanale`, `browser.potwierdz_polubienie` |
-| 2740 | `potwierdz_polubienie(uchwyt, przed)` | — | Czy przycisk po klknieciu wyglada inaczej niz przed nim. | `browser.polub_w_kanale` |
-| 2771 | `polub_w_kanale(ile, wyslij)` | WWW | Polubienia w kanale czytelnika. | `run.dzien`, `run.dzien.polubienia` |
-| 2910 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` | WWW | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. | `browser.zasubskrybuj` |
-| 2985 | `pobierz_subskrybentow()` | WWW | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. | `kopia_subskrybentow.pobierz_z_panelu` |
-| 3055 | `zloz_wiersze_subskrybentow(surowe)` | — | Sklada wiersze z komorek tabeli panelu: adres, typ i data rozpoczecia. | `browser._wiersze_subskrybentow` |
-| 3093 | `_wiersze_subskrybentow(page)` | WWW | Czyta komorki tabeli z panelu i oddaje je zlozone. | `browser.pobierz_subskrybentow` |
-| 3157 | `_pozycje_menu(page)` | WWW | Teksty pozycji OTWARTEGO menu, w kolejnosci ekranu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
-| 3176 | `_otworz_menu_profilu(page)` | WWW | Klika kolko „..." w naglowku profilu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
-| 3198 | `potwierdz_obserwacje(page)` | WWW | Czy menu profilu mowi teraz, ze go OBSERWUJEMY. | `browser.obserwuj_profil` |
-| 3267 | `obserwuj_profil(handle, wyslij)` | WWW | Obserwuje cudzy profil — jego notki trafiaja do naszego kanalu. | `run.dzien`, `run.dzien.obserwuj` |
-| 3439 | `kogo_polecamy(page)` | WWW | Kogo nasza publikacja poleca — z API, nie z pamieci. | `browser.polec_publikacje` |
-| 3471 | `polec_publikacje(fraza, powod, wyslij)` | WWW DEAD? | Dodaje REKOMENDACJE publikacji. | — |
-| 3578 | `zasubskrybuj(handle, wyslij)` | — | Subskrybuje cudzy profil. | `run.dzien`, `run.dzien.subskrybuj` |
-| 3584 | `_esc(t)` | — | — | `browser.rozbierz_artykul` |
-| 3588 | `rozbierz_artykul(sciezka)` | — | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. | `browser.wystaw_artykul` |
-| 3671 | `wypelnij_artykul(page, artykul, obraz)` | WWW | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. | `browser.wystaw_artykul` |
-| 3716 | `wstaw_przycisk_subskrypcji(page)` | WWW | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. | `browser.wypelnij_artykul` |
-| 3753 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
-| 3774 | `ustaw_oswiadczenie_ai(wyslij)` | WWW | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | `browser (poziom modulu)` |
-| 3852 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 3976 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser.wystaw_artykul` |
-| 3986 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
-| 4093 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
-| 4126 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
-| 4162 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
-| 4343 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki` |
-| 4474 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
-| 4501 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
-| 4515 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
-| 4560 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
-| 4680 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
-| 4748 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
-| 4786 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
-| 4824 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
-| 4834 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
-| 4867 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
-| 4925 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
-| 5157 | `read_pages(urls)` | WWW | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
-| 5200 | `restackuj_w_kanale(ile, decyzja, wyslij)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
-| 5383 | `w_rewirze(tekst)` | — | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
-| 5401 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 2653 | `_autor_przy_przycisku(przycisk)` | — | Kto napisal wpis, przy ktorym stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 2702 | `_uchwyt_wezla(lokator)` | — | Uchwyt do KONKRETNEGO wezla DOM, albo None. | `browser.polub_w_kanale` |
+| 2716 | `_stan_przycisku(uchwyt)` | — | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. | `browser.polub_w_kanale`, `browser.potwierdz_polubienie` |
+| 2741 | `potwierdz_polubienie(uchwyt, przed)` | — | Czy przycisk po klknieciu wyglada inaczej niz przed nim. | `browser.polub_w_kanale` |
+| 2772 | `polub_w_kanale(ile, wyslij, url)` | WWW | Polubienia w kanale czytelnika. | `run.dzien`, `run.dzien.polubienia` |
+| 2906 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` | WWW | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. | `browser.zasubskrybuj` |
+| 3000 | `_wybierz_darmowy_plan(page)` | WWW | Finish an explicitly free plan; never select a paid/default plan. | `browser._klik_na_profilu` |
+| 3027 | `pobierz_subskrybentow()` | WWW | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. | `kopia_subskrybentow.pobierz_z_panelu` |
+| 3097 | `zloz_wiersze_subskrybentow(surowe)` | — | Sklada wiersze z komorek tabeli panelu: adres, typ i data rozpoczecia. | `browser._wiersze_subskrybentow` |
+| 3135 | `_wiersze_subskrybentow(page)` | WWW | Czyta komorki tabeli z panelu i oddaje je zlozone. | `browser.pobierz_subskrybentow` |
+| 3199 | `_pozycje_menu(page)` | WWW | Teksty pozycji OTWARTEGO menu, w kolejnosci ekranu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
+| 3218 | `_otworz_menu_profilu(page)` | WWW | Klika kolko „..." w naglowku profilu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
+| 3240 | `potwierdz_obserwacje(page)` | WWW | Czy menu profilu mowi teraz, ze go OBSERWUJEMY. | `browser.obserwuj_profil` |
+| 3309 | `obserwuj_profil(handle, wyslij)` | WWW | Obserwuje cudzy profil — jego notki trafiaja do naszego kanalu. | `run.dzien`, `run.dzien.obserwuj` |
+| 3481 | `kogo_polecamy(page)` | WWW | Kogo nasza publikacja poleca — z API, nie z pamieci. | `browser.polec_publikacje` |
+| 3513 | `polec_publikacje(fraza, powod, wyslij)` | WWW DEAD? | Dodaje REKOMENDACJE publikacji. | — |
+| 3620 | `zasubskrybuj(handle, wyslij)` | — | Subskrybuje cudzy profil. | `run.dzien`, `run.dzien.subskrybuj` |
+| 3626 | `_esc(t)` | — | — | `browser._html_z_linkami`, `browser.rozbierz_artykul` |
+| 3630 | `_html_z_linkami(tekst)` | — | Render inline HTTP(S) Markdown links while escaping all source text. | `browser.rozbierz_artykul` |
+| 3642 | `rozbierz_artykul(sciezka)` | — | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. | `browser.wystaw_artykul` |
+| 3725 | `wypelnij_artykul(page, artykul, obraz)` | WWW | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. | `browser.wystaw_artykul` |
+| 3770 | `wstaw_przycisk_subskrypcji(page)` | WWW | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. | `browser.wypelnij_artykul` |
+| 3807 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
+| 3828 | `ustaw_oswiadczenie_ai(wyslij)` | WWW | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | `browser (poziom modulu)` |
+| 3906 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 4030 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
+| 4040 | `_domknij_publikacje_artykulu(page)` | WWW | Complete Substack's optional subscribe-button prompt after Send. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
+| 4051 | `_potwierdz_wysylke_artykulu(page, tytul)` | WWW | Retry reads, never the send; keep the editor open for a late prompt. | `browser.wystaw_artykul` |
+| 4070 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
+| 4186 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
+| 4219 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
+| 4255 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
+| 4436 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki` |
+| 4567 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
+| 4594 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
+| 4608 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
+| 4653 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
+| 4773 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
+| 4841 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
+| 4879 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
+| 4917 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
+| 4927 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
+| 4960 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
+| 5018 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
+| 5250 | `read_pages(urls)` | WWW | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
+| 5293 | `restackuj_w_kanale(ile, decyzja, wyslij, url)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
+| 5479 | `w_rewirze(tekst)` | — | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 5497 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
 
 ---
 
@@ -371,7 +375,7 @@ Jedyne miejsce ze stałymi.
 | 2182 | `dzis_dzien_artykulu(kiedy)` | — | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. | `artykul_z_puli.main` |
 | 2191 | `zegar_agenta_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. | — |
 | 2197 | `zegar_artykulu_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. | — |
-| 2603 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._deepseek_pick_from_urls` |
+| 2603 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses` |
 | 2681 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
 | 2711 | `tylko_dla_wlasciciela(sciezka)` | — | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. | `browser.rozpoznanie`, `browser.sprawdz_sesje`, `browser.zaloguj`, `config.otworz_tylko_dla_wlasciciela` |
 | 2741 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | — | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. | `kopia_subskrybentow.main`, `kopia_subskrybentow.pobierz_z_panelu` |
@@ -592,26 +596,28 @@ Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja.
 
 Jedyna warstwa miedzy `run.py` a dostawca.
 
-16 funkcji.
+18 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 45 | `_dostawca(model)` | — | Czyj to model. | `llm._cost`, `llm._preflight`, `llm.call`, `preset._dostawca` |
-| 63 | `_preflight(purpose, conn, run_id)` | DB | Warunki, które decydują, czy wywołanie może się w ogóle udać. | `llm.call`, `llm.obraz` |
-| 190 | `_narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. | `llm._call_claude` |
-| 199 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` | — | — | `llm.call` |
-| 247 | `_log(purpose, model, tin, tout, searches, usd, verified)` | — | — | `llm.call` |
-| 258 | `_call_claude(purpose, system, user, web_search)` | — | — | `llm.call` |
-| 326 | `_call_deepseek_responses(purpose, system, user)` | — | DeepSeek przez /responses z server-side `web_search`. | `llm.call` |
-| 422 | `_call_deepseek_responses.walk(node)` | — | — | `llm._call_deepseek_responses` |
-| 479 | `_deepseek_pick_from_urls(purpose, system, user, urls)` | — | Drugie, tanie wywołanie: wybierz z adresów, które wyszukiwanie już zwróciło. | `llm._call_deepseek_responses` |
-| 539 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call` |
-| 621 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
-| 648 | `call(purpose, system, user, conn, run_id, web_search, collect_urls)` | DB | Woła model właściwy dla etapu i zapisuje koszt. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.ratuj_json`, `stages.bibliotekarz` *(+23)* |
-| 778 | `obraz(opis, conn, run_id)` | DB | Generuje grafikę do artykułu i zapisuje jej koszt tam, gdzie resztę. | `stages.grafika` |
-| 833 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
-| 898 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
-| 943 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `stages.bibliotekarz`, `stages.classify` *(+22)* |
+| 49 | `_dostawca(model)` | — | Czyj to model. | `llm._cost`, `llm._preflight`, `llm.call`, `preset._dostawca` |
+| 67 | `_preflight(purpose, conn, run_id)` | DB | Warunki, które decydują, czy wywołanie może się w ogóle udać. | `llm._deepseek_pick_from_urls`, `llm.call`, `llm.obraz` |
+| 194 | `_narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. | `llm._call_claude` |
+| 203 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` | — | — | `llm.call` |
+| 251 | `_log(purpose, model, tin, tout, searches, usd, verified)` | — | — | `llm.call` |
+| 262 | `_call_claude(purpose, system, user, web_search)` | — | — | `llm.call` |
+| 330 | `_call_deepseek_responses(purpose, system, user)` | — | DeepSeek przez /responses z server-side `web_search`. | `llm.call` |
+| 428 | `_call_deepseek_responses.walk(node)` | — | — | `llm._call_deepseek_responses` |
+| 463 | `_deepseek_pick_from_urls(purpose, system, user, urls, conn, run_id, partial)` | — | Reconstruct a search result with the ordinary streamed, billed transport. | `llm.call` |
+| 483 | `_read_search_sources(urls)` | — | Recover evidence from already-found public URLs, without another search. | `llm._deepseek_pick_from_urls` |
+| 495 | `_read_search_sources.public_url(url)` | — | — | `llm._read_search_sources` |
+| 551 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call` |
+| 635 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
+| 662 | `call(purpose, system, user, conn, run_id, web_search, collect_urls)` | DB | Woła model właściwy dla etapu i zapisuje koszt. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+24)* |
+| 806 | `obraz(opis, conn, run_id)` | DB | Generuje grafikę do artykułu i zapisuje jej koszt tam, gdzie resztę. | `stages.grafika` |
+| 861 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
+| 926 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
+| 971 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `stages.bibliotekarz` *(+23)* |
 
 ---
 
@@ -792,7 +798,7 @@ Etapy lancucha, po kolei, w pamieci.
 | 98 | `_na_kanal.zewnetrzny(f)` | DB | — | `stages._na_kanal` |
 | 106 | `_na_kanal.zewnetrzny.wewnetrzny(*a, **k)` | DB | — | `stages._na_kanal.zewnetrzny` |
 | 183 | `_blok_stylu()` | — | Opis glosu z presetu — albo jawne „bez uwag", zeby sekcja nie byla pusta. | `stages._pola_wspolne` |
-| 217 | `_blok_presetu(nazwa)` | — | Blok `prompty/<nazwa>.md` z presetu — albo jego zdanie zastepcze. | `stages._pola_wspolne` |
+| 217 | `_blok_presetu(nazwa)` | — | Blok `prompty/<nazwa>.md` z presetu — albo jego zdanie zastepcze. | `artykul_z_puli.temat_z_faktu`, `stages._pola_wspolne` |
 | 224 | `_blok_domen()` | — | Hosty dokumentow pierwotnych z presetu, jako jedna linia dla dyskoverii. | `stages._pola_wspolne` |
 | 230 | `_blok_przykladow(klucz, gdy_pusto)` | — | Przyklady z niszy jako lista punktow — albo polecenie, gdy ich nie ma. | `stages._pola_wspolne` |
 | 257 | `_blok_po_ludzku()` | — | Wspolny blok „nie brzmij jak maszyna" — JEDNO zrodlo, nie cztery kopie. | `stages._pola_wspolne` |

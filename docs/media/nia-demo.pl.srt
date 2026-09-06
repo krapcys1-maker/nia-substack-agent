@@ -1,0 +1,67 @@
+1
+00:00:00,500 --> 00:00:04,175
+Publikacja zaczyna się od punktu widzenia. NIA daje jej
+
+2
+00:00:04,175 --> 00:00:05,400
+system, który działa.
+
+3
+00:00:07,500 --> 00:00:11,391
+Wybierz preset albo własny temat, źródła i styl. The
+
+4
+00:00:11,391 --> 00:00:14,850
+Hidden Bill śledzi warunki ukryte za codziennymi zakupami.
+
+5
+00:00:16,500 --> 00:00:21,090
+Agent znajduje tematy, zbiera źródła i buduje bank pomysłów.
+
+6
+00:00:21,090 --> 00:00:24,150
+Sprawdza twierdzenia, zanim tekst przejdzie dalej.
+
+7
+00:00:26,500 --> 00:00:30,384
+Z researchu powstaje pełny artykuł: z tytułem, linkami do
+
+8
+00:00:30,384 --> 00:00:34,268
+źródeł i oryginalną ilustracją. Potem bot publikuje go na
+
+9
+00:00:34,268 --> 00:00:34,700
+Substacku.
+
+10
+00:00:45,500 --> 00:00:48,823
+Zamień jedno przydatne odkrycie w notkę i zobacz, jak
+
+11
+00:00:48,823 --> 00:00:50,300
+pojawia się na koncie.
+
+12
+00:00:57,500 --> 00:01:03,038
+Dołącz do rozmowy trafnym komentarzem. Dodaj polubienie. Udostępnij wartościową
+
+13
+00:01:03,038 --> 00:01:05,500
+notkę z własną myślą.
+
+14
+00:01:12,500 --> 00:01:17,550
+Subskrybuj publikacje pasujące do Twojej tematyki i rozwijaj rozmowę.
+
+15
+00:01:20,500 --> 00:01:24,438
+Twoje konto. Twoje modele. Twoje limity. Uruchom NIA lokalnie
+
+16
+00:01:24,438 --> 00:01:28,375
+lub na serwerze. Zacznij od otwartego silnika i twórz
+
+17
+00:01:28,375 --> 00:01:29,250
+własną publikację.
