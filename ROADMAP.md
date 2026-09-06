@@ -15,6 +15,8 @@ help determine the order.
 - Optional following and free subscriptions, disabled in the bundled presets.
 - Reusable AI and Hidden Bill presets, a template and private instance data.
 - Local CLI operation and a generator for Linux systemd services and timers.
+- A local English/Polish control panel: model and activity settings, a preset editor,
+  account setup, manual workflows and persistent logs. Windows dependency/setup launchers.
 - An inline [product film and published examples](docs/DEMO.md).
 
 ## Next priorities
@@ -34,7 +36,7 @@ is another starting point for contributors.
 
 ## Exploring after that
 
-- A small local dashboard for drafts, run status and costs.
+- Extend the local panel with draft review and operating-system schedule management.
 - A reviewed container/server installation path, including browser login.
 - Per-instance browser ports, profiles and service names for simultaneous accounts.
 - An English command interface and evaluation of additional writing languages.

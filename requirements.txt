@@ -6,7 +6,7 @@
 # Verify it yourself:
 #   python narzedzia/zaleznosci.py --sprawdz
 #
-# Python 3.10 or newer. The code uses no `match`, no `except*`, no
+# Python 3.11 or newer (preset loading uses tomllib). The code uses no `match`, no `except*`, no
 # `datetime.UTC` and no `zip(strict=)`; every `X | Y` annotation is guarded by
 # `from __future__ import annotations`. Developed and measured on 3.12.
 

@@ -65,6 +65,26 @@ checkpoint, 152 standalone scripts passed locally with 22 documented skips;
 These checks do not establish long-term uptime or cover every scheduled action.
 See [execution, costs and quality](RELIABILITY.md) for the operating details.
 
+## Local panel acceptance — 6 September 2026
+
+The [new control panel](PANEL.md) was exercised through a real browser: account
+configuration, private preset save/activation, model selection, English/Polish
+switching, a blank custom preset, mobile layout and a fresh Windows virtual
+environment installation. The screenshot guides show this working application.
+
+An isolated copy connected to the existing NIA test account. Two daily **draft**
+workflows each prepared one Note and one reply, without publishing. The second,
+after fixing unnecessary target ranking when the comment allocation is zero,
+completed with **three recorded API calls totaling $0.006829**: reply $0.000874,
+Note $0.001950 and factual verification $0.004005. There was no comment-target
+ranking call. These are local recorded estimates for this run, excluding earlier
+research costs, not a price guarantee or a provider invoice. Paid runs used
+DeepSeek V4 Flash; the selector checks did not test every available model.
+
+The active-instance files used by the original installation were unchanged by
+these tests. This acceptance covers manual panel operation, not installation of
+an operating-system schedule or long-term unattended uptime.
+
 ## About the recording
 
 The film combines actual browser captures, public result views and labeled

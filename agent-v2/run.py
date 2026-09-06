@@ -1378,6 +1378,9 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
     # sobie miec nie moga: tylko ten blok wie, ze chodzi o artykuly.
     @stages._na_kanal("komentarz@artykul")
     def komentarze() -> None:
+        if na_teraz["komentarze"] <= 0:
+            print("  przydzial komentarzy: 0 — bez szukania i platnej oceny celow", flush=True)
+            return
         # NOWE KONTA NAJPIERW. Kanal czytelnika pokazuje wylacznie to, co juz
         # znamy — jedenascie publikacji, ktore same z siebie nikogo nowego nie
         # przyprowadza. Wyszukiwarka Substacka oddaje ludzi spoza kregu, i to
@@ -2111,6 +2114,8 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
 
     # --- 4. polubienia: najtańszy uczciwy sygnał ------------------------------
     def polubienia() -> None:
+        if na_teraz["lajki"] <= 0:
+            return
         w = browser.polub_w_kanale(na_teraz["lajki"], wyslij=wyslij)
         zrobione["polubienia"] = w.get("polubione", 0)
 
