@@ -13,6 +13,8 @@ import json
 import re
 import sqlite3
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import urlparse
@@ -22,6 +24,7 @@ import config
 import korpus_kanalow
 import db
 import llm
+import retry_policy
 # NA GORZE, BO UZYWAJA GO DWIE FUNKCJE, A IMPORT BYL W JEDNEJ.
 #
 # `import statystyki` stal wewnatrz `co_zadzialalo`, czyli w jej zasiegu
@@ -3774,7 +3777,25 @@ def wybierz_material(zapas: list[dict[str, Any]],
     return None
 
 
+_POBRANE_DO_NOTEK = ContextVar('pobrane_do_notek', default=None)
+
+
+@contextmanager
+def _chron_bank_notek():
+    """No publication happens during drafting: restore borrowed ideas on failure."""
+    borrowed = []
+    token = _POBRANE_DO_NOTEK.set(borrowed)
+    try:
+        yield
+    except BaseException:
+        zwroc_kandydatow(borrowed)
+        raise
+    finally:
+        _POBRANE_DO_NOTEK.reset(token)
+
+
 @_na_kanal("notka")
+@_chron_bank_notek()
 def notki_dnia(
     conn: sqlite3.Connection, run_id: int, dzien_artykulu: bool = False,
     karta: dict[str, Any] | None = None,
@@ -3875,11 +3896,16 @@ def notki_dnia(
     #
     # Awaria sedziego nie moze zabrac dnia: bank nieposortowany jest gorszy
     # od posortowanego, ale duzo lepszy od braku notek.
-    try:
-        posortuj_bank(conn, run_id)
-    except Exception as exc:
-        print("  [bank] sedzia nie przeszedl (%s) — biore bank taki, jaki jest"
-              % type(exc).__name__, flush=True)
+    potrzebuje_faktu = any(t != "MYSL" and not (t == "ARTYKUL" and karta) for t in typy)
+    if potrzebuje_faktu:
+        try:
+            posortuj_bank(conn, run_id)
+        except Exception as exc:
+            print("  [bank] sedzia nie przeszedl (%s) — biore bank taki, jaki jest"
+                  % type(exc).__name__, flush=True)
+    elif ciekawostki is None:
+        ciekawostki = []
+        print("  [bank] plan korzysta z artykulu lub refleksji — bez dobierania researchu", flush=True)
 
     if ciekawostki is None:
         # SPIZARNIA PRZED ZAKUPAMI. Stalo tu gole `znajdz_ciekawostki(...)`,
@@ -5326,7 +5352,7 @@ def _dobierz_przegladarka(conn, run_id: int, brakujace: list[dict[str, Any]],
 
 # Odpowiedzi, ktore znacza „nie wpuszczam TEGO KLIENTA", a nie „tego nie ma".
 # Przy nich warto sprobowac zwykla przegladarka; przy 404 nie ma czego probowac.
-_DO_PONOWIENIA = ("HTTP 401", "HTTP 403", "HTTP 429", "HTTP 503", "HTTP 502")
+_DO_PONOWIENIA = ("HTTP 401", "HTTP 403", "HTTP 502")
 
 
 def fetch(
@@ -5342,6 +5368,7 @@ def fetch(
 
     fetched: list[dict[str, Any]] = []
     do_przegladarki: list[dict[str, Any]] = []
+    seen = set()
     with httpx.Client(
         timeout=config.FETCH_TIMEOUT_S,
         follow_redirects=True,
@@ -5365,7 +5392,15 @@ def fetch(
         ostatnio_z_hosta: dict[str, float] = {}
         for source in sources:
             url = source["url"]
+            if url in seen:
+                continue
+            seen.add(url)
             host = source.get("host") or _host(url)
+            pause = retry_policy.path_for(config.DATA_DIR, ('source', _host(url)))
+            remaining = retry_policy.remaining(pause)
+            if remaining:
+                print(f"  [pobranie] {host}: serwer prosil o przerwe, jeszcze {remaining:.0f}s", flush=True)
+                continue
             czekaj = (config.ODSTEP_TEN_SAM_HOST_S
                       - (time.monotonic() - ostatnio_z_hosta.get(host, 0.0)))
             if host in ostatnio_z_hosta and czekaj > 0:
@@ -5380,6 +5415,9 @@ def fetch(
                 body = response.text
                 if response.status_code >= 400:
                     reason = f"HTTP {response.status_code}"
+                    if response.status_code in (429, 503):
+                        wait = retry_policy.retry_after(response.headers)
+                        retry_policy.defer(pause, wait if wait is not None else 60.)
                 elif _to_pdf(response, url):
                     # PDF czytamy inaczej niz HTML. Bez tego `response.text`
                     # jest binarnym smieciem, `trafilatura` oddaje pustke,
@@ -6534,6 +6572,7 @@ def bank_fragmentow(conn: sqlite3.Connection, dni: int = 0) -> list[dict[str, An
         " WHERE evidence IS NOT NULL" + warunek + " ORDER BY id"
     ).fetchall()
     bank: list[dict[str, Any]] = []
+    seen = set()
     for tytul, evidence, kiedy in wiersze:
         try:
             karta = json.loads(evidence)
@@ -6544,6 +6583,10 @@ def bank_fragmentow(conn: sqlite3.Connection, dni: int = 0) -> list[dict[str, An
                 tekst = fragment if isinstance(fragment, str) else str(fragment)
                 if len(tekst.strip()) < 60:
                     continue          # ogryzki nie niosą mechanizmu
+                identity = (zrodlo.get("url", ""), " ".join(tekst.split()))
+                if identity in seen:
+                    continue
+                seen.add(identity)
                 bank.append({
                     "id": len(bank),
                     "text": tekst.strip(),
@@ -7357,6 +7400,7 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
         if not klucz:
             licznik["znane"] += 1
             continue
+        ok, powod = bramka_kandydata(k)
         # Bliźniak szukany ZAWSZE, takze gdy klucz juz jest w banku: przy
         # zderzeniu kluczy trzeba wiedziec, KTORY wpis sie zderzyl, zeby dalo
         # sie zapytac, czy nowy jest jego aktualizacja.
@@ -7372,7 +7416,7 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
             # od powtorki i bank odrzucal ja jako „juz to mamy".
             if _to_aktualizacja(tresc, blizniak):
                 stary_wpis = wpis_faktu.get(blizniak)
-                if stary_wpis is not None:
+                if stary_wpis is not None and ok:
                     stary_wpis["status"] = "zastapiony"
                 licznik["aktualizacje"] += 1
                 print("  [indeks] AKTUALIZACJA znanego faktu: %s" % tresc[:70],
@@ -7389,14 +7433,13 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
             licznik["znane"] += 1
             continue
         fakty_w_banku.append(tresc)
-        ok, powod = bramka_kandydata(k)
         indeks.append({
-            "fact": str(k.get("fact") or "")[:500],
-            "wrong_belief": str(k.get("wrong_belief") or "")[:300],
-            "actually": str(k.get("actually") or "")[:300],
-            "decision": str(k.get("decision") or "")[:200],
-            "consequence": str(k.get("consequence") or "")[:200],
-            "url": str(k.get("url") or "")[:400],
+            "fact": str(k.get("fact") or ""),
+            "wrong_belief": str(k.get("wrong_belief") or ""),
+            "actually": str(k.get("actually") or ""),
+            "decision": str(k.get("decision") or ""),
+            "consequence": str(k.get("consequence") or ""),
+            "url": str(k.get("url") or ""),
             # DATA ZRODLA GINELA TUTAJ. Prompt ciekawostek jej zada, bramka
             # swiezosci na niej stoi, a zapis kandydata jej nie przepisywal —
             # zmierzone przez audyt: 104 wpisy w indeksie, ZERO z data. Skutek:
@@ -7414,7 +7457,7 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
             # odpowiedz (`KSZTALT_CIEKAWOSTEK`) i kontrakt na zapis to teraz
             # jedno zrodlo — kazde nowe pole promptu przepisze sie samo i nie
             # zginie po raz trzeci.
-            **{p: str(k.get(p) or "")[:400] for p in _POLA_Z_KSZTALTU
+            **{p: str(k.get(p) or "") for p in _POLA_Z_KSZTALTU
                if p not in ("fact", "wrong_belief", "actually", "decision",
                             "consequence", "url", "source_date", "domain")},
             "domain": str(k.get("domain") or "")[:80],
@@ -7441,6 +7484,7 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
             # ustawic rozny dla roznych tematow i tlumaczy sie sam.
             "wazny_do": _termin_waznosci(),
         })
+        wpis_faktu[tresc] = indeks[-1]
         znane.add(klucz)
         licznik["przyjete" if ok else "odrzucone"] += 1
     if licznik["przyjete"] or licznik["odrzucone"]:
@@ -7642,6 +7686,9 @@ def wez_kandydatow(ile: int = 1,
                 k["status"] = "uzyty"
                 k["uzyty_kiedy"] = db.now()
         _zapisz_indeks(indeks)
+        borrowed = _POBRANE_DO_NOTEK.get()
+        if borrowed is not None:
+            borrowed.extend(wziete)
     return wziete
 
 
@@ -7814,7 +7861,7 @@ def posortuj_bank(conn: sqlite3.Connection, run_id: int | None = None,
     """
     indeks = wczytaj_indeks()
     wolni = [k for k in indeks
-             if k.get("status") == "nowy" and _z_obecnej_epoki(k)]
+             if k.get("status") == "nowy" and _z_obecnej_epoki(k) and not _po_terminie(k)]
     if len(wolni) < 2:
         print("  [bank] za malo kandydatow do rankingu (%d)" % len(wolni),
               flush=True)
@@ -7881,8 +7928,12 @@ def posortuj_bank(conn: sqlite3.Connection, run_id: int | None = None,
               % type(exc).__name__, flush=True)
         return {"ocenione": 0, "wyrzucone": 0}
 
+    if not isinstance(dane, dict) or not isinstance(dane.get("kolejnosc"), list) or not dane["kolejnosc"]:
+        print("  [bank] brak rankingu w odpowiedzi — zachowuje bank bez zmian", flush=True)
+        return {"ocenione": 0, "wyrzucone": 0}
     oceny = {int(o["id"]): o for o in (dane.get("oceny") or [])
-             if isinstance(o, dict) and str(o.get("id", "")).isdigit()}
+             if isinstance(o, dict) and str(o.get("id", "")).isdigit()
+             and 0 <= int(o["id"]) < len(wolni)}
     kolejnosc = [int(i) for i in (dane.get("kolejnosc") or [])
                  if str(i).isdigit() and int(i) < len(wolni)]
     # Kazdy id RAZ. Model potrafi powtorzyc pozycje albo pominac — kolejnosc

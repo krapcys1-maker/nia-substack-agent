@@ -34,6 +34,13 @@ finishes. A deadline covers navigation and shutdown; a stuck child is stopped
 while completed pages remain available. This does not terminate an attached
 user Chrome process. Publishing actions are not retried by this read worker.
 
+Provider retries respect `Retry-After` (seconds or an HTTP date). A pause is
+remembered per instance, provider/model and credential fingerprint, so another
+stage cannot immediately retry the same limited service. Deferred calls create
+no API attempt or reservation. The failed request keeps its existing usage state.
+Source HTTP 429 and 503 responses pause that host and are not immediately retried
+through the browser; duplicate URLs in the same batch are fetched once.
+
 DeepSeek Chat Completions and Responses both receive `DEEPSEEK_EFFORT`.
 Previously only Responses received it, so ordinary chat used the provider's
 default high effort even when NIA was configured for low effort. Mechanical
@@ -73,6 +80,29 @@ files are ignored. Identical successful fact checks can be reused briefly for
 the same text, context, model, policy and day; edits require another decision.
 This is deliberately narrower than inferring that a different claim is already
 verified. Daily and standalone article entry points share the same instance lock.
+
+A plan containing only article promotion or reflection does not rank or replenish
+the idea bank. If drafting fails before returning its results, borrowed ideas are
+returned to the bank; this does not retry an uncertain publication. Stored claims
+and source URLs remain complete. An invalid update does not replace an older valid
+idea, expired ideas do not consume a ranking call, and duplicate excerpts across
+saved drafts enter the fragment bank once.
+
+A failed field-status refresh has a one-hour retry pause, separate from the last
+successful result. Its old context is labeled stale. A changed question or model
+has a separate pause, and the operator can explicitly request a refresh. Successful
+JSON writes replace the previous file atomically.
+
+## Inspecting actual spending and memory
+
+Run `python agent-v2/audyt_kosztow.py` for a read-only report. `--json` gives
+structured output; `--data-dir PATH` selects another instance, and `--min-run ID`
+filters database records when a test instance contains copied history. Memory
+counts always describe the entire selected instance. This tool makes no API calls,
+publishes nothing and does not migrate the database. It distinguishes recorded
+costs, unknown reservations, legacy failures without usage, source failures and
+the state of the idea/evidence banks. Provider invoices are still needed to
+reconcile old incomplete usage; repeated stage names alone do not prove waste.
 
 ## Validation
 

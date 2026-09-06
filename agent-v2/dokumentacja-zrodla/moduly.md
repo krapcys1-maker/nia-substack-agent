@@ -26,14 +26,26 @@
 
 ### `result_cache.py` — cache zalezne od tresci i czasu waznosci
 
-38 wierszy, 4 funkcji na poziomie modułu, 0 klas
+43 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `digest(value)` | — |
 | `read(path, max_age)` | — |
 | `write(path, value)` | — |
+| `write_json(path, value)` | Replace a JSON document atomically, keeping the prior file on failure. |
 | `code_fingerprint(root)` | — |
+
+### `retry_policy.py` — Retry-After i trwale przerwy przed kolejnym zapytaniem do serwera
+
+46 wierszy, 4 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `retry_after(headers, now)` | Retry-After can be seconds or an HTTP date; malformed values are ignored. |
+| `path_for(directory, scope)` | — |
+| `remaining(path)` | — |
+| `defer(path, seconds)` | — |
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
@@ -71,7 +83,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8279 wierszy, 146 funkcji na poziomie modułu, 0 klas
+8330 wierszy, 147 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -152,6 +164,7 @@
 | `_o_tym_samym(a, b, min_wspolnych, prog)` *(wewn.)* | Czy dwa teksty mowia o tej samej rzeczy. |
 | `teksty_ostatnich_notek(ile)` | Tresci ostatnich notek — do porownania po NAZWACH WLASNYCH. |
 | `wybierz_material(zapas, unikaj, wczesniej, teksty)` | Bierze fakt, ktory NIE jest o tym samym, co juz dzis wystawiamy. |
+| `_chron_bank_notek()` *(wewn.)* | No publication happens during drafting: restore borrowed ideas on failure. |
 | `notki_dnia(conn, run_id, dzien_artykulu, karta, ciekawostki, link_artykulu, ile, od)` | Do pieciu notek z dziennego planu, kazda z innego materialu. |
 | `ocen_restack(conn, run_id, notka)` | Czy podac te notke dalej i z jakim zdaniem. |
 | `_podloga_z_pamieci(tekst)` *(wewn.)* | Dwie podlogi, ktore dzialaja BEZ karty dowodowej. |
@@ -333,7 +346,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1002 wierszy, 20 funkcji na poziomie modułu, 3 klas
+1019 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -710,7 +723,7 @@
 
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci
 
-233 wierszy, 4 funkcji na poziomie modułu, 0 klas
+244 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -779,6 +792,17 @@
 |---|---|
 | `etap(nr, nazwa)` | — |
 | `werdykt(nazwa, stan, szczegol)` | — |
+| `main()` | — |
+
+### `audyt_kosztow.py` — odczyt kosztow, odrzucen serwera i pamieci bez wywolan API ani zmian danych
+
+158 wierszy, 4 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `_json(path, default)` *(wewn.)* | — |
+| `_failure(note)` *(wewn.)* | — |
+| `collect(directory, min_run)` | — |
 | `main()` | — |
 
 ### `audyt_systemu.py` — audyt CALEGO systemu na zywych danych: publikowanie, normy, komentarze, statystyki, artykul, pieniadze, pamiec
