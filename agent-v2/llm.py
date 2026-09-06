@@ -319,7 +319,21 @@ def _call_deepseek_responses(
     wyszukiwania i zwraca prawdziwe adresy, w przeciwieństwie do Haiku i Sonneta,
     które wypisywały je z pamięci.
     """
-    response = httpx.post(
+    # STRUMIENIOWANIE ZAMIAST JEDNEJ ODPOWIEDZI. Zmierzone 2026-09-05 na
+    # kartridzu `ai`: cztery kolejne wywolania `curiosity` (przebiegi 2 i 3)
+    # padly na RemoteProtocolError „peer closed connection without sending
+    # complete message body" — kazda proba po ~200 s, powtarzalnie. Serwer
+    # ucina generowanie, na ktore nie wyslal jeszcze ani bajtu; przy
+    # `stream: true` bajty plyna od pierwszej sekundy (zdarzenia rozumowania
+    # i wyszukiwan) i to samo zadanie przechodzi. Tresc bierzemy z koncowego
+    # zdarzenia `response.completed`, ktore niesie pelny obiekt odpowiedzi
+    # (usage, output z web_search_call) — ten sam ksztalt, ktory czytal
+    # `walk` ponizej; delty tekstu zbieramy tylko jako zapas.
+    delty: list[str] = []
+    payload: dict[str, Any] | None = None
+    blad_strumienia = ""
+    with httpx.stream(
+        "POST",
         f"{config.DEEPSEEK_BASE_URL}/responses",
         headers={"Authorization": f"Bearer {config.DEEPSEEK_API_KEY}"},
         json={
@@ -351,11 +365,42 @@ def _call_deepseek_responses(
             # `max_output_tokens`, więc musi zostać miejsce na odpowiedź.
             "reasoning": {"effort": config.DEEPSEEK_EFFORT},
             "max_output_tokens": config.MAX_TOKENS[purpose],
+            # STRUMIEN, NIE JEDNA ODPOWIEDZ — patrz komentarz nad `httpx.stream`.
+            "stream": True,
         },
-        timeout=config.timeout_for(config.MAX_TOKENS[purpose]) * 3,
-    )
-    response.raise_for_status()
-    payload = response.json()
+        timeout=httpx.Timeout(config.timeout_for(config.MAX_TOKENS[purpose]),
+                              connect=30.0),
+    ) as response:
+        response.raise_for_status()
+        for linia in response.iter_lines():
+            if not linia.startswith("data:"):
+                continue
+            dane = linia[5:].strip()
+            if dane == "[DONE]":
+                break
+            try:
+                zdarzenie = json.loads(dane)
+            except ValueError:
+                continue
+            typ = zdarzenie.get("type")
+            if typ == "response.output_text.delta":
+                delty.append(str(zdarzenie.get("delta") or ""))
+            elif typ == "response.completed":
+                payload = zdarzenie.get("response") or {}
+            elif typ in ("response.failed", "response.incomplete", "error"):
+                blad_strumienia = json.dumps(
+                    zdarzenie.get("response", {}).get("error")
+                    or zdarzenie.get("error") or zdarzenie)[:300]
+                if typ == "response.incomplete":
+                    payload = zdarzenie.get("response") or {}
+    if payload is None:
+        # Strumien urwal sie bez konca — to ta sama klasa awarii, co zerwane
+        # polaczenie, i ma byc ponowiona przez `call` (patrz `przejsciowy`).
+        raise httpx.RemoteProtocolError(
+            "strumien /responses urwal sie bez response.completed"
+            + (f" ({blad_strumienia})" if blad_strumienia else ""))
+    if blad_strumienia and not (payload.get("output") or delty):
+        raise Truncated(f"DeepSeek /responses zglosil blad: {blad_strumienia}")
 
     text_parts: list[str] = []
     urls: list[str] = []
@@ -381,7 +426,7 @@ def _call_deepseek_responses(
                 walk(item)
 
     walk(payload.get("output", []))
-    text = payload.get("output_text") or "".join(text_parts)
+    text = payload.get("output_text") or "".join(text_parts) or "".join(delty)
     usage = payload.get("usage", {})
 
     # DeepSeek bywa, że przeszukuje i przeszukuje, a bloku `message` nie tworzy
