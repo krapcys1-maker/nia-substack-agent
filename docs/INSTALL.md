@@ -1,5 +1,10 @@
 # Installation
 
+**Prefer a visual interface?** Use the [control panel guide with screenshots](PANEL.md)
+or [instrukcja po polsku](PANEL_PL.md). Windows: install Python and Chrome,
+extract the repository, then double-click `Install-NIA.cmd`. Later use
+`Start-NIA.cmd`. Existing environments can run `python narzedzia/panel.py`.
+
 Run commands from the repository root. This guide uses the preset workflow:
 **download → local environment → choose preset → activate → log in → run →
 schedule**. A normal user does not need to edit engine code or shared presets.
@@ -144,10 +149,12 @@ python agent-v2/browser.py sesja
 ```
 
 Read the result and verify that the session path belongs to your active instance.
-The current session command uses a page-content heuristic; a saved file by
-itself is not proof of the correct authenticated account. Its account guard
-also queries a public profile rather than a reliable authenticated identity
-endpoint. Confirm the account yourself before enabling publication.
+The legacy session-save command uses a page-content heuristic; a saved file by
+itself is not proof of the correct authenticated account. The publishing guard
+checks the authenticated user in Substack's page bootstrap data and matches
+both handle and ID to the target profile. The panel's **Verify and save session**
+uses that guard before saving. Confirm the intended account in Chrome as part
+of setup; an expired session needs a fresh login.
 
 The CLI command `browser.py zaloguj` is a legacy automated login path and is
 not the setup route recommended by the code.

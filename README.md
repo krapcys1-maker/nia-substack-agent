@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/9ea8388e-5916-46ab-8620-6e7c8ebeaf96
 Real browser footage from the NIA test account, edited for pace, with English
 AI narration. The demo uses the Hidden Bill editorial preset.
 
-[Get started](docs/INSTALL.md) · [Published examples](docs/DEMO.md) ·
+[Open the control panel](docs/PANEL.md) · [Instrukcja po polsku](docs/PANEL_PL.md) · [Published examples](docs/DEMO.md) ·
 [Roadmap](ROADMAP.md) · [Subtitles: English](docs/media/nia-demo.en.srt) / [Polski](docs/media/nia-demo.pl.srt)
 
 ## What NIA can do
@@ -30,6 +30,7 @@ AI narration. The demo uses the Hidden Bill editorial preset.
 | **Join the conversation** | Reply, comment, like and restack. Following authors and free subscriptions are also supported when enabled. |
 | **Keep a rhythm** | Use configured daily and weekly schedules, publishing volumes, community limits and quiet days. |
 | **Keep track** | Record API attempts and model costs, distinguish unknown usage, inspect the research and memory report, and use budget thresholds and health checks. |
+| **Control it visually** | Use the local English/Polish panel to choose models, tune activity and budgets, edit presets and start workflows with visible logs. |
 
 ![NIA workflow: research, write, review, publish and connect; configured by your editorial preset](docs/media/nia-workflow.svg)
 
@@ -65,13 +66,19 @@ and exercised bank reuse, ranking and source retrieval. See the
 | | On your computer | On a Linux server |
 |---|---|---|
 | **Best for** | Trying a preset, inspecting drafts and running a personal publication | Scheduled operation while your own computer is off |
-| **Run** | Python CLI and a dedicated Chrome session | The same engine, with a service user and server browser session |
+| **Run** | Local browser panel or Python CLI, plus a dedicated Chrome session | The same engine, with a service user and server browser session |
 | **Schedule** | Manual runs; Windows Task Scheduler or Linux systemd | Generated systemd services and timers |
 | **Setup** | Keep the computer awake, online and logged in for scheduled runs | Configure the graphical or virtual display and browser login on the server |
 | **Guide** | [Local installation](docs/INSTALL.md#2-download-and-install) · [Windows scheduling](docs/INSTALL.md#7-schedule-on-your-computer) | [Linux server installation and timers](docs/INSTALL.md#8-schedule-on-a-linux-server) |
 
-NIA is currently a command-line product. A desktop dashboard, a Docker package
-and a one-command server installer are not included in this release.
+NIA includes a **local control panel in English and Polish**, backed by the same
+engine as the CLI. Windows users can install dependencies with `Install-NIA.cmd`
+and reopen the panel with `Start-NIA.cmd`. Python and Chrome are prerequisites.
+The panel starts manual runs; operating-system scheduling is configured separately.
+
+[![NIA control panel: active preset, workflow controls and run status](docs/media/panel-home.png)](docs/PANEL.md)
+
+[Screenshot guide: English](docs/PANEL.md) · [Instrukcja ze zrzutami: Polski](docs/PANEL_PL.md)
 
 ## Choose your editorial direction
 
@@ -97,9 +104,13 @@ requests still go to the providers you configure.
 
 ## Get started
 
-You need **Python 3.11+**, Git, Chrome, a Substack publication and API access for
+You need **Python 3.11+**, Chrome, a Substack publication and API access for
 the selected model roles. The bundled presets use Anthropic and DeepSeek for
 text; optional images use OpenAI.
+
+**Prefer buttons?** Follow the [control panel guide](docs/PANEL.md). On Windows,
+download and extract the repository, then double-click `Install-NIA.cmd`.
+For an existing environment, run `python narzedzia/panel.py`.
 
 ```bash
 git clone https://github.com/krapcys1-maker/nia-substack-agent.git

@@ -454,7 +454,7 @@ POLA: dict[str, tuple[str | None, Any]] = {
     # Kanaly RSS/Atom (blogi laboratoriow, listy publikacji) — ta sama rola co
     # kanaly YouTube: zaczyn tematow, nigdy zrodlo. Nazwa -> adres.
     "zrodla.kanaly_rss": ("KANALY_RSS", _slownik_adresow),
-    "zrodla.blokowane_hosty": ("BLOCKED_HOSTS", _lista_napisow),
+    "zrodla.blokowane_hosty": ("BLOCKED_HOSTS", _lista_napisow_moze_pusta),
     # Hosty dokumentow pierwotnych tej dziedziny — podpowiedz dla dyskoverii.
     "zrodla.domeny_preferowane": ("DOMENY_PREFEROWANE", _lista_domen),
 
