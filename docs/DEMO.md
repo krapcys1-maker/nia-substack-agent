@@ -1,6 +1,6 @@
 # NIA in action
 
-https://github.com/user-attachments/assets/149b598a-6c83-4e5a-9365-58c42ff45df8
+https://github.com/user-attachments/assets/9ea8388e-5916-46ab-8620-6e7c8ebeaf96
 
 **Press Play above to watch the 92-second film directly on GitHub.**
 [Download MP4](https://github.com/krapcys1-maker/nia-substack-agent/releases/download/demo-2026-09-06/nia-demo.mp4) ·
