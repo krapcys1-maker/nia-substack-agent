@@ -105,11 +105,11 @@ ZAKAZANE_PLIKI = [
     (r"(^|/)konfiguracja\.toml$", "konfiguracja instalacji (uchwyt konta)"),
     # KARTRIDZ OPERATORA to ta sama klasa co `konfiguracja.toml`: uchwyt, marka,
     # temat. W gicie sa celowo tylko: szablon `SZABLON/`, przykladowy kartridz
-    # `ai/` (z placeholderem uchwytu — sekcja 7 tego pilnuje) oraz, w historii
+    # `ai/` i `hidden-bill/` (z placeholderem — sekcja 7 tego pilnuje) oraz, w historii
     # galezi, wczesniejsze przyklady `przyklady/`, ktore mialy placeholdery
     # i zostaly zastapione kartridzem `ai`. Kazdy inny katalog to instalacja.
     (r"^presety/[^/]+\.toml$", "wlasny preset operatora (uchwyt konta, temat)"),
-    (r"^presety/(?!SZABLON/|ai/|przyklady/)[^/]+/", "wlasny katalog presetu operatora"),
+    (r"^presety/(?!SZABLON/|ai/|hidden-bill/|przyklady/)[^/]+/", "wlasny katalog presetu operatora"),
     (r"(^|/)aktywny_preset\.json$", "wskaznik aktywnego presetu (stan instalacji)"),
     (r"(^|/)instancje/", "dane instancji presetu (baza, bank, szkice)"),
     (r"\.db$", "baza danych"),
@@ -425,7 +425,7 @@ def main() -> int:
             not _z_tematem, _z_tematem)
 
     # PRESETY W GICIE MAJA PLACEHOLDER ZAMIAST KONTA. `presety/SZABLON/`
-    # i `presety/ai/` sa sledzone celowo; prawdziwy uchwyt w ktorymkolwiek
+    # i publiczne przyklady sa sledzone celowo; prawdziwy uchwyt w ktorymkolwiek
     # z nich bylby tozsamoscia konta w publicznym repozytorium.
     import preset as _preset   # noqa: E402
     for _plik in sorted(KORZEN.glob("presety/*/preset.toml")):

@@ -1,0 +1,229 @@
+# The Hidden Bill — complete, portable editorial preset.
+# Public example: set SUBSTACK_HANDLE and NAZWA_MARKI in agent-v2/.env.
+# All style assets belong to this directory. No engine defaults or runtime data.
+# The rationale, verified feeds and launch pitches are in the adjacent documents.
+
+[preset]
+nazwa = "hidden-bill"
+opis = "The Hidden Bill: the fees, subscriptions, repair restrictions and fine print that change the real price of everyday life. English, evidence-led, useful and sharply written."
+schema = 1
+wersja = "2026-09-06"
+
+[konto]
+uchwyt = "your-handle"
+nazwa_marki = "The Hidden Bill"
+strefa_czytelnika = "America/New_York"
+data_przestawienia = ""
+
+[wolumeny]
+notki_dziennie = 2
+artykuly_tygodniowo = 1
+komentarze_dziennie = [2, 3]
+lajki_dziennie = [3, 5]
+restacki_dziennie = [0, 1]
+follow_miesiecznie = [0, 0]
+subskrypcje_miesiecznie = [0, 0]
+przebiegow_dziennie = 2
+
+[harmonogram]
+godziny_przebiegow_utc = ["13:30", "20:30"]
+dni_artykulu = ["Thu"]
+godzina_artykulu_utc = "14:00"
+
+[publikowanie]
+okno_et = [7, 22]
+martwe_godziny_et = [12, 13]
+notek_promujacych = 2
+okno_promocji_dni = 7
+miks_notek = ["CIEKAWOSTKA", "DYSKUSJA", "CIEKAWOSTKA", "MYSL"]
+ciche_dni_wlaczone = true
+cichy_dzien_na_ile = 8
+
+[pieniadze]
+# Caps, NOT a forecast or a promise to fill every slot. The engine may stop
+# before the month's quota. Check costs across other instances using the same keys.
+sufit_miesieczny_usd = 25.0
+sufit_dzienny_usd = 3.5
+sufit_przebiegu_usd = 1.60
+sufit_podniesiony_na = ""
+
+[modele]
+# Existing engine model identifiers, pinned explicitly for every text role.
+# Provider availability was not tested with paid calls. No new API adapter required.
+# Text quality gets the budget first; image generation is disabled at launch.
+obraz = ""
+zapasowy_pisarz = "claude-opus-5"
+
+[modele.role]
+scout = "deepseek-v4-pro"
+feasibility = "deepseek-v4-flash"
+discovery = "deepseek-v4-pro"
+classify = "deepseek-v4-flash"
+synthesis = "deepseek-v4-pro"
+write = "claude-fable-5-1"
+review = "deepseek-v4-pro"
+forma = "deepseek-v4-pro"
+note = "claude-opus-5"
+note_tani = "deepseek-v4-pro"
+comment = "deepseek-v4-pro"
+reply = "deepseek-v4-pro"
+bank = "deepseek-v4-flash"
+factcheck = "deepseek-v4-pro"
+naprawa = "claude-opus-5"
+naprawa_komentarza = "deepseek-v4-pro"
+aktualne_modele = "deepseek-v4-flash"
+curiosity = "deepseek-v4-flash"
+grafika = "deepseek-v4-flash"
+cele = "deepseek-v4-flash"
+wybor = "deepseek-v4-pro"
+bibliotekarz = "deepseek-v4-pro"
+warto_pisac = "deepseek-v4-pro"
+restack = "deepseek-v4-pro"
+fedreg = "deepseek-v4-flash"
+
+[temat]
+nisza = "the hidden costs and conditions of everyday purchases: subscriptions, checkout fees, personalized prices, repair restrictions, and what ownership actually includes"
+jezyk = "English"
+kat_redakcyjny = "start with a familiar purchase, find the dated term or measured result that changes its real cost, explain who controls that condition, and leave the reader knowing what to check."
+znaki_niszy = [
+    "subscription", "cancel", "renewal", "refund", "fee", "pricing", "price",
+    "consumer", "checkout", "loyalty", "repair", "warranty", "ownership",
+    "digital purchase", "support", "right to repair", "dark pattern", "review",
+    "delivery", "ticket", "broadband", "hotel", "rental", "membership",
+    "personal data", "data broker", "switching", "lock-in", "spare part",
+]
+# These queries find relevant people and conversations. Every query contains
+# a niche marker, as required by the engine's target filter.
+hasla_szukania = [
+    "subscription cancellation experience", "automatic renewal pricing",
+    "subscription business model", "membership cancellation design",
+    "consumer protection enforcement", "hidden fees at checkout",
+    "hotel resort fee disclosure", "ticket pricing transparency",
+    "delivery service fees", "broadband introductory price",
+    "rental application fees", "consumer refund policy",
+    "loyalty card pricing", "personalized pricing evidence",
+    "surveillance pricing consumer data", "dynamic pricing fairness",
+    "dark patterns in checkout", "consumer privacy and personal data",
+    "right to repair electronics", "repair parts availability",
+    "warranty repair restrictions", "printer subscription cancellation",
+    "software support end of life", "digital purchase ownership",
+    "smart home ownership", "spare parts pricing",
+    "fake reviews marketplace", "consumer switching costs",
+    "platform lock-in consumers", "product repairability testing",
+]
+dziedziny = [
+    "the advertised price and the first mandatory charge missing from it",
+    "a fee described as optional beside the default selection a buyer actually receives",
+    "the cancellation button, the final billing date, and the gap between them",
+    "an introductory subscription price and the renewal price that needs a second click to find",
+    "a promised saving and the spending assumptions needed to reach it",
+    "a delivery charge split between the platform, the restaurant and the person delivering",
+    "a hotel booking whose headline price and payable total tell different stories",
+    "a ticket's face value, unavoidable charges and restrictions on resale",
+    "a broadband label beside the renewal price, equipment rental and exit charge",
+    "a rental application or move-out fee and the document that authorizes it",
+    "a loyalty discount compared with both the non-member price and a real competing offer",
+    "personalized offers: what data is used, what is merely possible, and what was observed",
+    "a price that changes with demand compared with one that changes with the buyer's identity",
+    "a store's reference price and the time window used to call the new price a discount",
+    "a smaller pack compared on unit price, keeping quality and date comparable",
+    "a refund advertised as easy and the documented conditions that make a claim eligible",
+    "a repair quote separated into the part, labor, pairing and access to diagnostic software",
+    "a working device whose useful life depends on a manufacturer's server or support policy",
+    "a replaceable part that cannot be obtained through an independent repair route",
+    "a warranty condition compared with the applicable published rule in the named jurisdiction",
+    "a digital purchase and the licence terms governing continued access",
+    "a printer or appliance subscription and what stops working when payments stop",
+    "a smart-home device's offline functions compared with the advertised connected features",
+    "a switching process where portability exists on paper but a fee or missing export limits its use",
+    "a marketplace review attached to a changed product listing",
+    "a rating system's treatment of paid, incentivized or verified-purchase reviews",
+    "a consumer rule after implementation: the price a buyer sees and the behavior it actually changed",
+    "a company's practical justification for a restriction tested against a less restrictive alternative",
+    "a cheaper offer that really is cheaper, and the evidence that distinguishes it from a teaser",
+    "an improved cancellation or repair policy that demonstrably gives control back to the buyer",
+    "a payment dispute where the policy, platform decision and consumer evidence disagree",
+    "a cross-border purchase where the seller's location changes the applicable conditions",
+]
+puste_slowa = ["price", "prices", "consumer", "consumers", "cost", "costs"]
+
+[temat.przyklady]
+kanon = [
+    "everything is a scam, with no named arrangement or document",
+    "subscriptions are bad, with no distinction between continuing service and lock-in",
+    "companies are greedy, used as the entire causal explanation",
+    "your phone is listening because an advertisement felt personal",
+    "a lower member price must be a fake discount, before comparing actual prices",
+    "one bad customer experience proves how an entire market behaves",
+]
+rzeczy = [
+    "the last checkout screen before a hotel booking is paid",
+    "the renewal notice below the introductory subscription price",
+    "a printer cartridge that is physically present but subject to a service agreement",
+    "two supermarket shelf labels for the same product, one for members",
+    "a repair quote with a software-pairing step beside the replacement part",
+    "a library of purchased digital items and the account terms governing access",
+]
+seam = [
+    "a rule requiring an unavoidable charge to appear before the buyer commits",
+    "a published cancellation process introduced after complaints or enforcement",
+    "a repair restriction reviewed in a report with the manufacturer's justification alongside it",
+    "a review-platform undertaking that changes how manipulated reviews are detected",
+    "a contract clause governing access after a connected service ends",
+]
+przekonania = [
+    "the displayed discount tells you whether an offer beats other shops",
+    "buying the hardware settles how long all its advertised functions will work",
+    "a promise that cancellation is available tells you when the final bill stops",
+    "every price that changes is based on personal information about the buyer",
+    "a consumer protection announcement means the same rule already applies everywhere",
+]
+precedensy = [
+    "the FTC's 2025 live-event and short-term-lodging fee disclosure rule, read with its scope and exceptions",
+    "the CMA's 2024 supermarket loyalty-pricing review, including results that challenge blanket accusations",
+    "the FTC's Nixing the Fix report, with the evidence for and against repair restrictions",
+    "the EU repair-of-goods directive, checked against product coverage and national implementation",
+    "the CMA online-reviews case files, distinguishing undertakings from proof about every review",
+]
+
+[temat.rytm_roku]
+1 = "subscription renewals, trial offers and returns after holiday purchases; verify current terms"
+2 = "travel booking conditions and household contract renewals; compare like-for-like totals"
+3 = "consumer-rights announcements and repair policy updates; confirm jurisdiction and effective date"
+4 = "spring travel, ticket sales, broadband and household service price changes"
+5 = "summer booking fees, cancellation windows and restrictions on ticket resale"
+6 = "connected-device support notices, repairs before travel and membership conditions"
+7 = "sales reference prices, unit-price comparisons and announced rule implementation; verify dates"
+8 = "back-to-school electronics, repairability, software support and student offer renewal terms"
+9 = "device launches, trade-in conditions, ownership and replacement-part availability"
+10 = "holiday return policies, subscription bundles and the reference prices behind sale claims"
+11 = "Black Friday checkout totals, member prices, review reliability and genuine counterexamples"
+12 = "gift purchases, delivery terms, returns, auto-renewal and support commitments for new devices"
+
+[stan_dziedziny]
+# Consumer rules and cases change. A daily compact check is retained; sources
+# still need rechecking per story. This is not a feed of AI model releases.
+pytaj = true
+o_co_pytac = "which consumer fee-disclosure, subscription-cancellation, repair and digital-ownership rules or major cases in the US, UK and EU have actually changed status; distinguish proposal, adoption, effective date, court challenge, settlement and implementation; identify current primary documents and dates; do not infer a universal consumer right from one jurisdiction"
+
+[zrodla]
+# Six RSS/Atom endpoints fetched and parsed successfully on 2026-09-06.
+# FTC/CMA are official signals. BIG/Pluralistic/EFF/iFixit supply leads and
+# perspectives; a feed headline is never proof. No YouTube dependency.
+kanaly_youtube = {}
+kanaly_rss = { "FTC Consumer Protection" = "https://www.ftc.gov/feeds/press-release-consumer-protection.xml", "CMA Announcements" = "https://www.gov.uk/government/organisations/competition-and-markets-authority.atom", "BIG by Matt Stoller" = "https://www.thebignewsletter.com/feed", "Pluralistic" = "https://pluralistic.net/feed/", "EFF Updates" = "https://www.eff.org/rss/updates.xml", "iFixit News" = "https://www.ifixit.com/News/rss" }
+blokowane_hosty = ["x.com", "twitter.com", "linkedin.com", "facebook.com", "sciencedirect.com", "tandfonline.com", "academia.edu", "researchgate.net"]
+domeny_preferowane = [
+    "ftc.gov", "consumer.ftc.gov", "gov.uk", "legislation.gov.uk",
+    "commission.europa.eu", "eur-lex.europa.eu", "consilium.europa.eu",
+    "ecfr.gov", "regulations.gov", "justice.gov", "courtlistener.com",
+    "transportation.gov", "docs.fcc.gov", "accc.gov.au", "sec.gov",
+    "support.apple.com", "support.google.com", "support.hp.com", "ifixit.com",
+]
+
+[styl]
+opis = "Warm, exact English for a curious adult looking at an ordinary bill or purchase. Begin with the concrete condition that changes what they pay or control. Explain the arrangement in plain words, allow one dry observation when it earns its place, and show the strongest fair explanation from the other side. Be useful without preaching thrift, inventing personal experience or turning every company into a villain. A sharp title must make exactly the promise the evidence can keep."
+profil_pozytywny = "styl/profil_pozytywny.md"
+profil_negatywny = "styl/profil_negatywny.md"
+korpus = "styl/korpus.txt"
+wymagaj_korpusu = true

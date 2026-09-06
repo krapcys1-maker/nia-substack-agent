@@ -2,59 +2,53 @@
 
 ## Reporting
 
-Use GitHub's private vulnerability reporting (**Security → Report a
-vulnerability** on this repository). Please do not open a public issue for
-anything involving credentials, session state or other people's data.
+Use GitHub's private vulnerability reporting when available under
+**Security → Report a vulnerability**. Do not include credentials, session
+state or other people's data in public issues. If private reporting is
+unavailable, ask publicly for a private contact channel without posting details.
 
-If private reporting is unavailable to you, open a public issue saying only
-that you have something to report and asking for a channel — no details.
+## Private installation data
 
-## What this software handles that is worth protecting
+| Data | Current location |
+|---|---|
+| API keys, account settings and mail credentials | `agent-v2/.env` |
+| Active preset pointer | `agent-v2/aktywny_preset.json` |
+| Saved browser session | `agent-v2/instancje/<id>/storage-state.json` |
+| Idea bank, drafts, logs, database and subscriber backups | `agent-v2/instancje/<id>/` |
+| Dedicated Chrome profile | The operating-system user's `substack-agent-chrome` directory |
+| Custom presets | Private directories under `presety/` |
 
-This bot runs somebody's publication. Three things it touches are worth
-attacking, and all three are deliberately kept out of the repository:
+Legacy installations may also have files under `agent-v2/data/` or a root
+`.env`. Detaching a preset does not delete any of these files or log out Chrome.
+Session files and browser profiles carry authenticated access; protect them
+along with API keys. Do not include them in a distributable clone or ZIP.
 
-| what | where it lives | why it matters |
-|---|---|---|
-| API keys | `agent-v2/.env` | spends money |
-| Substack session cookie | `agent-v2/storage-state.json` | **full control of the account** — it is a logged-in session, not a password |
-| subscriber exports | `agent-v2/data/kopie/*.csv` | other people's email addresses, and the only asset that cannot be regenerated |
+Private runtime paths are ignored by Git, and the repository audit scans tracked
+files and optionally history. This is a defense against accidental inclusion,
+not a guarantee against force-adding files or every possible secret format.
+A clean current tree does not by itself prove a clean history.
 
-All are gitignored from the first commit. The session file and the subscriber
-exports are written `0600` — readable only by the account that owns them,
-because on a shared machine "in my home directory" is not privacy.
+The engine applies owner-only POSIX permissions to selected sensitive outputs
+where supported. On Windows, access depends on filesystem ACLs; POSIX mode bits
+are not an equivalent access-control check. The runtime data is not encrypted
+by this application.
 
-**On Windows that sentence is not true, and the bot now says so.** Windows has
-no POSIX permissions, so `chmod` does nothing and the session cookie sits at
-`0666` — readable by any account on the machine. Measured, not assumed. The
-code no longer passes over this in silence: it prints a warning once per
-process. Production runs on Linux, where the permissions apply; but the machine
-where you first create the session is often a laptop, and that file is full
-control of the account.
+## Known isolation boundaries
 
-`python narzedzia/audyt.py --historia` fails if any of them appears in the
-working tree **or anywhere in git history**, along with real API keys, IP
-addresses and ssh commands. Section 9 of that audit is a counterproof: it
-injects three leaks and checks that each one is caught, because an audit that
-always says OK is indistinguishable from a broken one.
+One checkout has one active preset. Instance folders separate runtime files,
+but Chrome's default profile/CDP port and generated systemd unit names are
+not yet configurable per instance. Do not treat multiple clones sharing them
+as independent account environments.
 
-## Things that are working as intended, not vulnerabilities
+The current browser account check reads a public profile; it does not provide
+a reliable authenticated-user proof. Confirm the logged-in account manually
+and use isolated browser environments for different publications.
 
-**The bot does not hide that it is automated.** It never denies being AI-run
-when asked directly, and it does not evade bot detection. That is doctrine.
+Stop schedules and running processes before switching accounts or updating the
+checkout. Detachment cannot recall a request already sent, and changing an
+environment file does not reload a running process.
 
-**Prompts and briefs are in the repository.** They are the product, not a
-secret. Nothing in them is a credential.
-
-**The database and the action journal are gitignored but not encrypted.**
-They sit on the operator's own machine. If that machine is compromised, so is
-the session, and the session is the bigger problem.
-
-## If you are running this
-
-- Keep `agent-v2/.env`, `agent-v2/storage-state.json` and `agent-v2/data/` off
-  any shared filesystem and out of any backup you would hand to somebody else.
-- If the session file leaks, **log out of all sessions in Substack** — that
-  invalidates the cookie. Rotating the password alone may not.
-- `python agent-v2/alarm.py` reports missing backups and file permissions on
-  every run, and names the exact path.
+If a credential or session is exposed, revoke or replace it using the relevant
+provider's account controls and inspect account activity. For current setup
+and operating limits, see [INSTALL.md](docs/INSTALL.md) and
+[the distribution audit](analizy/2026-09-06-dystrybucja-github/RAPORT.md).

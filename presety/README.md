@@ -1,10 +1,10 @@
 # Presets — the cartridge
 
-The engine in `agent-v2/` is the console: it carries the method (stages,
-gates, contracts, guards) and **no subject at all** — no niche, no search
-terms, no domains, no calendar, no visual identity. A **preset** is the
-cartridge: one directory with everything that makes a publication *this*
-publication. Plug it in and go; unplug it and the engine is empty again.
+The engine in `agent-v2/` provides the research and writing workflows.
+A **preset** is a reusable package of subject, sources, style and operating
+settings. Your account comes from the installation's `.env`; runtime data
+belongs to an instance. Detaching disables the active preset and preserves
+that instance for later use. Start with [the installation guide](../docs/INSTALL.md).
 
 ```
 presety/<name>/
@@ -31,19 +31,24 @@ python narzedzia/presety.py odlacz           # deactivate; the instance data sta
 - `presety/ai/` — a complete cartridge, tracked in git: AI in English, two
   notes a day, one article a week, verified channels and feeds, its own
   style profiles and editorial blocks. Your account comes from `agent-v2/.env`.
+- `presety/hidden-bill/` — The Hidden Bill: everyday purchase conditions,
+  fees, subscriptions, repairs and digital ownership. A complete English
+  preset with six verified feeds, its own style corpus and launch research.
+  See [its guide](hidden-bill/README.md).
 - `presety/SZABLON/` — the empty cartridge with every field explained.
   `<<...>>` placeholders make it impossible to plug in unfinished.
-- anything else in `presety/` is **yours** and gitignored: a preset carries
-  the account handle and the subject, which is exactly what should not sit in
-  a public repository.
+- other preset directories are **yours** and gitignored. Use a private copy
+  when changing editorial settings; choosing a public preset for your own
+  account does not require a copy or an edit to the shared package.
 
 The full description, in Polish, is in [docs/PRESETY.md](../docs/PRESETY.md).
 
 ## Detaching, and what "a clean engine" means
 
-- `odlacz` removes the pointer **and** invalidates the running process: the
-  next paid model call or account write in that process is refused, because
-  both check the pointer first. Restart after `podlacz` as before.
+- `odlacz` removes the pointer. Model calls and account writes check it before
+  proceeding. Stop processes and schedules before switching: an in-flight
+  request cannot be recalled, and reattaching the same fingerprint/instance
+  does not yet enforce a new activation generation.
 - `AGENT_V2_PRESET=<path>` is a preview: prompts render, tests run, but no
   paid calls and no publishing. Production needs the pointer.
 - An instance directory has an owner (`wlasciciel.json`: preset and account
@@ -51,9 +56,10 @@ The full description, in Polish, is in [docs/PRESETY.md](../docs/PRESETY.md).
   `--przejmij` takes it over deliberately and logs the takeover.
 - Without a cartridge the engine does not read the legacy
   `agent-v2/konfiguracja.toml` (tests and `AGENT_V2_KONFIGURACJA_TOML=1` excepted).
-- An empty `styl.korpus` means no corpus at all, never the engine's default
-  directory; style paths inside a cartridge resolve inside it only. A shared
-  file from the repository is chosen explicitly: `repo:style-profiles/X.md`.
+- An empty `styl.korpus` never loads the engine's old corpus. A directory
+  preset instead points to its own `styl/korpus.txt`, which can still load
+  if present. Style paths resolve inside the package; a shared repository
+  file is chosen explicitly: `repo:style-profiles/X.md`.
 - The fingerprint covers fields, prompt blocks and the style files' contents,
   with relative paths: copying a cartridge keeps it, editing a profile changes it.
 

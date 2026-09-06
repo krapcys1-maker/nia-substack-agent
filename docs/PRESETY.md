@@ -1,201 +1,138 @@
-# Presety — konsola i kartridż
+# Presety, instancje i granice izolacji
 
-Stan na 6 września 2026, gałąź `presety`. Angielskie streszczenie stoi
-w `presety/README.md`.
+Stan opisany dla wersji z 6 września 2026. Instrukcja dla nowego użytkownika:
+[INSTALL.md](INSTALL.md). Wnioski o gotowości produktu:
+[raport dystrybucji](../analizy/2026-09-06-dystrybucja-github/RAPORT.md).
 
-## Podział
+## Trzy oddzielne warstwy
 
-**Silnik** (`agent-v2/`) jest konsolą. Ma metodę: etapy, bramki, kontrakty
-JSON, wzorce tematów, reguły rzetelności, zapory testowe. **Nie ma tematu.**
-Od 6 września nisza, kąt redakcyjny, znaki rewiru, hasła, dziedziny,
-kalendarz roku, kanały, tożsamość okładki i oświadczenie o autorstwie są
-w silniku puste. Bez podłączonego kartridża `run.py` i `artykul_z_puli.py`
-odmawiają startu.
+**Silnik** zawiera przebieg researchu i pisania, kontrakty etapów, wspólne
+prompty, reguły form, kontrolę kosztów i przeglądarkę. Nie ma domyślnego
+aktywnego tematu. Nadal ma własne założenia redakcyjne i techniczne; „neutralny
+tematycznie” nie oznacza dowolnego stylu, języka lub dostawcy modeli.
 
-**Kartridż** (`presety/<nazwa>/`) jest wszystkim, co odróżnia jedną
-publikację od drugiej:
+**Preset** jest paczką tematu i ustawień. Publiczne paczki `ai` oraz
+`hidden-bill` zawierają placeholder konta; rzeczywiste konto i klucze pochodzą
+z lokalnego `agent-v2/.env`. Wybranie publicznej paczki nie wymaga jej edycji.
 
-| Plik | Co niesie |
+**Instancja** przechowuje bank pomysłów, szkice, cache, koszty, dzienniki i zapis
+sesji. Jest osobnym katalogiem `agent-v2/instancje/<id>/`. Jeden checkout ma
+jeden wskaźnik `agent-v2/aktywny_preset.json` i jeden aktywny kontekst naraz.
+
+| Plik lub katalog | Funkcja |
 |---|---|
-| `preset.toml` | pokrętła (notki/dobę, artykuły/tydzień, komentarze, polubienia, przebiegi, modele per rola, budżety, zegar), konto, temat, źródła, styl |
-| `prompty/linia_redakcyjna.md` | co jest tematem, a co nie, i jakie pytania zadawać; czytają skaut, ciekawostki, bank, bramka „warto pisać” |
-| `prompty/glos_artykulu.md` | jak ten tytuł pisze długi tekst; czyta pisarz |
-| `prompty/glos_notki.md` | jak brzmi notka; czytają briefy notki i myśli |
-| `prompty/glos_komentarza.md` | jak brzmi komentarz, odpowiedź, zdanie przy restacku |
-| `prompty/okladka.md` | tożsamość wizualna: blok stylu kopiowany dosłownie do promptu obrazu |
-| `prompty/kogo_szukamy.md` | pod czyimi postami komentujemy, a pod czyimi nie |
-| `prompty/oswiadczenie.md` | publiczne oświadczenie o autorstwie (ustawienie konta) |
-| `styl/profil_pozytywny.md`, `styl/profil_negatywny.md` | do czego dąży pisarz i czego mu nie wolno |
-| `styl/korpus.txt` (opcjonalnie) | teksty do przypięcia: własne albo o wolnej licencji, z manifestem źródeł `styl/KORPUS_ZRODLA.md` i przypięciami `styl/przypiecia.json` obok (wzór: `presety/ai/styl/`) |
+| `presety/<nazwa>/preset.toml` | Temat, źródła, wolumeny, harmonogram, modele, budżety, styl |
+| `presety/<nazwa>/prompty/` | Siedem obsługiwanych bloków redakcyjnych |
+| `presety/<nazwa>/styl/` | Profile pozytywny/negatywny, opcjonalny korpus i przypięcia |
+| `agent-v2/.env` | Konto, API, ustawienia środowiska instalacji |
+| `agent-v2/aktywny_preset.json` | Lokalny wybór paczki, odcisk i instancja |
+| `agent-v2/instancje/<id>/wlasciciel.json` | Zapis właściciela danych: preset i uchwyt |
+| `agent-v2/instancje/<id>/storage-state.json` | Lokalny zapis sesji Substacka |
 
-Każdy plik w `prompty/` jest opcjonalny: brak daje w briefie jawne zdanie
-zastępcze („preset nie dostarczył...”), nigdy pustkę i nigdy cudzą treść.
-Tekst przed pierwszym `---` w pliku bloku jest notatką dla człowieka i do
-promptu nie idzie. Ścieżki stylu w `preset.toml` są względem katalogu
-kartridża.
-
-## Polecenia
+## Polecenia operatora
 
 ```bash
-python narzedzia/presety.py lista                 # kartridże i który podłączony
-python narzedzia/presety.py nowy moj-temat        # kopia SZABLON/ do wypełnienia
-python narzedzia/presety.py sprawdz ai            # błędy i uwagi, bez płatnych wywołań
-python narzedzia/presety.py pokaz ai              # rozwiązane stałe, pochodzenie, bloki
-python narzedzia/presety.py podglad ai            # briefy tak, jak zobaczy je model
-python narzedzia/presety.py podlacz ai            # aktywacja
+python narzedzia/presety.py lista
+python narzedzia/presety.py sprawdz ai
+python narzedzia/presety.py pokaz ai
+python narzedzia/presety.py podglad ai
+python narzedzia/presety.py podlacz ai --instancja moja-redakcja
 python narzedzia/presety.py status
 python narzedzia/presety.py odlacz
-python narzedzia/presety.py importuj-konfiguracje --nazwa moje   # stary konfiguracja.toml -> kartridż
-python narzedzia/presety.py eksportuj ai > kopia.toml            # znormalizowany TOML, bez sekretów
 ```
 
-Po `podlacz` i `odlacz` **procesy uruchamia się od nowa**. Kontekst jest
-czytany raz, przy starcie. Zegary systemd buduje się z kartridża:
-`python narzedzia/jednostki.py --katalog /srv/bot --uzytkownik bot`.
+`sprawdz` oraz `podglad` nie wywołują modeli. Walidacja nie jest próbą dostępu
+do API ani testem jakości tekstu. `podglad` składa briefy z blokami i przykładami;
+pełne profile stylu trzeba też przeczytać w ich plikach.
 
-## Co się dzieje przy podłączeniu
+`podlacz` najpierw sprawdza paczkę, a potem atomowo zapisuje wskaźnik.
+Błędna nowa paczka nie zastępuje dotychczasowej. Konto z `.env` nadpisuje
+konto przykładowe; nierozwiązany placeholder blokuje aktywację. Brak klucza
+może zostać ostrzeżeniem, a odmowa nastąpi przed wymagającym go wywołaniem.
 
-1. Kartridż jest czytany i sprawdzany **w całości**: pola wymagane (bez nich
-   silnik nie ma czym pracować), znaczniki `<<...>>` z szablonu, reguły
-   strukturalne tematu (pula haseł szersza niż jeden przebieg, każde hasło ze
-   znakiem rewiru, co najmniej 10 komórek siatki na notkę dziennie), pliki
-   profili stylu, dostawcy modeli, spójność zegara. Każdy błąd zatrzymuje
-   `podlacz` zanim cokolwiek zostanie zapisane. Poprzedni kartridż zostaje
-   podłączony bez zmian.
-2. Powstaje katalog instancji (`agent-v2/instancje/<nazwa>/`; inna nazwa przez
-   `--instancja` daje świeży katalog danych z tym samym kartridżem).
-3. Wskaźnik aktywacji jest zapisywany atomowo.
-4. Przy każdym starcie `config.py` czyta wskaźnik, wczytuje kartridż z dysku,
-   porównuje odcisk SHA-256 pól i bloków z odciskiem z aktywacji, **przywraca
-   neutralną bazę silnika** i dopiero na nią nakłada kartridż. Kartridż
-   zmieniony po aktywacji zatrzymuje start z komunikatem, co zrobić.
+Po aktywacji uruchamiaj nowe procesy i zapisuj sesję do nowej instancji.
+Nie edytuj promptów pod działającym przebiegiem.
 
-Stąd własność, o którą chodziło w audycie: kartridż B skompilowany po
-używaniu A daje **ten sam kontekst** co B na czystym silniku. Pilnuje tego
-`agent-v2/tests/test_presety.py`.
+## Co daje odłączenie
 
-## Co się dzieje przy odłączeniu
+`odlacz` usuwa wskaźnik i zapisuje zdarzenie w historii instancji. Nowy
+standardowy przebieg bez presetu odmawia pracy. Stary proces sprawdza przed
+kolejnym wywołaniem modelu lub zapisem na koncie, czy jego aktywacja nadal
+pasuje do wskaźnika.
 
-`odlacz` usuwa wskaźnik i dopisuje wpis do dziennika instancji. Dane
-instancji zostają; ponowne `podlacz` tego samego kartridża je wznawia. Bez
-wskaźnika:
+To nie jest pełne wyczyszczenie instalacji. Pozostają:
 
-- `run.py` i `artykul_z_puli.py` odmawiają startu (kod wyjścia 3, komunikat
-  z poleceniami). Silnik nie ma do czego wracać.
-- `alarm.py` zgłasza kontrolę `preset` jako pierwszą.
-- Zegary systemd trzeba wyłączyć ręcznie (`odlacz` wypisuje polecenie).
+- dane poprzedniej instancji i jej sesja;
+- klucze oraz konto w `.env` i eksportowanych zmiennych;
+- otwarty Chrome i jego profil;
+- zainstalowane zadania systemu i pracujące procesy;
+- opublikowane treści i historia po stronie Substacka.
 
-W **darmowym teście** (proces uruchomiony z `agent-v2/tests/`) brama milczy,
-tak samo jak zapora płatnych wywołań. Testy pracują na silniku, nie na tym,
-co operator akurat podłączył. Zmienna `AGENT_V2_PRESET=presety/ai` podłącza
-kartridż jednemu procesowi bez wskaźnika (podgląd, testy).
+Odłączenie nie cofa żądania już wysłanego do zewnętrznego serwisu. Obecna
+kontrola ważności porównuje odcisk i ID instancji, ale nie numer aktywacji:
+szybkie odłączenie i ponowne podłączenie tej samej paczki do tego samego ID
+może ponownie dopuścić stary proces. **Zatrzymanie procesów pozostaje częścią
+procedury przełączenia.**
 
-## Skąd biorą się dane
+Stary `agent-v2/konfiguracja.toml` nie wraca automatycznie po odłączeniu.
+Odczyt pozostaje dostępny w testach lub przez jawne
+`AGENT_V2_KONFIGURACJA_TOML=1` dla migracji/diagnostyki.
+`AGENT_V2_PRESET=<plik>` jest podglądem; produkcja wymaga wskaźnika.
 
-- **Sygnały** (o czym mówi się w tym tygodniu): `zrodla.kanaly_youtube`
-  (identyfikatory `UC...`, czytane po RSS) i `zrodla.kanaly_rss` (blogi
-  laboratoriów, listy publikacji, RSS 2.0 lub Atom). Silnik przeplata źródła
-  po równo, więc lista z pięćdziesięcioma wpisami dziennie nie zagłusza
-  dziesięciu kanałów wideo. Sygnał nigdy nie jest źródłem: tytuł mówi, gdzie
-  patrzeć, dokument trzeba znaleźć osobno.
-- **Dowody** (czym potwierdzamy): research z wyszukiwaniem w sieci;
-  `zrodla.domeny_preferowane` mówi mu, na których hostach leżą dokumenty
-  pierwotne tej dziedziny; `zrodla.blokowane_hosty` mówi, których nie czytać.
-- **Stan dziedziny**: raz na dobę jedno wywołanie z wyszukiwaniem o to, co
-  jest aktualne (`stan_dziedziny.o_co_pytac`); odpowiedź pamięta pytanie,
-  więc zmiana pytania ją unieważnia.
+## Nowy temat i stare dane
 
-## Co jest izolowane, a co celowo wspólne
+Dla nowego tematu wybierz nowe ID instancji. Ponowne użycie starego ID oznacza
+wznowienie danych. Podłączenie innego presetu lub konta do zajętego ID jest
+odrzucane przez kontrolę właściciela; `--przejmij` świadomie przejmuje katalog,
+ale nie usuwa jego zawartości.
 
-| Izolowane per instancja | Wspólne |
-|---|---|
-| baza, bank pomysłów, indeks kandydatów, zużyte fakty, przegrane tematy | klucze API (`agent-v2/.env`) |
-| cache etapów (`cache/<etap>.<odcisk>.json`) | sesja przeglądarki i profil Chrome |
-| stan dziedziny (pamięta pytanie) | kod, prompty silnika, wzorce tematów |
-| oczekujący artykuł i kolejka promocji (znacznik `instancja`) | |
-| dziennik działań, czytelnicy, obserwowani | |
+Właściciel jest sprawdzany przy podłączaniu. Nie zastępuje to sprawdzenia
+rzeczywistego zalogowanego użytkownika przeglądarki. Zmiana konta w `.env`
+wymaga ponownej aktywacji, właściwego nowego ID oraz potwierdzenia sesji.
 
-Nowa instancja nie pamięta komentarzy poprzedniej i może wrócić pod ten sam
-post. Wznowienie tej samej instancji pamięta.
+Nowa lokalna instancja nie usuwa historii z tego samego konta Substack.
+Odczyt konta może ponownie przynieść wcześniejsze treści. Osobne publikacje
+najlepiej uruchamiać w świeżych klonach z właściwymi kontami.
 
-## Kartridż `ai`
+## Przenośność stylu i paczki
 
-`presety/ai/` jest kompletny i sprawdzony bez płatnych wywołań: temat, 26
-haseł, 32 dziedziny, przykłady, rytm roku, 11 kanałów YouTube sprawdzonych po
-RSS, 6 kanałów RSS, 15 hostów preferowanych, własne profile stylu i siedem
-bloków promptów. Dwie notki dziennie, jeden artykuł we wtorek, trzy przebiegi
-dziennie, komentarze 3–5, polubienia 5–8, obserwacje i subskrypcje wyłączone,
-pisarz `claude-fable-5-1`, notki `claude-opus-5`. Przed podłączeniem podmień
-`[konto]`. Kolejny temat robi się z `nowy <nazwa>` i szablonu.
+Względne ścieżki zasobów katalogowego presetu rozwiązują się wewnątrz paczki.
+Wspólny zasób z repo wybiera się jawnie prefiksem `repo:`.
+Odcisk obejmuje pola, ładowane bloki promptów i treść wskazanych plików stylu;
+przeniesienie kompletnej paczki zachowuje odcisk, a zmiana profilu go zmienia.
 
-## Czego jeszcze nie ma
+Puste `styl.korpus` nie sięga do starego korpusu silnika. Dla paczki katalogowej
+loader ustawia jednak jej własny `styl/korpus.txt`: jeśli taki plik istnieje,
+może zostać wczytany. Aby mieć zero przykładów, wyłącz wymóg korpusu i usuń
+korpus z prywatnej paczki albo jawnie ustaw odpowiednią nieistniejącą ścieżkę.
+Sam pusty napis nie oznacza „nigdy nie ładuj żadnego pliku”.
 
-- Wymiany kontekstu w pracującym procesie: po przełączeniu nowy proces.
-- Walidacji kluczy u dostawców: `sprawdz` mówi tylko, których brakuje.
-- Osobnego bloku dla restacku i odpowiedzi: dzielą `glos_komentarza`.
-- `konfiguracja.toml` jest nadal czytany, gdy kartridża nie ma, ale sam z
-  siebie nie daje tematu: pola tematu i tak trzeba wypełnić.
+`eksportuj` zwraca sam TOML. Do innej instalacji przenoś cały katalog paczki;
+nie dołączaj `.env`, wskaźnika, sesji ani danych instancji.
 
-## Odłączanie i świeży bot (po audycie z 6 września 2026)
+## Komputer i serwer
 
-Cztery gwarancje, każda z testem w `agent-v2/tests/test_swiezy_bot_po_odlaczeniu.py`:
+Lokalne uruchamianie jest dostępne przez CLI. Na Windows zadania harmonogramu
+konfiguruje operator. Linux ma generator systemd
+`narzedzia/jednostki.py`, który korzysta z harmonogramu aktywnego presetu.
 
-1. **Odłączenie unieważnia pracujący proces.** `odlacz` usuwa wskaźnik, a każde
-   płatne wywołanie (`llm._preflight`) i każdy zapis na koncie
-   (`browser.naprawde_wyslac`) sprawdza przed wykonaniem, czy wskaźnik nadal
-   wskazuje ten sam preset i tę samą instancję. Stary proces po `odlacz` albo
-   po `podlacz` innego presetu dostaje odmowę przy następnym koszcie
-   i następnej publikacji. Proces trzeba i tak uruchomić od nowa, ale nie
-   zdąży już nic wydać ani wysłać.
-2. **`AGENT_V2_PRESET` to podgląd.** Proces uruchomiony ze zmienną ma kontekst
-   presetu (prompty, podgląd, testy), ale nie ma prawa do płatnych wywołań ani
-   publikacji. Produkcja wymaga aktywacji wskaźnikiem. `status` ostrzega, gdy
-   zmienna jest w środowisku.
-3. **Instancja ma właściciela.** Pierwsze `podlacz` zapisuje w katalogu
-   instancji `wlasciciel.json` (preset, uchwyt konta). Inny preset albo inne
-   konto na tym samym `--instancja` dostaje odmowę i radę, żeby wziąć nową
-   nazwę. `--przejmij` to jawna decyzja, zapisana w dzienniku instancji.
-4. **Bez kartridża nie wraca stary temat.** Bez aktywacji silnik nie czyta
-   `agent-v2/konfiguracja.toml` (poza darmowym testem i jawnym
-   `AGENT_V2_KONFIGURACJA_TOML=1`). Droga na stałe: `importuj-konfiguracje`.
+Kilka klonów na jednym komputerze nie daje jeszcze pełnej izolacji:
+Chrome używa portu 9222 i profilu pod katalogiem użytkownika, a usługi mają
+stałe nazwy `nia-agent`, `nia-artykul`, `nia-alarm`. Osobne instancje rozdzielają
+pliki sesji, ale połączenie do działającego Chrome może korzystać ze wspólnego
+zalogowanego kontekstu. Serwer wymaga osobnego przygotowania Chrome, ekranu
+i logowania; generator timerów tego nie robi.
 
-Dwie reguły o stylu:
+## Co pozostaje pracą rozwojową
 
-- **Pusty `styl.korpus` znaczy brak korpusu.** Kartridż z pustym polem
-  wskazuje własny `styl/korpus.txt`; jeśli go nie ma, pisarz dostaje zero
-  przykładów. Domyślny katalog silnika (`agent-v2/prompts/styl/`) nie jest
-  dla kartridża zapasem.
-- **Ścieżki stylu w katalogu presetu rozwiązują się tylko w tym katalogu.**
-  Brak pliku w paczce to błąd `sprawdz`, a nie plik o tej samej nazwie
-  z repozytorium. Plik wspólny z repozytorium wybiera się jawnie:
-  `profil_pozytywny = "repo:style-profiles/ARTICLE_STYLE_PROFILE_V1.md"`.
+- Jeden kreator instalacji i diagnostyka przed płatnym przebiegiem.
+- Uwierzytelniona kontrola konta, konfiguracja portu/profilu Chrome per instalacja.
+- Osobne nazwy usług i generator Windows, usuwanie nieaktualnych zadań.
+- Numer generacji aktywacji sprawdzany przez wszystkie działające procesy.
+- Wspólny licznik kosztów dla kluczy używanych w kilku instancjach.
+- Pełny eksport paczki i jawny import początkowych pomysłów.
+- Więcej założeń stylu, języka i generowania wystawionych w schemacie presetu.
+- Test całej ścieżki na świeżym Windows i Linux oraz powtarzalne wydania.
 
-Odcisk presetu obejmuje pola (jak w TOML-u, ze ścieżkami względnymi), bloki
-promptów i skróty plików stylu z katalogu presetu (profile, korpus,
-przypięcia). Ten sam kartridż skopiowany gdzie indziej ma ten sam odcisk;
-zmieniony profil to inny odcisk i odmowa startu do czasu `podlacz`.
-
-Czego ta gałąź nadal nie daje (F07–F13 audytu): eksportu pełnej paczki,
-osobnego profilu Chrome i nazw usług na klon, wspólnego limitu rachunku
-między instancjami, cache zadań z hashem wejścia. To sprawy otwarte.
-
-## Konto z instalacji, nie z kartridża
-
-Kartridż ma być wspólny: ten sam `ai` może pracować u wielu osób. Konto jest
-jedno, więc siedzi w `agent-v2/.env`:
-
-```
-SUBSTACK_HANDLE=prawdziwy-uchwyt
-NAZWA_MARKI=Prawdziwa nazwa publikacji
-```
-
-Obie zmienne nadpisują `[konto]` z kartridża, przy starcie i w każdym
-`sprawdz`/`podlacz`. Kartridże w repozytorium zostają z placeholderem
-(audyt tego pilnuje), a `podlacz` odmawia, dopóki uchwyt albo marka jest
-placeholderem. Samo `sprawdz` tylko ostrzega, żeby dało się ocenić kartridż
-bez konta. Właściciel instancji zapisuje uchwyt faktycznie użyty.
-
-Ścieżka dla kogoś z zewnątrz: sklonować repozytorium, `cp .env.example
-agent-v2/.env` i wpisać klucze, uchwyt i nazwę, `podlacz ai`, `browser.py
-sesja`, `alarm.py`. Repozytorium zostaje czyste; zmiany robi się u siebie.
-
+Szczegóły, priorytety i kryteria odbioru:
+[raport dystrybucji](../analizy/2026-09-06-dystrybucja-github/RAPORT.md).

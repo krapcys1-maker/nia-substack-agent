@@ -1,121 +1,73 @@
 # Contributing
 
-Two kinds of contribution are genuinely wanted here, and they are very
-different in effort.
+Contributions can improve the engine or add a reusable editorial preset.
+Use a development checkout without production sessions, keys or instance data.
 
----
+## Add a preset
 
-## 1. A subject pack — the easy one, and the most useful
+Start from `presety/SZABLON/` or copy an existing public preset. A modern preset
+is a **directory** containing its TOML, prompt blocks and style assets.
+The older single-file subject packs under `packs/` are not the complete
+preset format used by the current installation guide.
 
-A pack is one TOML file that tells the bot what a publication is *about*:
-what to search for, what counts as on-topic, what lenses to look through. It is
-the part of setup where people stall, and the part where somebody who knows a
-field can save everybody else an hour.
-
-**No Python. No account. No API key.** Copy the closest existing pack, rewrite
-it, run two free checks:
-
-```bash
-python narzedzia/pakiety.py --sprawdz
-python agent-v2/tests/test_pakiety.py
-```
-
-[packs/README.md](packs/README.md) says what a pack may contain, the three
-rules it has to pass and — more usefully — what separates a pack that is merely
-valid from one that is good.
-
-In the pull request, say **what you know about the field**. A pack is a claim
-that these are the right things to search for; that claim is what gets
-reviewed. The syntax is already covered by the tests.
-
----
-
-## 2. Code
-
-Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first, and
-[docs/REPO_MAP.md](docs/REPO_MAP.md) for where things live.
-
-### Before you open a pull request
+Keep account placeholders in the public TOML. The user's real handle, brand and
+keys come from `agent-v2/.env`. Include an explanation of the audience, source
+selection, writing style, expected operating volumes and evaluation criteria.
+Distinguish original style examples from factual evidence.
 
 ```bash
-python narzedzia/audyt.py                 # identity, secrets, generated docs
-python narzedzia/zaleznosci.py --sprawdz  # imports match requirements.txt
-for t in agent-v2/tests/test_*.py; do python "$t" >/dev/null || echo "FAILED: $t"; done
+python narzedzia/presety.py sprawdz your-preset
+python narzedzia/presety.py podglad your-preset
+python agent-v2/tests/test_presety.py
 ```
 
-All of it is free: no network, no model calls, no API key. Two tests fail on a
-fresh Windows checkout for environmental reasons — `test_czas` needs POSIX
-signals, `test_zapora_platnych_wywolan` needs a real key. Both are listed in
-[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) with their cause.
+Custom preset directories are ignored by default. For an accepted public preset,
+update the explicit allowlist in both `.gitignore` and `narzedzia/audyt.py`,
+then add it to the catalog and CI validation. Do not force-add private copies,
+credentials, cookies or runtime files.
 
-If you touched anything the generated documents describe:
+## Change the engine
+
+Use Python 3.11+ and install `requirements-dev.txt`. Describe the concrete
+before/after behavior and the checks relevant to the change. Preserve the
+boundaries between shared presets, installation settings and instance data.
+
+For affected generated documentation:
 
 ```bash
 python narzedzia/mapa_funkcji.py
 python agent-v2/dokumentacja-zrodla/sklej.py
-python agent-v2/tests/test_liczby_w_dokumentach.py --popraw
+python agent-v2/tests/test_liczby_w_dokumentach.py
 ```
 
-CI runs all of this, so it will tell you anyway — this just saves a round trip.
+For repository checks:
 
-### What review will actually ask you
+```bash
+python narzedzia/zaleznosci.py --sprawdz
+python narzedzia/audyt.py --historia
+```
 
-This project has a few habits that are not style preferences. They came from
-bugs that cost real money and real time, and a pull request that ignores them
-will get the same question every time:
+The audit runs generators and can rewrite generated documents. Run it in the
+development checkout. Tests are standalone scripts; the
+[CI workflow](.github/workflows/testy.yml) defines the full run, known exclusions
+and history-dependent skips. Do not count an environment skip as a passing test.
+Paid tests under `agent-v2/tests/platne/` require separate intentional use.
 
-**Write down the reason, not just the change.** Comments here carry *why*:
-the measured number, the incident that forced a rule, what was tried and
-rejected. A diff that changes a threshold without saying what measurement moved
-it is not reviewable.
+When changing a runtime boundary, test the failure case as well as success:
+for example, two different accounts attempting to reuse one instance, or a
+process trying to continue after detachment. Avoid duplicating configuration
+values and distinguish unavailable evidence from a negative finding.
 
-**Every check needs a counterproof.** A check that has never fired is
-indistinguishable from a broken one. If you add a guard, add the case that
-makes it fail — most test files here have a section called
-`KONTRDOWOD` doing exactly that.
+## Documentation and review
 
-**No number that nothing recomputes.** A count in a document is a claim; if
-no test derives it from the tree, it will drift and lie. See
-`test_liczby_w_dokumentach.py` for how the existing ones are pinned.
+Keep the README focused on the product and first use. Detailed setup belongs in
+[INSTALL.md](docs/INSTALL.md); the current preset contract is documented in
+[PRESETY.md](docs/PRESETY.md). Historical investigations under `analizy/`
+record the state at their stated date and are not installation instructions.
 
-**Distinguish "we did not measure it" from "the answer is zero."** An empty
-set is not a zero percent. Several audits in this repository used to report a
-failure on a perfectly correct fresh install because `max(1, len(...))` turned
-a missing measurement into a bad result.
+Use relative links in repository documents so they work on GitHub and after
+cloning. Code identifiers and many technical comments are Polish; user-facing
+setup documentation is primarily English.
 
-**Don't add a second copy of a value.** Two copies of one number always
-diverge — it happened here with a date (five copies), a stopword list (four),
-a section heading (eight) and an article length (two, already out of sync).
-Derive it instead.
-
-### The language
-
-Documents are in English. Code — identifiers, comments, test names — is in
-Polish, and that is not going to change; the reasoning behind decisions lives
-in those comments and a translation pass would quietly lose it. You can
-contribute code without reading Polish, but you will get more out of the review
-if you can at least follow the comment above the line you are changing.
-
----
-
-## What is out of scope
-
-**Detection evasion.** The account does not hide that it is automated, does
-not deny it when asked, and does not work around anti-bot measures. This is
-doctrine, not a setting — see "Lines this agent does not cross" in the
-[README](README.md).
-
-**Reciprocity farming**, unfollow-after-silence and similar. Measured here:
-of twelve accounts given a subscription, zero reciprocated. It also breaches
-the platform's terms.
-
-**Anything that puts secrets in the repository.** `.env`, session state,
-subscriber exports and the database are gitignored from the first commit, and
-`narzedzia/audyt.py` fails the build if one appears — including in git history.
-
----
-
-## Reporting a security issue
-
-See [SECURITY.md](SECURITY.md). Please do not open a public issue for anything
-involving credentials or other people's data.
+Never include credentials or other users' personal data in a contribution.
+For a security report, follow [SECURITY.md](SECURITY.md).

@@ -39,8 +39,10 @@ i skonczyla jako sprawdzenie dwoch dokumentow z szesciu.
 Zostawienie obu bylo by trzecim przykladem tej samej wady w jednym dniu:
 liczyly funkcje INACZEJ (jedna z `zbierz()`, druga z tabeli w wygenerowanym
 `FUNCTION_MAP.md`) i juz dawaly rozne wyniki. Tamten plik zostal usuniety,
-a jego jedyne wlasne sprawdzenie — dlugosc dokumentu sklejanego — jest tutaj
-w sekcji 3.
+a jego sprawdzenie dlugosci dokumentu sklejanego bylo tutaj przeniesione.
+Po przebudowie README na opis produktu 6 wrzesnia usunieto z niego liczniki
+implementacji i odpowiadajace im asercje. Pozostale dokumenty sa nadal
+sprawdzane wedlug jawnej listy ponizej.
 
 ## Jak to dziala
 
@@ -169,19 +171,8 @@ POMIARY = {
 
 # (plik, wzorzec, nazwy pomiarow — po jednej na grupe we wzorcu)
 MIEJSCA = [
-    ("README.md",
-     r"\*\*(\d+) functions\*\* in (\d+) modules", ("funkcje", "moduly")),
-    ("README.md", r"(\d+) tests · ", ("testy",)),
-    # „16 gates" stalo w dwoch miejscach README i nikt tego nie
-    # przeliczal. Prawdziwa liczba, z grafu wywolan, to 12.
-    ("README.md", r"(\d+) gates on every finished text", ("bramki",)),
-    ("README.md", r"(\d+) model roles", ("role_modeli",)),
-    ("README.md", r"(\d+) deterministic gates", ("bramki",)),
-    # Akapit „Honest notes". Stala tam tabela z liczbami przejsc
-    # (102/103/104), ktorej nikt nie przeliczal — zdryfowala do 102
-    # przy prawdziwych 137. Zostala jedna liczba i jest liczona
-    # z drzewa.
-    ("README.md", r"of (\d+) test files", ("testy",)),
+    # README produktu nie publikuje juz licznikow implementacji.
+    # Pozostale dokumenty nadal podlegaja scislej kontroli liczbowej.
     ("docs/ARCHITECTURE.md",
      r"(\d+) functions with line numbers", ("funkcje",)),
     ("docs/ARCHITECTURE.md",
@@ -195,8 +186,6 @@ MIEJSCA = [
      ("funkcje", "moduly")),
     ("docs/MAPA_KONFIGURACJI.md",
      r"(\d+) funkcji w (\d+) modułach", ("funkcje", "moduly")),
-    ("docs/PLUGGING_IN_AN_ACCOUNT.md",
-     r"FUNCTION_MAP\.md\) — (\d+) functions", ("funkcje",)),
     ("docs/REPO_MAP.md", r"(\d+) test_\*\.py", ("testy",)),
     ("docs/REPO_MAP.md", r"the (\d+) that cost money", ("testy_platne",)),
     ("docs/REPO_MAP.md",
@@ -239,22 +228,6 @@ if "--popraw" in sys.argv:
             p.write_text(nowa_tresc, encoding="utf-8")
             zmienione += 1
             print("  poprawione  %s" % plik)
-    # DLUGOSC DOKUMENTU SKLEJANEGO — poprawiana tak samo, choc nie stoi
-    # w `MIEJSCA` (ma wlasna tolerancje, wiec nie jest zwyklym porownaniem).
-    # Bez tej galezi byla JEDYNA liczba, ktorej nie dalo sie poprawic jedna
-    # komenda — i jedyna, ktora sie rozjechala.
-    _jzb = KORZEN / "agent-v2/JAK_ZBUDOWANY_JEST_BOT.md"
-    _readme = KORZEN / "README.md"
-    if _jzb.exists() and _readme.exists():
-        _ile = len(_jzb.read_text(encoding="utf-8").splitlines())
-        _tresc = _readme.read_text(encoding="utf-8")
-        _nowa = re.sub(r"(JAK_ZBUDOWANY_JEST_BOT\.md` — )[\d,]+( lines)",
-                       lambda m: m.group(1) + format(_ile, ",") + m.group(2),
-                       _tresc)
-        if _nowa != _tresc:
-            _readme.write_text(_nowa, encoding="utf-8")
-            zmienione += 1
-            print("  poprawione  README.md (dlugosc dokumentu sklejanego)")
     print("  zmienionych plikow: %d" % zmienione)
     print("  PRZEBUDUJ dokument sklejany:"
           " python agent-v2/dokumentacja-zrodla/sklej.py")
@@ -289,33 +262,13 @@ for plik, wzorzec, nazwy in MIEJSCA:
                     "w dokumencie %s, w drzewie %d" % (wartosc, oczek))
 
 print()
-print("=== 3. DLUGOSC DOKUMENTU SKLEJANEGO ===")
-# PRZENIESIONE z `test_liczby_w_readme.py`, ktory to sprawdzal jako jedyny.
-# TOLERANCJA 50 WIERSZY, I TO JEST SWIADOME: dokument przebudowuje sie przy
-# kazdej zmianie komentarza w kodzie, wiec wymaganie rownosci co do wiersza
-# kazaloby poprawiac README przy KAZDYM commicie — a wtedy ludzie zaczna to
-# obchodzic zamiast poprawiac. Liczba ma mowic o skali, nie o wersji.
-_jzb = KORZEN / "agent-v2/JAK_ZBUDOWANY_JEST_BOT.md"
-if _jzb.exists():
-    _ile = len(_jzb.read_text(encoding="utf-8").splitlines())
-    _m = re.search(r"JAK_ZBUDOWANY_JEST_BOT\.md` — ([\d,]+) lines",
-                   (KORZEN / "README.md").read_text(encoding="utf-8"))
-    sprawdz("README podaje dlugosc dokumentu sklejanego", _m is not None)
-    if _m:
-        _podane = int(_m.group(1).replace(",", ""))
-        sprawdz("i miesci sie w 50 wierszach od prawdy (%d)" % _ile,
-                abs(_podane - _ile) <= 50,
-                "README: %d, plik: %d, roznica %d"
-                % (_podane, _ile, abs(_podane - _ile)))
-
-print()
-print("=== 4. KONTRDOWOD: WZORZEC NAPRAWDE PATRZY NA LICZBE ===")
+print("=== 3. KONTRDOWOD: WZORZEC NAPRAWDE PATRZY NA LICZBE ===")
 # Bez tego caly plik moglby przechodzic na wzorcach, ktore trafiaja w cokolwiek.
-_probka = "all **1 functions** in 1 modules"
-_m = re.findall(r"\*\*(\d+) functions\*\* in (\d+) modules", _probka)
+_probka = "Measured across 1 functions in 1 modules"
+_m = re.findall(r"Measured across (\d+) functions in (\d+) modules", _probka)
 sprawdz("wzorzec zdejmuje obie liczby", _m == [("1", "1")], _m)
 sprawdz("i nie trafia w zdanie bez liczb",
-        not re.findall(r"\*\*(\d+) functions\*\* in (\d+) modules",
+        not re.findall(r"Measured across (\d+) functions in (\d+) modules",
                        "all functions in modules"))
 
 print()

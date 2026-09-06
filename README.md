@@ -1,330 +1,197 @@
-# NIA — Substack agent
+# Substack Agent
 
-[![tests](../../actions/workflows/testy.yml/badge.svg)](../../actions/workflows/testy.yml)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](requirements.txt)
+A configurable Substack publishing agent with portable editorial presets.
+Choose a subject and writing style, add your own account and API keys, then run
+the agent on your computer or a Linux server.
 
-An autonomous agent that runs an English-language Substack publication. It picks
-its own topics, researches them on the web, writes the articles, posts Notes,
-comments on other people's posts, replies, likes and restacks — and asks a human
-for permission at no point.
+**The repository distributes the engine and reusable presets. Your account,
+session, drafts, idea bank and spending history belong to your installation.**
 
-```
-5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 168 tests · 13 gates on every finished text
-```
+[Installation](docs/INSTALL.md) · [Preset catalog](presety/README.md) ·
+[Account and customization](docs/PLUGGING_IN_AN_ACCOUNT.md) ·
+[Architecture and isolation](docs/PRESETY.md) ·
+[Distribution audit — Polish](analizy/2026-09-06-dystrybucja-github/RAPORT.md)
 
-This is not a demo. It ran against a live account for weeks, it spends real
-money on model calls, and **every number in this repository was measured rather
-than estimated** — the costs come from a production database reconciled against
-a provider invoice, to the cent.
+## What the agent does
 
-The account identity has been removed. What ships is the engine plus
-**presets**: a preset is the whole publication in one directory (subject,
-voice, sources, model per role, volumes, schedule, money), and `ai` is a
-complete one. Your account and your keys never enter a preset: they go into
-`agent-v2/.env`. Clone, plug a preset in, add keys, run. The repository stays
-clean; whatever you change afterwards happens in your copy.
+- Finds topic signals in configured RSS/Atom feeds, YouTube channels and searches.
+- Scouts and evaluates ideas, builds an idea bank, retrieves sources and prepares evidence for writing.
+- Writes articles, Notes, comments and replies using the preset's editorial direction and style assets.
+- Applies evidence, structure and publication checks; records generated artifacts and model costs.
+- Supports configurable publishing volumes, model roles, budget thresholds and schedules.
+- Publishes through a browser session you establish yourself. Linux timers can run the workflows automatically.
 
-Two things here are unusual enough to be worth your next thirty seconds.
-[docs/CLEANING_LOG.md](docs/CLEANING_LOG.md) records how one account's identity
-was taken out of a working tree — **including the sweeps that found nothing and
-why**, which is the part nobody publishes. And section 9 of
-`narzedzia/audyt.py` injects three leaks into the audit to check that the audit
-catches them, because a check that has never fired is indistinguishable from a
-broken one. That habit is the reason the numbers above can be trusted.
+This is a command-line project. Server browser setup and Windows scheduling
+still require operator configuration. Its present writing method and checks are
+primarily designed for evidence-based English nonfiction; a different language
+or genre needs evaluation beyond changing the subject field.
 
----
+## Choose a preset
 
-## Why this is not "an LLM that writes blog posts"
+| Preset | Editorial focus | Starting plan |
+|---|---|---|
+| [AI](presety/ai/preset.toml) | What AI systems actually demonstrate, cost and change | 2 Notes/day, 1 article/week |
+| [The Hidden Bill](presety/hidden-bill/README.md) | Subscription terms, extra fees, repair restrictions and digital ownership | 2 Notes/day, 1 article/week |
+| [Template](presety/SZABLON/preset.toml) | Build your own subject, sources and voice | Fill in the required fields before activation |
 
-Most content bots are one prompt and one model. This one has **26 distinct model
-roles**, a research pipeline that fetches and classifies primary documents
-before a word is written, and **13 deterministic gates** that read the
-finished text back against the evidence it was supposed to rest on.
+These are configured slots and limits, not guaranteed output or audience growth.
+The Hidden Bill includes its own editorial prompts, style corpus, research and
+launch ideas. Its launch document is an operator guide, not an automatic import
+into the idea bank.
 
-Four decisions explain most of the code.
+## Start with your own account
 
-**The model observes, the code decides.** Numeric self-ratings from an LLM
-degenerate to a constant — measured three times independently here: confidence
-always 1.0, "threads found" always six. So the model is only ever asked for
-**quotes and facts**, and every threshold, count and sort happens in Python. The
-one model signal that survives is a **forced ranking**, because absolute scales
-can be flattened and comparisons cannot.
-
-**Nothing blocks the article.** Gates return remarks, not verdicts. A filter
-that cannot reject is not a filter — but a filter that kills a paid pipeline run
-is worse. The reasoning is financial: one article rewritten three times cost
-**$8.38 instead of $2.12**.
-
-**Prohibitions leave room; prescriptions become a signature.** A rule dictating
-position — "put the strongest fact in paragraph three" — turns into a
-recognisable fingerprint after ten articles. So the prompts say what *not* to
-do, and each article's shape is drawn at random.
-
-**A fixed number per day looks like a robot.** Volumes are drawn from ranges
-once per day, seeded from the date, so every run that day agrees on the budget
-and consecutive days differ. Gaps between actions are randomised too — and not
-arbitrarily: measured on a live account, failure rate **triples after the first
-action** when gaps average four minutes.
-
-And the rule that governs work on the code itself:
-
-> **A grep in the source is not proof that the code runs.**
-> Three times in this project a test went green over dead code.
-
-Which is why the function map here is built from the abstract syntax tree — and
-why building it that way turned up a [second dead paid
-stage](docs/TROUBLESHOOTING.md) that the project's own guard test structurally
-cannot see.
-
----
-
-## Start here
-
-| document | what's in it |
-|---|---|
-| **[presety/README.md](presety/README.md)** | **start here if you want to run it.** Presets: the whole publication in one directory, `ai` as a complete example, `SZABLON/` to write your own, and what stays in `.env` (your account, your keys) |
-| [docs/PLUGGING_IN_AN_ACCOUNT.md](docs/PLUGGING_IN_AN_ACCOUNT.md) | every decision about a publication — name, subject, sources, model split, daily volumes, budget — and where each one goes |
-| [packs/README.md](packs/README.md) | subject packs — the pre-preset form of a subject (AI, how things work, laws and public money); raw material for new presets |
-| **[docs/INSTALL.md](docs/INSTALL.md)** | zero to running, step by step — including the one step no software can do for you |
-| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | how it works and where everything lives: both pipelines, all 26 roles, every directory |
-| **[docs/BRIEF_MAP.md](docs/BRIEF_MAP.md)** | what each of the 24 briefs is responsible for: what calls it, what model it runs on, and — for every field it tells the model to return — whether a gate reads it, something reads it, or **nobody does**. Generated |
-| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **662 functions** in 26 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
-| **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | split in two: what will bite you on a fresh clone, and what already bit us and is fixed. **Read before your first run** |
-| **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
-| **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
-| **[docs/IDENTITY_MAP.md](docs/IDENTITY_MAP.md)** | every physical occurrence of the account's name, subject and voice, classified FIELD / INJECTED / GENERATED / TEMPLATE / BY HAND. Generated |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | how to send a subject pack (no Python needed) or a code change, and the four habits review will ask you about |
-| **[docs/CLEANING_LOG.md](docs/CLEANING_LOG.md)** | what was taken out when this stopped being one account's working tree, and exactly where each thing stood |
-
-The Polish original of the troubleshooting journal, with the measurement
-behind each entry, is [docs/ROZWIAZYWANIE_PROBLEMOW.md](docs/ROZWIAZYWANIE_PROBLEMOW.md).
-
-The bot's own design documents are in `agent-v2/` and are in Polish:
-`DOKTRYNA.md` (what it must and must not do — canonical, and its closing
-"Discrepancies" section is part of the document), `JAK_DZIALA_V2.md`
-(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,275 lines,
-**generated from the code** and guarded by a test so it cannot drift.
-
-**A word on the language, before you open a file.** Everything written *for
-you* is in English: this README, the ten documents above, the example
-configuration and the setup program's questions. Everything written *for the
-machine* is in Polish — identifiers, comments, test names, and two directories
-you will see at the root (`narzedzia/` is "tools", `konfiguracja.example.toml`
-is the example configuration). That is not an oversight and it is not going to
-be translated: the comments in this codebase carry the *reasons* behind
-decisions — measured numbers, the bug that forced a rule, what was tried and
-rejected — and a translation pass over 30,294 lines would quietly lose exactly
-that. The English documents are written to stand on their own, so you can run
-and configure the bot without reading a line of Polish; you need it only if you
-want to know *why* a particular line is the way it is.
-
-
----
-
-## Quick start
+Use **Python 3.11 or newer**; Python 3.12 is the recommended starting point.
+The preset loader uses `tomllib`, which is not available in Python 3.10.
 
 ```bash
-git clone <this repository> bot && cd bot
-pip install -r requirements-dev.txt
-cp .env.example agent-v2/.env            # your keys, SUBSTACK_HANDLE and NAZWA_MARKI
-python narzedzia/presety.py lista        # what presets exist; `ai` is a complete one
-python narzedzia/presety.py sprawdz ai   # errors and warnings, no paid calls
-python narzedzia/presety.py podlacz ai   # plug it in — the engine refuses to run without one
-python agent-v2/browser.py sesja         # log in once, in a real browser
-python agent-v2/alarm.py                 # health check: what is still missing
+git clone https://github.com/krapcys1-maker/nia-substack-agent.git
+cd nia-substack-agent
+python -m venv .venv
 ```
 
-**A preset is the whole publication in one directory** — subject, voice,
-sources, model per role, notes per day, articles per week, schedule, money —
-and it can be unplugged again (`odlacz`). **Your account is not in it.** The
-handle and the publication name come from `agent-v2/.env`, so the same preset
-can run on many accounts and the presets in this repository keep a placeholder;
-`podlacz` refuses to activate while the handle or the name is still one. Each
-preset gets its own data directory under `agent-v2/instancje/`, so switching
-from one to another carries over no bank of ideas, no cache and no half-written
-article. Without an active preset there is no built-in subject to fall back
-to: `run.py` stops with the commands to fix it. See
-[presety/README.md](presety/README.md) and, in Polish,
-[docs/PRESETY.md](docs/PRESETY.md).
+Activate the environment:
 
-To write your own preset: `python narzedzia/presety.py nowy my-subject` copies
-`presety/SZABLON/`; `sprawdz` names every field still to fill. The subject
-packs in `packs/` are earlier material you can lift search terms and markers
-from.
+```bash
+# Linux / macOS
+source .venv/bin/activate
+```
 
-The older path — `narzedzia/kreator.py` writing `agent-v2/konfiguracja.toml` —
-still exists, but **that file is no longer read on its own**: convert it with
-`python narzedzia/presety.py importuj-konfiguracje --nazwa mine` and plug the
-result in.
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+$env:PYTHONIOENCODING = "utf-8"
+```
 
-The last command is the health check. It is the only entry point that runs
-**with no session, no API keys and no data**, and it prints line by line what is
-missing. For a fresh install it is the best to-do list you will get.
+Install dependencies:
 
-Then read [docs/INSTALL.md](docs/INSTALL.md).
+```bash
+python -m pip install -r requirements.txt
+python -m playwright install chromium
+```
 
----
+Copy the environment example (only in a fresh installation):
 
-## What it costs, and where
+```bash
+# Linux / macOS
+cp .env.example agent-v2/.env
+```
 
-| item | cost |
-|---|---|
-| one comment | $0.03 |
-| one reply | $0.02 |
-| one note | $0.086 (Opus) / $0.010 (DeepSeek pro) |
-| one article, end to end | **$0.75–0.78** |
-| monthly ceiling — the only hard block in the system | **$40.00** |
+```powershell
+# Windows PowerShell: also install the timezone data needed by presets
+python -m pip install tzdata
+Copy-Item .env.example agent-v2/.env
+```
 
-Two stages are **59% of the entire bill**: `discovery` (34.9%, ~167k input
-tokens per call, because every search round resends the whole conversation) and
-`write` (24.4%). Everything else is rounding.
+Fill in your `SUBSTACK_HANDLE`, `NAZWA_MARKI` and API keys in that local file.
+Keep `DRY_RUN=true` during setup. The supplied presets use Anthropic and
+DeepSeek for text; OpenAI is used for optional article images. Required keys
+depend on the selected roles. The Hidden Bill starts with images disabled.
 
-Two measured findings worth stealing:
+Then choose, inspect and activate a preset:
 
-* **Prompt caching is near-worthless for short outputs.** The standard advice is
-  to cache the system prefix. Measured here: a note is 220 input tokens and
-  1,667 output tokens — **97% of the cost is output**. Caching would save ~2%.
-* **Batching notes into one call destroys them.** Given the whole candidate pool
-  at once, the model produced five variants of the same fact, four of them about
-  an elevator. Identical shape is a machine signature.
+```bash
+python narzedzia/presety.py lista
+python narzedzia/presety.py sprawdz hidden-bill
+python narzedzia/presety.py podglad hidden-bill
+python narzedzia/presety.py podlacz hidden-bill --instancja moja-publikacja
+python narzedzia/presety.py status
+```
 
----
+Use `ai` instead of `hidden-bill` to select the AI preset. **You do not edit the
+shared preset to enter your account.** The values from `.env` override its
+account placeholders. Changing the writing style or volumes uses a private copy
+of the preset; see [customization](docs/PLUGGING_IN_AN_ACCOUNT.md).
 
-## Requirements
+**Next: [establish the browser session and run the first workflow](docs/INSTALL.md#5-browser-session).**
+Activate the preset **before** saving the session so it is written into the
+correct instance. Activation itself neither logs in nor publishes nor installs a scheduler.
 
-| requirement | why | optional? |
+## Engine, preset and instance
+
+```text
+GitHub: reusable engine + public preset packages
+                         |
+                    clone / download
+                         v
+Your installation: engine + selected preset + your .env
+                         |
+                  local activation pointer
+                         v
+Your instance: session, idea bank, drafts, cache, logs and costs
+```
+
+| Layer | Location | Tracked in Git? |
 |---|---|---|
-| Python 3.10+ | measured on 3.12 | required |
-| `DEEPSEEK_API_KEY` | **21 of 26 model roles** | required |
-| `ANTHROPIC_API_KEY` | notes, articles, repair pass | required |
-| `OPENAI_API_KEY` | cover image only | optional — the article ships without one |
-| Playwright + Chromium | the Substack layer | required |
-| **a real Chrome with a display** | Cloudflare fingerprints headless mode and the note simply never appears | required to publish |
-| **a Substack account, logged in by hand** | Substack has no publishing API — the bot *is* a signed-in user | required |
-| SMTP | failure alerts | optional — degrades silently |
+| Engine and generic prompts | `agent-v2/` | Yes |
+| Public presets and their style assets | `presety/ai/`, `presety/hidden-bill/`, `presety/SZABLON/` | Yes |
+| API keys and account settings | `agent-v2/.env` | No |
+| Active preset pointer | `agent-v2/aktywny_preset.json` | No |
+| Instance data, including the saved session | `agent-v2/instancje/<id>/` | No |
+| Custom preset directories | Other directories under `presety/` | No |
 
-**The Substack session is the one place this system always needs a human.** The
-automated login path exists in the code and the code itself advises against it,
-because it loops on CAPTCHA.
+Normal operation writes local runtime data, not the public preset files, and
+does not push anything to GitHub. `.gitignore` excludes the private paths; the
+repository audit also checks tracked files. These rules do not prevent someone
+from deliberately force-adding a private file.
 
----
+## Switch subjects or start clean
 
-## Safety rails you should not remove
+One checkout has one active preset at a time. Stop its scheduled tasks and
+running processes before switching:
 
-Each exists because something went wrong once:
+```bash
+python narzedzia/presety.py odlacz
+python narzedzia/presety.py podlacz ai --instancja ai-start
+```
 
-* **Test-copy marker.** A file named `TO_JEST_KOPIA_TESTOWA` next to
-  `config.py` revokes the right to publish. A test copy can never post.
-* **Databases separate themselves.** `DATA_DIR` derives from where `config.py`
-  sits, so a second clone gets its own database with no environment variable
-  anyone can forget.
-* **Paid calls are barred from free tests.** `llm.call` refuses when the process
-  looks like a free test with no stub installed — because a test without a stub
-  once paid real money and the only trace was a row in `calls`.
-* **The per-run ceiling always applies**, even under `NO_LIMIT`.
-* **`DRY_RUN` blocks the browser too.** It used to block only model calls, so a
-  "dry" run wrote nothing and still liked two strangers' posts.
-* **Every paid call is attributed to a channel**, checked by a test that builds
-  a reachability map from the AST.
+Use a **new instance ID** for a fresh bank and history. Reusing the previous ID
+resumes its previous data; detaching does not erase data or remove `.env` and
+browser credentials. It also does not undo anything already published on Substack.
+Rebuild the schedule and verify the browser account after switching.
 
----
+For separate publications, the clearest current arrangement is **one fresh clone
+per publication**, with its own environment and runtime. Multiple clones on the
+same machine additionally need browser and service isolation: Chrome's port and
+profile and the generated systemd unit names are currently shared defaults.
+See the [audit and remaining work](analizy/2026-09-06-dystrybucja-github/RAPORT.md).
 
-## Lines this agent does not cross
+## Costs and operating modes
 
-In a project about automating someone else's platform this matters more than the
-feature list.
+Budget fields are per-instance thresholds based on the engine's cost records.
+They are not a provider-enforced spending cap, a shared limit across clones or
+a promise to complete the configured schedule. Actual charges depend on model
+availability, provider prices, token usage, search and retries.
 
-**The account does not volunteer that it is AI-run, and never lies when asked
-directly.** Denial is forbidden by doctrine. So is technical evasion of
-detection.
+| Mode | Model calls | Substack writes |
+|---|---|---|
+| `presety.py sprawdz` / `podglad` | None | None |
+| `DRY_RUN=true` | Skipped | Blocked |
+| `DRY_RUN=false`, workflow without `--wyslij` | Can be paid | No publishing from that workflow |
+| `DRY_RUN=false`, workflow with `--wyslij` | Can be paid | Enabled, subject to runtime checks |
 
-**It does not farm reciprocity.** Measured: of twelve accounts given a
-subscription, **zero** reciprocated. Unfollowing after silence is explicitly
-"artificial activity" under Substack's terms, so it does not happen.
+A dry run can still read the network and create local files. Use preset preview
+to inspect prompts without starting a publishing workflow. The engine supports
+the provider adapters implemented in its code; adding a model name alone does
+not add a new provider integration.
 
-**It does not comment everywhere.** A comment must add something the post did
-not say; when the bot cannot name what it is adding, it stays silent.
+## Development and checks
 
-**Hosts that refuse automated reading are respected** (`config.BLOCKED_HOSTS`).
+```bash
+python -m pip install -r requirements-dev.txt
+python narzedzia/zaleznosci.py --sprawdz
+python agent-v2/tests/test_presety.py
+python narzedzia/presety.py sprawdz ai
+python narzedzia/presety.py sprawdz hidden-bill
+```
 
-**Secrets never enter the repository.** `.env` and `agent-v2/data/` are
-gitignored from the first commit; subscriber exports are written `0600` because
-they contain other people's email addresses.
+Tests are standalone scripts, not a conventional pytest-only suite. The
+[workflow](.github/workflows/testy.yml) documents its exclusions and history-based
+skips. These checks do not prove live account login, model access or publication
+quality. Run maintenance generators and the full audit in a development checkout,
+not while a production process is using its files.
 
----
-
----
-
-## License
-
-**MIT** — see [LICENSE](LICENSE). Read it, fork it, run it, build a product on
-it. Keep the copyright notice; that is the whole obligation.
-
-**This was AGPL-3.0 until 2026-09-04, and the argument for AGPL was a good
-one**, so it is worth recording what changed rather than quietly swapping the
-file. The case was: this bot is meant to be *run as a service*, so under a
-permissive licence somebody could operate a paid content business on it and
-give nothing back — and because the software is never *distributed*, an
-ordinary GPL would not even bite. AGPL closes exactly that hole.
-
-What outweighed it: **most of the value here is in being read.** The 13,000-line
-generated walkthrough, the cleaning log, the counterproof habit, the record of
-which checks turned out to be doing nothing — that is the part worth having,
-and AGPL keeps it away from a large share of the people who would benefit,
-because plenty of organisations forbid AGPL outright regardless of how the code
-is used. A licence that protects against a business model nobody has yet, at
-the cost of readers who exist now, is the wrong trade for this project.
-
-The risk is real and accepted: somebody can take this, close it, and give
-nothing back. If you are the sort of person who would rather not, the
-contribution that actually helps is a subject pack — see
-[CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Honest notes
-
-**How many tests fail depends on how far you got with the install**, and none
-of the failures is a code defect. The table says **what** fails rather than how
-many pass, because the second number rots the moment anyone adds a test — and
-the version that stood here did exactly that, drifting to 102 while the real
-figure had reached 137:
-
-| after | what still fails |
-|---|---|
-| `pip install -r requirements-dev.txt` | four — `playwright` browser not downloaded, Windows has no POSIX signals, empty `data/`, no `.env` |
-| `+ playwright install chromium` | the last three |
-| `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_jednostki_systemd` needs systemd |
-
-Measured on this copy (2026-09-05): of 168 test files, **159 pass and 2 fail**;
-five of the passing ones skip part of their work and say so, line by line. Both
-failures are impossible to fix on a Windows install and neither says anything
-about the code. Each is listed with its cause in
-[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The count of files is
-checked against the tree on every run by `test_liczby_w_dokumentach.py`, so this
-paragraph cannot drift again in silence.
-
-**Twenty assertions skip themselves in this copy**, spread over twenty files.
-Eighteen reproduce a counterproof out of a specific commit, because the
-project's doctrine requires a reference version pinned to a SHA and never to
-`HEAD`; this repository's history was started fresh when the account identity
-was removed, so those commits do not exist here. Two are whole files. All of
-them say so and exit cleanly rather than crashing — a skipped assertion is
-printed with a dash instead of `OK`, because one that passed quietly would be
-worse than one that failed: it would look like proof.
-
-**`agent-v2/` is a leftover name** from when this repo held two agents side by
-side. Renaming it was tried and reverted: nineteen tests read their reference
-versions out of git by path, and a rename means a permanent path shim in each of
-them. A nicer directory name is not worth that.
-
-**It is a configurable product for one platform, not for any platform.**
-A preset now drives the subject, the model split, the volumes and the budget;
-the account handle and the publication name come from `agent-v2/.env`. The
-prompts take subject, brand and niche examples from the preset at call time. What is still hand-edited: the two style
-profiles in `style-profiles/` and the monthly attention hints in `config.py`.
-What will not become a field at all: the Substack layer is ~2,500 lines a second platform would not
-share, and the gates in `gates.py` are English regular expressions that stop
-matching — silently — in another language. The full breakdown, split into a
-day's work, a few days' work and rewriting a module, is in
-[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md).
+Further reading: [function map](docs/FUNCTION_MAP.md),
+[engine documentation](agent-v2/JAK_ZBUDOWANY_JEST_BOT.md),
+[technical architecture](docs/ARCHITECTURE.md), [repository map](docs/REPO_MAP.md),
+[troubleshooting](docs/TROUBLESHOOTING.md), [license](LICENSE).
