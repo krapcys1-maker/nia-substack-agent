@@ -40,6 +40,7 @@
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |
 | `DEEPSEEK_EFFORT` | `"low"` | Głębokość rozumowania DeepSeeka na /responses. Tokeny rozumowania liczą się do sufitu wyjścia, więc przy `high` model kończy budżet na szuka |
+| `DEEPSEEK_BEZ_MYSLENIA` | `frozenset({ "feasibility", "classify", "bank` | MYSLENIE DEEPSEEKA NA /chat/completions JEST DOMYSLNIE WLACZONE i liczone jako tokeny wyjscia. Zmierzone 2026-09-06 na jednym zadaniu sedzie |
 | `CHEAP_MODE` | `_env("AGENT_V2_CHEAP", "0").lower() in {"1",` | Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override zostawia u Claude'a. Sluzy do testowania HYDRAULIKI — czy lancuch |
 | `BEZ_TOKENOW` | `{"obraz"}` | — |
 | `OBRAZ_WLACZONY` | `True` | CZY OKLADKA W OGOLE POWSTAJE. Preset wylacza ja pustym `modele.obraz`; `stages.grafika` wtedy nie wola ani briefu, ani OpenAI. Do 2026-09-05 |

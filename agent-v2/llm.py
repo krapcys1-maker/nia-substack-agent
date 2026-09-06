@@ -550,6 +550,10 @@ def _call_deepseek(purpose: str, system: str, user: str) -> tuple[str, int, int,
             ],
             "stream": True,
             "stream_options": {"include_usage": True},
+            # BEZ MYSLENIA NA GLOS tam, gdzie zadanie jest mechaniczne —
+            # patrz `config.DEEPSEEK_BEZ_MYSLENIA` i pomiar obok niego.
+            **({"thinking": {"type": "disabled"}}
+               if purpose in config.DEEPSEEK_BEZ_MYSLENIA else {}),
         },
         timeout=httpx.Timeout(config.timeout_for(config.MAX_TOKENS[purpose]),
                               connect=30.0),

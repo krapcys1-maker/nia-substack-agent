@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **26 plików**, 33 501 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **26 plików**, 33 526 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 163 zestawów
-testów, 4088 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 164 zestawów
+testów, 4098 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -329,7 +329,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5409 wierszy, 98 funkcji na poziomie modułu, 1 klas
+5416 wierszy, 98 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -434,7 +434,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-972 wierszy, 15 funkcji na poziomie modułu, 3 klas
+976 wierszy, 15 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -679,7 +679,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3477 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3491 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -12022,6 +12022,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |
 | `DEEPSEEK_EFFORT` | `"low"` | Głębokość rozumowania DeepSeeka na /responses. Tokeny rozumowania liczą się do sufitu wyjścia, więc przy `high` model kończy budżet na szuka |
+| `DEEPSEEK_BEZ_MYSLENIA` | `frozenset({ "feasibility", "classify", "bank` | MYSLENIE DEEPSEEKA NA /chat/completions JEST DOMYSLNIE WLACZONE i liczone jako tokeny wyjscia. Zmierzone 2026-09-06 na jednym zadaniu sedzie |
 | `CHEAP_MODE` | `_env("AGENT_V2_CHEAP", "0").lower() in {"1",` | Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override zostawia u Claude'a. Sluzy do testowania HYDRAULIKI — czy lancuch |
 | `BEZ_TOKENOW` | `{"obraz"}` | — |
 | `OBRAZ_WLACZONY` | `True` | CZY OKLADKA W OGOLE POWSTAJE. Preset wylacza ja pustym `modele.obraz`; `stages.grafika` wtedy nie wola ani briefu, ani OpenAI. Do 2026-09-05 |

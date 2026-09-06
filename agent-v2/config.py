@@ -336,6 +336,20 @@ DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 # zdąża napisać odpowiedzi.
 DEEPSEEK_EFFORT = "low"
 
+# MYSLENIE DEEPSEEKA NA /chat/completions JEST DOMYSLNIE WLACZONE i liczone
+# jako tokeny wyjscia. Zmierzone 2026-09-06 na jednym zadaniu sedziego
+# (piec tytulow do oceny, JSON):
+#   deepseek-v4-flash, domyslnie:            707 tokenow wyjscia (573 rozumowania), 6,1 s
+#   deepseek-v4-flash, thinking disabled:    138 tokenow wyjscia,                    1,9 s
+#   deepseek-v4-pro,   domyslnie:          2 785 tokenow wyjscia (2 645 rozumowania), 52 s
+# Na zywym przebiegu ten sam mechanizm dal 15 681 tokenow za ranking osmiu
+# faktow i 19 211 za ocene dziewieciu celow. Etapy MECHANICZNE — odsiew,
+# klasyfikacja, ranking, ocena celow, decyzja o restacku — nie potrzebuja
+# rozumowania na glos; etapy piszace i syntezujace je zachowuja.
+DEEPSEEK_BEZ_MYSLENIA = frozenset({
+    "feasibility", "classify", "bank", "cele", "restack", "grafika", "fedreg",
+})
+
 # Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override
 # zostawia u Claude'a. Sluzy do testowania HYDRAULIKI — czy lancuch przechodzi,
 # JSON sie parsuje i zapis dziala — nie do oceny produkcyjnego tekstu Fable 5.

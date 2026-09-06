@@ -187,7 +187,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5409 wierszy, 98 funkcji na poziomie modułu, 1 klas
+5416 wierszy, 98 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -292,7 +292,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-972 wierszy, 15 funkcji na poziomie modułu, 3 klas
+976 wierszy, 15 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -537,7 +537,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3477 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3491 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
