@@ -263,6 +263,19 @@ def _preflight(purpose: str, conn: sqlite3.Connection, run_id: int | None) -> No
     """
     if config.KILL_SWITCH:
         raise PreflightFailed("KILL_SWITCH=true — wywołania wstrzymane")
+    # WAZNOSC AKTYWACJI PRZED KAZDYM KOSZTEM (audyt 2026-09-06, F01/F02):
+    # po `odlacz` albo po podlaczeniu innego presetu stary proces nie placi
+    # dalej; aktywacja ze zmiennej srodowiskowej to podglad bez pieniedzy.
+    if not getattr(config, "W_TESCIE", False):
+        import preset as _preset
+        if _preset.tylko_podglad(config):
+            raise PreflightFailed(
+                "aktywacja z AGENT_V2_PRESET to podglad — bez platnych wywolan (%s). "
+                "Podlacz preset wskaznikiem: python narzedzia/presety.py podlacz <nazwa>"
+                % purpose)
+        _powod = _preset.aktywacja_nadal_wazna(config)
+        if _powod:
+            raise PreflightFailed("aktywacja niewazna przed wywolaniem %r: %s" % (purpose, _powod))
 
     # ZAPORA PRZED PLATNYM WYWOLANIEM Z DARMOWEGO TESTU. Patrz
     # `config._w_darmowym_tescie`: `tests/conftest.py` dziala tylko pod

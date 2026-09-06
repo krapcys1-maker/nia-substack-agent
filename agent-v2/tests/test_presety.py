@@ -92,8 +92,8 @@ hasla_szukania = ["probna a", "probna b", "probna c", "probna d", "probna e",
 dziedziny = ["d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8"]
 
 [styl]
-profil_pozytywny = "style-profiles/ARTICLE_STYLE_PROFILE_V1.md"
-profil_negatywny = "style-profiles/ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md"
+profil_pozytywny = "repo:style-profiles/ARTICLE_STYLE_PROFILE_V1.md"
+profil_negatywny = "repo:style-profiles/ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md"
 wymagaj_korpusu = false
 %(reszta)s
 """
@@ -502,8 +502,17 @@ with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
     blad = oblewa(lambda: preset.wymagaj_aktywnego(goly, "run.py"))
     sprawdz("bez kartridza brama odmawia i mowi, co zrobic",
             blad is not None and "podlacz" in blad and "run.py" in blad, blad)
-    z_presetem = types.SimpleNamespace(W_TESCIE=False, PRESET_AKTYWACJA=akt2)
-    sprawdz("z kartridzem brama przepuszcza", preset.wymagaj_aktywnego(z_presetem) is akt2)
+    # Brama pyta WSKAZNIK, nie tylko obiekt w pamieci (audyt 2026-09-06, F01):
+    # po `odlacz` wyzej nawet wazny kiedys `akt2` dostaje odmowe, a przepuszcza
+    # dopiero aktywacja, ktora stoi we wskazniku TERAZ.
+    po_odlaczeniu = types.SimpleNamespace(W_TESCIE=False, PRESET_AKTYWACJA=akt2)
+    blad2 = oblewa(lambda: preset.wymagaj_aktywnego(po_odlaczeniu, "run.py"))
+    sprawdz("po odlaczeniu stary obiekt w pamieci NIE przechodzi bramy",
+            blad2 is not None and "odlaczony" in blad2, blad2)
+    akt4, _ = preset.podlacz(presety / "a", agent, config, BAZA, srodowisko={})
+    z_presetem = types.SimpleNamespace(W_TESCIE=False, PRESET_AKTYWACJA=akt4)
+    sprawdz("z kartridzem brama przepuszcza", preset.wymagaj_aktywnego(z_presetem) is akt4)
+    preset.odlacz(agent)
     w_tescie = types.SimpleNamespace(W_TESCIE=True, PRESET_AKTYWACJA=None)
     sprawdz("w darmowym tescie brama milczy", preset.wymagaj_aktywnego(w_tescie) is None)
 

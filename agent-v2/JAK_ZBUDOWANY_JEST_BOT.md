@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **26 plików**, 33 678 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **26 plików**, 33 890 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 166 zestawów
-testów, 4139 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 167 zestawów
+testów, 4185 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -329,7 +329,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5416 wierszy, 98 funkcji na poziomie modułu, 1 klas
+5428 wierszy, 98 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -434,7 +434,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-976 wierszy, 15 funkcji na poziomie modułu, 3 klas
+989 wierszy, 15 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -512,7 +512,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-946 wierszy, 41 funkcji na poziomie modułu, 1 klas
+954 wierszy, 41 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -549,7 +549,7 @@ wiec nie da sie go rozjechac z kodem.
 | `zdjecie(cfg)` | Kopia stalych konta z modulu `config`, do pozniejszego przywrocenia. |
 | `przywroc(cfg, zdj)` | Przywraca stan ze `zdjecie`. Slowniki W MIEJSCU, bo inne moduly trzymaja |
 | `_rozloz_godziny(ile, baza)` *(wewn.)* | Godziny zegara dla `ile` przebiegow, gdy preset podal tylko liczbe. |
-| `_sciezka_w_repo(cfg, napis)` *(wewn.)* | — |
+| `_sciezka_w_repo(cfg, napis)` *(wewn.)* | Bezwzgledna jak jest; `repo:x` i zwykla wzgledna — od korzenia repozytorium. |
 | `_plan(dane, cfg)` *(wewn.)* | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. |
 | `zastosuj(dane, cfg)` | Wklada wartosci do modulu `config`. Oddaje liste tego, co przestawiono. |
 | `on_calendar_agenta(godziny)` | Zegar rutyny dnia: jedna linia na godzine UTC. |
@@ -560,7 +560,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-913 wierszy, 33 funkcji na poziomie modułu, 4 klas
+1076 wierszy, 39 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -572,13 +572,15 @@ wiec nie da sie go rozjechac z kodem.
 | `_bezwzgledna(napis, baza)` *(wewn.)* | — |
 | `plik_presetu(sciezka)` | Katalog presetu -> jego `preset.toml`; plik -> ten plik. |
 | `_kanoniczne(x)` *(wewn.)* | — |
-| `odcisk(pola, schema, bloki)` | SHA-256 rozwiazanych pol I BLOKOW. Zmiana dowolnej wartosci zmienia odcisk. |
+| `odcisk(pola, schema, bloki, zasoby)` | SHA-256 pol, blokow I ZASOBOW STYLU. |
 | `_wczytaj_bloki(katalog)` *(wewn.)* | `prompty/<blok>.md` z katalogu presetu; tylko znane nazwy, tylko niepuste. |
 | `_rozwiaz_sciezki(pola, katalog)` *(wewn.)* | Sciezki stylu wzgledem KATALOGU PRESETU, gdy tam leza; inaczej wzgledem repo. |
+| `_zasoby_kartridza(pola, katalog)` *(wewn.)* | Skroty plikow stylu lezacych W KATALOGU presetu: {sciezka wzgledna: sha256}. |
 | `wczytaj_tekst(tekst, nazwa_pliku, plik, katalog)` | Tekst TOML presetu -> `Preset`. Kazdy blad to `BladPresetu`. |
 | `wczytaj(sciezka)` | Preset z katalogu (`presety/<nazwa>/`) albo z pojedynczego pliku. |
 | `proba_konfiguracji(cfg, baza)` | Kopia stalych `config` do bezpiecznego przymierzenia presetu. |
 | `rozwiaz(preset, cfg, baza)` | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). |
+| `_bez_domyslnego_korpusu(preset, cfg)` *(wewn.)* | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". |
 | `pochodzenie(preset, cfg, baza)` | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". |
 | `_dostawca(model)` *(wewn.)* | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. |
 | `_napisy(x)` *(wewn.)* | Wszystkie napisy w zagniezdzonej wartosci. |
@@ -589,9 +591,13 @@ wiec nie da sie go rozjechac z kodem.
 | `_dopisz_do_dziennika(katalog, wpis)` *(wewn.)* | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. |
 | `czytaj_wskaznik(agent_dir)` | Surowa tresc wskaznika (bez wczytywania presetu) albo None. |
 | `aktywacja(agent_dir, srodowisko)` | Co jest podlaczone. `None` = nic. Zly wskaznik albo zmieniony preset = wyjatek. |
-| `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko)` | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. |
+| `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko, przejmij)` | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. |
+| `wlasciciel(katalog)` | Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy. |
+| `_sprawdz_wlasciciela(katalog, preset, przejmij)` *(wewn.)* | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. |
 | `odlacz(agent_dir)` | Usuwa wskaznik. Oddaje jego tresc (co bylo podlaczone) albo None. |
 | `wymagaj_aktywnego(cfg, co)` | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. |
+| `tylko_podglad(cfg)` | Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji. |
+| `aktywacja_nadal_wazna(cfg)` | Pusty napis, gdy aktywacja z pamieci procesu nadal stoi we wskazniku; inaczej powod. |
 | `lista(agent_dir)` | Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`. |
 | `nazwa_z_pliku(plik)` | Nazwa presetu z jego polozenia: katalog albo nazwa pliku. |
 | `znajdz(nazwa, agent_dir)` | Preset po nazwie (katalog przed plikiem) albo po sciezce. |
@@ -680,7 +686,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3494 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3510 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6679,6 +6685,19 @@ def _preflight(purpose: str, conn: sqlite3.Connection, run_id: int | None) -> No
     """
     if config.KILL_SWITCH:
         raise PreflightFailed("KILL_SWITCH=true — wywołania wstrzymane")
+    # WAZNOSC AKTYWACJI PRZED KAZDYM KOSZTEM (audyt 2026-09-06, F01/F02):
+    # po `odlacz` albo po podlaczeniu innego presetu stary proces nie placi
+    # dalej; aktywacja ze zmiennej srodowiskowej to podglad bez pieniedzy.
+    if not getattr(config, "W_TESCIE", False):
+        import preset as _preset
+        if _preset.tylko_podglad(config):
+            raise PreflightFailed(
+                "aktywacja z AGENT_V2_PRESET to podglad — bez platnych wywolan (%s). "
+                "Podlacz preset wskaznikiem: python narzedzia/presety.py podlacz <nazwa>"
+                % purpose)
+        _powod = _preset.aktywacja_nadal_wazna(config)
+        if _powod:
+            raise PreflightFailed("aktywacja niewazna przed wywolaniem %r: %s" % (purpose, _powod))
 
     # ZAPORA PRZED PLATNYM WYWOLANIEM Z DARMOWEGO TESTU. Patrz
     # `config._w_darmowym_tescie`: `tests/conftest.py` dziala tylko pod

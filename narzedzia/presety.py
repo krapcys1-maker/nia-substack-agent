@@ -229,7 +229,8 @@ def cmd_podlacz(args) -> int:
     except preset.BladPresetu:
         poprzedni = {"preset": "(nieczytelny wskaznik)"}
     try:
-        akt, uwagi = preset.podlacz(plik, AGENT, config, BAZA, instancja=args.instancja)
+        akt, uwagi = preset.podlacz(plik, AGENT, config, BAZA, instancja=args.instancja,
+                                    przejmij=bool(getattr(args, "przejmij", False)))
     except preset.BladPresetu as exc:
         print("NIE PODLACZONO: %s" % exc)
         if poprzedni:
@@ -269,6 +270,11 @@ def cmd_odlacz(args) -> int:
 
 
 def cmd_status(args) -> int:
+    import os as _os
+    if (_os.environ.get(preset.ZMIENNA) or "").strip():
+        print("UWAGA: w srodowisku jest %s=%s — procesy z ta zmienna dzialaja w trybie "
+              "PODGLADU (bez platnych wywolan i bez publikacji), niezaleznie od wskaznika."
+              % (preset.ZMIENNA, _os.environ.get(preset.ZMIENNA)))
     try:
         dane = preset.czytaj_wskaznik(AGENT)
     except preset.BladPresetu as exc:
@@ -411,6 +417,9 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(f=cmd_podlacz)
     sub.add_parser("odlacz").set_defaults(f=cmd_odlacz)
     sub.add_parser("status").set_defaults(f=cmd_status)
+    p.add_argument("--przejmij", action="store_true",
+                   help="przejmij istniejacy katalog instancji innego presetu lub konta "
+                        "(domyslnie odmowa: nowa redakcja = nowa instancja)")
     p = sub.add_parser("podglad"); p.add_argument("nazwa")
     p.add_argument("--prompty", nargs="*", default=None,
                    help="ktore briefy wyrenderowac (domyslnie skaut, notka, pisarz, komentarz, grafika)")

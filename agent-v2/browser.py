@@ -374,6 +374,18 @@ def naprawde_wyslac(wyslij: bool, co: str) -> bool:
     if wyslij and config.DRY_RUN:
         print(f"  [{co}] DRY_RUN — NIE wysylam, mimo ze proszono", flush=True)
         return False
+    # WAZNOSC AKTYWACJI PRZED KAZDYM ZAPISEM NA KONCIE (audyt 2026-09-06,
+    # F01/F02): odlaczony albo podmieniony preset i podglad ze srodowiska
+    # nie publikuja, nie lubia i nie komentuja.
+    if wyslij and not getattr(config, "W_TESCIE", False):
+        import preset as _preset
+        if _preset.tylko_podglad(config):
+            print(f"  [{co}] aktywacja z AGENT_V2_PRESET to podglad — NIE wysylam", flush=True)
+            return False
+        _powod = _preset.aktywacja_nadal_wazna(config)
+        if _powod:
+            print(f"  [{co}] NIE wysylam: {_powod}", flush=True)
+            return False
     return wyslij
 
 

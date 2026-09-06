@@ -3448,7 +3448,23 @@ if _aktywacja is not None:
         print("  [preset] %s istnieje, ale przy podlaczonym presecie NIE jest czytany"
               % KONFIGURACJA_PLIK.name, flush=True)
 else:
-    _dane_konfiguracji = {} if _BEZ_KONFIGURACJI else _konf.wczytaj(KONFIGURACJA_PLIK)
+    # STARY `konfiguracja.toml` NIE WRACA PO ODLACZENIU (audyt 2026-09-06, F04,
+    # proba P18): bez aktywacji silnik ma miec pusty temat, a nie temat z
+    # pliku sprzed kartridzy. Plik czyta sie tylko w darmowym tescie (testy
+    # konfiguracji na nim stoja) albo na jawne zyczenie
+    # `AGENT_V2_KONFIGURACJA_TOML=1` (migracja, diagnostyka). Droga na stale:
+    # `python narzedzia/presety.py importuj-konfiguracje --nazwa <nazwa>`.
+    _CZYTAJ_STARY_TOML = (W_TESCIE
+                          or _env("AGENT_V2_KONFIGURACJA_TOML", "0").lower() in {"1", "true", "yes"})
+    if _BEZ_KONFIGURACJI or not _CZYTAJ_STARY_TOML:
+        _dane_konfiguracji = {}
+        if KONFIGURACJA_PLIK.exists() and not _BEZ_KONFIGURACJI:
+            print("  [preset] brak kartridza: %s NIE jest czytany — temat z tego pliku "
+                  "nie wraca po odlaczeniu. Zamien go w preset: python narzedzia/presety.py "
+                  "importuj-konfiguracje --nazwa <nazwa>  (awaryjnie: AGENT_V2_KONFIGURACJA_TOML=1)"
+                  % KONFIGURACJA_PLIK.name, flush=True)
+    else:
+        _dane_konfiguracji = _konf.wczytaj(KONFIGURACJA_PLIK)
     KONFIGURACJA_ZMIENILA = _konf.zastosuj(_dane_konfiguracji, sys.modules[__name__])
 
 # --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI -------------------

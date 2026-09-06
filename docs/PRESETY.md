@@ -135,3 +135,47 @@ pisarz `claude-fable-5-1`, notki `claude-opus-5`. Przed podłączeniem podmień
 - Osobnego bloku dla restacku i odpowiedzi: dzielą `glos_komentarza`.
 - `konfiguracja.toml` jest nadal czytany, gdy kartridża nie ma, ale sam z
   siebie nie daje tematu: pola tematu i tak trzeba wypełnić.
+
+## Odłączanie i świeży bot (po audycie z 6 września 2026)
+
+Cztery gwarancje, każda z testem w `agent-v2/tests/test_swiezy_bot_po_odlaczeniu.py`:
+
+1. **Odłączenie unieważnia pracujący proces.** `odlacz` usuwa wskaźnik, a każde
+   płatne wywołanie (`llm._preflight`) i każdy zapis na koncie
+   (`browser.naprawde_wyslac`) sprawdza przed wykonaniem, czy wskaźnik nadal
+   wskazuje ten sam preset i tę samą instancję. Stary proces po `odlacz` albo
+   po `podlacz` innego presetu dostaje odmowę przy następnym koszcie
+   i następnej publikacji. Proces trzeba i tak uruchomić od nowa, ale nie
+   zdąży już nic wydać ani wysłać.
+2. **`AGENT_V2_PRESET` to podgląd.** Proces uruchomiony ze zmienną ma kontekst
+   presetu (prompty, podgląd, testy), ale nie ma prawa do płatnych wywołań ani
+   publikacji. Produkcja wymaga aktywacji wskaźnikiem. `status` ostrzega, gdy
+   zmienna jest w środowisku.
+3. **Instancja ma właściciela.** Pierwsze `podlacz` zapisuje w katalogu
+   instancji `wlasciciel.json` (preset, uchwyt konta). Inny preset albo inne
+   konto na tym samym `--instancja` dostaje odmowę i radę, żeby wziąć nową
+   nazwę. `--przejmij` to jawna decyzja, zapisana w dzienniku instancji.
+4. **Bez kartridża nie wraca stary temat.** Bez aktywacji silnik nie czyta
+   `agent-v2/konfiguracja.toml` (poza darmowym testem i jawnym
+   `AGENT_V2_KONFIGURACJA_TOML=1`). Droga na stałe: `importuj-konfiguracje`.
+
+Dwie reguły o stylu:
+
+- **Pusty `styl.korpus` znaczy brak korpusu.** Kartridż z pustym polem
+  wskazuje własny `styl/korpus.txt`; jeśli go nie ma, pisarz dostaje zero
+  przykładów. Domyślny katalog silnika (`agent-v2/prompts/styl/`) nie jest
+  dla kartridża zapasem.
+- **Ścieżki stylu w katalogu presetu rozwiązują się tylko w tym katalogu.**
+  Brak pliku w paczce to błąd `sprawdz`, a nie plik o tej samej nazwie
+  z repozytorium. Plik wspólny z repozytorium wybiera się jawnie:
+  `profil_pozytywny = "repo:style-profiles/ARTICLE_STYLE_PROFILE_V1.md"`.
+
+Odcisk presetu obejmuje pola (jak w TOML-u, ze ścieżkami względnymi), bloki
+promptów i skróty plików stylu z katalogu presetu (profile, korpus,
+przypięcia). Ten sam kartridż skopiowany gdzie indziej ma ten sam odcisk;
+zmieniony profil to inny odcisk i odmowa startu do czasu `podlacz`.
+
+Czego ta gałąź nadal nie daje (F07–F13 audytu): eksportu pełnej paczki,
+osobnego profilu Chrome i nazw usług na klon, wspólnego limitu rachunku
+między instancjami, cache zadań z hashem wejścia. To sprawy otwarte.
+

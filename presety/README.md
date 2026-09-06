@@ -38,3 +38,22 @@ python narzedzia/presety.py odlacz           # deactivate; the instance data sta
   a public repository.
 
 The full description, in Polish, is in [docs/PRESETY.md](../docs/PRESETY.md).
+
+## Detaching, and what "a clean engine" means
+
+- `odlacz` removes the pointer **and** invalidates the running process: the
+  next paid model call or account write in that process is refused, because
+  both check the pointer first. Restart after `podlacz` as before.
+- `AGENT_V2_PRESET=<path>` is a preview: prompts render, tests run, but no
+  paid calls and no publishing. Production needs the pointer.
+- An instance directory has an owner (`wlasciciel.json`: preset and account
+  handle). A different preset or account on the same `--instancja` is refused;
+  `--przejmij` takes it over deliberately and logs the takeover.
+- Without a cartridge the engine does not read the legacy
+  `agent-v2/konfiguracja.toml` (tests and `AGENT_V2_KONFIGURACJA_TOML=1` excepted).
+- An empty `styl.korpus` means no corpus at all, never the engine's default
+  directory; style paths inside a cartridge resolve inside it only. A shared
+  file from the repository is chosen explicitly: `repo:style-profiles/X.md`.
+- The fingerprint covers fields, prompt blocks and the style files' contents,
+  with relative paths: copying a cartridge keeps it, editing a profile changes it.
+

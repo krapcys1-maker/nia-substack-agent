@@ -165,6 +165,7 @@ class Preset:
     odcisk: str
     katalog: Path | None = None
     bloki: dict[str, str] = field(default_factory=dict)
+    zasoby: dict[str, str] = field(default_factory=dict)   # sciezka wzgledna -> sha256 pliku stylu
 
 
 @dataclass(frozen=True)
@@ -229,10 +230,21 @@ def _kanoniczne(x: Any) -> Any:
 
 
 def odcisk(pola: dict[str, Any], schema: int = SCHEMA,
-           bloki: dict[str, str] | None = None) -> str:
-    """SHA-256 rozwiazanych pol I BLOKOW. Zmiana dowolnej wartosci zmienia odcisk."""
+           bloki: dict[str, str] | None = None,
+           zasoby: dict[str, str] | None = None) -> str:
+    """SHA-256 pol, blokow I ZASOBOW STYLU.
+
+    Audyt z 6 wrzesnia 2026 (F06): odcisk obejmowal pola i bloki, a pola
+    stylu to SCIEZKI — zmiana tresci profilu albo korpusu nie zmieniala
+    odcisku (glos podmieniony po cichu), a skopiowanie identycznego
+    katalogu pod inna sciezke zmienialo (bo sciezki byly juz bezwzgledne).
+    Teraz: pola SUROWE (wzgledne, jak w TOML-u) + bloki + skroty plikow
+    stylu z katalogu presetu. Ten sam kartridz ma ten sam odcisk w kazdym
+    miejscu; inny profil to inny odcisk.
+    """
     tekst = json.dumps({"schema": schema, "pola": _kanoniczne(pola),
-                        "bloki": _kanoniczne(bloki or {})},
+                        "bloki": _kanoniczne(bloki or {}),
+                        "zasoby": _kanoniczne(zasoby or {})},
                        sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(tekst.encode("utf-8")).hexdigest()
 
@@ -266,6 +278,9 @@ def _wczytaj_bloki(katalog: Path | None) -> dict[str, str]:
 
 
 _POLA_SCIEZEK = ("styl.profil_pozytywny", "styl.profil_negatywny", "styl.korpus")
+# `repo:style-profiles/X.md` = JAWNY wybor pliku wspolnego z korzenia repozytorium.
+# Zwykla sciezka wzgledna w kartridzu znaczy tylko jego katalog (audyt F05).
+PRZEDROSTEK_REPO = konfiguracja.PRZEDROSTEK_REPO
 
 
 def _rozwiaz_sciezki(pola: dict[str, Any], katalog: Path | None) -> dict[str, Any]:
@@ -279,11 +294,37 @@ def _rozwiaz_sciezki(pola: dict[str, Any], katalog: Path | None) -> dict[str, An
     wynik = dict(pola)
     for klucz in _POLA_SCIEZEK:
         napis = wynik.get(klucz)
-        if not napis or Path(napis).is_absolute():
+        if not napis or Path(napis).is_absolute() or napis.startswith(PRZEDROSTEK_REPO):
             continue
-        kandydat = Path(katalog) / napis
-        if kandydat.exists():
-            wynik[klucz] = kandydat.resolve().as_posix()
+        # BEZ ZAPASU W REPO (audyt F05): brak pliku w paczce ma byc brakiem
+        # pliku, ktory `sprawdz` nazwie po imieniu — a nie okazja, zeby
+        # znalezc plik o tej samej nazwie w korzeniu repozytorium.
+        wynik[klucz] = (Path(katalog) / napis).resolve().as_posix()
+    return wynik
+
+
+def _zasoby_kartridza(pola: dict[str, Any], katalog: Path | None) -> dict[str, str]:
+    """Skroty plikow stylu lezacych W KATALOGU presetu: {sciezka wzgledna: sha256}.
+
+    Tylko pliki z paczki — cudze profile spoza katalogu nie sa jej czescia.
+    Przypiecia korpusu (`przypiecia.json` obok niego) tez, bo wybieraja,
+    ktore akapity dostaje pisarz.
+    """
+    if katalog is None:
+        return {}
+    wynik: dict[str, str] = {}
+    for klucz in _POLA_SCIEZEK:
+        napis = pola.get(klucz)
+        if not napis or Path(napis).is_absolute() or napis.startswith(PRZEDROSTEK_REPO):
+            continue
+        plik = Path(katalog) / napis
+        if plik.is_file():
+            wynik[Path(napis).as_posix()] = hashlib.sha256(plik.read_bytes()).hexdigest()
+        if klucz == "styl.korpus":
+            przypiecia = plik.parent / "przypiecia.json"
+            if przypiecia.is_file():
+                wynik[(Path(napis).parent / "przypiecia.json").as_posix()] = \
+                    hashlib.sha256(przypiecia.read_bytes()).hexdigest()
     return wynik
 
 
@@ -331,13 +372,17 @@ def wczytaj_tekst(tekst: str, nazwa_pliku: str, plik: Path | None = None,
             konfiguracja.splaszcz(reszta, nazwa_pliku), nazwa_pliku)
     except konfiguracja.BledKonfiguracji as exc:
         raise BladPresetu(str(exc))
+    pola_surowe = dict(pola)
     pola = _rozwiaz_sciezki(pola, katalog)
     bloki = _wczytaj_bloki(katalog)
+    zasoby = _zasoby_kartridza(pola_surowe, katalog)
     return Preset(nazwa=nazwa, plik=Path(plik) if plik else Path(nazwa_pliku),
                   opis=str(meta.get("opis") or "").strip(),
                   wersja=str(meta.get("wersja") or "").strip(),
-                  schema=schema, pola=pola, odcisk=odcisk(pola, schema, bloki),
-                  katalog=Path(katalog) if katalog else None, bloki=bloki)
+                  schema=schema, pola=pola,
+                  odcisk=odcisk(pola_surowe, schema, bloki, zasoby),
+                  katalog=Path(katalog) if katalog else None, bloki=bloki,
+                  zasoby=zasoby)
 
 
 def wczytaj(sciezka: Path) -> Preset:
@@ -387,7 +432,22 @@ def rozwiaz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None
     except konfiguracja.BledKonfiguracji as exc:
         raise BladPresetu("%s: %s" % (preset.plik.name, exc))
     proba.PRESET_BLOKI = dict(preset.bloki)
+    _bez_domyslnego_korpusu(preset, proba)
     return proba, meldunki
+
+
+def _bez_domyslnego_korpusu(preset: Preset, cfg: Any) -> None:
+    """Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika".
+
+    Audyt z 6 wrzesnia 2026 (F05, proba P10): preset B z `korpus = ""`
+    i `wymagaj_korpusu = false` dostawal piec akapitow starego korpusu
+    z `agent-v2/prompts/styl/`, bo puste pole zostawialo domyslna sciezke
+    silnika, a loader ladowal wszystko, co tam lezalo. Kartridz wskazuje
+    wiec zawsze swoj katalog: plik, ktorego tam nie ma, to zero przykladow.
+    """
+    if preset.katalog is None or preset.pola.get("styl.korpus"):
+        return
+    cfg.STYLE_CORPUS = Path(preset.katalog) / "styl" / "korpus.txt"
 
 
 def pochodzenie(preset: Preset, cfg: Any, baza: dict[str, Any]) -> dict[str, str]:
@@ -645,6 +705,7 @@ def zastosuj(preset: Preset, cfg: Any, baza: dict[str, Any]) -> list[str]:
         cfg.PRESET_BLOKI = dict(preset.bloki)
     if preset.bloki:
         meldunki.append("prompty/ -> PRESET_BLOKI (%s)" % ", ".join(sorted(preset.bloki)))
+    _bez_domyslnego_korpusu(preset, cfg)
     return meldunki
 
 
@@ -737,8 +798,8 @@ def aktywacja(agent_dir: Path, srodowisko: dict[str, str] | None = None) -> Akty
 
 
 def podlacz(sciezka: Path, agent_dir: Path, cfg: Any, baza: dict[str, Any] | None = None,
-            instancja: str | None = None, srodowisko: dict[str, str] | None = None
-            ) -> tuple[Aktywacja, list[str]]:
+            instancja: str | None = None, srodowisko: dict[str, str] | None = None,
+            przejmij: bool = False) -> tuple[Aktywacja, list[str]]:
     """Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik.
 
     Oddaje (aktywacja, uwagi). Blad zostawia dotychczasowy wskaznik NIETKNIETY —
@@ -755,6 +816,7 @@ def podlacz(sciezka: Path, agent_dir: Path, cfg: Any, baza: dict[str, Any] | Non
         raise BladPresetu("nazwa instancji %r: dozwolone male litery, cyfry, kropka, "
                           "myslnik i podkreslenie" % instancja)
     katalog = katalog_instancji(agent_dir) / instancja
+    _sprawdz_wlasciciela(katalog, preset, przejmij)
     numer = _dopisz_do_dziennika(katalog, {"zdarzenie": "podlacz", "preset": preset.nazwa,
                                            "odcisk": preset.odcisk,
                                            "plik": _wzgledna(preset.plik, korzen(agent_dir))})
@@ -772,6 +834,57 @@ def podlacz(sciezka: Path, agent_dir: Path, cfg: Any, baza: dict[str, Any] | Non
     _zapisz_atomowo(wskaznik(agent_dir), json.dumps(dane, ensure_ascii=False, indent=1) + "\n")
     return Aktywacja(preset=preset, instancja=instancja, katalog_danych=katalog,
                      numer=numer, aktywowano=kiedy, zrodlo="wskaznik"), uwagi
+
+
+NAZWA_WLASCICIELA = "wlasciciel.json"
+
+
+def wlasciciel(katalog: Path) -> dict[str, Any] | None:
+    """Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy."""
+    plik = Path(katalog) / NAZWA_WLASCICIELA
+    if not plik.is_file():
+        return None
+    try:
+        dane = json.loads(plik.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return dane if isinstance(dane, dict) else {}
+
+
+def _sprawdz_wlasciciela(katalog: Path, preset: Preset, przejmij: bool) -> None:
+    """Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta.
+
+    Audyt z 6 wrzesnia 2026 (F03, proba P04): preset B podlaczony z tym
+    samym `--instancja`, ktorego uzywal A, czytal bank A i oczekujacy artykul
+    A — nazwa katalogu nie byla egzekwowana jako wlasciciel. Teraz katalog
+    ma manifest z presetem i uchwytem konta; inny preset albo inne konto
+    dostaje odmowe i rade, zeby wziac nowa nazwe. `przejmij=True` to jawna
+    decyzja operatora, zapisana w dzienniku instancji.
+    """
+    uchwyt = str(preset.pola.get("konto.uchwyt") or "")
+    stary = wlasciciel(katalog)
+    if stary is not None and stary:
+        obcy = (stary.get("preset") != preset.nazwa
+                or str(stary.get("uchwyt") or "") != uchwyt)
+        if obcy and not przejmij:
+            raise BladPresetu(
+                "katalog instancji %s nalezy do presetu %r (konto %r), a podlaczasz "
+                "%r (konto %r).\n"
+                "Nowa redakcja = nowa instancja: podlacz z --instancja <nowa-nazwa>.\n"
+                "Jesli to swiadome przejecie banku i kolejki tamtej redakcji: --przejmij."
+                % (katalog.name, stary.get("preset"), stary.get("uchwyt"),
+                   preset.nazwa, uchwyt))
+        if obcy:
+            _dopisz_do_dziennika(katalog, {"zdarzenie": "przejecie",
+                                           "z": stary.get("preset"), "na": preset.nazwa})
+        elif stary.get("preset") == preset.nazwa and str(stary.get("uchwyt") or "") == uchwyt:
+            return
+    from datetime import datetime, timezone
+    katalog.mkdir(parents=True, exist_ok=True)
+    _zapisz_atomowo(Path(katalog) / NAZWA_WLASCICIELA, json.dumps(
+        {"preset": preset.nazwa, "uchwyt": uchwyt,
+         "utworzono": datetime.now(timezone.utc).isoformat(timespec="seconds")},
+        ensure_ascii=False, indent=1) + "\n")
 
 
 def odlacz(agent_dir: Path) -> dict[str, Any] | None:
@@ -828,7 +941,57 @@ def wymagaj_aktywnego(cfg: Any, co: str = "ten przebieg") -> Aktywacja | None:
     akt = getattr(cfg, "PRESET_AKTYWACJA", None)
     if akt is None:
         raise BrakPresetu(KOMUNIKAT_BRAKU % co)
+    powod = aktywacja_nadal_wazna(cfg)
+    if powod:
+        raise BrakPresetu("%s — %s.\nUruchom proces od nowa po `podlacz`; "
+                          "stary kontekst nie ma juz prawa pracowac." % (co, powod))
     return akt
+
+
+def tylko_podglad(cfg: Any) -> bool:
+    """Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji.
+
+    Audyt z 6 wrzesnia 2026 (F02, proby P03 i P19): zmienna omijala
+    znaczenie „odlaczono" — proces ze zmienna mial pelny kontekst, a
+    `status` mowil „brak aktywnego presetu". Sam start jest dozwolony
+    (podglad promptow, test), ale `llm._preflight` i `browser.naprawde_wyslac`
+    odmawiaja: pieniadze i konto wymagaja aktywacji wskaznikiem.
+    """
+    akt = getattr(cfg, "PRESET_AKTYWACJA", None)
+    return akt is not None and getattr(akt, "zrodlo", "") == "srodowisko"
+
+
+def aktywacja_nadal_wazna(cfg: Any) -> str:
+    """Pusty napis, gdy aktywacja z pamieci procesu nadal stoi we wskazniku; inaczej powod.
+
+    Audyt z 6 wrzesnia 2026 (F01, proby P02 i P17): `odlacz` usuwal wskaznik,
+    ale pracujacy proces mial preset w pamieci i brama pytala tylko o obiekt
+    w pamieci. To jest generacja aktywacji: wskaznik zniknal albo wskazuje
+    inny preset/instancje = stary proces traci prawo do kolejnego kosztu
+    i kolejnej publikacji. Sprawdzane przed KAZDYM platnym wywolaniem
+    i przed kazdym zapisem na koncie — jeden maly plik JSON do odczytu.
+    """
+    akt = getattr(cfg, "PRESET_AKTYWACJA", None)
+    if akt is None or getattr(akt, "zrodlo", "") != "wskaznik":
+        return ""
+    # Katalog agenta z konfiguracji, a bez niej — z katalogu danych aktywacji
+    # (`agent-v2/instancje/<nazwa>`): kontekst testowy bez AGENT_DIR nie moze
+    # trafic do prawdziwego wskaznika tego repozytorium.
+    agent_dir = getattr(cfg, "AGENT_DIR", None)
+    if agent_dir is None:
+        agent_dir = Path(akt.katalog_danych).resolve().parent.parent
+    try:
+        dane = czytaj_wskaznik(Path(agent_dir))
+    except BladPresetu as exc:
+        return "wskaznik aktywacji jest nieczytelny (%s)" % exc
+    if dane is None:
+        return "preset %r zostal odlaczony po starcie tego procesu" % akt.preset.nazwa
+    if (str(dane.get("odcisk") or "") != akt.preset.odcisk
+            or str(dane.get("instancja") or "") != akt.instancja):
+        return ("aktywacja zmienila sie po starcie tego procesu: wskaznik ma %r/%r, "
+                "proces ma %r/%r" % (dane.get("preset"), dane.get("instancja"),
+                                    akt.preset.nazwa, akt.instancja))
+    return ""
 
 
 # ---------------------------------------------------------------------------

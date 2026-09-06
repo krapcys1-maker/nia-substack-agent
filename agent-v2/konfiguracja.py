@@ -668,7 +668,15 @@ def _rozloz_godziny(ile: int, baza: tuple[str, ...]) -> tuple[str, ...]:
     return tuple("%02d:%02d" % divmod(int(poczatek + i * krok), 60) for i in range(ile))
 
 
+PRZEDROSTEK_REPO = "repo:"
+
+
 def _sciezka_w_repo(cfg: Any, napis: str) -> Path:
+    """Bezwzgledna jak jest; `repo:x` i zwykla wzgledna — od korzenia repozytorium.
+    (Kartridz katalogowy rozwiazuje zwykle wzgledne u siebie ZANIM tu trafia;
+    `repo:` to jego jawna prosba o plik wspolny.)"""
+    if napis.startswith(PRZEDROSTEK_REPO):
+        napis = napis[len(PRZEDROSTEK_REPO):]
     p = Path(napis)
     return p if p.is_absolute() else Path(getattr(cfg, "REPO_ROOT", ".")) / p
 
