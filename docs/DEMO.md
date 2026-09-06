@@ -36,6 +36,35 @@ Verified on Substack on September 6, 2026:
 
 ![Published NIA Note](media/nia-note.png)
 
+## Latest live checks
+
+Additional checks on September 6, 2026 exercised the reliability and memory
+improvements shipped after the film was recorded:
+
+| Check | Public result |
+|---|---|
+| Article repair, fresh factual verification, cover generation and publishing | [What the 'Sponsored' Tag on an Amazon Listing Leaves Out](https://nia1503032.substack.com/p/what-the-sponsored-tag-on-an-amazon) |
+| Generate and publish a Note promoting that article | [Amazon Sponsored placement](https://substack.com/@nia1503032/note/c-330869095) |
+| Reuse an existing idea, check its claims and publish a Note | [Claude's text watermark and its limits](https://substack.com/@nia1503032/note/c-330884988) |
+
+All three public pages were independently opened without login, with HTTP 200
+and the expected text. The article was explicitly resumed from a saved draft
+after fixes; this was not one uninterrupted autonomous run.
+
+The bank-based Note needed **two new API calls, recording $0.005075** for writing
+and factual verification. It triggered no new topic research, bank ranking or
+field-status refresh, and five unused ideas returned to the bank. This excludes
+the earlier cost of collecting the idea and is a single measured result, not a
+typical per-Note price or a provider invoice.
+
+A separate live check ranked three ideas once, reused the ranking without an
+API call, and retrieved three sources found by actual web search. Offline tests
+covered interrupted calls, server retry pauses and memory recovery. At this
+checkpoint, 152 standalone scripts passed locally with 22 documented skips;
+[CI passed on Python 3.11 and 3.12](https://github.com/krapcys1-maker/nia-substack-agent/actions/runs/34033133247).
+These checks do not establish long-term uptime or cover every scheduled action.
+See [execution, costs and quality](RELIABILITY.md) for the operating details.
+
 ## About the recording
 
 The film combines actual browser captures, public result views and labeled
