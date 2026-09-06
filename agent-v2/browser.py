@@ -2803,8 +2803,8 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
 
         # PRZEGLADAMY CALY KANAL, LICZYMY POLUBIENIA. Do 2026-09-06 petla
         # ogladala tylko pierwsze `ile` przyciskow, wiec po wejsciu filtra
-        # rewiru dwie pierwsze notki poza tematem (zmierzone: Macro Insight,
-        # a16z) konczyly blok z zerem polubien, choc dalej w kanale stalo
+        # rewiru dwie pierwsze notki poza tematem (zmierzone: dwie notki
+        # o rynkach) konczyly blok z zerem polubien, choc dalej w kanale stalo
         # jeszcze szesc notek.
         for i in range(przyciski.count()):
             if wynik["polubione"] >= ile:
