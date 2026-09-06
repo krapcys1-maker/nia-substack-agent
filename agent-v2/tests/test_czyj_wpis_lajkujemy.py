@@ -146,6 +146,8 @@ try:
             browser.w_rewirze("Treasury yields and the yen"))
 finally:
     config.ZNAKI_NISZY = _stare_znaki
+sprawdz("petla polubien nie ucina kandydatow do `ile` — liczy polubienia, nie przyciski",
+        "range(min(ile" not in blok and 'wynik["polubione"] >= ile' in blok)
 sprawdz("polubienie sprawdza rewir PRZED kliknieciem",
         "w_rewirze(" in blok and blok.index("w_rewirze(") < blok.index("kandydat.click"))
 sprawdz("i PRZED rozgalezieniem na tryb suchy (sucho tez nie liczy cudzego tematu)",

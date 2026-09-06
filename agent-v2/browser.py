@@ -2801,7 +2801,14 @@ def polub_w_kanale(ile: int, wyslij: bool = False) -> dict[str, Any]:
         wynik["znalezione"] = przyciski.count()
         print(f"  do polubienia w kanale: {wynik['znalezione']}", flush=True)
 
-        for i in range(min(ile, przyciski.count())):
+        # PRZEGLADAMY CALY KANAL, LICZYMY POLUBIENIA. Do 2026-09-06 petla
+        # ogladala tylko pierwsze `ile` przyciskow, wiec po wejsciu filtra
+        # rewiru dwie pierwsze notki poza tematem (zmierzone: Macro Insight,
+        # a16z) konczyly blok z zerem polubien, choc dalej w kanale stalo
+        # jeszcze szesc notek.
+        for i in range(przyciski.count()):
+            if wynik["polubione"] >= ile:
+                break
             kandydat = przyciski.nth(i)
             try:
                 if not kandydat.is_visible():
