@@ -51,8 +51,12 @@ class SearchRecoveryTest(unittest.TestCase):
         def repair(*args):
             nonlocal attempts
             attempts += 1
-            self.assertEqual(self.rows()[0]["web_searches"], 9)
-            self.assertGreater(self.rows()[0]["cost_usd"], 0)
+            # Transport worker reads a separate connection; it never writes the ledger.
+            probe = db.connect(Path(self.tmp.name) / config.DB_PATH.name)
+            row = probe.execute('SELECT * FROM calls ORDER BY id').fetchone()
+            probe.close()
+            self.assertEqual(row['web_searches'], 9)
+            self.assertGreater(row['cost_usd'], 0)
             self.assertIn("Do not infer facts from a URL", args[2])
             self.assertIn("Documentary evidence, not just a URL.", args[2])
             if attempts == 1:
@@ -62,7 +66,7 @@ class SearchRecoveryTest(unittest.TestCase):
             self.assertEqual(json.loads(self.invoke()), {"facts": []})
         self.assertEqual(search.call_count, 1)
         self.assertEqual(attempts, 2)
-        self.assertEqual(len(self.rows()), 2)
+        self.assertEqual(len(self.rows()), 3)
 
     def test_failed_repair_preserves_search_cost(self):
         with patch.object(llm, "_call_deepseek_responses", return_value=("{broken", 2000, 700, 4, ["https://example.org/evidence"])) as search, patch.object(llm, "_call_deepseek", side_effect=RuntimeError("repair failed")):
@@ -77,7 +81,7 @@ class SearchRecoveryTest(unittest.TestCase):
             with self.assertRaises(llm.BudgetExceeded):
                 self.invoke()
         repair.assert_not_called()
-        self.assertEqual(len(self.rows()), 1)
+        self.assertEqual(len(self.rows()), 0)
 
     def test_no_source_does_not_invent_evidence(self):
         with patch.object(llm, "_call_deepseek_responses", return_value=("", 2000, 700, 4, [])), patch.object(llm, "_call_deepseek") as repair:

@@ -18,3 +18,8 @@ An ending may settle the practical distinction or expose the remaining uncertain
 Treat parallel_mechanisms on a card as possible research leads, not verified evidence. A comparison involving another product, warranty, legal rule or insurance policy needs its own quoted source in confirmed_claims. Without that support, stay with the documented purchase. Do not fill the target length with generalized claims about unrelated industries. A compact explanation that answers the headline is preferable.
 
 Paraphrase source material in original prose. Keep direct quotation below 25 words per source and retain any condition that changes its meaning. Explain a technical rating only at the level actually documented; do not turn an enclosure test into a guarantee about each moving part or generalize one rating to every level of its scale.
+
+Keep attribution and uncertainty in the final paragraph as carefully as in the
+body. A pending case may have procedural orders: "no final judgment" does not
+mean "no court has ruled". Use a dated case-status source for either statement.
+Do not turn an unknown pass-through cost into a statement that shoppers paid it.

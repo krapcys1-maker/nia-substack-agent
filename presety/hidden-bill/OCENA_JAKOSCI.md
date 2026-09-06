@@ -4,6 +4,10 @@ To arkusz oceny redakcyjnej, nie nowa funkcja bota. Istniejący silnik nie
 ładuje automatycznie tego pliku. Najważniejsze reguły są również w
 `prompty/linia_redakcyjna.md` i blokach głosu, które rzeczywiście czyta.
 
+[Pełne przykłady](PROBKI_PELNE.md) pokazują oczekiwany sposób rozwijania
+argumentu i zawężania nieudowodnionych twierdzeń. Są fikcyjnym materiałem
+do porównań redakcyjnych; nie są źródłami faktów ani płatnym benchmarkiem.
+
 **Warunki konieczne, niezależne od stylu:**
 
 - Każdy sprawdzalny fakt ma podstawę w dostępnej karcie dowodowej.

@@ -70,24 +70,31 @@ def _utf8_stdout() -> None:
             pass
 
 
+_CACHE_CONTEXT = {}
+
+
 def cached(stage: str, produce: Callable[[], Any], use_cache: bool) -> Any:
-    """Zapisuje wynik etapu i oddaje go z dysku zamiast płacić drugi raz.
-
-    Zasada z briefu: testując etap N, użyj zapisanego wyniku etapu N-1.
-
-    NAZWA PLIKU NIESIE ODCISK PRESETU. Plik nazwany samym etapem oddawal
-    z `--use-cache` tematy poprzedniego presetu jako biezace (proba T13
-    audytu). Katalog danych jest juz osobny dla kazdej instancji; odcisk
-    w nazwie domyka druga dziure — te sama instancje po zmianie presetu.
-    """
-    odcisk = config.PRESET.odcisk[:8] if getattr(config, "PRESET", None) else "bez-presetu"
-    path = CACHE_DIR / f"{stage}.{odcisk}.json"
-    if use_cache and path.exists():
-        print(f"  [{stage}] z pamięci podręcznej — bez opłaty", flush=True)
-        return json.loads(path.read_text(encoding="utf-8"))
+    import inspect, result_cache
+    from pathlib import Path
+    closure = inspect.getclosurevars(produce).nonlocals
+    inputs = {k: v for k, v in closure.items() if k not in ('conn', 'run_id')}
+    for name, value in inputs.items():
+        if isinstance(value, argparse.Namespace):
+            inputs[name] = {k: v for k, v in vars(value).items()
+                            if k not in ('use_cache', 'stop_after', 'wyslij')}
+    preset_hash = config.PRESET.odcisk if getattr(config, 'PRESET', None) else 'none'
+    key = result_cache.digest({'stage': stage, 'preset': preset_hash,
+        'inputs': inputs, 'arguments': _CACHE_CONTEXT, 'models': config.MODEL_FOR,
+        'effort': config.EFFORT, 'tokens': config.MAX_TOKENS,
+        'producer': [produce.__code__.co_code.hex(), repr(produce.__code__.co_consts)],
+        'code': result_cache.code_fingerprint(Path(__file__).parent)})
+    path = CACHE_DIR / (stage + '.' + key + '.json')
+    value = result_cache.read(path, config.CACHE_MAX_AGE_S) if use_cache else None
+    if value is not None:
+        print(f'  [{stage}] z pamięci podręcznej — bez opłaty', flush=True)
+        return value
     value = produce()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
+    result_cache.write(path, value)
     return value
 
 
@@ -130,7 +137,8 @@ def zajmij_zamek():
     """
     sciezka = config.DATA_DIR / "agent.lock"
     sciezka.parent.mkdir(parents=True, exist_ok=True)
-    uchwyt = open(sciezka, "w", encoding="utf-8")
+    uchwyt = open(sciezka, "a+", encoding="utf-8")
+    uchwyt.seek(0)
     try:
         try:                      # Linux, czyli serwer
             import fcntl
@@ -143,6 +151,8 @@ def zajmij_zamek():
         raise JuzDziala(
             f"Inny przebieg już działa (zamek: {sciezka}). Kończę bez zmian."
         ) from None
+    uchwyt.seek(0)
+    uchwyt.truncate()
     uchwyt.write(f"{os.getpid()}\n")
     uchwyt.flush()
     return uchwyt
@@ -2278,6 +2288,8 @@ def _sygnal_ma_zostawic_slad() -> None:
 def main() -> int:
     _utf8_stdout()
     _sygnal_ma_zostawic_slad()
+    import call_runtime, time
+    call_runtime.RUN_DEADLINE = time.monotonic() + 3600
     try:
         _zamek = zajmij_zamek()   # trzymany do końca procesu
     except JuzDziala as exc:
@@ -2292,6 +2304,8 @@ def main() -> int:
     parser.add_argument("--wyslij", action="store_true",
                         help="NAPRAWDĘ wystaw treści (domyślnie tylko pokazuje)")
     args = parser.parse_args()
+    global _CACHE_CONTEXT
+    _CACHE_CONTEXT = {"topics": args.topics}
     # BRAMA PRESETU — PRZED BAZA, PRZED PRZEGLADARKA, PRZED PIERWSZYM CENTEM.
     # Bez podlaczonego presetu silnik nie ma tematu, stylu ani planu; zegar,
     # ktory odpali ten plik po `odlacz`, ma dostac odmowe, nie wbudowany
@@ -2792,6 +2806,13 @@ def main() -> int:
         else:
             print("   czysto — żadna uwaga", flush=True)
 
+        if args.wyslij:
+            draft, audyt = stages.przygotuj_artykul_do_publikacji(conn, run_id, draft, card, report)
+            if not audyt.get('safe_to_post') or audyt.get('nie_sprawdzone'):
+                path = stages.save(conn, run_id, topic, card, draft, 'ZATRZYMANY', 'FACTCHECK', findings)
+                print('>> odlozono artykul po kontroli faktow: %s' % path, flush=True)
+                return _done(conn, run_id, 'factcheck-deferred')
+
         status, blocked_by = gates.verdict(findings)
         notes = [*findings,
                  {"gate": "DLUGOSC", "detail": f"{len(draft['body'].split())} słów"},
@@ -2843,63 +2864,15 @@ def main() -> int:
         if args.wyslij:
             import browser
 
-            # SPRAWDZENIE FAKTOW PRZED PUBLIKACJA. Do 25 sierpnia artykul
-            # jechal do sieci BEZ NIEGO, a notka o nim — z nim.
-            #
-            # Skad to wiadomo. Poszedl artykul oparty na przepisie, ktory —
-            # wedlug tresci artykulu — nakladal obowiazek na jedna postac
-            # tresci. Nastepnego dnia notka promujaca TEN SAM artykul dostala
-            # `zweryfikuj()` i ODPADLA: obowiazek obejmowal inne postacie,
-            # a te jedna z przepisu w miedzyczasie usunieto. Notka za pol
-            # centa zlapala blad, ktorego artykul za 76 centow nie mial
-            # jak zlapac.
-            #
-            # DLACZEGO GO NIE BYLO. `gates.verdict` zwraca zawsze „SAVED" —
-            # decyzja wlasciciela z 15 sierpnia, sluszna w swiecie, gdzie
-            # artykul ladowal jako szkic do przeczytania. Gdy publikacja stala
-            # sie automatyczna, „nic nie blokuje" zaczelo znaczyc „nic nie
-            # sprawdza". Brama zaprojektowana pod czlowieka w petli przezyla do
-            # wersji bez czlowieka.
-            #
-            # ZAPIS ZOSTAJE, PUBLIKACJA NIE. Artykul jest juz na dysku razem z
-            # okladka — research nie przepada i wlasciciel ma co czytac. Blokada
-            # dotyczy wylacznie wyjscia na zewnatrz, bo tam blad kosztuje
-            # wiarygodnosc, a nie pieniadze.
-            #
-            # `zweryfikuj` przy wlasnej awarii przepuszcza (patrz jego kod):
-            # zepsuta weryfikacja to nie dowod falszu.
-            # OBALONE ZDANIE NIE KONCZY PRZEBIEGU — patrz blizniaczy blok w
-            # `artykul_z_puli.py`. Stalo tu „do decyzji wlasciciela", czyli
-            # czekanie na czlowieka w systemie, ktorego celem jest ZERO zgod
-            # czlowieka. Zdjete 1 wrzesnia 2026, w obu sciezkach naraz, zeby
-            # nie rozjechaly sie tak, jak juz raz w tej sesji.
-            print("\n-- sprawdzenie faktow (log, NIE bramka) --", flush=True)
-            # ZNACZNIK USTAWIA WOLAJACY, BO TYLKO ON WIE, CO SPRAWDZAMY.
-            # `zweryfikuj` obsluguje notke (`stages.note`), komentarz
-            # (`comment_on`) i artykul — dekorator przy niej samej klamalby
-            # w dwoch przypadkach na trzy. To jedyne miejsce w `run.py`,
-            # w ktorym woła ją sciezka artykulu.
-            with db.kanal("artykul"):
-                audyt = stages.zweryfikuj(conn, run_id, draft["body"],
-                                          draft.get("title", ""))
-            if audyt.get("safe_to_post"):
-                print("   czysto: %s" % str(audyt.get("verdict", ""))[:150],
-                      flush=True)
-            else:
-                print("   ZASTRZEZENIA (artykul i tak idzie): %s"
-                      % str(audyt.get("verdict", ""))[:250], flush=True)
-                for c in (audyt.get("claims") or []):
-                    if str(c.get("status")) in ("refuted", "outdated",
-                                                "unverified"):
-                        print("   [%s] %s" % (c.get("status"),
-                                              str(c.get("claim"))[:150]),
-                              flush=True)
-
             print("\n-- publikacja --", flush=True)
+            stage = "publish"
             wynik = browser.wystaw_artykul(path, wyslij=True)
             print(f">> {'OPUBLIKOWANY' if wynik.get('wyslane') else 'NIE POSZEDŁ'}"
                   f"{'  ' + str(wynik.get('blad')) if wynik.get('blad') else ''}",
                   flush=True)
+            if not wynik.get('wyslane'):
+                raise RuntimeError('Substack did not confirm article publication: ' +
+                                   str(wynik.get('blad') or 'unknown outcome'))
         return _done(conn, run_id, stage)
 
     except Exception as exc:
@@ -2923,21 +2896,15 @@ def _summary(conn, run_id: int) -> None:
         "SELECT COALESCE(SUM(cost_usd), 0) AS total, COUNT(*) AS n FROM calls WHERE run_id = ?",
         (run_id,),
     ).fetchone()
-    # NIEUDANE WYWOLANIA MAJA KOSZT NIEZNANY, NIE ZEROWY — i ma to byc widac.
-    #
-    # `llm.call` po wyczerpaniu ponowien zapisuje wiersz z `cost_usd=0.0`,
-    # `price_verified=0` i `ok=0`, i robi to swiadomie: zgadnieta kwota
-    # w zapisie finansowym jest gorsza niz jej brak. Ale ta linia sumowala
-    # `cost_usd` i liczyla `COUNT(*)`, wiec nieudana proba wchodzila do LICZBY
-    # wywolan, wnosila zero do KWOTY i nic tego nie sygnalizowalo. Dzien
-    # z trzema padnietymi `curiosity` — kazde po dwoch ponowieniach, czyli
-    # dziewiec zadan wyslanych do dostawcy — meldowal sie jak dzien bez strat.
-    #
-    # Zmierzone 5 wrzesnia 2026 na zywej awarii DeepSeeka: wiersz powstaje,
-    # `ok=0`, `note` niesie `RemoteProtocolError`. Suma jest wiec DOLNA
-    # granica rachunku, nie rachunkiem.
+    # Failure, known usage and unverified price are separate dimensions.
     nieudane = conn.execute(
         "SELECT COUNT(*) FROM calls WHERE run_id = ? AND ok = 0", (run_id,)
+    ).fetchone()[0]
+    nieznane = conn.execute(
+        "SELECT COUNT(*) FROM calls WHERE run_id = ? AND "
+        "(usage_status IN ('pending','unknown') OR "
+        "(usage_status = 'legacy' AND ok = 0 AND tokens_in = 0 AND tokens_out = 0))",
+        (run_id,),
     ).fetchone()[0]
     niepewne = conn.execute(
         "SELECT COUNT(*) FROM calls WHERE run_id = ? AND ok = 1 "
@@ -2945,7 +2912,11 @@ def _summary(conn, run_id: int) -> None:
     ).fetchone()[0]
     ogon = ""
     if nieudane:
-        ogon += " — nieudanych o NIEZNANYM koszcie: %d" % nieudane
+        ogon += " — nieudanych prob: %d" % nieudane
+    if nieznane:
+        ogon += " — prob o NIEZNANYM koszcie: %d" % nieznane
+        ogon += " — dodatkowa rezerwacja: $%.4f" % max(
+            0, db.budget_used(conn, run_id=run_id) - row['total'])
     if niepewne:
         ogon += " — po stawce niepotwierdzonej: %d" % niepewne
     print(f"\n== koszt przebiegu: ${row['total']:.4f} w {row['n']} wywołaniach{ogon} ==", flush=True)

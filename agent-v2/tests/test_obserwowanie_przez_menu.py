@@ -84,6 +84,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 import config          # noqa: E402
 import browser         # noqa: E402
+# Authenticated-session precondition for these isolated UI fixtures.
+# Real identity verification is covered by test_quality_contract.AccountContract.
+browser.wymagaj_wlasciwego_konta = lambda page: None
 import norma           # noqa: E402
 import stages          # noqa: E402
 

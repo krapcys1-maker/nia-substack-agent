@@ -84,7 +84,7 @@ try:
     sprawdz("ratunek probowany", wolania["ratuj"] == 1, wolania)
     sprawdz("wynik mowi wprost, ze nie sprawdzono", w2.get("nie_sprawdzone") is True, w2)
     sprawdz("i nie udaje zarzutow", w2.get("zarzuty") == [], w2.get("zarzuty"))
-    sprawdz("puszcza na pierwszej siatce (nie blokuje z powodu wlasnej awarii)", w2.get("safe_to_post") is True)
+    sprawdz("odklada ten material przy nieudanej weryfikacji", w2.get("safe_to_post") is False)
 
     print()
     print("=== 3. JSON OD RAZU = BEZ RATUNKU ===")

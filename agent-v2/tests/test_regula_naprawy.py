@@ -137,7 +137,7 @@ def uruchom(kroki, audyt=None):
 
 print("=== 1. CEL NAPRAWIONY, ZERO NOWYCH -> PRZYJETA, BEZ DOPLATY ===")
 r, k = uruchom([("naprawa", NAPRAWA_OK),
-                ("factcheck", factcheck({"claim": "x", "status": "confirmed"}))])
+                ("factcheck", factcheck({"claim": "x", "status": "confirmed", "url": "https://example.org/record"}))])
 sprawdz("przyjeta", r is not None)
 sprawdz("oddany tekst to poprawiony", bool(r) and r["tekst"] == POPRAWIONY)
 sprawdz("DWA wywolania, nie trzy", k.zuzyte == ["naprawa", "factcheck"], k.zuzyte)
@@ -164,13 +164,11 @@ print("=== 3. CEL NAPRAWIONY, ALE DOSZEDL NOWY ZARZUT -> I TAK PRZYJETA ===")
 # publikowanie pewnej nieprawdy w obawie przed niepewna.
 r, k = uruchom([("naprawa", NAPRAWA_OK),
                 ("factcheck", factcheck(dict(NOWY_ZARZUT)))])
-sprawdz("przyjeta mimo nowego zarzutu", r is not None)
+sprawdz("odrzucona z nowym zarzutem", r is None)
 sprawdz("DWA wywolania — zadnego doplacania",
         k.zuzyte == ["naprawa", "factcheck"], k.zuzyte)
-sprawdz("ale nowy zarzut jest POLICZONY, nie przemilczany",
-        bool(r) and r["nowych"] == 1, r)
-sprawdz("i zapis mowi, ze tekst byl sprawdzony",
-        bool(r) and r["sprawdzona"] is True, r)
+sprawdz("brak trzeciego platnego sprawdzenia", k.komplet())
+sprawdz("nowy zarzut nie zostaje oznaczony jako sukces", r is None)
 
 print()
 print("=== 4. AWARIA BRAMKI -> NAPRAWA IDZIE, ALE ZAPIS O TYM MOWI ===")
@@ -181,11 +179,9 @@ print("=== 4. AWARIA BRAMKI -> NAPRAWA IDZIE, ALE ZAPIS O TYM MOWI ===")
 # ale JAWNA — i zapis niesie, ze sprawdzenia nie bylo.
 r, k = uruchom([("naprawa", NAPRAWA_OK),
                 ("factcheck", RuntimeError("dostawca padl"))])
-sprawdz("naprawa idzie", r is not None)
-sprawdz("ale zapis mowi, ze NIE byla sprawdzona",
-        bool(r) and r["sprawdzona"] is False, r)
-sprawdz("i nie udaje, ze policzyl zarzuty",
-        bool(r) and r["obalonych_po"] is None, r)
+sprawdz("awaria weryfikacji odklada naprawe", r is None)
+sprawdz("nie oddano niesprawdzonej poprawki", r is None)
+sprawdz("kolejka pozostaje ograniczona", k.komplet())
 sprawdz("dwa wywolania", k.zuzyte == ["naprawa", "factcheck"], k.zuzyte)
 
 # KONTRDOWOD: pokazujemy, ze awaryjny wynik NADAL wygladalby na czysty,
@@ -195,7 +191,7 @@ awaria = stages.zweryfikuj(CONN, 1, "cokolwiek", "test")
 sprawdz("awaryjny wynik niesie jawne `nie_sprawdzone`",
         awaria.get("nie_sprawdzone") is True, awaria)
 sprawdz("bo bez tej flagi wygladalby na czystosc",
-        awaria.get("zarzuty") == [] and awaria.get("safe_to_post") is True,
+        awaria.get("zarzuty") == [] and awaria.get("safe_to_post") is False,
         awaria)
 
 print()
@@ -209,7 +205,7 @@ for etykieta, status, czy_blokuje in (
         ("wymyslony status", "maybe", True),
         ("jawne confirmed", "confirmed", False)):
     llm.call = lambda *a, _s=status, **kw: json.dumps({"claims": [
-        {"claim": "The figure was 1,234 in 2025.", "status": _s,
+        {"claim": "The figure was 1,234 in 2025.", "status": _s, "url": "https://example.org/record",
          "what_the_source_says": "nie znaleziono"}]})
     out = stages.zweryfikuj(CONN, 1, "tekst", "test")
     ma = bool(out.get("zarzuty"))
@@ -220,7 +216,7 @@ for etykieta, status, czy_blokuje in (
 print()
 print("=== 7. SPOJNOSC WEWNETRZNA WYNIKU BRAMKI ===")
 llm.call = lambda *a, **kw: json.dumps({"claims": [
-    {"claim": "FirmaB went 48,128 hours.", "status": "confirmed"},
+    {"claim": "FirmaB went 48,128 hours.", "status": "confirmed", "url": "https://example.org/record"},
     {"claim": "FirmaA logged thirty times as many.", "status": "refuted",
      "what_the_source_says": "about 94"},
     {"claim": "Regulators care about this.", "status": "unverified"}]})
@@ -231,8 +227,8 @@ sprawdz("niepuste zarzuty => safe_to_post jest FALSE, nie tylko falsywe",
         out["safe_to_post"] is False, out["safe_to_post"])
 sprawdz("potwierdzone nie jest zarzutem",
         all(z.get("status") != "confirmed" for z in out["zarzuty"]))
-sprawdz("teza bez liczby przechodzi",
-        not any("Regulators" in str(z.get("claim")) for z in out["zarzuty"]))
+sprawdz("twierdzenie bez liczby wymaga potwierdzenia",
+        any("Regulators" in str(z.get("claim")) for z in out["zarzuty"]))
 
 print()
 print("=== 8. TOZSAMOSC ZARZUTU: ZACHOWAWCZO W JEDNA STRONE ===")

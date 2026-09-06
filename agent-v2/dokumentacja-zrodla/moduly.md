@@ -1,12 +1,48 @@
 
+### `browser_reader.py` — odczyt zrodel w osobnym procesie z ograniczeniem czasu i zachowaniem wynikow
+
+120 wierszy, 5 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `_stop_owned_process(process)` *(wewn.)* | — |
+| `_results(path)` *(wewn.)* | — |
+| `_collect(command, urls, output, timeout)` *(wewn.)* | — |
+| `read_pages(urls)` | — |
+| `_worker(input_path, output)` *(wewn.)* | — |
+
+### `call_runtime.py` — terminy operacji i zuzycie; worker nie zapisuje do bazy
+
+129 wierszy, 6 funkcji na poziomie modułu, 2 klas
+
+| funkcja | co robi |
+|---|---|
+| `observe()` | — |
+| `capture(usage, provider)` | — |
+| `token_limit(default)` | — |
+| `check()` | — |
+| `watch(resource)` | — |
+| `invoke(state, fn)` | Bound even a transport that blocks; close it without blocking the caller. |
+
+### `result_cache.py` — cache zalezne od tresci i czasu waznosci
+
+38 wierszy, 4 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `digest(value)` | — |
+| `read(path, max_age)` | — |
+| `write(path, value)` | — |
+| `code_fingerprint(root)` | — |
+
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2955 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2926 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
 | `_utf8_stdout()` *(wewn.)* | Konsola Windows domyślnie cp1252 i wywala się na polskich znakach. |
-| `cached(stage, produce, use_cache)` | Zapisuje wynik etapu i oddaje go z dysku zamiast płacić drugi raz. |
+| `cached(stage, produce, use_cache)` | — |
 | `odmow_publikacji_z_kopii(wyslij)` | Kopia testowa nie ma prawa nic opublikowac. Nigdy. |
 | `zajmij_zamek()` | Nie pozwala dwóm przebiegom działać naraz. |
 | `opis_celu(cel)` | Co wiedzielismy o celu w chwili pisania — do dziennika. |
@@ -35,7 +71,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8328 wierszy, 145 funkcji na poziomie modułu, 0 klas
+8279 wierszy, 146 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -123,6 +159,7 @@
 | `sprawdz_fakty(conn, run_id, post)` | Szuka faktów do komentarza, zamiast pozwolić modelowi pisać z pamięci. |
 | `bez_wstrzykniecia(tekst, wlasny_adres_ok)` | Czy w naszym tekscie nie ma sladu cudzych POLECEN. |
 | `_status_twierdzenia(c)` *(wewn.)* | Status twierdzenia, znormalizowany. NIEZNANA ETYKIETA ZNACZY `unverified`. |
+| `przygotuj_artykul_do_publikacji(conn, run_id, draft, card, review_report)` | Repair a factual problem within the existing quota; defer only this article. |
 | `zweryfikuj(conn, run_id, tekst, kontekst)` | Sprawdza to, co model NAPISAŁ — nie to, czego szukał przed pisaniem. |
 | `_zapora_notki(tekst)` *(wewn.)* | Pusty napis, gdy tekst notki przechodzi zapory. Inaczej powod. |
 | `_zapora_komentarza(tekst)` *(wewn.)* | To samo dla komentarza — ale komentarz ma zapore o jedna wiecej. |
@@ -130,7 +167,7 @@
 | `_slowa_zarzutu(c)` *(wewn.)* | Slowa tresciowe z samego twierdzenia — drugi sygnal tozsamosci. |
 | `_adres_zarzutu(c)` *(wewn.)* | — |
 | `_ten_sam_zarzut(a, b)` *(wewn.)* | Czy dwa zarzuty mowia o tym samym fakcie. ZACHOWAWCZO, i to celowo. |
-| `napraw_obalone(conn, run_id, tekst, audyt)` | Poprawia zdanie, ktoremu zapis przeczy. Nie wycina go i nie blokuje tekstu. |
+| `napraw_obalone(conn, run_id, tekst, audyt)` | Try one bounded repair, then validate the replacement independently. |
 | `comment_on(conn, run_id, post, fakty)` | Komentarz do cudzego posta — do szuflady. |
 | `fallback_card(question, evidence)` | Karta złożona z dowodów bez modelu — gdy synteza padnie. |
 | `synthesis(conn, run_id, question, evidence)` | Etap 6 — karta dowodowa (DeepSeek V4 Pro). |
@@ -187,12 +224,12 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5524 wierszy, 102 funkcji na poziomie modułu, 1 klas
+5478 wierszy, 102 funkcji na poziomie modułu, 2 klas
 
 | funkcja | co robi |
 |---|---|
-| `wlasciwe_konto(page)` | Czy jestesmy na WLASCIWYM koncie tuz przed publikacja. |
-| `wymagaj_wlasciwego_konta(page)` | Zatrzymuje przebieg, gdy sesja nalezy do INNEGO konta. |
+| `wymagaj_wlasciwego_konta(page)` | Verify the logged-in principal, independently of the public profile. |
+| `wlasciwe_konto(page)` | — |
 | `pod_rzad_nieudanych(rodzaj)` | Ile porazek tego rodzaju poszlo BEZPOSREDNIO po sobie w tym przebiegu. |
 | `slad_przebiegu()` | Podsumowanie tego, co ten proces zrobil — do wypisania na koncu. |
 | `dopisz_wynik(rodzaj, wynik, **szczegoly)` | Jeden wpis na dzialanie — takze wtedy, gdy sie NIE UDALO, i z powodem. |
@@ -289,14 +326,14 @@
 | `potwierdz_adres_artykulu(page, tytul)` | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. |
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
-| `read_pages(urls)` | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. |
+| `read_pages(urls)` | Read sources with a deadline that also covers browser shutdown. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1017 wierszy, 16 funkcji na poziomie modułu, 3 klas
+1002 wierszy, 20 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -311,8 +348,12 @@
 | `_read_search_sources(urls)` *(wewn.)* | Recover evidence from already-found public URLs, without another search. |
 | `_call_deepseek(purpose, system, user)` *(wewn.)* | — |
 | `przejsciowy(exc)` | Czy ten błąd ma szansę minąć sam. |
-| `call(purpose, system, user)` | Woła model właściwy dla etapu i zapisuje koszt. Zwraca tekst odpowiedzi. |
-| `obraz(opis)` | Generuje grafikę do artykułu i zapisuje jej koszt tam, gdzie resztę. |
+| `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no)` *(wewn.)* | — |
+| `_settle_attempt(conn, call_id, state, model, started, ok, exc)` *(wewn.)* | — |
+| `image_output_price()` | — |
+| `call(purpose, system, user)` | — |
+| `obraz(opis)` | — |
+| `_settle_image(conn, call_id, data, ok, error)` *(wewn.)* | — |
 | `_obiekty_json(tekst)` *(wewn.)* | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. |
 | `ratuj_json(purpose, tekst, ksztalt)` | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. |
 | `parse_json(text)` | Wyciąga obiekt JSON z odpowiedzi modelu. |
@@ -345,7 +386,7 @@
 
 ### `db.py` — schemat i zapis
 
-347 wierszy, 11 funkcji na poziomie modułu, 1 klas
+409 wierszy, 15 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -358,6 +399,10 @@
 | `tryb_przebiegu(conn, run_id)` | Tor, do ktorego nalezy przebieg. Bez przebiegu — produkcja. |
 | `finish_run(conn, run_id, status, stage, note)` | — |
 | `record_call(conn, **fields)` | Zapisuje wywołanie, wstawiając TYLKO te kolumny, które ktoś podał. |
+| `budget_used(conn)` | Known spend plus outstanding/unknown reservations, counted only once. |
+| `available_budget(conn, run_id)` | — |
+| `start_attempt(conn, **fields)` | Caller holds BEGIN IMMEDIATE while checking and reserving the budget. |
+| `finish_attempt(conn, call_id, **fields)` | — |
 | `spent_usd(conn, since_prefix, tryb)` | Suma kosztów od znacznika czasu zaczynającego się danym prefiksem. |
 | `recent_domains(conn, limit)` | Domeny z ostatnich N artykułów — wejście do reguły różnorodności. |
 
@@ -553,7 +598,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3515 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3532 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -676,7 +721,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1589 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1594 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

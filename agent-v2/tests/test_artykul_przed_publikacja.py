@@ -1,192 +1,88 @@
-"""Artykul nie wychodzi w swiat bez sprawdzenia faktow.
-
-CO SIE STALO. Na produkcje poszedl artykul oparty na przepisie, ktory —
-wedlug tresci artykulu — obejmowal pewna postac tresci. Nastepnego dnia
-notka promujaca TEN SAM artykul przeszla przez `stages.zweryfikuj()`
-i ODPADLA: obowiazek dotyczyl innych postaci, a ta jedna zostala
-z przepisu usunieta jeszcze przed jego wejsciem w zycie.
-
-Notka za pol centa zlapala blad, ktorego artykul za 76 centow nie mial jak
-zlapac, bo na jego sciezce tego sprawdzenia po prostu nie bylo.
-
-DLACZEGO GO NIE BYLO. `gates.verdict` zwraca zawsze „SAVED" — decyzja
-wlasciciela z 15 sierpnia: „artykul powstaje ZAWSZE, uwagi wracaja do
-wlasciciela do przeczytania". Sluszna, dopoki artykul byl szkicem dla czlowieka.
-Gdy publikacja stala sie automatyczna, „nic nie blokuje" zaczelo znaczyc „nic
-nie sprawdza".
-
-CZEGO PILNUJE TEN TEST. Ze miedzy wejsciem w galaz `--wyslij` a wywolaniem
-`browser.wystaw_artykul` stoi `stages.zweryfikuj`, i ze przy niepowodzeniu
-sciezka WRACA zamiast publikowac. Zapis artykulu ma zostac — blokujemy wyjscie
-na zewnatrz, nie prace.
-
-SEKCJA 5 ZOSTALA PRZEROBIONA 1 wrzesnia 2026. Sprawdzala zachowanie
-`zweryfikuj` przez czytanie pierwszych 2000 znakow jego zrodla — czyli gasla
-przy samym przesunieciu komentarza i nie odrozniala zlej odpowiedzi modelu od
-pustego konta. Teraz uruchamia prawdziwa funkcje z podmienionym `llm.call`.
-Pelny pomiar obu roznic siedzi w `test_pusty_budzet_nie_sprawdza.py`.
-"""
-import pathlib
+"""Both article paths check quality before publishing; deferred text stays saved."""
+import ast
+import contextlib
+from pathlib import Path
 import sys
+import io
+import tempfile
+import unittest
+from unittest.mock import patch
+sys.path.insert(0,'agent-v2')
+import artykul_z_puli as article
+import stages
+import config, db, run, browser
 
-sys.path.insert(0, "agent-v2")
+class ArticlePublicationContract(unittest.TestCase):
+    def run_case(self, safe):
+        calls=[]
+        draft={'title':'A title','subtitle':'','body':'A supported sentence. ' * 200}
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(patch.object(sys,'argv',['artykul_z_puli.py','--wyslij']))
+            for name,value in {'warto_pisac':{'ile_filarow':3,'werdykt':'PISZ'},'write':draft,
+                'review':{'sentences':[],'unsupported_facts':[],'summary':'ok'},'ocen_forme':{},
+                'poprzednie_teksty':[],'swiezosc_karty':[],'grafika':None,'zapomnij_niewystawiony':None}.items():
+                stack.enter_context(patch.object(stages,name,return_value=value))
+            stack.enter_context(patch.object(stages,'wstaw_date_zrodel',side_effect=lambda text,card:text))
+            stack.enter_context(patch.object(stages,'przygotuj_artykul_do_publikacji',
+                side_effect=lambda *a:(calls.append('check') or draft, {'safe_to_post':safe,'nie_sprawdzone':False})))
+            saved=stack.enter_context(patch.object(stages,'save',side_effect=lambda *a:(calls.append('save') or Path('draft.md'))))
+            publish=stack.enter_context(patch.object(article,'_opublikuj',side_effect=lambda *a:(calls.append('publish') or {'wyslane':True})))
+            import gates
+            for name in ('deterministic_floors','uwagi_z_formy','artefakty_w_tekscie'):
+                stack.enter_context(patch.object(gates,name,return_value=[]))
+            code=article._napisz_i_zapisz(None,1,{}, {})
+        return code,calls,saved,publish
+    def test_bad_article_saved_without_publication(self):
+        code,calls,saved,publish=self.run_case(False)
+        self.assertEqual(code,article.KOD_ZATRZYMANY);publish.assert_not_called()
+        self.assertEqual(calls,['check','save']);self.assertEqual(saved.call_args.args[5],'ZATRZYMANY')
+    def test_good_article_checked_saved_published(self):
+        code,calls,saved,publish=self.run_case(True)
+        self.assertEqual(code,0);publish.assert_called_once()
+        self.assertEqual(calls,['check','save','publish'])
+    def test_manual_entry_uses_same_preparation(self):
+        tree=ast.parse(Path('agent-v2/run.py').read_text(encoding='utf-8'))
+        main=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='main')
+        calls=[n for n in ast.walk(main) if isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute)]
+        check=next(n for n in calls if n.func.attr=='przygotuj_artykul_do_publikacji')
+        publish=next(n for n in calls if n.func.attr=='wystaw_artykul')
+        self.assertLess(check.lineno,publish.lineno)
+    def test_manual_publication_failure_is_recorded_as_failed(self):
+        topic={'title':'Test title','question':'Test question'}
+        draft={'title':'Test title','body':'Supported text. '*200}
+        corpus=[{'url':f'https://source{i}.example','host':f'source{i}.example',
+                 'class':'PRIMARY','text':'source','excerpts':[],'numbers':[]} for i in range(4)]
+        values={'scout':[topic],'feasibility':[{'index':0,'feasible':True}],
+                'discovery':corpus,'fetch':corpus,'classify':corpus,'synthesis':{},
+                'write':draft,'review':{'sentences':[]},'forma':{}}
+        with tempfile.TemporaryDirectory() as directory,contextlib.ExitStack() as stack:
+            previous=config.uzyj_katalogu_danych(Path(directory))
+            try:
+                stack.enter_context(patch.object(sys,'argv',['run.py','--wyslij','--topics','1']))
+                stack.enter_context(patch.object(run,'_sygnal_ma_zostawic_slad'))
+                stack.enter_context(patch.object(run,'_utf8_stdout'))
+                stack.enter_context(patch.object(run.preset,'wymagaj_aktywnego'))
+                stack.enter_context(patch.object(run,'odmow_publikacji_z_kopii'))
+                stack.enter_context(patch.object(run,'cached',side_effect=lambda stage,*a:values[stage]))
+                for name,value in {'pick_topic':(topic,{'depth':'RICH'}),'tematy_do_porownania':[],
+                    'ostatnie_notki':[],'warto_pisac':{'werdykt':'PISZ','przekonanie':False,
+                        'ile_filarow':0,'filary':{},'powod':'test'},'poprzednie_teksty':[],
+                    'swiezosc_karty':[],'przygotuj_artykul_do_publikacji':(draft,{'safe_to_post':True}),
+                    'save':Path(directory)/'article.md','grafika':None}.items():
+                    stack.enter_context(patch.object(stages,name,return_value=value))
+                stack.enter_context(patch.object(stages,'wstaw_date_zrodel',side_effect=lambda text,card:text))
+                stack.enter_context(patch.object(browser,'wystaw_artykul',return_value={'wyslane':False,'blad':'not confirmed'}))
+                import gates
+                for name in ('deterministic_floors','uwagi_z_formy'):
+                    stack.enter_context(patch.object(gates,name,return_value=[]))
+                with contextlib.redirect_stdout(io.StringIO()),contextlib.redirect_stderr(io.StringIO()):
+                    self.assertEqual(run.main(),1)
+                conn=db.connect()
+                try:
+                    result=conn.execute('SELECT status,stage,note FROM runs ORDER BY id DESC LIMIT 1').fetchone()
+                    self.assertEqual((result['status'],result['stage']),('FAILED','publish'))
+                    self.assertIn('not confirmed',result['note'])
+                finally: conn.close()
+            finally: config.przywroc_katalog_danych(previous)
 
-zdane = oblane = 0
-
-
-def sprawdz(nazwa, warunek, szczegol=""):
-    global zdane, oblane
-    if warunek:
-        zdane += 1
-        print("  OK    %s" % nazwa)
-    else:
-        oblane += 1
-        print("  BLAD  %s   %s" % (nazwa, szczegol))
-
-
-def wycinek_publikacji(src: str) -> str:
-    """Kod od wejscia w galaz `--wyslij` do wywolania `wystaw_artykul`.
-
-    Patrzymy na sam ten odcinek, a nie na caly plik: `zweryfikuj` wystepuje w
-    run.py takze przy notkach i komentarzach, wiec zwykle „czy slowo jest w
-    pliku" przeszloby TAKZE przed poprawka i niczego by nie dowodzilo.
-    """
-    poczatek = src.find("if args.wyslij:")
-    if poczatek < 0:
-        return ""
-    koniec = src.find("wystaw_artykul", poczatek)
-    if koniec < 0:
-        return ""
-    return src[poczatek:koniec]
-
-
-# Tak wygladala ta galaz PRZED poprawka. Wykrywacz ma ja odrzucic — bez tego
-# nie wiadomo, czy test w ogole rozroznia wersje.
-PRZED_POPRAWKA = '''
-        if args.wyslij:
-            import browser
-
-            print("\\n-- publikacja --", flush=True)
-            wynik = browser.wystaw_artykul(path, wyslij=True)
-'''
-
-RUN = pathlib.Path("agent-v2/run.py")
-src = RUN.read_text(encoding="utf-8")
-
-print("=== 1. WYKRYWACZ ROZROZNIA WERSJE (KONTRDOWOD) ===")
-sprawdz("stara galaz NIE ma zweryfikuj przed publikacja",
-        "zweryfikuj" not in wycinek_publikacji(PRZED_POPRAWKA),
-        repr(wycinek_publikacji(PRZED_POPRAWKA))[:120])
-sprawdz("i wykrywacz w ogole cos z niej wycina",
-        "import browser" in wycinek_publikacji(PRZED_POPRAWKA))
-
-print()
-print("=== 2. BIEZACY KOD SPRAWDZA FAKTY PRZED WYJSCIEM W SWIAT ===")
-wycinek = wycinek_publikacji(src)
-sprawdz("galaz --wyslij zostala znaleziona", bool(wycinek))
-sprawdz("stoi w niej wywolanie stages.zweryfikuj",
-        "stages.zweryfikuj(" in wycinek, wycinek[-200:])
-sprawdz("sprawdzany jest TEKST ARTYKULU, nie karta",
-        'draft["body"]' in wycinek, wycinek[-200:])
-sprawdz("decyzja czytana jest z safe_to_post",
-        "safe_to_post" in wycinek, wycinek[-200:])
-
-print()
-print("=== 3. OBALONE ZDANIE WYPADA, ARTYKUL IDZIE ===")
-# ZMIANA KONTRAKTU, 1 wrzesnia 2026. Stalo tu wymaganie, zeby miedzy
-# sprawdzeniem a `wystaw_artykul` bylo WYJSCIE ze sciezki. To wyjscie konczylo
-# sie zdaniem „do decyzji wlasciciela" — czyli czekaniem na czlowieka w
-# systemie, ktorego celem jest ZERO zgod czlowieka.
-#
-# Tego samego dnia zatrzymalo gotowy artykul za JEDNO zdanie (stopke z data
-# zrodel) przy audycie, ktory w tym samym zdaniu napisal, ze wszystkie
-# twierdzenia merytoryczne sa potwierdzone. Decyzja wlasciciela: artykul
-# zaplanowany ma wyjsc; obalone zdanie ma zostac wyciete, a nie zatrzymac
-# caly tekst.
-#
-# Te asercje sa po TRESCI ZRODLA i to jest ich wada — zostaja tylko dlatego,
-# ze pilnuja KSZTALTU petli, ktorej nie da sie uruchomic bez platnego
-# `zweryfikuj`. Zachowanie mierza `test_artykul_nie_ginie_po_drodze.py` i
-# smoke-test helperow w `stages`.
-po_audycie = wycinek[wycinek.find("stages.zweryfikuj("):] if "stages.zweryfikuj(" in wycinek else ""
-sprawdz("NIE MA juz wyjscia czekajacego na czlowieka",
-        "do decyzji wlasciciela" not in po_audycie, po_audycie[:200])
-sprawdz("nie ma juz zadnego `return` miedzy sprawdzeniem a publikacja",
-        "return" not in po_audycie, po_audycie[:300])
-# WYCINANIE ZDAN BYLO ZBUDOWANE I COFNIETE tego samego dnia: wyciete zdanie
-# zostawia dziure w srodku akapitu, a to gorsze dla czytelnika niz jedno slabe
-# zdanie. Ta asercja pilnuje, zeby nie wrocilo.
-sprawdz("i tekst NIE JEST ciety",
-        "usun_obalone" not in src, "wycinanie wrocilo")
-
-print()
-print("=== 4. SPRAWDZENIE NIE MOZE BYC CICHE ===")
-# Skoro nic nie blokuje, log jest JEDYNYM sladem po tym, co model
-# zakwestionowal. Bez niego sprawdzenie byloby wydatkiem bez odbiorcy.
-sprawdz("zastrzezenia sa wypisywane",
-        "ZASTRZEZENIA" in po_audycie, po_audycie[:300])
-sprawdz("i wypisywane jest kazde zakwestionowane twierdzenie",
-        "refuted" in po_audycie and "claims" in po_audycie, po_audycie[:300])
-sprawdz("data zrodel wstawiana jest przez KOD, nie przez model",
-        "wstaw_date_zrodel(" in src, "brak w calym pliku")
-
-print()
-print("=== 5. `zweryfikuj`: AWARIA PRZEPUSZCZA, PUSTY BUDZET NIE ===")
-# Zepsuta weryfikacja to nie dowod falszu. Gdyby awaria blokowala, jedna
-# padnieta sesja sieciowa kasowalaby artykul wart 76 centow.
-#
-# ALE „SPRAWDZILEM I NIE WIEM" TO NIE TO SAMO, CO „NIE SPRAWDZILEM". Przy
-# `llm.BudgetExceeded` i `llm.PreflightFailed` weryfikacja sie NIE ODBYLA
-# i odbyc sie nie moze — tam `safe_to_post: True` bylo zdaniem nieprawdziwym
-# wpisanym do zapisu, ktory chwile pozniej uchodzi za pomiar.
-#
-# TA SEKCJA BYLA WCZESNIEJ CZYTANIEM ZRODLA (`'"safe_to_post": True' in cialo`
-# na pierwszych 2000 znakach funkcji). Dwie wady naraz: przesuniecie komentarza
-# o kilkanascie linii gasilo ja bez zmiany zachowania, a rozroznienia miedzy
-# zla odpowiedzia a pustym kontem nie widziala w ogole. Teraz mierzymy przez
-# URUCHOMIENIE, z prawdziwymi klasami wyjatkow z `llm`.
-import contextlib   # noqa: E402
-import io           # noqa: E402
-
-import llm          # noqa: E402
-import stages       # noqa: E402
-
-TEKST = " ".join(["word"] * 200)
-
-
-def _zweryfikuj_gdy(wyjatek):
-    """Oddaje (wynik, wyjatek) prawdziwego `zweryfikuj` przy danej awarii."""
-    def _rzuca(*a, **k):
-        raise wyjatek
-    stary = llm.call
-    llm.call = _rzuca
-    try:
-        with contextlib.redirect_stdout(io.StringIO()):
-            return stages.zweryfikuj(object(), 1, TEKST, "tytul"), None
-    except BaseException as exc:      # noqa: BLE001 — mierzymy, co wylatuje
-        return None, exc
-    finally:
-        llm.call = stary
-
-
-wynik, wyjatek = _zweryfikuj_gdy(ValueError("Extra data: line 1 column 1866"))
-sprawdz("zwykla awaria oddaje safe_to_post = True",
-        wynik is not None and wynik.get("safe_to_post") is True,
-        wynik if wynik else type(wyjatek).__name__)
-sprawdz("i mowi wprost, ze puszcza na pierwszej siatce",
-        wynik is not None and "pierwszej siatce" in str(wynik.get("verdict", "")),
-        wynik)
-
-_, wyjatek = _zweryfikuj_gdy(llm.BudgetExceeded("limit dzienny wyczerpany"))
-sprawdz("wyczerpany budzet NIE przepuszcza — leci na wylot",
-        isinstance(wyjatek, llm.BudgetExceeded), type(wyjatek).__name__)
-
-_, wyjatek = _zweryfikuj_gdy(llm.PreflightFailed("KILL_SWITCH=true"))
-sprawdz("wylacznik tak samo — leci na wylot",
-        isinstance(wyjatek, llm.PreflightFailed), type(wyjatek).__name__)
-
-sprawdz("funkcja istnieje i jest wywolywalna", callable(stages.zweryfikuj))
-
-print()
-print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
-sys.exit(1 if oblane else 0)
+if __name__=='__main__': unittest.main()

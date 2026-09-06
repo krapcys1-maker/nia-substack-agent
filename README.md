@@ -148,5 +148,5 @@ it is not a long-term uptime or writing-quality benchmark.
 If you find NIA useful, **give it a star**. To receive release updates, use
 GitHub's **Watch → Custom → Releases** setting.
 
-[Architecture](docs/ARCHITECTURE.md) · [Repository map](docs/REPO_MAP.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) ·
+[Execution, costs and quality](docs/RELIABILITY.md) · [Architecture](docs/ARCHITECTURE.md) · [Repository map](docs/REPO_MAP.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) ·
 [Development checks](CONTRIBUTING.md#change-the-engine) · [Security](SECURITY.md) · [MIT license](LICENSE)

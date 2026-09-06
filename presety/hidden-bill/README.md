@@ -30,10 +30,11 @@ nowej redakcji. Uzasadnienie, alternatywy i źródła: [RESEARCH.md](RESEARCH.md
 | `styl/` | Własny profil pozytywny i negatywny, 10 oryginalnych akapitów, 5 przypiętych przykładów |
 | [START.md](START.md) | 12 pomysłów na teksty, dokumenty wejściowe, warunki weryfikacji, plan pierwszych tygodni |
 | [PROBKI.md](PROBKI.md) | Przykłady głosu i konstrukcji tytułów do oceny przez operatora |
+| [PROBKI_PELNE.md](PROBKI_PELNE.md) | Pełne teksty, Notki, komentarze i poprawki na jawnie fikcyjnych przykładach |
 | [OCENA_JAKOSCI.md](OCENA_JAKOSCI.md) | Kryteria odbioru tekstów i pomiar jakości oraz kosztów |
 | [WERYFIKACJA.md](WERYFIKACJA.md) | Wyniki sprawdzenia paczki i jego ograniczenia |
 
-Pliki README, RESEARCH, START, PROBKI i OCENA_JAKOSCI są dokumentacją
+Pliki README, RESEARCH, START, PROBKI, PROBKI_PELNE i OCENA_JAKOSCI są dokumentacją
 operatora. **Obecny silnik nie importuje automatycznie START.md do banku.**
 Zasady konieczne do bieżącego działania znajdują się też w TOML-u i
 ładowanych blokach promptów. Nie dopisano nieobsługiwanych pól ani

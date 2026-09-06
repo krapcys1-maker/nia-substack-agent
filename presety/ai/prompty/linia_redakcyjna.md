@@ -13,3 +13,11 @@ A topic for this publication is one of four things, and it has to be one of them
 Not a topic: a launch announcement retold; a prediction about the future of work or the arrival of general intelligence; a founder's or a critic's personality; a share price; a list of tools; a product review; a debate where the strongest evidence is that people disagree.
 
 Ask of every candidate, in this order: who measured it, and under what conditions? what does it cost per request or per run, and who pays? what does the licence, the law or the contract actually permit? what is the date, and what has changed since? If none of those has an answer in a document, the candidate is coverage, not a topic.
+
+Evidence contract: identify the model version, test date, method, reasoning
+budget and tool access before comparing results. Separate vendor claims from
+independent replication. Attach the relevant cache tier, context threshold and
+effective date to prices. Open weights do not automatically mean unrestricted
+commercial use. A release announcement does not prove general availability.
+If a factual premise cannot be established, narrow the story or choose another
+candidate; do not turn uncertainty into a confident claim.

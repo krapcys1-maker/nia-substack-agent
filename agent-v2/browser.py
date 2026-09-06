@@ -4,9 +4,8 @@ Substack renderuje treść JavaScriptem: w HTML-u jest 148 KB, a czytelnego
 tekstu 371 znaków, bo post siedzi w blobie JSON. Zwykły pobieracz zobaczy
 pustą skorupę.
 
-Czytamy WYŁĄCZNIE publiczne strony, bez logowania i bez sesji. Agent otwiera
-je tak jak każdy czytelnik. Publikowanie, komentowanie i polubienia nie
-istnieją w tym pliku i nie powstaną bez osobnej decyzji właściciela.
+Publiczne odczyty oraz działania publikacyjne korzystają z osobnych ścieżek.
+Przed działaniem na koncie sprawdzamy zalogowaną sesję właściciela.
 """
 
 from __future__ import annotations
@@ -41,78 +40,70 @@ SESSION_COOKIE = "substack.sid"
 OSTRZEGAJ_PONIZEJ_DNI = 14
 
 
-def wlasciwe_konto(page) -> bool:
-    """Czy jestesmy na WLASCIWYM koncie tuz przed publikacja.
-
-    Automatyzacja przegladarki potrafi trafic w cudze okno albo w sesje sprzed
-    przelogowania. Tresc opublikowana z niewlasciwego konta jest bledem, ktorego
-    nie da sie cofnac w oczach tych, ktorzy ja zobaczyli — wiec pytamy o
-    tozsamosc, zamiast zakladac.
-    """
-    kto = api_json(page, f"/api/v1/user/{PROFIL_HANDLE}/public_profile")
-    ok = isinstance(kto, dict) and kto.get("handle") == PROFIL_HANDLE
-    if not ok:
-        print(f"  ! NIE TO KONTO albo brak sesji: {str(kto)[:80]}", flush=True)
-    return ok
-
-
-# CZY SPRAWDZILISMY JUZ KONTO W TYM PROCESIE. Odpowiedz nie zmienia sie
-# w trakcie przebiegu, a osiem dodatkowych zapytan na dobe to osiem okazji do
-# padniecia czegos, co ma chronic.
-_KONTO_SPRAWDZONE = False
-
-
 class NieToKonto(RuntimeError):
-    """Sesja nalezy do innego konta niz skonfigurowane."""
+    """Authenticated session belongs to a different account."""
+
+
+class KontoNiepotwierdzone(NieToKonto):
+    """Identity could not be established; do not mutate this account."""
+
+
+_KONTO_SPRAWDZONE = False  # retained for diagnostic compatibility, never a bypass
+_POTWIERDZENIE_KONTA = None
 
 
 def wymagaj_wlasciwego_konta(page) -> None:
-    """Zatrzymuje przebieg, gdy sesja nalezy do INNEGO konta.
+    """Verify the logged-in principal, independently of the public profile.
 
-    `wlasciwe_konto` istnialo od poczatku z docstringiem „tuz przed
-    publikacja" i NIE BYLO WOLANE ANI RAZU — sprawdzone skanem po calym
-    drzewie. Straznik opisany, policzony w mapie funkcji i niechroniacy
-    niczego; to jest ta klasa wady, ktora ten projekt sciga.
-
-    Pytamy RAZ NA PROCES. Wyjatek, nie `return False`: ciche pominiecie
-    kontroli kosztowalo juz ten projekt dziewiec dni, a tutaj cena pomylki to
-    tekst wystawiony z cudzego konta — bledu, ktorego nie da sie cofnac
-    w oczach tych, ktorzy go zobaczyli.
+    Read bootstrap data in a separate page so the editor is not navigated away.
+    A short cache is bound to the browser context and session cookie fingerprint.
     """
-    global _KONTO_SPRAWDZONE
-    if _KONTO_SPRAWDZONE:
-        return
-
-    # TRZY STANY, NIE DWA. `wlasciwe_konto` oddaje falsz takze wtedy, gdy
-    # zapytanie w ogole sie nie udalo — a „nie wiem" to nie jest „to cudze
-    # konto". Pierwsza wersja tego straznika nie robila tej roznicy i oblala
-    # jedenascie testow z wlasnymi atrapami strony: atrapa milczaca w tej
-    # sprawie mowila „NieToKonto".
-    #
-    # Zasada stoi w tym projekcie od dawna, przy sprawdzaniu faktow: „zepsuta
-    # weryfikacja nie jest dowodem falszu". Roznica jest taka, ze tu brak
-    # odpowiedzi MOWI GLOSNO, zamiast przechodzic po cichu — i nie zapamietuje
-    # sie jako sprawdzenie, wiec przy nastepnej akcji pytamy jeszcze raz.
+    import hashlib
+    global _KONTO_SPRAWDZONE, _POTWIERDZENIE_KONTA
+    _KONTO_SPRAWDZONE = False
+    probe = None
     try:
-        kto = api_json(page, f"/api/v1/user/{PROFIL_HANDLE}/public_profile")
-    except Exception as exc:                              # noqa: BLE001
-        print("  ! NIE SPRAWDZILEM KONTA (%s) — ide dalej, ale to nie jest"
-              " potwierdzenie" % type(exc).__name__, flush=True)
-        return
+        context = page.context
+        cookies = context.cookies('https://substack.com')
+        session = sorted((c['name'], c.get('domain', ''), c['value']) for c in cookies
+                         if c['name'] == SESSION_COOKIE or c['name'].startswith(SESSION_COOKIE + '.'))
+        if not session:
+            raise KontoNiepotwierdzone('brak ciasteczka zalogowanej sesji')
+        key = (id(context), PROFIL_HANDLE, hashlib.sha256(repr(session).encode()).hexdigest())
+        if _POTWIERDZENIE_KONTA and _POTWIERDZENIE_KONTA[0] == key and time.monotonic() < _POTWIERDZENIE_KONTA[1]:
+            _KONTO_SPRAWDZONE = True
+            return
+        probe = context.new_page()
+        probe.goto('https://substack.com/home', timeout=READ_TIMEOUT_MS, wait_until='domcontentloaded')
+        user = probe.evaluate("() => { const u = window._preloads?.user; return u ? {id:u.id, handle:u.handle} : null; }")
+        if not isinstance(user, dict) or not user.get('id') or not user.get('handle'):
+            raise KontoNiepotwierdzone('Substack nie potwierdzil zalogowanego uzytkownika')
+        if str(user['handle']).casefold() != PROFIL_HANDLE.casefold():
+            raise NieToKonto('sesja nalezy do %r, oczekiwano %r' % (user['handle'], PROFIL_HANDLE))
+        target = api_json(probe, '/api/v1/user/%s/public_profile' % PROFIL_HANDLE)
+        if not isinstance(target, dict) or not target.get('id'):
+            raise KontoNiepotwierdzone('nie odczytano identyfikatora docelowego konta')
+        if str(target['id']) != str(user['id']):
+            raise NieToKonto('identyfikator sesji nie zgadza sie z kontem docelowym')
+        _POTWIERDZENIE_KONTA = (key, time.monotonic() + 60)
+        _KONTO_SPRAWDZONE = True
+    except NieToKonto:
+        _POTWIERDZENIE_KONTA = None
+        raise
+    except Exception as exc:
+        _POTWIERDZENIE_KONTA = None
+        raise KontoNiepotwierdzone('nie potwierdzono konta: %s' % type(exc).__name__) from exc
+    finally:
+        if probe is not None:
+            probe.close()
 
-    uchwyt = kto.get("handle") if isinstance(kto, dict) else None
-    if not uchwyt:
-        print("  ! NIE SPRAWDZILEM KONTA (profil nie odpowiedzial) — ide dalej,"
-              " ale to nie jest potwierdzenie", flush=True)
-        return
 
-    if uchwyt != PROFIL_HANDLE:
-        raise NieToKonto(
-            "sesja nalezy do konta %r, a skonfigurowane jest %r — nie"
-            " wystawiam niczego.\n"
-            "Sprawdz `konto.uchwyt` w konfiguracji i plik sesji:\n"
-            "  %s" % (uchwyt, PROFIL_HANDLE, SESSION_FILE))
-    _KONTO_SPRAWDZONE = True
+def wlasciwe_konto(page) -> bool:
+    try:
+        wymagaj_wlasciwego_konta(page)
+        return True
+    except NieToKonto:
+        return False
 
 
 DZIENNIK = config.DATA_DIR / "dziennik.jsonl"
@@ -5248,46 +5239,9 @@ if __name__ == "__main__":
 
 
 def read_pages(urls: list[str]) -> list[dict[str, Any]]:
-    """Otwiera strony w przeglądarce i zwraca ich widoczny tekst.
-
-    Jedna instancja przeglądarki na całą listę — start Chromium to sekundy,
-    a stron bywa kilkanaście.
-    """
-    # TA SAMA PRZEGLADARKA, KTORA PUBLIKUJE. Do 2026-09-05 ta funkcja
-    # otwierala WLASNE bezglowe Chromium bez sesji — a bezglowy tryb jest
-    # dokladnie tym, co Cloudflare odrzuca (patrz `podlacz_sie`). Zmierzone
-    # 5 wrzesnia na trzech adresach, ktore czytnik httpx dostal z kodem 403/401:
-    #   bezglowe Chromium:  openai.com/news 2404 zn., karta systemowa 0 zn., reuters 0 zn.
-    #   prawdziwy Chrome:   2404 / 4602 / 6136 zn.
-    # Czyli fallback „do przegladarki" po blokadzie 403 oddawal pustke tam,
-    # gdzie prawdziwa przegladarka czyta. `podlacz_sie` wybiera sam: Chrome
-    # wlasciciela po CDP, gdy odpowiada; inaczej bezglowa z zapisana sesja.
-    out: list[dict[str, Any]] = []
-    p, browser, context = podlacz_sie()
-    try:
-        page = context.new_page()
-        for url in urls:
-            entry: dict[str, Any] = {"url": url, "text": "", "title": "", "error": None}
-            try:
-                page.goto(url, timeout=READ_TIMEOUT_MS, wait_until="domcontentloaded")
-                page.wait_for_timeout(SETTLE_MS)  # treść dorysowuje się po JS
-                entry["title"] = page.title()
-                entry["text"] = page.inner_text("body")
-            except Exception as exc:
-                entry["error"] = f"{type(exc).__name__}: {exc}"[:200]
-            out.append(entry)
-            print(
-                f"  [przeglądarka] {'OK  ' if not entry['error'] else 'NIE '} "
-                f"{len(entry['text']):>7} znaków  {url[:58]}"
-                f"{'  ' + entry['error'] if entry['error'] else ''}",
-                flush=True,
-            )
-        page.close()
-    finally:
-        # NIE `context.close()`: przy CDP to kontekst Chrome'a wlasciciela.
-        browser.close()
-        p.stop()
-    return out
+    """Read sources with a deadline that also covers browser shutdown."""
+    from browser_reader import read_pages as bounded_read
+    return bounded_read(urls)
 
 
 def restackuj_w_kanale(

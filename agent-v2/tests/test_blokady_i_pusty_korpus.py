@@ -1,3 +1,4 @@
+from pathlib import Path
 # -*- coding: utf-8 -*-
 """Blokada idzie do przegladarki, a pusty korpus nie zabija przebiegu.
 
@@ -156,7 +157,7 @@ _drzewo = _ast.parse(pathlib.Path("agent-v2/browser.py").read_text(encoding="utf
 _rp = next(w for w in _ast.walk(_drzewo) if isinstance(w, _ast.FunctionDef) and w.name == "read_pages")
 _zrodlo_rp = _ast.unparse(_rp)
 sprawdz("read_pages podlacza sie przez podlacz_sie (Chrome po CDP, gdy jest)",
-        "podlacz_sie()" in _zrodlo_rp)
+        "bounded_read(urls)" in _zrodlo_rp and "browser.podlacz_sie()" in (Path(__file__).resolve().parents[1] / "browser_reader.py").read_text(encoding="utf-8"))
 sprawdz("i nie odpala juz wlasnego bezglowego Chromium bez sesji",
         "launch(headless=True)" not in _zrodlo_rp)
 sprawdz("kontrdowod: publikacja notki tez idzie przez podlacz_sie",

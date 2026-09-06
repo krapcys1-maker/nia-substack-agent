@@ -12,6 +12,9 @@ import tempfile
 sys.path.insert(0, "agent-v2")
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import browser  # noqa: E402
+# Authenticated-session precondition for these isolated UI fixtures.
+# Real identity verification is covered by test_quality_contract.AccountContract.
+browser.wymagaj_wlasciwego_konta = lambda page: None
 import config   # noqa: E402
 import wlasna_konfiguracja  # noqa: E402
 import norma    # noqa: E402

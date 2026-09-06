@@ -59,6 +59,9 @@ import tempfile
 
 sys.path.insert(0, "agent-v2")
 import browser  # noqa: E402
+# Authenticated-session precondition for these isolated UI fixtures.
+# Real identity verification is covered by test_quality_contract.AccountContract.
+browser.wymagaj_wlasciwego_konta = lambda page: None
 
 zdane = oblane = 0
 

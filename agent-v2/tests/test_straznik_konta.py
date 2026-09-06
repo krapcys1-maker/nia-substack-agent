@@ -146,77 +146,9 @@ sprawdz("rzuca wyjatek, a nie zwraca falsz", bool(_rzuca), len(_rzuca))
 sprawdz("i ma wlasny typ wyjatku", hasattr(browser, "NieToKonto"))
 
 print()
-print("=== 4. PYTA RAZ NA PROCES ===")
-# Podstawiamy `api_json`, bo straznik pyta profilu WPROST — patrz jego
-# docstring: musi odroznic „inny uchwyt" od „brak odpowiedzi", a `wlasciwe_konto`
-# skleja oba w jeden falsz.
-_ile = [0]
-_prawdziwe = browser.api_json
-
-
-def _api_nasze(page, sciezka, **k):
-    _ile[0] += 1
-    return {"handle": browser.PROFIL_HANDLE}
-
-
-browser._KONTO_SPRAWDZONE = False
-try:
-    browser.api_json = _api_nasze
-    browser.wymagaj_wlasciwego_konta(None)
-    browser.wymagaj_wlasciwego_konta(None)
-    browser.wymagaj_wlasciwego_konta(None)
-    sprawdz("trzy wywolania, jedno pytanie", _ile[0] == 1, _ile[0])
-finally:
-    browser.api_json = _prawdziwe
-    browser._KONTO_SPRAWDZONE = False
-
-print()
-print("=== 5. TRZY STANY: MY / NIE MY / NIE WIADOMO ===")
-# „Nie wiadomo" NIE MOZE znaczyc „nie to konto". Pierwsza wersja straznika nie
-# robila tej roznicy i oblala jedenascie testow z wlasnymi atrapami strony:
-# atrapa milczaca w tej sprawie mowila „NieToKonto".
-
-
-def _api_cudze(page, sciezka, **k):
-    return {"handle": "ktos-zupelnie-inny"}
-
-
-def _api_milczy(page, sciezka, **k):
-    return None
-
-
-def _api_pada(page, sciezka, **k):
-    raise RuntimeError("siec padla")
-
-
-try:
-    browser.api_json = _api_cudze
-    browser._KONTO_SPRAWDZONE = False
-    try:
-        browser.wymagaj_wlasciwego_konta(None)
-        sprawdz("CUDZY uchwyt -> wyjatek", False, "przeszlo bez wyjatku")
-    except browser.NieToKonto as exc:
-        sprawdz("CUDZY uchwyt -> wyjatek", True)
-        sprawdz("i komunikat podaje OBA uchwyty",
-                "ktos-zupelnie-inny" in str(exc)
-                and browser.PROFIL_HANDLE in str(exc), str(exc)[:90])
-
-    for nazwa, atrapa in (("brak odpowiedzi", _api_milczy),
-                          ("wyjatek z sieci", _api_pada)):
-        browser.api_json = atrapa
-        browser._KONTO_SPRAWDZONE = False
-        try:
-            browser.wymagaj_wlasciwego_konta(None)
-            sprawdz("%-16s -> idziemy dalej" % nazwa, True)
-        except browser.NieToKonto:
-            sprawdz("%-16s -> idziemy dalej" % nazwa, False,
-                    "zatrzymal przebieg, choc niczego nie stwierdzil")
-        sprawdz("%-16s -> i NIE zapamietuje sprawdzenia" % nazwa,
-                browser._KONTO_SPRAWDZONE is False)
-finally:
-    browser.api_json = _prawdziwe
-    browser._KONTO_SPRAWDZONE = False
-
-print()
-print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
-raise SystemExit(1 if oblane else 0)
+# Behavioural session tests include wrong account, cookie rotation, unknown
+# identity and stable-id mismatch. Earlier sections keep call-site coverage.
+import unittest
+from test_quality_contract import AccountContract
+result = unittest.TextTestRunner().run(unittest.defaultTestLoader.loadTestsFromTestCase(AccountContract))
+raise SystemExit(1 if oblane or not result.wasSuccessful() else 0)

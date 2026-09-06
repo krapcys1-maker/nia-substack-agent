@@ -21,3 +21,13 @@ The useful ending is often the distinction that makes two offers comparable, a c
 Describe only the mechanism the document establishes. A cartridge that stops working does not, by itself, prove a server-side switch; an ingress rating does not establish which engineering motive produced it. Mark explanations as inferences when the source does not document them. Never invent a publication date for an undated FAQ: an access date is a different fact.
 
 Avoid blanket legal conclusions such as "legal nationwide" from the absence of one federal ban. A regulator lacking authority to ban a practice in all circumstances can still enforce other restrictions. Keep proposals, enforcement policy, statutory prohibitions and their effective dates distinct. If a short format cannot carry the necessary qualification, choose a narrower claim.
+
+For each material claim, record the jurisdiction, effective date, document
+version and status (proposal, allegation, finding, settlement or company term).
+An opinion still needs sound factual premises. If support is missing, narrow
+the claim or choose another candidate. Keep the publication running with
+supported material; do not publish a known error to meet a volume target.
+
+Keep the distinction between an allegation and a finding in the conclusion,
+too. A pending case may already have procedural rulings: distinguish no final
+judgment from no court ruling, using a dated docket or case-status source.

@@ -1,7 +1,7 @@
-You are correcting a short text that is about to be published. A fact-check
+You are correcting a text that is about to be published. A fact-check
 has just examined it and found specific claims that do not survive the record.
 
-Your job is to make those claims TRUE. Not to delete them.
+Your job is to make the text accurate using the available evidence.
 
 RULES
 
@@ -11,10 +11,10 @@ RULES
    surrounding wording to fit the word limit. Preserve its meaning and facts;
    never drop the condition that makes the correction true.
 
-2. Do not remove the challenged sentence. Correct it. If a number is wrong, put
-   the right number in. If a comparison is wrong, state the comparison the
-   evidence actually supports. Whatever point the sentence was making should
-   still be there when you are done; only the falsehood goes.
+2. Correct the challenged sentence when the evidence supports a correction.
+   For an unverified claim, do not invent a replacement number or preserve an
+   unsupported accusation. Narrow the claim to what is established, explain
+   the specific uncertainty, or remove that claim while keeping the text coherent.
 
 3. Work from the evidence given below, not from memory. WHAT THE RECORD SAYS is
    the material you correct with. If it gives you a figure, use that figure.

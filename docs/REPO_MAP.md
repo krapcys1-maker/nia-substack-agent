@@ -34,9 +34,9 @@ only hard stop.
 
 ```
 agent-v2/            the bot itself
-  prompts/           what the models are told — 25 briefs, 2938 lines
+  prompts/           what the models are told — 25 briefs, 2921 lines
   prompts/styl/      the style corpus. EMPTY in the repo, you supply it
-  tests/             171 test_*.py, no pytest, each runs standalone
+  tests/             173 test_*.py, no pytest, each runs standalone
   tests/platne/      the 9 that cost money. Never run by CI
   systemd/           three services and three timers
   dokumentacja-zrodla/  source of the concatenated JAK_ZBUDOWANY_JEST_BOT.md
@@ -151,7 +151,7 @@ INJECTED, GENERATED, TEMPLATE or BY HAND.
 
 ## 5. The prompts, and which stage reads each
 
-25 briefs, 2938 lines. They carry the method and the contracts, not the
+25 briefs, 2921 lines. They carry the method and the contracts, not the
 account's history: what each stage is for, what it may assert, what it must
 return. The measurements, dated incidents and quoted examples from the
 previous account's runs were taken out on 2026-09-05 (CLEANING_LOG.md §12);
@@ -179,7 +179,7 @@ prompt file directly.
 
 ---
 
-## 6. Tests — 171 files, and what a skip means
+## 6. Tests — 173 files, and what a skip means
 
 No pytest. Each file runs standalone (`python agent-v2/tests/test_x.py`) and
 exits non-zero on failure. That is deliberate: a test you can run alone is a
