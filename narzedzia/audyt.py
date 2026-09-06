@@ -214,6 +214,19 @@ def wzgledna(p: pathlib.Path) -> str:
     return str(p.relative_to(KORZEN)).replace("\\", "/")
 
 
+def publiczny_przyklad_demo(plik: str, identyfikator: str) -> bool:
+    """Only the owner's explicitly published 2026-09-06 demo references.
+
+    The owner authorized publishing the test account's results and a promotional
+    film on GitHub. This exact file/ID exception keeps runtime references and
+    any future, unreviewed demo links subject to the ordinary privacy scan.
+    """
+    return plik == "docs/DEMO.md" and identyfikator in {
+        "note/c-329647996", "note/c-330772949",
+        "note/c-330795297", "note/c-330802624",
+    }
+
+
 def main() -> int:
     pliki = teksty()
     ten_plik = pathlib.Path(__file__).resolve()
@@ -356,10 +369,16 @@ def main() -> int:
         if p.resolve() in SZUKAJACE:
             continue
         for m in KSZTALT_ID.finditer(tekst):
-            if int(m.group(1)) < ATRAPA_OD:
+            if (int(m.group(1)) < ATRAPA_OD
+                    and not publiczny_przyklad_demo(wzgledna(p), m.group(0))):
                 prawdziwe.append("%s: %s" % (wzgledna(p), m.group(0)))
-    sprawdz("zaden identyfikator notki nie jest prawdziwy",
+    sprawdz("brak niezatwierdzonych identyfikatorow notek",
             not prawdziwe, sorted(set(prawdziwe))[:4])
+    sprawdz("jawny link demo przechodzi tylko w jego dokumencie",
+            publiczny_przyklad_demo("docs/DEMO.md", "note/c-330802624")
+            and not publiczny_przyklad_demo("agent-v2/browser.py", "note/c-330802624"))
+    sprawdz("niezatwierdzony link w dokumencie demo nadal jest wykrywany",
+            not publiczny_przyklad_demo("docs/DEMO.md", "note/c-330802625"))
 
     print()
     print("=== 3. PLIKI, KTORYCH NIE MOZE BYC ===")
