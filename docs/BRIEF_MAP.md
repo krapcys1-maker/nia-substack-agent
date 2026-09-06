@@ -43,7 +43,7 @@ through a variable this scan cannot see. Check before cutting.
 | `skaut.md` | 392 | `stages.scout` | `scout` | 5 | 0 | 5 | 0 |
 | `synteza.md` | 114 | `stages.synthesis` | `synthesis` | 17 | 6 | 11 | 0 |
 | `warto_pisac.md` | 110 | `stages.warto_pisac` | `warto_pisac` | 13 | 0 | 13 | 0 |
-| `weryfikacja.md` | 136 | `stages.zweryfikuj` | `factcheck` | 7 | 7 | 0 | 0 |
+| `weryfikacja.md` | 142 | `stages.zweryfikuj` | `factcheck` | 7 | 7 | 0 | 0 |
 | `wykonalnosc.md` | 86 | `stages.feasibility` | `feasibility` | 7 | 1 | 6 | 0 |
 
 ## Field by field

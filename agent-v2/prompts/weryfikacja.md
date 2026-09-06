@@ -20,6 +20,12 @@ statements about what the thing being responded to said.
 Search for each claim. Judge it against what the sources actually say, not
 against what sounds right.
 
+Search budget: one search per claim, plus one more for the body's own
+document when the first search lands on a page that merely reports it. A
+note carries two or three claims, so four to six searches in all; a comment
+usually two. Stop the moment a claim is settled either way. Further searches
+on the same claim cost money and change nothing in the verdict.
+
 - `confirmed`: a source states this, and it is still the case today. Give the
   URL.
 - `refuted`: a source contradicts it. Give the URL and say what the source
