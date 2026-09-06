@@ -120,5 +120,23 @@ sprawdz("ale zawiera zdanie, ktore poprawka zostawila",
         "the reader's right to weigh" in stary)
 
 print()
+print()
+print("=== 5. STOPKA TYLKO Z PRAWDZIWA DATA (artykul 0006, 2026-09-06) ===")
+# Synteza wpisala w `newest` slowo „unknown" i stopka wyszla jako
+# „Figures checked against sources to unknown." — zdanie-blad w opublikowanym
+# artykule. Data albo nic; a nic nie zostawia dziury po akapicie.
+sys.path.insert(0, "agent-v2")
+import stages  # noqa: E402
+_tekst = "# Tytul\n\nPierwszy akapit tresci.\n\nDrugi akapit."
+_zla = stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "unknown"}})
+sprawdz("slowo unknown nie daje stopki", "Figures checked" not in _zla, _zla[:80])
+sprawdz("i tekst zostaje nietkniety", _zla == _tekst)
+_dobra = stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "2026-09-01"}})
+sprawdz("prawdziwa data daje stopke pod tytulem",
+        "Figures checked against sources to 2026-09-01." in _dobra.split("\n\n")[1], _dobra[:120])
+sprawdz("sam rok tez jest data", "to 2026." in stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "2026"}}))
+sprawdz("kontrdowod: napis z literami odpada", "Figures checked" not in
+        stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "n/a"}}))
+
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 sys.exit(1 if oblane else 0)

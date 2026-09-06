@@ -346,8 +346,11 @@ DEEPSEEK_EFFORT = "low"
 # faktow i 19 211 za ocene dziewieciu celow. Etapy MECHANICZNE — odsiew,
 # klasyfikacja, ranking, ocena celow, decyzja o restacku — nie potrzebuja
 # rozumowania na glos; etapy piszace i syntezujace je zachowuja.
+# `forma` doszla po artykule 0006: ocena formy to 23 032 tokeny wyjscia
+# ($0,095) za werdykt strukturalny — wiecej niz samo pisanie ($0,066).
 DEEPSEEK_BEZ_MYSLENIA = frozenset({
     "feasibility", "classify", "bank", "cele", "restack", "grafika", "fedreg",
+    "forma",
 })
 
 # Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override

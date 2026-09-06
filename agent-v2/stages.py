@@ -760,6 +760,12 @@ def wstaw_date_zrodel(tekst: str, card: dict[str, Any]) -> str:
     """
     daty = card.get("source_dates") or {}
     najnowsza = str(daty.get("newest") or "").strip()
+    # DATA ALBO NIC. Zmierzone 2026-09-06 (artykul 0006 kartridza `ai`):
+    # synteza wpisala w `newest` slowo „unknown", bo zadna z pobranych stron
+    # nie niosla daty, a stopka wyszla jako „Figures checked against sources
+    # to unknown." — zdanie, ktore wyglada na blad programu, bo nim jest.
+    if not re.fullmatch(r"\d{4}(-\d{2}){0,2}", najnowsza):
+        najnowsza = ""
     bez_starej = ZDANIE_O_ZRODLACH.sub("", tekst or "").strip()
     czesci = [c.strip() for c in bez_starej.split("\n\n") if c.strip()]
     if not najnowsza:
@@ -3167,6 +3173,13 @@ def _pola_ksztaltu(ksztalt: str, pomin: tuple[str, ...] = ("facts",)) -> tuple[s
                  if k not in pomin)
 
 
+KSZTALT_WERYFIKACJI = (
+    '{"claims": [{"claim": "<what the text asserts>", "status": "confirmed"|"refuted"'
+    '|"outdated"|"unverified", "url": "<source, or empty>", "source_date": "<YYYY-MM-DD or empty>",'
+    ' "what_the_source_says": "<one sentence, required for refuted and outdated>"}],'
+    ' "safe_to_post": true|false, "verdict": "<one sentence>"}'
+)
+
 KSZTALT_DYSKOVERII = (
     '{"sources": [{"url": "", "title": "", "host": "", '
     '"class": "PRIMARY|SECONDARY", "answers_why": true, "has_numbers": true, '
@@ -4349,7 +4362,18 @@ def zweryfikuj(
     try:
         raw = llm.call("factcheck", FACTCHECK_SYSTEM, prompt,
                        conn=conn, run_id=run_id, web_search=True)
-        out = llm.parse_json(raw)
+        try:
+            out = llm.parse_json(raw)
+        except Exception:
+            # RATUNEK JAK W CIEKAWOSTKACH. Zmierzone 2026-09-06 (artykul 0006
+            # kartridza `ai`): factcheck zrobil 19 wyszukiwan za $0,123,
+            # a odpowiedz zaczynala sie od „I'll analyze the factual claims"
+            # zamiast od nawiasu — i caly research przepadl z werdyktem
+            # „nie doszla do skutku". Drugie wywolanie BEZ wyszukiwania
+            # kosztuje ulamek i pracuje na tym, co model juz znalazl.
+            print("  [factcheck] brak JSON — probuje odzyskac z tekstu", flush=True)
+            out = llm.parse_json(llm.ratuj_json(
+                "factcheck", raw, KSZTALT_WERYFIKACJI, conn=conn, run_id=run_id))
     except PRZERYWAJA:
         # „SPRAWDZILEM I NIE WIEM" TO NIE TO SAMO, CO „NIE SPRAWDZILEM".
         #
