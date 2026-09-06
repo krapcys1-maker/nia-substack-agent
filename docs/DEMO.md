@@ -1,8 +1,8 @@
 # NIA in action
 
-[![Watch the NIA product demo](media/nia-demo-poster.jpg)](https://github.com/krapcys1-maker/nia-substack-agent/blob/main/docs/media/nia-demo.mp4)
+https://github.com/user-attachments/assets/149b598a-6c83-4e5a-9365-58c42ff45df8
 
-**[Watch the 92-second film](https://github.com/krapcys1-maker/nia-substack-agent/blob/main/docs/media/nia-demo.mp4)** ·
+**Press Play above to watch the 92-second film directly on GitHub.**
 [Download MP4](https://github.com/krapcys1-maker/nia-substack-agent/releases/download/demo-2026-09-06/nia-demo.mp4) ·
 [English subtitles](media/nia-demo.en.srt) · [Polskie napisy](media/nia-demo.pl.srt)
 

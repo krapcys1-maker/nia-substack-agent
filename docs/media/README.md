@@ -9,6 +9,10 @@ transcript. The `.srt` files provide English and Polish subtitles.
 `nia-subscription.png` are cropped views of the verified Substack results.
 See [the demo page](../DEMO.md) for live links and recording context.
 
+README and the demo page embed the GitHub-hosted video attachment as a bare URL
+on its own paragraph. This produces GitHub's inline player. A link to the MP4
+in the repository or a release is only a file/download link, not an embed.
+
 `overview.svg` is an original, editable vector diagram of the product:
 engine → editorial preset → private instance. It is an explanatory graphic,
 not a screenshot of a graphical bot dashboard.

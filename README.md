@@ -1,5 +1,3 @@
-![NIA — your publication, your rules](docs/media/overview.svg)
-
 # NIA
 
 [![Tests](https://github.com/krapcys1-maker/nia-substack-agent/actions/workflows/testy.yml/badge.svg)](https://github.com/krapcys1-maker/nia-substack-agent/actions/workflows/testy.yml)
@@ -10,10 +8,10 @@ NIA is a configurable Substack publishing bot with portable editorial presets.
 Choose a subject and writing style, add your own account and API keys, then run
 the agent on your computer or a Linux server.
 
-[![Watch NIA publish on Substack — 92-second product demo](docs/media/nia-demo-poster.jpg)](https://github.com/krapcys1-maker/nia-substack-agent/blob/main/docs/media/nia-demo.mp4)
+https://github.com/user-attachments/assets/149b598a-6c83-4e5a-9365-58c42ff45df8
 
-**[Watch NIA in action](https://github.com/krapcys1-maker/nia-substack-agent/blob/main/docs/media/nia-demo.mp4)**
-· [Demo and live examples](docs/DEMO.md) · [Download MP4](https://github.com/krapcys1-maker/nia-substack-agent/releases/download/demo-2026-09-06/nia-demo.mp4)
+**Press Play above to watch NIA in action — 92 seconds, no download needed.**
+[Demo and live examples](docs/DEMO.md) · [Subtitles: English](docs/media/nia-demo.en.srt) / [Polski](docs/media/nia-demo.pl.srt)
 
 Real browser footage from the NIA test account, edited for pace. English AI
 narration; articles, Notes and community actions use the Hidden Bill preset.
