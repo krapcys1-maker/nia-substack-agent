@@ -10192,7 +10192,7 @@ field in general.
 **43 wierszy.** Pola wejsciowe: `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
 
 ````markdown
-You are correcting a short text that is about to be published. A fact-check
+You are correcting a text that is about to be published. A fact-check
 has just examined it and found specific claims that do not survive the record.
 
 Your job is to make the text accurate using the available evidence.

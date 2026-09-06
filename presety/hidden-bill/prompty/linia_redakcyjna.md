@@ -27,3 +27,7 @@ version and status (proposal, allegation, finding, settlement or company term).
 An opinion still needs sound factual premises. If support is missing, narrow
 the claim or choose another candidate. Keep the publication running with
 supported material; do not publish a known error to meet a volume target.
+
+Keep the distinction between an allegation and a finding in the conclusion,
+too. A pending case may already have procedural rulings: distinguish no final
+judgment from no court ruling, using a dated docket or case-status source.

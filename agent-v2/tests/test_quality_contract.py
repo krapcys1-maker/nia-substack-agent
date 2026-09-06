@@ -48,6 +48,16 @@ class QualityContract(unittest.TestCase):
              patch.object(stages,'napraw_obalone') as repair:
             _,audit=stages.przygotuj_artykul_do_publikacji(self.conn,self.rid,draft,{}, {})
         self.assertFalse(audit['safe_to_post']);repair.assert_not_called()
+    def test_repair_receives_every_challenged_claim(self):
+        audit={'zarzuty':[{'claim':f'Challenged fact {i}','status':'unverified'} for i in range(8)]}
+        stages._NAPRAW_ZUZYTE.clear()
+        with patch.object(stages.llm,'call',return_value=json.dumps({'text':'A corrected draft.'})) as call, \
+             patch.object(stages,'zweryfikuj',return_value={'safe_to_post':True,'zarzuty':[]}):
+            result=stages.napraw_obalone(self.conn,self.rid,'Original draft',audit,
+                kontekst='context',min_slow=1,max_slow=30,etap='naprawa',zapora=lambda text:'')
+        self.assertIsNotNone(result)
+        prompt=call.call_args.args[2]
+        for i in range(8): self.assertIn(f'Challenged fact {i}',prompt)
     def test_review_requires_exact_coverage(self):
         valid={'index':1,'class':'FACT','supported':True}
         for decisions in ([valid], [valid,valid], [valid,None],

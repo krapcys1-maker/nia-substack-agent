@@ -4689,7 +4689,7 @@ def napraw_obalone(
                 or "(the record does not support it)")[:500],
             str(c.get("url") or c.get("source") or "")[:200],
         )
-        for c in do_naprawy[:5]
+        for c in do_naprawy
     )
     print("    [naprawa] %d twierdzen wymaga poprawy — przepisuje"
           % len(do_naprawy), flush=True)
