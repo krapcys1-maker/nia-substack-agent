@@ -261,3 +261,25 @@ strumieniowaniem). Na koncie: 1 notka, 2 komentarze, 2 polubienia, 1 artykuł
 z okładką. Po poprawkach spodziewany koszt dnia z 2 notkami i 3–5
 komentarzami: około 0,25 USD; artykułu: około 0,40 USD (bez jałowego
 factchecku i bez myślenia w formie).
+
+## 11. Po audycie: co dołożono, żeby to się nie powtórzyło
+
+Naprawa stopki z datą zamyka jeden kształt błędu. Żeby żaden inny kształt
+nie wyszedł na konto, silnik dostał ostatnią, darmową bramkę
+`gates.artefakty_w_tekscie`, która stoi po stopce z datą, po recenzji,
+**przed okładką i przed przeglądarką** (artykuł) oraz **przed płatną
+weryfikacją** (notka, komentarz). Zatrzymuje: niewypełnione pole szablonu
+(`{tytul}`, `<the scene>`), znacznik do uzupełnienia (TODO, TBD,
+[uzupełnić], lorem ipsum), słowo w miejscu daty lub liczby („to unknown",
+„as of n/a"), stopkę o źródłach bez daty i zdania o własnym warsztacie
+(„the excerpts I worked from", „in the pages I have", „the evidence card";
+listy fraz po angielsku i po polsku w `jezyki.py`). Zatrzymany artykuł
+zostaje na dysku ze statusem ZATRZYMANY i własnym kodem wyjścia, nie trafia
+do ponowienia przez rutynę dnia i nie kosztuje okładki. Test
+`test_artefakty_w_tekscie` odtwarza oba zdania z artykułu 0006 i sprawdza,
+że zwykłe zdania („the cause is unknown", „as of 2 August 2026",
+„<b>bold</b>") przechodzą.
+
+Do tego z sekcji 9: ratunek JSON-u dla sprawdzenia faktów po napisaniu,
+stopka tylko z prawdziwą datą, `forma` bez myślenia. Zdanie w opublikowanym
+artykule nadal wymaga ręcznego usunięcia w edytorze Substacka.
