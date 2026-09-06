@@ -61,7 +61,13 @@ BAZA = dict(config.DOMYSLNE_SILNIKA)
 print("=== 1. KARTRIDZ `ai` WCZYTUJE SIE I PRZECHODZI SPRAWDZENIE W CALOSCI ===")
 sprawdz("presety/ai/preset.toml istnieje", (KARTRIDZ / "preset.toml").is_file())
 ai = preset.wczytaj(KARTRIDZ)
-bledy, uwagi = preset.sprawdz(ai, config, BAZA, srodowisko={})
+# Konto jest instalacji, nie presetu (test_konto_z_env): `ai` ma placeholder,
+# a instalacja podaje uchwyt i marke w .env — tu udajemy taka instalacje.
+KONTO = {"SUBSTACK_HANDLE": "ktos", "NAZWA_MARKI": "Ktos Pisze"}
+bledy, uwagi = preset.sprawdz(ai, config, BAZA, srodowisko=dict(KONTO))
+_uwagi_bez_konta = preset.sprawdz(ai, config, BAZA, srodowisko={})[1]
+sprawdz("bez konta w srodowisku uwaga mowi, co wpisac do .env (placeholder zostaje w repo)",
+        any("SUBSTACK_HANDLE" in u and "NAZWA_MARKI" in u for u in _uwagi_bez_konta), _uwagi_bez_konta)
 sprawdz("zero bledow sprawdzenia", not bledy, bledy)
 _uwagi_bez_kluczy = [u for u in uwagi if "brak w srodowisku" not in u]
 sprawdz("uwagi tylko o swiadomie wylaczonych dzialaniach",

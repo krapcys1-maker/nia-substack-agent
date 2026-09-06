@@ -670,6 +670,47 @@ def _rozloz_godziny(ile: int, baza: tuple[str, ...]) -> tuple[str, ...]:
 
 PRZEDROSTEK_REPO = "repo:"
 
+# KONTO Z INSTALACJI, NIE Z PRESETU. Preset jest do dzielenia sie: ten sam `ai`
+# moze pracowac u wielu osob, a uchwyt i nazwa marki sa jednego konta. Dlatego
+# `.env` instalacji (SUBSTACK_HANDLE, NAZWA_MARKI) wygrywa z polem `[konto]`
+# presetu, a wspolne presety w repozytorium zostaja z placeholderem.
+PLACEHOLDER_UCHWYTU = "your-handle"
+ZMIENNE_KONTA = {"SUBSTACK_HANDLE": "SUBSTACK_HANDLE", "NAZWA_MARKI": "NAZWA_MARKI"}
+
+
+def konto_ze_srodowiska(cfg: Any, srodowisko: Any) -> list[str]:
+    """Nadpisuje uchwyt i marke wartosciami ze srodowiska. Oddaje nazwy nadpisanych stalych."""
+    nadpisane: list[str] = []
+    for zmienna, stala in ZMIENNE_KONTA.items():
+        wartosc = str(srodowisko.get(zmienna) or "").strip()
+        if wartosc:
+            setattr(cfg, stala, wartosc)
+            nadpisane.append(stala)
+    return nadpisane
+
+
+def uchwyt_konta(pola: dict[str, Any], srodowisko: Any) -> str:
+    """Uchwyt, ktory NAPRAWDE bedzie uzyty: ze srodowiska, a gdy go tam nie ma — z presetu."""
+    return (str(srodowisko.get("SUBSTACK_HANDLE") or "").strip()
+            or str(pola.get("konto.uchwyt") or "").strip())
+
+
+def placeholder_konta(uchwyt: str, marka: str) -> list[str]:
+    """Co w koncie jest jeszcze placeholderem (pusta lista = konto gotowe).
+
+    Placeholder marki („Your Publication", „Your AI Publication") trafialby
+    do promptow i dalej do tekstow na koncie — dlatego jest sprawdzany tak
+    samo twardo jak uchwyt.
+    """
+    problemy: list[str] = []
+    u = (uchwyt or "").strip()
+    m = (marka or "").strip()
+    if not u or u == PLACEHOLDER_UCHWYTU:
+        problemy.append("uchwyt konta to placeholder %r" % u)
+    if not m or m.lower().startswith("your "):
+        problemy.append("nazwa marki to placeholder %r" % m)
+    return problemy
+
 
 def _sciezka_w_repo(cfg: Any, napis: str) -> Path:
     """Bezwzgledna jak jest; `repo:x` i zwykla wzgledna — od korzenia repozytorium.

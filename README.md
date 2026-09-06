@@ -11,7 +11,7 @@ for permission at no point.
 
 ```
 5 notes/day · 15–23 comments/day · 1 article/week · $0.75 per article · $40/month ceiling
-26 model roles · 167 tests · 13 gates on every finished text
+26 model roles · 168 tests · 13 gates on every finished text
 ```
 
 This is not a demo. It ran against a live account for weeks, it spends real
@@ -19,11 +19,12 @@ money on model calls, and **every number in this repository was measured rather
 than estimated** — the costs come from a production database reconciled against
 a provider invoice, to the cent.
 
-The account identity, the subject matter and the source list have been removed.
-What ships is the machine plus an example configuration you are expected to
-replace — or one of three ready [subject packs](packs/README.md), so you do not
-have to invent twenty search terms before the first run.
-[docs/INSTALL.md](docs/INSTALL.md) says exactly where everything goes.
+The account identity has been removed. What ships is the engine plus
+**presets**: a preset is the whole publication in one directory (subject,
+voice, sources, model per role, volumes, schedule, money), and `ai` is a
+complete one. Your account and your keys never enter a preset: they go into
+`agent-v2/.env`. Clone, plug a preset in, add keys, run. The repository stays
+clean; whatever you change afterwards happens in your copy.
 
 Two things here are unusual enough to be worth your next thirty seconds.
 [docs/CLEANING_LOG.md](docs/CLEANING_LOG.md) records how one account's identity
@@ -83,12 +84,13 @@ cannot see.
 
 | document | what's in it |
 |---|---|
-| **[docs/PLUGGING_IN_AN_ACCOUNT.md](docs/PLUGGING_IN_AN_ACCOUNT.md)** | **start here if you want to run it.** Every decision about a publication — name, subject, sources, model split, daily volumes, budget — and the one place each one goes |
-| **[packs/README.md](packs/README.md)** | **subject packs** — ready-made subjects (AI, how things work, laws and public money) you can start from instead of inventing twenty search terms. One file each, and the place to contribute one |
+| **[presety/README.md](presety/README.md)** | **start here if you want to run it.** Presets: the whole publication in one directory, `ai` as a complete example, `SZABLON/` to write your own, and what stays in `.env` (your account, your keys) |
+| [docs/PLUGGING_IN_AN_ACCOUNT.md](docs/PLUGGING_IN_AN_ACCOUNT.md) | every decision about a publication — name, subject, sources, model split, daily volumes, budget — and where each one goes |
+| [packs/README.md](packs/README.md) | subject packs — the pre-preset form of a subject (AI, how things work, laws and public money); raw material for new presets |
 | **[docs/INSTALL.md](docs/INSTALL.md)** | zero to running, step by step — including the one step no software can do for you |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | how it works and where everything lives: both pipelines, all 26 roles, every directory |
 | **[docs/BRIEF_MAP.md](docs/BRIEF_MAP.md)** | what each of the 24 briefs is responsible for: what calls it, what model it runs on, and — for every field it tells the model to return — whether a gate reads it, something reads it, or **nobody does**. Generated |
-| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **658 functions** in 26 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
+| **[docs/FUNCTION_MAP.md](docs/FUNCTION_MAP.md)** | all **662 functions** in 26 modules — line, signature, whether it calls a paid model and for which stage, whether it touches the browser, who calls it. Generated from the AST |
 | **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | split in two: what will bite you on a fresh clone, and what already bit us and is fixed. **Read before your first run** |
 | **[docs/CONFIGURATION_MAP.md](docs/CONFIGURATION_MAP.md)** | the deep analysis: what is configurable, what is welded to one platform, what would mean rewriting a module — and what the configurator already covers |
 | **[docs/REPO_MAP.md](docs/REPO_MAP.md)** | the hand-written map: what each module decides, which stage reads which of the 24 briefs, the four places an account enters, what is deliberately absent |
@@ -102,7 +104,7 @@ behind each entry, is [docs/ROZWIAZYWANIE_PROBLEMOW.md](docs/ROZWIAZYWANIE_PROBL
 The bot's own design documents are in `agent-v2/` and are in Polish:
 `DOKTRYNA.md` (what it must and must not do — canonical, and its closing
 "Discrepancies" section is part of the document), `JAK_DZIALA_V2.md`
-(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,271 lines,
+(architecture with costs) and `JAK_ZBUDOWANY_JEST_BOT.md` — 12,275 lines,
 **generated from the code** and guarded by a test so it cannot drift.
 
 **A word on the language, before you open a file.** Everything written *for
@@ -124,45 +126,38 @@ want to know *why* a particular line is the way it is.
 ## Quick start
 
 ```bash
+git clone <this repository> bot && cd bot
 pip install -r requirements-dev.txt
-python narzedzia/presety.py lista        # what presets exist; `ai` is a full example
+cp .env.example agent-v2/.env            # your keys, SUBSTACK_HANDLE and NAZWA_MARKI
+python narzedzia/presety.py lista        # what presets exist; `ai` is a complete one
 python narzedzia/presety.py sprawdz ai   # errors and warnings, no paid calls
 python narzedzia/presety.py podlacz ai   # plug it in — the engine refuses to run without one
-python agent-v2/alarm.py                # health check
+python agent-v2/browser.py sesja         # log in once, in a real browser
+python agent-v2/alarm.py                 # health check: what is still missing
 ```
 
-**A preset is the whole publication in one file** — subject, voice, sources,
-model per role, notes per day, articles per week, schedule, money — and it can
-be unplugged again (`odlacz`). Each preset gets its own data directory under
-`agent-v2/instancje/`, so switching from one to another carries over no bank of
-ideas, no cache and no half-written article. Without an active preset there is
-no built-in subject to fall back to: `run.py` stops with the commands to fix
-it. See [presety/README.md](presety/README.md) and, in Polish,
+**A preset is the whole publication in one directory** — subject, voice,
+sources, model per role, notes per day, articles per week, schedule, money —
+and it can be unplugged again (`odlacz`). **Your account is not in it.** The
+handle and the publication name come from `agent-v2/.env`, so the same preset
+can run on many accounts and the presets in this repository keep a placeholder;
+`podlacz` refuses to activate while the handle or the name is still one. Each
+preset gets its own data directory under `agent-v2/instancje/`, so switching
+from one to another carries over no bank of ideas, no cache and no half-written
+article. Without an active preset there is no built-in subject to fall back
+to: `run.py` stops with the commands to fix it. See
+[presety/README.md](presety/README.md) and, in Polish,
 [docs/PRESETY.md](docs/PRESETY.md).
 
-The older path still works during the transition:
+To write your own preset: `python narzedzia/presety.py nowy my-subject` copies
+`presety/SZABLON/`; `sprawdz` names every field still to fill. The subject
+packs in `packs/` are earlier material you can lift search terms and markers
+from.
 
-```bash
-python narzedzia/kreator.py        # asks everything, writes konfiguracja.toml and .env
-python narzedzia/pakiety.py        # or: start from a subject pack
-python narzedzia/presety.py importuj-konfiguracje --nazwa moje   # turn that file into a preset
-```
-
-The setup program asks for the account, the subject, the language, the sources,
-the model for each of the 26 roles, the daily volumes and the budget ceilings,
-then writes `agent-v2/konfiguracja.toml` and `agent-v2/.env`. Every answer is
-checked with the same validator the bot uses on load, and the file it writes is
-read back immediately — a setup tool that produces a file the program then
-rejects is worse than no setup tool, because it looks like success. API keys go
-only to `.env`, are never echoed, and never reach the TOML.
-
-Prefer to edit by hand: `cp konfiguracja.example.toml agent-v2/konfiguracja.toml`.
-Either way the file is optional — without it the bot runs on the defaults in
-`config.py` — and a bad value or a mistyped field name **stops the start** with
-a message naming what was allowed.
-
-`python narzedzia/kreator.py --pokaz` prints every field and its current value
-without writing anything.
+The older path — `narzedzia/kreator.py` writing `agent-v2/konfiguracja.toml` —
+still exists, but **that file is no longer read on its own**: convert it with
+`python narzedzia/presety.py importuj-konfiguracje --nazwa mine` and plug the
+result in.
 
 The last command is the health check. It is the only entry point that runs
 **with no session, no API keys and no data**, and it prints line by line what is
@@ -301,7 +296,7 @@ figure had reached 137:
 | `+ playwright install chromium` | the last three |
 | `+ .env` and the first run | two — `test_czas` needs POSIX signal semantics, `test_jednostki_systemd` needs systemd |
 
-Measured on this copy (2026-09-05): of 167 test files, **159 pass and 2 fail**;
+Measured on this copy (2026-09-05): of 168 test files, **159 pass and 2 fail**;
 five of the passing ones skip part of their work and say so, line by line. Both
 failures are impossible to fix on a Windows install and neither says anything
 about the code. Each is listed with its cause in
@@ -324,9 +319,9 @@ versions out of git by path, and a rename means a permanent path shim in each of
 them. A nicer directory name is not worth that.
 
 **It is a configurable product for one platform, not for any platform.**
-`konfiguracja.toml` now drives the account, the subject, the model split, the
-volumes and the budget. The prompts take subject, brand and
-niche examples from it at call time. What is still hand-edited: the two style
+A preset now drives the subject, the model split, the volumes and the budget;
+the account handle and the publication name come from `agent-v2/.env`. The
+prompts take subject, brand and niche examples from the preset at call time. What is still hand-edited: the two style
 profiles in `style-profiles/` and the monthly attention hints in `config.py`.
 What will not become a field at all: the Substack layer is ~2,500 lines a second platform would not
 share, and the gates in `gates.py` are English regular expressions that stop

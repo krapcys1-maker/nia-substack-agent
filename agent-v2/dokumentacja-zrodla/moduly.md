@@ -370,7 +370,7 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-954 wierszy, 41 funkcji na poziomie modułu, 1 klas
+995 wierszy, 44 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -407,6 +407,9 @@
 | `zdjecie(cfg)` | Kopia stalych konta z modulu `config`, do pozniejszego przywrocenia. |
 | `przywroc(cfg, zdj)` | Przywraca stan ze `zdjecie`. Slowniki W MIEJSCU, bo inne moduly trzymaja |
 | `_rozloz_godziny(ile, baza)` *(wewn.)* | Godziny zegara dla `ile` przebiegow, gdy preset podal tylko liczbe. |
+| `konto_ze_srodowiska(cfg, srodowisko)` | Nadpisuje uchwyt i marke wartosciami ze srodowiska. Oddaje nazwy nadpisanych stalych. |
+| `uchwyt_konta(pola, srodowisko)` | Uchwyt, ktory NAPRAWDE bedzie uzyty: ze srodowiska, a gdy go tam nie ma — z presetu. |
+| `placeholder_konta(uchwyt, marka)` | Co w koncie jest jeszcze placeholderem (pusta lista = konto gotowe). |
 | `_sciezka_w_repo(cfg, napis)` *(wewn.)* | Bezwzgledna jak jest; `repo:x` i zwykla wzgledna — od korzenia repozytorium. |
 | `_plan(dane, cfg)` *(wewn.)* | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. |
 | `zastosuj(dane, cfg)` | Wklada wartosci do modulu `config`. Oddaje liste tego, co przestawiono. |
@@ -418,7 +421,7 @@
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1076 wierszy, 39 funkcji na poziomie modułu, 4 klas
+1099 wierszy, 39 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -437,12 +440,12 @@
 | `wczytaj_tekst(tekst, nazwa_pliku, plik, katalog)` | Tekst TOML presetu -> `Preset`. Kazdy blad to `BladPresetu`. |
 | `wczytaj(sciezka)` | Preset z katalogu (`presety/<nazwa>/`) albo z pojedynczego pliku. |
 | `proba_konfiguracji(cfg, baza)` | Kopia stalych `config` do bezpiecznego przymierzenia presetu. |
-| `rozwiaz(preset, cfg, baza)` | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). |
+| `rozwiaz(preset, cfg, baza, srodowisko)` | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). |
 | `_bez_domyslnego_korpusu(preset, cfg)` *(wewn.)* | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". |
 | `pochodzenie(preset, cfg, baza)` | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". |
 | `_dostawca(model)` *(wewn.)* | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. |
 | `_napisy(x)` *(wewn.)* | Wszystkie napisy w zagniezdzonej wartosci. |
-| `sprawdz(preset, cfg, baza, srodowisko)` | Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli. |
+| `sprawdz(preset, cfg, baza, srodowisko, do_aktywacji)` | Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli. |
 | `zastosuj(preset, cfg, baza)` | Neutralna baza, potem pola i bloki presetu. Oddaje meldunki `konfiguracja.zastosuj`. |
 | `_zapisz_atomowo(plik, tekst)` *(wewn.)* | — |
 | `_teraz()` *(wewn.)* | — |
@@ -451,7 +454,7 @@
 | `aktywacja(agent_dir, srodowisko)` | Co jest podlaczone. `None` = nic. Zly wskaznik albo zmieniony preset = wyjatek. |
 | `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko, przejmij)` | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. |
 | `wlasciciel(katalog)` | Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy. |
-| `_sprawdz_wlasciciela(katalog, preset, przejmij)` *(wewn.)* | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. |
+| `_sprawdz_wlasciciela(katalog, preset, przejmij, uchwyt)` *(wewn.)* | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. |
 | `odlacz(agent_dir)` | Usuwa wskaznik. Oddaje jego tresc (co bylo podlaczone) albo None. |
 | `wymagaj_aktywnego(cfg, co)` | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. |
 | `tylko_podglad(cfg)` | Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji. |
@@ -484,7 +487,7 @@
 
 ### `alarm.py` — kontrola sesji, zdrowia i alarm do właściciela
 
-1076 wierszy, 26 funkcji na poziomie modułu, 0 klas
+1100 wierszy, 27 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -494,6 +497,7 @@
 | `_zapisz(klucz)` *(wewn.)* | — |
 | `wyslij(klucz, temat, tresc)` | Wysyła alarm. `klucz` identyfikuje RODZAJ problemu, nie pojedynczy wypadek. |
 | `brak_presetu()` | Silnik bez podlaczonego presetu ODMAWIA startu z zegara — to ma byc alarm, nie cisza. |
+| `konto_placeholder()` | Konto instalacji nadal jest placeholderem — bot sprawdzalby profil „your-handle". |
 | `artykul_zalegly()` | Czy gotowy artykul lezy na dysku niewystawiony dluzej niz dobe. |
 | `sprawdz_sesje_i_ostrzez()` | Pilnuje jedynej rzeczy, która zatrzymuje agenta bez żadnego błędu. |
 | `sprawdz_przebiegi_i_ostrzez(ile)` | Alarmuje, gdy agent pada raz za razem. |
@@ -544,7 +548,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3510 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3515 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

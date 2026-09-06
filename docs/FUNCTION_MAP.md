@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 26 |
-| functions and methods | 658 |
+| functions and methods | 662 |
 | functions that call a paid model | 26 |
 | functions that touch the browser | 62 |
 | functions that touch the database | 42 |
@@ -37,7 +37,7 @@ For paid calls the verdict comes from
 | module | functions | paid | WWW | DB | what it is for |
 |---|---|---|---|---|---|
 | [`aktualne_modele.py`](#agent-v2aktualne-modele-py) | 4 | 1 | 0 | 0 | Co w tej dziedzinie jest AKTUALNE dzisiaj — pytane na zywo, nie z pamieci. |
-| [`alarm.py`](#agent-v2alarm-py) | 28 | 0 | 1 | 6 | Alarm do właściciela i kontrola zdrowia agenta. |
+| [`alarm.py`](#agent-v2alarm-py) | 29 | 0 | 1 | 6 | Alarm do właściciela i kontrola zdrowia agenta. |
 | [`artykul_z_puli.py`](#agent-v2artykul-z-puli-py) | 18 | 1 | 1 | 2 | Artykul bierze temat z tej samej puli, co notki. |
 | [`audyt_researchu.py`](#agent-v2audyt-researchu-py) | 3 | 0 | 0 | 0 | Audyt segmentu researchu na ZYWYCH danych, jednym poleceniem. |
 | [`audyt_systemu.py`](#agent-v2audyt-systemu-py) | 7 | 0 | 1 | 0 | Audyt CALEGO systemu na zywych danych, jednym poleceniem. |
@@ -49,7 +49,7 @@ For paid calls the verdict comes from
 | [`gates.py`](#agent-v2gates-py) | 22 | 0 | 0 | 0 | Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu. |
 | [`jezyki.py`](#agent-v2jezyki-py) | 5 | 0 | 0 | 0 | Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma. |
 | [`kanal.py`](#agent-v2kanal-py) | 13 | 0 | 3 | 0 | Kanal czytelnika — jedyne zrodlo celow do komentowania. |
-| [`konfiguracja.py`](#agent-v2konfiguracja-py) | 41 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` i pol presetu — jeden kontrakt pol, jeden zapis. |
+| [`konfiguracja.py`](#agent-v2konfiguracja-py) | 44 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` i pol presetu — jeden kontrakt pol, jeden zapis. |
 | [`kopia_subskrybentow.py`](#agent-v2kopia-subskrybentow-py) | 4 | 0 | 1 | 0 | Kopia listy subskrybentow — jedyne aktywo, ktorego nie da sie odtworzyc. |
 | [`korpus_kanalow.py`](#agent-v2korpus-kanalow-py) | 11 | 0 | 0 | 0 | Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja. |
 | [`llm.py`](#agent-v2llm-py) | 16 | 0 | 0 | 3 | Jedyna warstwa miedzy `run.py` a dostawca. |
@@ -88,7 +88,7 @@ Alarm do właściciela i kontrola zdrowia agenta.
 
 **Wejscie produkcyjne:** `nia-alarm.timer`, raz na dobe 07:00 UTC: `alarm.py`
 
-28 funkcji.
+29 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -98,28 +98,29 @@ Alarm do właściciela i kontrola zdrowia agenta.
 | 64 | `_zapisz(klucz)` | — | — | `alarm.wyslij` |
 | 77 | `wyslij(klucz, temat, tresc)` | — | Wysyła alarm. | `alarm (poziom modulu)`, `alarm.sprawdz_przebiegi_i_ostrzez`, `alarm.sprawdz_sesje_i_ostrzez`, `alarm.sprawdz_wszystko` *(+2)* |
 | 122 | `brak_presetu()` | — | Silnik bez podlaczonego presetu ODMAWIA startu z zegara — to ma byc alarm, nie cisza. | `alarm.sprawdz_wszystko` |
-| 139 | `artykul_zalegly()` | — | Czy gotowy artykul lezy na dysku niewystawiony dluzej niz dobe. | `alarm.sprawdz_wszystko` |
-| 164 | `sprawdz_sesje_i_ostrzez()` | WWW | Pilnuje jedynej rzeczy, która zatrzymuje agenta bez żadnego błędu. | `alarm (poziom modulu)`, `run.dzien` |
-| 185 | `sprawdz_przebiegi_i_ostrzez(ile)` | DB | Alarmuje, gdy agent pada raz za razem. | `alarm (poziom modulu)` |
-| 256 | `max_dzialan_dziennie()` | — | Ile dzialan na dobe uznajemy jeszcze za normalne. | `alarm.nadaktywnosc` |
-| 267 | `_polaczenie()` | DB | — | `alarm.cisza`, `alarm.koszt`, `alarm.przeglad`, `alarm.zawieszone` |
-| 273 | `cisza()` | DB | Czy agent w ogole cos ostatnio zrobil. | `alarm.sprawdz_wszystko` |
-| 300 | `zawieszone()` | DB | Przebiegi, ktore zostaly w stanie RUNNING na zawsze. | `alarm.sprawdz_wszystko` |
-| 319 | `dysk()` | — | — | `alarm.sprawdz_wszystko` |
-| 330 | `_chwila_wpisu(tekst)` | — | Znacznik czasu wpisu dziennika jako moment w UTC, albo None. | `alarm.nadaktywnosc` |
-| 351 | `nadaktywnosc()` | — | Czy agent nie zapetlil sie i nie zasypuje Substacka. | `alarm.sprawdz_wszystko` |
-| 408 | `koszt()` | DB | Czy zblizamy sie do sufitu — dziennego ALBO miesiecznego. | `alarm.przeglad`, `alarm.sprawdz_wszystko` |
-| 465 | `wolumeny()` | — | Czy agent robi tyle, ile deklaruje — czy tylko wyglada, ze robi. | `alarm.sprawdz_wszystko` |
-| 502 | `powtorki()` | — | Czy agent nie zaczal pisac wciaz tego samego. | `alarm.sprawdz_wszystko` |
-| 521 | `kopia_subskrybentow()` | — | Czy istnieje AKTUALNA kopia listy subskrybentow. | `alarm.sprawdz_wszystko` |
-| 570 | `pomiar_wzajemnosci()` | — | Czy nadal mamy z czego liczyc, kto sie odwzajemnia. | `alarm.sprawdz_wszystko` |
-| 594 | `wydarzenie_bez_pokrycia()` | — | Wydarzenie odhaczone jako obsluzone, a w tresci ani slowa o nim. | `alarm.sprawdz_wszystko` |
-| 621 | `wydarzenie_bez_pokrycia._kiedy(wpis)` | — | — | `alarm.wydarzenie_bez_pokrycia` |
-| 677 | `bank_bez_tematow()` | — | Czy w banku zostalo dosc ROZNYCH tematow na dzisiejsze notki. | `alarm.sprawdz_wszystko` |
-| 725 | `sprawdz_wszystko()` | — | Uruchamia komplet kontroli i alarmuje o tym, co znalazl. | `alarm (poziom modulu)` |
-| 811 | `przeglad(dni)` | DB | Co agent NAPRAWDE zrobil przez ostatnie dni i gdzie sie pomylil. | `alarm (poziom modulu)` |
-| 908 | `_co_z_tego_wyszlo(wpisy)` | — | Czy nasze dzialania w ogole wracaja — i ktore z nich. | `alarm.przeglad` |
-| 946 | `_co_z_tego_wyszlo._ilu(warunek)` | — | — | `alarm._co_z_tego_wyszlo` |
+| 139 | `konto_placeholder()` | — | Konto instalacji nadal jest placeholderem — bot sprawdzalby profil „your-handle". | `alarm.sprawdz_wszystko` |
+| 162 | `artykul_zalegly()` | — | Czy gotowy artykul lezy na dysku niewystawiony dluzej niz dobe. | `alarm.sprawdz_wszystko` |
+| 187 | `sprawdz_sesje_i_ostrzez()` | WWW | Pilnuje jedynej rzeczy, która zatrzymuje agenta bez żadnego błędu. | `alarm (poziom modulu)`, `run.dzien` |
+| 208 | `sprawdz_przebiegi_i_ostrzez(ile)` | DB | Alarmuje, gdy agent pada raz za razem. | `alarm (poziom modulu)` |
+| 279 | `max_dzialan_dziennie()` | — | Ile dzialan na dobe uznajemy jeszcze za normalne. | `alarm.nadaktywnosc` |
+| 290 | `_polaczenie()` | DB | — | `alarm.cisza`, `alarm.koszt`, `alarm.przeglad`, `alarm.zawieszone` |
+| 296 | `cisza()` | DB | Czy agent w ogole cos ostatnio zrobil. | `alarm.sprawdz_wszystko` |
+| 323 | `zawieszone()` | DB | Przebiegi, ktore zostaly w stanie RUNNING na zawsze. | `alarm.sprawdz_wszystko` |
+| 342 | `dysk()` | — | — | `alarm.sprawdz_wszystko` |
+| 353 | `_chwila_wpisu(tekst)` | — | Znacznik czasu wpisu dziennika jako moment w UTC, albo None. | `alarm.nadaktywnosc` |
+| 374 | `nadaktywnosc()` | — | Czy agent nie zapetlil sie i nie zasypuje Substacka. | `alarm.sprawdz_wszystko` |
+| 431 | `koszt()` | DB | Czy zblizamy sie do sufitu — dziennego ALBO miesiecznego. | `alarm.przeglad`, `alarm.sprawdz_wszystko` |
+| 488 | `wolumeny()` | — | Czy agent robi tyle, ile deklaruje — czy tylko wyglada, ze robi. | `alarm.sprawdz_wszystko` |
+| 525 | `powtorki()` | — | Czy agent nie zaczal pisac wciaz tego samego. | `alarm.sprawdz_wszystko` |
+| 544 | `kopia_subskrybentow()` | — | Czy istnieje AKTUALNA kopia listy subskrybentow. | `alarm.sprawdz_wszystko` |
+| 593 | `pomiar_wzajemnosci()` | — | Czy nadal mamy z czego liczyc, kto sie odwzajemnia. | `alarm.sprawdz_wszystko` |
+| 617 | `wydarzenie_bez_pokrycia()` | — | Wydarzenie odhaczone jako obsluzone, a w tresci ani slowa o nim. | `alarm.sprawdz_wszystko` |
+| 644 | `wydarzenie_bez_pokrycia._kiedy(wpis)` | — | — | `alarm.wydarzenie_bez_pokrycia` |
+| 700 | `bank_bez_tematow()` | — | Czy w banku zostalo dosc ROZNYCH tematow na dzisiejsze notki. | `alarm.sprawdz_wszystko` |
+| 748 | `sprawdz_wszystko()` | — | Uruchamia komplet kontroli i alarmuje o tym, co znalazl. | `alarm (poziom modulu)` |
+| 835 | `przeglad(dni)` | DB | Co agent NAPRAWDE zrobil przez ostatnie dni i gdzie sie pomylil. | `alarm (poziom modulu)` |
+| 932 | `_co_z_tego_wyszlo(wpisy)` | — | Czy nasze dzialania w ogole wracaja — i ktore z nich. | `alarm.przeglad` |
+| 970 | `_co_z_tego_wyszlo._ilu(warunek)` | — | — | `alarm._co_z_tego_wyszlo` |
 
 ---
 
@@ -496,7 +497,7 @@ Kanal czytelnika — jedyne zrodlo celow do komentowania.
 
 Wczytanie `konfiguracja.toml` i pol presetu — jeden kontrakt pol, jeden zapis.
 
-41 funkcji.
+44 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -533,14 +534,17 @@ Wczytanie `konfiguracja.toml` i pol presetu — jeden kontrakt pol, jeden zapis.
 | 628 | `zdjecie(cfg)` | DEAD? | Kopia stalych konta z modulu `config`, do pozniejszego przywrocenia. | — |
 | 637 | `przywroc(cfg, zdj)` | — | Przywraca stan ze `zdjecie`. | `preset.proba_konfiguracji`, `preset.zastosuj` |
 | 652 | `_rozloz_godziny(ile, baza)` | — | Godziny zegara dla `ile` przebiegow, gdy preset podal tylko liczbe. | `konfiguracja._plan` |
-| 674 | `_sciezka_w_repo(cfg, napis)` | — | Bezwzgledna jak jest; `repo:x` i zwykla wzgledna — od korzenia repozytorium. | `konfiguracja._plan` |
-| 684 | `_plan(dane, cfg)` | — | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. | `konfiguracja.zastosuj` |
-| 852 | `zastosuj(dane, cfg)` | — | Wklada wartosci do modulu `config`. | `preset.rozwiaz`, `preset.zastosuj` |
-| 878 | `on_calendar_agenta(godziny)` | DEAD? | Zegar rutyny dnia: jedna linia na godzine UTC. | — |
-| 883 | `on_calendar_artykulu(dni, godzina, ile)` | DEAD? | Zegar artykulu; pusta lista, gdy artykulow nie ma. | — |
-| 893 | `_toml_napis(v)` | — | Napis w cudzyslowie z ucieczkami. | `konfiguracja.toml_wartosc` |
-| 900 | `toml_wartosc(v)` | — | — | `konfiguracja.zapisz_toml`, `preset.z_konfiguracji` |
-| 919 | `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | — | Pola plaskie -> tekst TOML. | `preset.eksportuj` |
+| 681 | `konto_ze_srodowiska(cfg, srodowisko)` | — | Nadpisuje uchwyt i marke wartosciami ze srodowiska. | `preset.rozwiaz` |
+| 692 | `uchwyt_konta(pola, srodowisko)` | — | Uchwyt, ktory NAPRAWDE bedzie uzyty: ze srodowiska, a gdy go tam nie ma — z presetu. | `preset.podlacz` |
+| 698 | `placeholder_konta(uchwyt, marka)` | — | Co w koncie jest jeszcze placeholderem (pusta lista = konto gotowe). | `alarm.konto_placeholder`, `preset.sprawdz` |
+| 715 | `_sciezka_w_repo(cfg, napis)` | — | Bezwzgledna jak jest; `repo:x` i zwykla wzgledna — od korzenia repozytorium. | `konfiguracja._plan` |
+| 725 | `_plan(dane, cfg)` | — | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. | `konfiguracja.zastosuj` |
+| 893 | `zastosuj(dane, cfg)` | — | Wklada wartosci do modulu `config`. | `preset.rozwiaz`, `preset.zastosuj` |
+| 919 | `on_calendar_agenta(godziny)` | DEAD? | Zegar rutyny dnia: jedna linia na godzine UTC. | — |
+| 924 | `on_calendar_artykulu(dni, godzina, ile)` | DEAD? | Zegar artykulu; pusta lista, gdy artykulow nie ma. | — |
+| 934 | `_toml_napis(v)` | — | Napis w cudzyslowie z ucieczkami. | `konfiguracja.toml_wartosc` |
+| 941 | `toml_wartosc(v)` | — | — | `konfiguracja.zapisz_toml`, `preset.z_konfiguracji` |
+| 960 | `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | — | Pola plaskie -> tekst TOML. | `preset.eksportuj` |
 
 ---
 
@@ -677,30 +681,30 @@ Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem.
 | 331 | `wczytaj_tekst(tekst, nazwa_pliku, plik, katalog)` | — | Tekst TOML presetu -> `Preset`. | `preset.wczytaj` |
 | 388 | `wczytaj(sciezka)` | — | Preset z katalogu (`presety/<nazwa>/`) albo z pojedynczego pliku. | `preset.aktywacja`, `preset.podlacz` |
 | 400 | `proba_konfiguracji(cfg, baza)` | — | Kopia stalych `config` do bezpiecznego przymierzenia presetu. | `preset.rozwiaz` |
-| 426 | `rozwiaz(preset, cfg, baza)` | — | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). | `preset.pochodzenie`, `preset.sprawdz` |
-| 439 | `_bez_domyslnego_korpusu(preset, cfg)` | — | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". | `preset.rozwiaz`, `preset.zastosuj` |
-| 453 | `pochodzenie(preset, cfg, baza)` | DEAD? | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". | — |
-| 476 | `_dostawca(model)` | — | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. | `preset.sprawdz` |
-| 495 | `_napisy(x)` | — | Wszystkie napisy w zagniezdzonej wartosci. | `preset.sprawdz` |
-| 507 | `sprawdz(preset, cfg, baza, srodowisko)` | — | Reguly PONAD ksztaltem pol. | `preset.podlacz` |
-| 693 | `zastosuj(preset, cfg, baza)` | DEAD? | Neutralna baza, potem pola i bloki presetu. | — |
-| 715 | `_zapisz_atomowo(plik, tekst)` | — | — | `preset._sprawdz_wlasciciela`, `preset.podlacz` |
-| 730 | `_teraz()` | — | — | `preset._dopisz_do_dziennika`, `preset.podlacz`, `preset.z_konfiguracji` |
-| 734 | `_dopisz_do_dziennika(katalog, wpis)` | — | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. | `preset._sprawdz_wlasciciela`, `preset.odlacz`, `preset.podlacz` |
-| 750 | `czytaj_wskaznik(agent_dir)` | — | Surowa tresc wskaznika (bez wczytywania presetu) albo None. | `preset.aktywacja`, `preset.aktywacja_nadal_wazna` |
-| 765 | `aktywacja(agent_dir, srodowisko)` | DEAD? | Co jest podlaczone. | — |
-| 800 | `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko, przejmij)` | DEAD? | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. | — |
-| 842 | `wlasciciel(katalog)` | — | Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy. | `preset._sprawdz_wlasciciela` |
-| 854 | `_sprawdz_wlasciciela(katalog, preset, przejmij)` | — | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. | `preset.podlacz` |
-| 890 | `odlacz(agent_dir)` | DEAD? | Usuwa wskaznik. | — |
-| 930 | `wymagaj_aktywnego(cfg, co)` | — | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. | `artykul_z_puli.main`, `run.main` |
-| 951 | `tylko_podglad(cfg)` | DEAD? | Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji. | — |
-| 964 | `aktywacja_nadal_wazna(cfg)` | — | Pusty napis, gdy aktywacja z pamieci procesu nadal stoi we wskazniku; inaczej powod. | `preset.wymagaj_aktywnego` |
-| 1000 | `lista(agent_dir)` | — | Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`. | `preset.znajdz` |
-| 1015 | `nazwa_z_pliku(plik)` | — | Nazwa presetu z jego polozenia: katalog albo nazwa pliku. | `preset.znajdz` |
-| 1021 | `znajdz(nazwa, agent_dir)` | DEAD? | Preset po nazwie (katalog przed plikiem) albo po sciezce. | — |
-| 1034 | `z_konfiguracji(tekst_toml, nazwa, opis)` | DEAD? | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). | — |
-| 1058 | `eksportuj(preset)` | DEAD? | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). | — |
+| 426 | `rozwiaz(preset, cfg, baza, srodowisko)` | — | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). | `preset.pochodzenie`, `preset.sprawdz` |
+| 447 | `_bez_domyslnego_korpusu(preset, cfg)` | — | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". | `preset.rozwiaz`, `preset.zastosuj` |
+| 461 | `pochodzenie(preset, cfg, baza)` | DEAD? | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". | — |
+| 484 | `_dostawca(model)` | — | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. | `preset.sprawdz` |
+| 503 | `_napisy(x)` | — | Wszystkie napisy w zagniezdzonej wartosci. | `preset.sprawdz` |
+| 515 | `sprawdz(preset, cfg, baza, srodowisko, do_aktywacji)` | — | Reguly PONAD ksztaltem pol. | `preset.podlacz` |
+| 712 | `zastosuj(preset, cfg, baza)` | DEAD? | Neutralna baza, potem pola i bloki presetu. | — |
+| 734 | `_zapisz_atomowo(plik, tekst)` | — | — | `preset._sprawdz_wlasciciela`, `preset.podlacz` |
+| 749 | `_teraz()` | — | — | `preset._dopisz_do_dziennika`, `preset.podlacz`, `preset.z_konfiguracji` |
+| 753 | `_dopisz_do_dziennika(katalog, wpis)` | — | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. | `preset._sprawdz_wlasciciela`, `preset.odlacz`, `preset.podlacz` |
+| 769 | `czytaj_wskaznik(agent_dir)` | — | Surowa tresc wskaznika (bez wczytywania presetu) albo None. | `preset.aktywacja`, `preset.aktywacja_nadal_wazna` |
+| 784 | `aktywacja(agent_dir, srodowisko)` | DEAD? | Co jest podlaczone. | — |
+| 819 | `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko, przejmij)` | DEAD? | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. | — |
+| 863 | `wlasciciel(katalog)` | — | Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy. | `preset._sprawdz_wlasciciela` |
+| 875 | `_sprawdz_wlasciciela(katalog, preset, przejmij, uchwyt)` | — | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. | `preset.podlacz` |
+| 913 | `odlacz(agent_dir)` | DEAD? | Usuwa wskaznik. | — |
+| 953 | `wymagaj_aktywnego(cfg, co)` | — | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. | `artykul_z_puli.main`, `run.main` |
+| 974 | `tylko_podglad(cfg)` | DEAD? | Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji. | — |
+| 987 | `aktywacja_nadal_wazna(cfg)` | — | Pusty napis, gdy aktywacja z pamieci procesu nadal stoi we wskazniku; inaczej powod. | `preset.wymagaj_aktywnego` |
+| 1023 | `lista(agent_dir)` | — | Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`. | `preset.znajdz` |
+| 1038 | `nazwa_z_pliku(plik)` | — | Nazwa presetu z jego polozenia: katalog albo nazwa pliku. | `preset.znajdz` |
+| 1044 | `znajdz(nazwa, agent_dir)` | DEAD? | Preset po nazwie (katalog przed plikiem) albo po sciezce. | — |
+| 1057 | `z_konfiguracji(tekst_toml, nazwa, opis)` | DEAD? | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). | — |
+| 1081 | `eksportuj(preset)` | DEAD? | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). | — |
 
 ---
 

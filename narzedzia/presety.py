@@ -243,6 +243,10 @@ def cmd_podlacz(args) -> int:
     print("  instancja:  %s   (aktywacja nr %d)" % (akt.instancja, akt.numer))
     print("  dane:       %s" % _wzgl(akt.katalog_danych))
     print("  bloki:      %s" % (", ".join(sorted(akt.preset.bloki)) or "brak"))
+    _proba, _ = preset.rozwiaz(akt.preset, config, BAZA)
+    print("  konto:      %s / %s   (%s)"
+          % (_proba.SUBSTACK_HANDLE, _proba.NAZWA_MARKI,
+             "z agent-v2/.env" if os.environ.get("SUBSTACK_HANDLE") else "z presetu"))
     if poprzedni and poprzedni.get("preset") != akt.preset.nazwa:
         print("  poprzedni:  %s — jego dane zostaja w swojej instancji, nietkniete"
               % poprzedni.get("preset"))

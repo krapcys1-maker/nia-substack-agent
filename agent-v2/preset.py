@@ -423,9 +423,13 @@ def proba_konfiguracji(cfg: Any, baza: dict[str, Any] | None = None) -> types.Si
     return proba
 
 
-def rozwiaz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None
+def rozwiaz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
+            srodowisko: dict[str, str] | None = None
             ) -> tuple[types.SimpleNamespace, list[str]]:
-    """Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki)."""
+    """Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki).
+    Konto (uchwyt, marka) ze srodowiska instalacji nadpisuje pole `[konto]`,
+    tak samo jak robi to `config` przy starcie.
+    """
     proba = proba_konfiguracji(cfg, baza)
     try:
         meldunki = konfiguracja.zastosuj(preset.pola, proba)
@@ -433,6 +437,10 @@ def rozwiaz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None
         raise BladPresetu("%s: %s" % (preset.plik.name, exc))
     proba.PRESET_BLOKI = dict(preset.bloki)
     _bez_domyslnego_korpusu(preset, proba)
+    nadpisane = konfiguracja.konto_ze_srodowiska(
+        proba, os.environ if srodowisko is None else srodowisko)
+    if nadpisane:
+        meldunki.append("srodowisko -> %s (konto instalacji, nie presetu)" % ", ".join(nadpisane))
     return proba, meldunki
 
 
@@ -505,7 +513,8 @@ def _napisy(x: Any):
 
 
 def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
-            srodowisko: dict[str, str] | None = None) -> tuple[list[str], list[str]]:
+            srodowisko: dict[str, str] | None = None,
+            do_aktywacji: bool = False) -> tuple[list[str], list[str]]:
     """Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli.
 
     Blad uniemozliwia podlaczenie. Uwaga to rzecz, ktora operator ma zobaczyc
@@ -534,10 +543,20 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
         return bledy, uwagi
 
     try:
-        proba, _ = rozwiaz(preset, cfg, baza)
+        proba, _ = rozwiaz(preset, cfg, baza, srodowisko)
     except BladPresetu as exc:
         return [str(exc)], []
 
+    # KONTO INSTALACJI (README: pobierz, wybierz preset, klucze i uchwyt do .env,
+    # dziala). Wspolny preset ma placeholder; przy aktywacji to blad, przy
+    # samym `sprawdz` — uwaga, zeby dalo sie ocenic preset bez konta.
+    problemy_konta = konfiguracja.placeholder_konta(
+        getattr(proba, "SUBSTACK_HANDLE", ""), getattr(proba, "NAZWA_MARKI", ""))
+    if problemy_konta:
+        komunikat = ("konto: %s. Wpisz SUBSTACK_HANDLE=<uchwyt> i NAZWA_MARKI=<nazwa> "
+                     "w agent-v2/.env (konto jest instalacji, preset moze byc wspolny)"
+                     % "; ".join(problemy_konta))
+        (bledy if do_aktywacji else uwagi).append(komunikat)
     # --- temat: reguly strukturalne, wywiedzione ze struktury silnika --
     # Te same, ktore `narzedzia/pakiety.py` stawia wsadom: nie liczby wpisane
     # recznie, tylko wielkosci, ktore MAJA skutek w kodzie.
@@ -807,7 +826,7 @@ def podlacz(sciezka: Path, agent_dir: Path, cfg: Any, baza: dict[str, Any] | Non
     """
     agent_dir = Path(agent_dir).resolve()
     preset = wczytaj(sciezka)
-    bledy, uwagi = sprawdz(preset, cfg, baza, srodowisko)
+    bledy, uwagi = sprawdz(preset, cfg, baza, srodowisko, do_aktywacji=True)
     if bledy:
         raise BladPresetu("preset %r nie przeszedl sprawdzenia:\n  - %s"
                           % (preset.nazwa, "\n  - ".join(bledy)))
@@ -816,7 +835,9 @@ def podlacz(sciezka: Path, agent_dir: Path, cfg: Any, baza: dict[str, Any] | Non
         raise BladPresetu("nazwa instancji %r: dozwolone male litery, cyfry, kropka, "
                           "myslnik i podkreslenie" % instancja)
     katalog = katalog_instancji(agent_dir) / instancja
-    _sprawdz_wlasciciela(katalog, preset, przejmij)
+    _sprawdz_wlasciciela(katalog, preset, przejmij,
+                         konfiguracja.uchwyt_konta(preset.pola,
+                                                   os.environ if srodowisko is None else srodowisko))
     numer = _dopisz_do_dziennika(katalog, {"zdarzenie": "podlacz", "preset": preset.nazwa,
                                            "odcisk": preset.odcisk,
                                            "plik": _wzgledna(preset.plik, korzen(agent_dir))})
@@ -851,7 +872,8 @@ def wlasciciel(katalog: Path) -> dict[str, Any] | None:
     return dane if isinstance(dane, dict) else {}
 
 
-def _sprawdz_wlasciciela(katalog: Path, preset: Preset, przejmij: bool) -> None:
+def _sprawdz_wlasciciela(katalog: Path, preset: Preset, przejmij: bool,
+                         uchwyt: str | None = None) -> None:
     """Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta.
 
     Audyt z 6 wrzesnia 2026 (F03, proba P04): preset B podlaczony z tym
@@ -861,7 +883,8 @@ def _sprawdz_wlasciciela(katalog: Path, preset: Preset, przejmij: bool) -> None:
     dostaje odmowe i rade, zeby wziac nowa nazwe. `przejmij=True` to jawna
     decyzja operatora, zapisana w dzienniku instancji.
     """
-    uchwyt = str(preset.pola.get("konto.uchwyt") or "")
+    if uchwyt is None:
+        uchwyt = str(preset.pola.get("konto.uchwyt") or "")
     stary = wlasciciel(katalog)
     if stary is not None and stary:
         obcy = (stary.get("preset") != preset.nazwa

@@ -57,3 +57,18 @@ The full description, in Polish, is in [docs/PRESETY.md](../docs/PRESETY.md).
 - The fingerprint covers fields, prompt blocks and the style files' contents,
   with relative paths: copying a cartridge keeps it, editing a profile changes it.
 
+## Your account is not in the preset
+
+A preset is meant to be shared: the same `ai` can run on many accounts. The
+account is yours, so it lives in `agent-v2/.env`:
+
+```
+SUBSTACK_HANDLE=your-real-handle
+NAZWA_MARKI=Your real publication name
+```
+
+Both override `[konto]` in the preset. The presets in this repository keep the
+placeholder on purpose, and `podlacz` refuses to activate while the handle or
+the name is still one; `sprawdz` only warns, so a preset can be judged without
+an account. The instance directory records the handle that was actually used.
+

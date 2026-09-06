@@ -1,5 +1,11 @@
 # Subject packs
 
+> **Packs are the pre-preset form of a subject.** The current way to give the
+> bot a subject is a preset in [`presety/`](../presety/README.md): a preset
+> carries the subject *and* the voice, sources, models, volumes and schedule,
+> and plugs in with one command. Packs stay here as raw material — lift the
+> search terms, markers and domains from one when you write a new preset.
+
 A **subject pack** is one TOML file that answers the hardest part of setting
 this bot up: *what is it about, and what should it go looking for.*
 

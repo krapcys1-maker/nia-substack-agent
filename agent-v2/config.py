@@ -3467,6 +3467,11 @@ else:
         _dane_konfiguracji = _konf.wczytaj(KONFIGURACJA_PLIK)
     KONFIGURACJA_ZMIENILA = _konf.zastosuj(_dane_konfiguracji, sys.modules[__name__])
 
+# KONTO Z INSTALACJI: `.env` (SUBSTACK_HANDLE, NAZWA_MARKI) wygrywa z `[konto]`
+# presetu i ze starego TOML-a. Preset moze byc wspolny dla wielu osob; konto nie.
+# `podlacz` odmawia, gdy po tym zlozeniu uchwyt albo marka to nadal placeholder.
+KONTO_ZE_SRODOWISKA = _konf.konto_ze_srodowiska(sys.modules[__name__], os.environ)
+
 # --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI -------------------
 #
 # Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RAZ, przy

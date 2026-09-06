@@ -136,6 +136,29 @@ def brak_presetu() -> str | None:
             "python narzedzia/presety.py lista, potem podlacz <nazwa>.")
 
 
+def konto_placeholder() -> str | None:
+    """Konto instalacji nadal jest placeholderem — bot sprawdzalby profil „your-handle".
+
+    Konto jest INSTALACJI, nie presetu: wspolny preset (np. `ai`) zostaje
+    z placeholderem, a uchwyt i marke podaje `agent-v2/.env`
+    (SUBSTACK_HANDLE, NAZWA_MARKI). `podlacz` odmawia przy placeholderze,
+    ale ktos moze podlaczyc, a potem wyczyscic `.env` — wtedy zegar
+    uruchamialby bota pod marka „Your Publication". To ma byc alarm.
+    """
+    if getattr(config, "W_TESCIE", False):
+        return None
+    import konfiguracja
+
+    problemy = konfiguracja.placeholder_konta(getattr(config, "SUBSTACK_HANDLE", ""),
+                                              getattr(config, "NAZWA_MARKI", ""))
+    if not problemy:
+        return None
+    zrodlo = ", ".join(getattr(config, "KONTO_ZE_SRODOWISKA", []) or []) or "nic"
+    return ("Konto: %s. Z agent-v2/.env przyszlo: %s. Wpisz tam SUBSTACK_HANDLE=<uchwyt> "
+            "i NAZWA_MARKI=<nazwa> (konto jest instalacji, preset moze byc wspolny)."
+            % ("; ".join(problemy), zrodlo))
+
+
 def artykul_zalegly() -> str | None:
     """Czy gotowy artykul lezy na dysku niewystawiony dluzej niz dobe.
 
@@ -728,6 +751,7 @@ def sprawdz_wszystko() -> list[str]:
         # Pierwsza, bo tlumaczy wszystkie nastepne: bez presetu nic nie wyszlo
         # i nic nie wyjdzie, a `cisza` powiedzialaby tylko, ze jest cicho.
         ("preset", "BRAK AKTYWNEGO PRESETU", brak_presetu),
+        ("konto", "KONTO TO NADAL PLACEHOLDER", konto_placeholder),
         ("cisza", "Agent milczy", cisza),
         ("zawieszone", "Przebiegi wisialy w RUNNING", zawieszone),
         ("dysk", "Dysk sie konczy", dysk),

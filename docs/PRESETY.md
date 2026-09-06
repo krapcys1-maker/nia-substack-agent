@@ -179,3 +179,23 @@ Czego ta gałąź nadal nie daje (F07–F13 audytu): eksportu pełnej paczki,
 osobnego profilu Chrome i nazw usług na klon, wspólnego limitu rachunku
 między instancjami, cache zadań z hashem wejścia. To sprawy otwarte.
 
+## Konto z instalacji, nie z kartridża
+
+Kartridż ma być wspólny: ten sam `ai` może pracować u wielu osób. Konto jest
+jedno, więc siedzi w `agent-v2/.env`:
+
+```
+SUBSTACK_HANDLE=prawdziwy-uchwyt
+NAZWA_MARKI=Prawdziwa nazwa publikacji
+```
+
+Obie zmienne nadpisują `[konto]` z kartridża, przy starcie i w każdym
+`sprawdz`/`podlacz`. Kartridże w repozytorium zostają z placeholderem
+(audyt tego pilnuje), a `podlacz` odmawia, dopóki uchwyt albo marka jest
+placeholderem. Samo `sprawdz` tylko ostrzega, żeby dało się ocenić kartridż
+bez konta. Właściciel instancji zapisuje uchwyt faktycznie użyty.
+
+Ścieżka dla kogoś z zewnątrz: sklonować repozytorium, `cp .env.example
+agent-v2/.env` i wpisać klucze, uchwyt i nazwę, `podlacz ai`, `browser.py
+sesja`, `alarm.py`. Repozytorium zostaje czyste; zmiany robi się u siebie.
+

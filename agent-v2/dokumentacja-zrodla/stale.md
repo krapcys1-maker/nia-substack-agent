@@ -218,6 +218,7 @@
 | `PRESET` | `None` | --- AKTYWNY PRESET ---------------------------------------------------------- JEDEN SILNIK, JEDNA INSTANCJA NARAZ, KONTEKST ROZWIAZANY PRZED |
 | `PRESET_AKTYWACJA` | `None` | — |
 | `INSTANCJA` | `""` | — |
+| `KONTO_ZE_SRODOWISKA` | `_konf.konto_ze_srodowiska(sys.modules[__name` | KONTO Z INSTALACJI: `.env` (SUBSTACK_HANDLE, NAZWA_MARKI) wygrywa z `[konto]` presetu i ze starego TOML-a. Preset moze byc wspolny dla wielu |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
