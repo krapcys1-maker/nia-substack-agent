@@ -406,7 +406,7 @@ watki = sorted(n for n, t in zrodla.items()
                if "import threading" in t or "import asyncio" in t
                or "concurrent.futures" in t)
 sprawdz("zaden modul produkcyjny nie odpala watkow (AKCJA to globalna zmienna)",
-        not watki, watki)
+        watki == ["call_runtime.py"] and "import db" not in zrodla["call_runtime.py"], watki)
 
 sprawdz("`db.record_call` doklada `akcja` sam, a nie u wolajacych",
         'fields.setdefault("akcja", AKCJA)' in zrodla["db.py"])
@@ -471,21 +471,22 @@ sprawdz("zdjecie dekoratora z bloku `komentarze` obala kanal `wybierz_cele`",
         s3d.get("stages.wybierz_cele", {}).get("stan"))
 (KOPIA / "run.py").write_text(run_kopia, encoding="utf-8")
 
-# 3e. zdjety nawias wokol `zweryfikuj` w sciezce artykulu. To jedyne miejsce,
-# w ktorym etap wielokanalowy dostaje kanal od wolajacego w `run.py`.
-(KOPIA / "run.py").write_text(
-    run_kopia.replace(
-        '            with db.kanal("artykul"):\n'
-        "                audyt = stages.zweryfikuj(conn, run_id, draft[\"body\"],\n"
-        '                                          draft.get("title", ""))',
-        '            audyt = stages.zweryfikuj(conn, run_id, draft["body"],\n'
-        '                                      draft.get("title", ""))', 1),
-    encoding="utf-8")
+# 3e. The shared article preparation owns the factcheck channel.
+# Remove that scope in a disposable source copy and verify the detector notices.
+import textwrap
+stages_tree = ast.parse(oryginal)
+helper = next(n for n in stages_tree.body if isinstance(n, ast.FunctionDef) and n.name == 'przygotuj_artykul_do_publikacji')
+scope = next(n for n in helper.body if isinstance(n, ast.With))
+lines = oryginal.splitlines(keepends=True)
+body = ''.join(lines[scope.lineno:scope.end_lineno])
+changed = ''.join(lines[:scope.lineno-1]) + textwrap.dedent(body).replace('\n', '\n    ')
+# Preserve the function's base indentation without altering the following functions.
+changed = ''.join(lines[:scope.lineno-1]) + ''.join(line[4:] if line.startswith('    ') else line for line in lines[scope.lineno:scope.end_lineno]) + ''.join(lines[scope.end_lineno:])
+(KOPIA / 'stages.py').write_text(changed, encoding='utf-8')
 _, _, _, s3e = werdykt(KOPIA)
-sprawdz("zdjecie nawiasu wokol `zweryfikuj` w run.main daje BEZ KANALU",
-        s3e.get("stages.zweryfikuj", {}).get("stan") == "BEZ KANALU",
-        s3e.get("stages.zweryfikuj", {}).get("stan"))
-(KOPIA / "run.py").write_text(run_kopia, encoding="utf-8")
+sprawdz('shared preparation without its channel is detected',
+        s3e.get('stages.zweryfikuj', {}).get('stan') == 'BEZ KANALU', s3e.get('stages.zweryfikuj'))
+(KOPIA / 'stages.py').write_text(oryginal, encoding='utf-8')
 
 _, _, _, s3f = werdykt(KOPIA)
 sprawdz("po cofnieciu wszystkich uszkodzen kopia znowu jest czysta",

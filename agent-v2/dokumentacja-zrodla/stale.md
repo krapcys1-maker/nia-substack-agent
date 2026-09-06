@@ -22,7 +22,7 @@
 | `IMAGE_MODEL` | `"gpt-image-1.5"` | Grafika do artykulu. Wybor NIE jest podyktowany cena: przy jednym obrazie na artykul nawet najdrozsza opcja to grosze miesiecznie, a taniej  |
 | `IMAGE_SIZE` | `"1536x1024"` | — |
 | `IMAGE_QUALITY` | `"high"` | — |
-| `IMAGE_PRICE_USD` | `0.04` | — |
+| `IMAGE_PRICE_USD` | `0.20` | — |
 | `IMAGE_TIMEOUT_S` | `300` | — |
 | `NAZWA_MARKI` | `"Your Publication"` | Konto na Substacku. Nazwa publikacji, tak jak ma ja widziec model i czytelnik. DO 2026-09-03 NIE ISTNIALA JAKO STALA. Nazwa stala wpisana w  |
 | `SUBSTACK_HANDLE` | `"your-handle"` | — |
@@ -185,7 +185,7 @@
 | `WYBIERAJ_POWYZEJ` | `20` | — |
 | `MAX_ODPOWIEDZI_MALE` | `6` | — |
 | `MAX_ODPOWIEDZI_DUZE` | `8` | — |
-| `MAX_TOKENS` | `{ purpose: ceiling + THINKING_HEADROOM_TOKEN` | Zapas na myślenie dostają WSZYSTKIE etapy, nie tylko Claude'owe: modele DeepSeek v4 też rozumują, a tokeny rozumowania liczą się do sufitu w |
+| `MAX_TOKENS` | `{ purpose: ceiling + (0 if purpose in DEEPSE` | Zapas na myślenie dostają WSZYSTKIE etapy, nie tylko Claude'owe: modele DeepSeek v4 też rozumują, a tokeny rozumowania liczą się do sufitu w |
 | `MS_PER_OUTPUT_TOKEN` | `16.08` | — |
 | `TIMEOUT_MARGIN` | `1.5` | — |
 | `MAX_TIMEOUT_S` | `300` | Twardy sufit na JEDNO wywolanie. Bez niego wyliczenie z sufitu tokenow dawalo 965 sekund, a przy wyszukiwaniu razy trzy — 48 MINUT. Jedno za |
@@ -222,3 +222,12 @@
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
+| `PRICING_VERSION` | `"rates-2026-09-06"` | Published rates checked 2026-09-06; invoice verification is separate. |
+| `PRICING_SOURCES` | `{ "deepseek": "https://api-docs.deepseek.com` | — |
+| `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. |
+| `ROLE_DEADLINE_S` | `{"write": 480, "scout": 300, "synthesis": 30` | — |
+| `SEARCH_INPUT_RESERVE_TOKENS` | `200000` | — |
+| `MIN_CALL_OUTPUT_TOKENS` | `512` | — |
+| `CLAUDE_PROMPT_CACHE` | `False` | — |
+| `CACHE_MAX_AGE_S` | `6 * 3600` | — |
+| `FACTCHECK_CACHE_MAX_AGE_S` | `3600` | — |

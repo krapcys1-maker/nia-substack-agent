@@ -12,8 +12,10 @@ institutions; numbers, dates, quantities, rankings; statements about what a
 document, law or company says or does; statements about what someone excluded,
 decided, admitted or predicted.
 
-Not claims: opinions, interpretations, analogies, questions, predictions, and
-statements about what the thing being responded to said.
+Pure opinions, interpretations, analogies, questions and predictions are not
+claims. Check any factual premise within them, including what a quoted text
+actually said. A claim can be checkable without containing a number. Do not
+classify a missing source as confirmation or use hedging to hide a false premise.
 
 ## How to check
 

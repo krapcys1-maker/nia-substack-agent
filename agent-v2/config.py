@@ -113,7 +113,7 @@ OPENAI_API_KEY = _env("OPENAI_API_KEY")   # wylacznie do grafik
 IMAGE_MODEL = "gpt-image-1.5"
 IMAGE_SIZE = "1536x1024"
 IMAGE_QUALITY = "high"
-IMAGE_PRICE_USD = 0.04   # cennik sierpien 2026, NIEPOTWIERDZONY na fakturze
+IMAGE_PRICE_USD = 0.20   # cennik sierpien 2026, NIEPOTWIERDZONY na fakturze
 IMAGE_TIMEOUT_S = 300
 
 # Konto na Substacku.
@@ -395,7 +395,7 @@ ZAPASOWY_PISARZ = CLAUDE
 
 PRICING = {
     CLAUDE: {"in": 5.00, "out": 25.00, "verified": True},
-    SONNET: {"in": 3.00, "out": 15.00, "verified": True},
+    SONNET: {"in": 2.00, "out": 10.00, "verified": False},
     # STAWKA FABLE 5.1 NIEPOTWIERDZONA. Wpisana z ceny poprzednika, bo model
     # wyszedl 1 wrzesnia i nie ma go jeszcze na zadnej naszej fakturze.
     # `verified: False` sprawia, ze kazde takie wywolanie zapisuje sie
@@ -523,7 +523,7 @@ def w_szczycie(kiedy=None) -> bool:
     kiedy = kiedy or datetime.now(timezone.utc)
     if kiedy < datetime.fromisoformat(TARYFA_SZCZYTOWA_OD):
         return False
-    return kiedy.hour in GODZINY_SZCZYTU_UTC
+    return kiedy.astimezone(timezone.utc).weekday() < 5 and kiedy.astimezone(timezone.utc).hour in GODZINY_SZCZYTU_UTC
 
 
 # Filtrowanie dynamiczne (`_20260209`) jest na Opusie i Sonnecie 5.
@@ -2580,7 +2580,7 @@ MAX_ODPOWIEDZI_DUZE = 8
 # DeepSeek v4 też rozumują, a tokeny rozumowania liczą się do sufitu wyjścia.
 # Odsiew ucięło na 2057 tokenach dokładnie z tego powodu.
 MAX_TOKENS = {
-    purpose: ceiling + THINKING_HEADROOM_TOKENS
+    purpose: ceiling + (0 if purpose in DEEPSEEK_BEZ_MYSLENIA else THINKING_HEADROOM_TOKENS)
     for purpose, ceiling in MAX_TOKENS.items()
 }
 
@@ -3513,3 +3513,20 @@ if PRESET is not None and not _w_darmowym_tescie():
 elif KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():
     print("  [konfiguracja] %s: przestawiono %d pozycji"
           % (KONFIGURACJA_PLIK.name, len(KONFIGURACJA_ZMIENILA)), flush=True)
+
+# Published rates checked 2026-09-06; invoice verification is separate.
+PRICING_VERSION = "rates-2026-09-06"
+PRICING_SOURCES = {
+    "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
+    "anthropic": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "openai": "https://developers.openai.com/api/docs/models/gpt-image-1.5",
+}
+# Whole operation, including retries, distinct from socket inactivity.
+CALL_DEADLINE_S = 180
+ROLE_DEADLINE_S = {"write": 480, "scout": 300, "synthesis": 300, "review": 240,
+                   "discovery": 300, "curiosity": 300, "factcheck": 240}
+SEARCH_INPUT_RESERVE_TOKENS = 200000
+MIN_CALL_OUTPUT_TOKENS = 512
+CLAUDE_PROMPT_CACHE = False  # enable only after measuring same-model cache hits
+CACHE_MAX_AGE_S = 6 * 3600
+FACTCHECK_CACHE_MAX_AGE_S = 3600

@@ -45,6 +45,9 @@ NL = "\n"
 # zdanie o TYM, PO CO modul istnieje, a nie o tym, co robi. Kolejnosc ma
 # znaczenie: od rozdzielnika w dol, tak jak czyta sie system.
 MODULY = [
+    ("browser_reader.py", "odczyt zrodel w osobnym procesie z ograniczeniem czasu i zachowaniem wynikow"),
+    ("call_runtime.py", "terminy operacji i zuzycie; worker nie zapisuje do bazy"),
+    ("result_cache.py", "cache zalezne od tresci i czasu waznosci"),
     ("run.py", "rozdzielnik — ścieżka artykułu i ścieżka dnia"),
     ("stages.py", "wszystkie etapy myślowe; nie dotyka przeglądarki"),
     ("browser.py", "cała styczność z Substackiem; nie woła modelu"),

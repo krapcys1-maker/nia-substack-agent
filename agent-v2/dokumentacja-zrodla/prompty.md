@@ -167,14 +167,14 @@
 
 **Pola wejściowe:** *(brak)*
 
-#### `recenzent.md` (56 wierszy)
+#### `recenzent.md` (26 wierszy)
 
 **Pola wejściowe:** `body`, `card_json`
 
 **Kontrakt wyjścia:**
 
 ```json
-{{"sentences": [{{"text": "<the sentence, verbatim>", "class": "FACT"|"INFERENCE"|"PROSE", "supported": true|false, "why": "<only when class is FACT and supported is false: what is asserted and what the card lacks>"}}], "unsupported_facts": [{{"text": "...", "why": "..."}}], "summary": "<one sentence>"}}
+{{"sentences":[{{"index":1,"class":"FACT","supported":true,"why":""}}],"summary":"one sentence"}}
 ```
 
 #### `restack.md` (79 wierszy)
@@ -217,7 +217,7 @@
 {{"contradicted_belief": {{"present": true|false, "the_belief": "<the reader's wrong belief in their own words, or empty string>", "evidence": "<what in the card breaks it, or why nothing does>"}}, "named_decider": {{"present": true|false, "evidence": "<who, from the card, or why nobody is named>"}}, "felt_number": {{"present": true|false, "evidence": "<the figure and what it measures, or why the only figures are labels>"}}, "second_domain": {{"present": true|false, "evidence": "<the other field, or why the parallels stay inside one industry>"}}, "unsettled_outcome": {{"present": true|false, "the_question": "<the open question in the reader's own words, or empty string>", "the_situation": "<what the reader pictures, or empty string>", "governed_by": "<the written rule from the card that decides it, quoted or named — or why nothing in the card governs it>"}}, "what_would_rescue_it": "<one sentence naming the shape of the missing piece>", "one_line_verdict": "<one sentence on what this card actually has>"}}
 ```
 
-#### `weryfikacja.md` (142 wierszy)
+#### `weryfikacja.md` (144 wierszy)
 
 **Pola wejściowe:** `context`, `dzis`, `text`
 

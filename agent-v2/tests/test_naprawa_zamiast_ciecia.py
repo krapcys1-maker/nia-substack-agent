@@ -115,7 +115,7 @@ print("=== 1. `zweryfikuj` ODDAJE ZARZUTY, NIE TYLKO WERDYKT ===")
 # wiec nie ma czym naprawiac.
 licznik = []
 llm.call = stub({"factcheck": json.dumps({"claims": [
-    {"claim": "FirmaB went 48,128 hours.", "status": "confirmed"},
+    {"claim": "FirmaB went 48,128 hours.", "status": "confirmed", "url": "https://example.org/record"},
     {"claim": "FirmaA logged thirty times the interventions.", "status": "refuted",
      "what_the_source_says": "The multiple is about 94."},
     {"claim": "The programme covers 2019 to 2024.", "status": "unverified",
@@ -132,8 +132,8 @@ sprawdz("obalone twierdzenie JEST zarzutem",
         any(z.get("status") == "refuted" for z in (zarzuty or [])))
 sprawdz("niepotwierdzona LICZBA jest zarzutem",
         any("2019" in str(z.get("claim")) for z in (zarzuty or [])))
-sprawdz("niepotwierdzona TEZA bez liczby nie jest zarzutem",
-        not any("Regulators care" in str(z.get("claim")) for z in (zarzuty or [])),
+sprawdz("niepotwierdzony fakt bez liczby jest zarzutem",
+        any("Regulators care" in str(z.get("claim")) for z in (zarzuty or [])),
         "teza o motywach ma prawo byc sporna")
 
 print()
@@ -141,7 +141,7 @@ print("=== 2. OBALONE -> NAPRAWA WOLANA I PRZYJETA ===")
 licznik = []
 llm.call = stub({
     "naprawa": json.dumps({"text": POPRAWIONY, "co_zmienione": "thirty -> ninety-four"}),
-    "factcheck": json.dumps({"claims": [{"claim": "x", "status": "confirmed"}]}),
+    "factcheck": json.dumps({"claims": [{"claim": "x", "status": "confirmed", "url": "https://example.org/record"}]}),
 }, licznik)
 stages._NAPRAW_ZUZYTE.clear()
 r = stages.napraw_obalone(CONN, 2, ORYGINAL, audyt(ZARZUT), **naprawa_notki())
@@ -167,7 +167,7 @@ r = stages.napraw_obalone(
            "what_the_source_says": ""}),
     **naprawa_notki())
 sprawdz("naprawy nie ma", r is None)
-sprawdz("model nie zostal zawolany ANI RAZU", licznik == [], str(licznik))
+sprawdz("jedna ograniczona proba zawezania niepotwierdzonego twierdzenia", licznik == ["naprawa"], str(licznik))
 
 print()
 print("=== 4. NAPRAWA ZE SLADEM CUDZEGO POLECENIA -> ODRZUCONA ===")
@@ -230,9 +230,8 @@ llm.call = stub({
 }, licznik)
 stages._NAPRAW_ZUZYTE.clear()
 r = stages.napraw_obalone(CONN, 61, ORYGINAL, audyt(ZARZUT), **naprawa_notki())
-sprawdz("przyjeta — oryginal byl falszywy NA PEWNO", r is not None)
-sprawdz("nowy zarzut policzony, nie przemilczany",
-        bool(r) and r["nowych"] == 1, r)
+sprawdz("nowy zarzut nie jest poprawa do publikacji", r is None)
+sprawdz("obie proby pozostaja w pomiarze", licznik == ["naprawa", "factcheck"], licznik)
 
 print()
 print("=== 7. SUFIT NAPRAW NA PRZEBIEG ===")
@@ -368,8 +367,8 @@ kandydaci = wynik.get("candidates") or []
 sprawdz("kandydat mimo padnietej naprawy", bool(kandydaci))
 sprawdz("tekst to oryginal",
         bool(kandydaci) and "Thirty times" in (kandydaci[0].get("note") or ""))
-sprawdz("notka i tak idzie",
-        bool(kandydaci) and kandydaci[0].get("safe_to_post") is True)
+sprawdz("nieudana naprawa odklada tylko ten material",
+        bool(kandydaci) and kandydaci[0].get("safe_to_post") is False)
 
 llm.call = PRAWDZIWE_CALL
 

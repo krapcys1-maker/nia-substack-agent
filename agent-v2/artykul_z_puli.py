@@ -363,6 +363,14 @@ def main() -> int:
     """
     # BRAMA PRESETU — przed baza i przed pierwszym platnym wywolaniem. Patrz
     # `run.main` i `preset.wymagaj_aktywnego`.
+    import run as runner
+    import call_runtime, time
+    call_runtime.RUN_DEADLINE = time.monotonic() + 3600
+    try:
+        _lock = runner.zajmij_zamek()
+    except runner.JuzDziala as exc:
+        print(str(exc), flush=True)
+        return 0
     try:
         preset.wymagaj_aktywnego(config, "artykul_z_puli.py")
     except preset.BrakPresetu as exc:
@@ -1482,6 +1490,15 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
         print(">> zapisano bez publikacji: %s" % sciezka, flush=True)
         return KOD_ZATRZYMANY
 
+    if '--wyslij' in sys.argv:
+        import json
+        draft, audyt = stages.przygotuj_artykul_do_publikacji(conn, run_id, draft, card, raport)
+        if not audyt.get('safe_to_post') or audyt.get('nie_sprawdzone'):
+            sciezka = stages.save(conn, run_id, brief, card, draft, 'ZATRZYMANY',
+                'FACTCHECK', [*uwagi, {'gate':'FACTCHECK', 'detail':json.dumps(audyt, ensure_ascii=False)}])
+            print('>> odlozono ten artykul po kontroli faktow: %s' % sciezka, flush=True)
+            return KOD_ZATRZYMANY
+
     status, blokada = gates.verdict(uwagi)
     notatki = [*uwagi,
                {"gate": "DLUGOSC", "detail": "%d slow" % len(draft["body"].split())},
@@ -1545,19 +1562,7 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     # gorsze dla czytelnika niz jedno slabe zdanie. Sprawdzenie faktow zostaje
     # WYLACZNIE jako wpis w logu — widac, co model zakwestionowal, i tyle.
     print()
-    print("-- sprawdzenie faktow (log, NIE bramka) --", flush=True)
-    audyt = stages.zweryfikuj(conn, run_id, draft["body"], draft.get("title", ""))
-    if audyt.get("safe_to_post"):
-        print("   czysto: %s" % str(audyt.get("verdict", ""))[:150], flush=True)
-    else:
-        print("   ZASTRZEZENIA (artykul i tak idzie): %s"
-              % str(audyt.get("verdict", ""))[:250], flush=True)
-        for c in (audyt.get("claims") or []):
-            if str(c.get("status")) in ("refuted", "outdated", "unverified"):
-                print("   [%s] %s" % (c.get("status"),
-                                      str(c.get("claim"))[:150]), flush=True)
-
-    print()
+    print("-- fakty sprawdzone; publikacja gotowego materialu --", flush=True)
     print("-- publikacja --", flush=True)
     wynik = _opublikuj(sciezka)
     if wynik.get("wyslane"):

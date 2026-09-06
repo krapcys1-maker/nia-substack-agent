@@ -187,7 +187,15 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
 NOWE_KOLUMNY = {
     "calls": {"cache_hit": "INTEGER NOT NULL DEFAULT 0",
               # KTORE DZIALANIE ZA TO ZAPLACILO — patrz `AKCJA` i `kanal`.
-              "akcja": "TEXT NOT NULL DEFAULT ''"},
+              "akcja": "TEXT NOT NULL DEFAULT ''",
+              "operation_id": "TEXT NOT NULL DEFAULT ''",
+              "attempt_no": "INTEGER NOT NULL DEFAULT 1",
+              "usage_status": "TEXT NOT NULL DEFAULT 'legacy'",
+              "pricing_version": "TEXT NOT NULL DEFAULT ''",
+              "pricing_source": "TEXT NOT NULL DEFAULT ''",
+              "cache_write_5m": "INTEGER NOT NULL DEFAULT 0",
+              "cache_write_1h": "INTEGER NOT NULL DEFAULT 0",
+              "reserved_usd": "REAL NOT NULL DEFAULT 0"},
     # TOR PRZEBIEGU. „produkcja" to praca konta, „test" to sprawdzanie kodu.
     # Domyslnie produkcja, bo bezpieczniejsza pomylka to policzyc test jako
     # produkcje (mniej wolnego budzetu) niz odwrotnie.
@@ -308,6 +316,60 @@ def record_call(conn: sqlite3.Connection, **fields: Any) -> None:
         f" VALUES (?, {', '.join('?' * len(keys))})",
         [now(), *(fields[k] for k in keys)],
     )
+    conn.commit()
+
+
+def budget_used(conn: sqlite3.Connection, *, run_id=None, prefix=None, tryb=None) -> float:
+    """Known spend plus outstanding/unknown reservations, counted only once."""
+    where, args = [], []
+    if run_id is not None:
+        where.append("c.run_id = ?")
+        args.append(run_id)
+    if prefix is not None:
+        where.append("c.at LIKE ?")
+        args.append(prefix + "%")
+    if tryb is not None:
+        where.append("COALESCE(r.tryb, 'produkcja') = ?")
+        args.append(tryb)
+    sql = ("SELECT COALESCE(SUM(MAX(c.cost_usd, c.reserved_usd)),0) "
+           "FROM calls c LEFT JOIN runs r ON r.id=c.run_id")
+    if where:
+        sql += " WHERE " + " AND ".join(where)
+    return float(conn.execute(sql, args).fetchone()[0])
+
+
+def available_budget(conn: sqlite3.Connection, run_id=None) -> float:
+    limits = []
+    if run_id is not None:
+        limits.append(config.RUN_LIMIT_USD - budget_used(conn, run_id=run_id))
+    if not config.NO_LIMIT:
+        today = now()[:10]
+        mode = tryb_przebiegu(conn, run_id)
+        daily = config.TEST_LIMIT_USD if mode == "test" else config.DAILY_LIMIT_USD
+        limits.extend((daily - budget_used(conn, prefix=today, tryb=mode),
+                       config.MONTHLY_LIMIT_USD - budget_used(conn, prefix=today[:7])))
+    return max(0., min(limits)) if limits else float("inf")
+
+
+def start_attempt(conn: sqlite3.Connection, *, reserved_usd: float, **fields) -> int:
+    """Caller holds BEGIN IMMEDIATE while checking and reserving the budget."""
+    fields.update(at=now(), akcja=AKCJA, reserved_usd=reserved_usd,
+                  usage_status="pending", price_verified=0, ok=0)
+    names = list(fields)
+    cursor = conn.execute(
+        "INSERT INTO calls (%s) VALUES (%s)" % (", ".join(names), ", ".join("?" for _ in names)),
+        [fields[n] for n in names])
+    conn.commit()
+    return cursor.lastrowid
+
+
+def finish_attempt(conn: sqlite3.Connection, call_id: int, **fields) -> None:
+    allowed = {"tokens_in", "tokens_out", "cache_hit", "cache_write_5m", "cache_write_1h",
+               "web_searches", "cost_usd", "price_verified", "usage_status", "ok", "note", "reserved_usd"}
+    if not set(fields) <= allowed:
+        raise ValueError("unknown attempt field")
+    conn.execute("UPDATE calls SET %s WHERE id=?" % ", ".join(n + "=?" for n in fields),
+                 [*fields.values(), call_id])
     conn.commit()
 
 

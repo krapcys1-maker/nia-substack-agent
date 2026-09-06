@@ -73,198 +73,97 @@ def _dopisz_brakujace_kolumny(conn: sqlite3.Connection) -> None:
 
 <!--KOD:llm.call-->
 ```python
-def call(
-    purpose: str,
-    system: str,
-    user: str,
-    *,
-    conn: sqlite3.Connection,
-    run_id: int | None = None,
-    web_search: bool = False,
-    collect_urls: list[str] | None = None,
-) -> str:
-    """Woła model właściwy dla etapu i zapisuje koszt. Zwraca tekst odpowiedzi.
-
-    `collect_urls`, jeśli podane, zostanie wypełnione adresami, które realnie
-    zwróciła wyszukiwarka — do sprawdzenia, czy model nie zmyślił URL-a.
-    """
+def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
+         run_id: int | None = None, web_search: bool = False,
+         collect_urls: list[str] | None = None) -> str:
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
-
-    # DOSTAWCE ROZSTRZYGA `_dostawca`, TAK SAMO JAK KONTROLA KLUCZY.
-    #
-    # Stalo tu wlasne `"deepseek" if model.startswith("deepseek") else
-    # "anthropic"` — czyli DRUGIE miejsce decydujace o tym samym, i o jednego
-    # dostawce ubozsze. Dzis nie pekalo tylko dlatego, ze obrazy chodza osobna
-    # funkcja (`llm.obraz`), wiec `gpt-image-1.5` nigdy tu nie trafia. Model
-    # tekstowy OpenAI dopisany do `MODEL_FOR` poszedlby jednak do Anthropic
-    # z jego identyfikatorem, a odpowiedz brzmialaby jak awaria dostawcy.
-    #
-    # `_dostawca` istnieje dokladnie po to, zeby te dwa miejsca sie nie
-    # rozjechaly — i to jest zdanie z jego wlasnego docstringa.
     provider = _dostawca(model)
-    if provider not in ("anthropic", "deepseek"):
-        raise PreflightFailed(
-            "etap %r chodzi na %s, a `call` nie ma sciezki dla dostawcy %r.\n"
-            "Obrazy maja wlasna funkcje `llm.obraz`; model tekstowy nowego "
-            "dostawcy wymaga galezi tutaj i wpisu w `_dostawca`."
-            % (purpose, model, provider or "nieznany"))
-
-    # STALA, KTORA WYGLADA JAK USTAWIENIE. Wpis w EFFORT czyta sie jak decyzja
-    # o kosztach, a przy modelu spoza Claude nie robi NIC.
-    #
-    # Pierwsza wersja tego ostrzezenia stala w `_call_claude` i BYLA MARTWA:
-    # do tamtej funkcji nie ma jak wejsc nic spoza Claude, bo `call` rozstrzyga
-    # dostawce wyzej. Wykrywacz martwych obietnic sam byl martwa obietnica —
-    # i przeszedl testy, bo test szukal napisu w pliku, a nie sprawdzal, czy
-    # ten kod da sie w ogole wykonac. Tu, po ustaleniu modelu i przed
-    # rozdzieleniem, widac oba przypadki.
-    #
-    # Raz na proces, nie przy kazdym wywolaniu: chodzi o to, zeby bylo wiadomo,
-    # a nie zeby zalac log.
-    if (purpose in config.EFFORT and provider != "anthropic"
-            and purpose not in _EFFORT_BEZ_SKUTKU):
+    if provider not in ('anthropic', 'deepseek'):
+        raise PreflightFailed("unsupported text provider: %s" % provider)
+    if purpose in config.EFFORT and provider != 'anthropic' and purpose not in _EFFORT_BEZ_SKUTKU:
         _EFFORT_BEZ_SKUTKU.add(purpose)
-        print(f"  [effort] {purpose}={config.EFFORT[purpose]} NIE MA SKUTKU"
-              f" — etap chodzi na {model}, a to pokretlo dziala tylko na"
-              f" modelach Claude (DeepSeek ma DEEPSEEK_EFFORT"
-              f"={config.DEEPSEEK_EFFORT})", flush=True)
-
+        print(f"  [effort] {purpose}={config.EFFORT[purpose]} NIE MA SKUTKU na {model}", flush=True)
     if config.DRY_RUN:
         print(f"  [{purpose}] DRY_RUN — wywołanie pominięte", flush=True)
-        return ""
-
+        return ''
+    operation = uuid.uuid4().hex
+    deadline = time.monotonic() + config.ROLE_DEADLINE_S.get(purpose, config.CALL_DEADLINE_S)
+    if runtime.RUN_DEADLINE is not None:
+        deadline = min(deadline, runtime.RUN_DEADLINE)
     for proba in range(1, config.PONOWIENIA + 2):
+        if time.monotonic() >= deadline:
+            raise runtime.DeadlineExceeded('brak czasu na kolejna probe')
+        call_id, tokens, started = _reserve_attempt(conn, run_id, purpose, system, user,
+                                                  web_search, operation, proba)
+        state = runtime.Attempt(tokens, deadline)
+        def transport():
+            if provider == 'anthropic':
+                return _call_claude(purpose, system, user, web_search)
+            if web_search:
+                return _call_deepseek_responses(purpose, system, user)
+            return _call_deepseek(purpose, system, user)
         try:
-            if provider == "anthropic":
-                text, tin, tout, searches, urls = _call_claude(
-                    purpose, system, user, web_search)
-                cache_hit = 0
-            elif web_search:
-                text, tin, tout, searches, urls = _call_deepseek_responses(
-                    purpose, system, user)
-                cache_hit = 0
-            else:
-                text, tin, tout, searches, cache_hit = _call_deepseek(
-                    purpose, system, user)
-                urls = []
-            if collect_urls is not None:
-                collect_urls.extend(urls)
-            break
+            result = runtime.invoke(state, transport)
+            text, tin, tout, searches, extra = result
+            urls = extra if provider == 'anthropic' or web_search else []
+            # Compatibility with transport adapters; real transports declare observation.
+            if not state.observed:
+                state.usage = dict(tokens_in=tin, tokens_out=tout, web_searches=searches,
+                                   cache_hit=extra if provider == 'deepseek' and not web_search else 0)
+                state.usage_known = bool(tin or tout)
+            state.usage['web_searches'] = searches
         except BaseException as exc:
-            # BaseException, NIE Exception — i to nie jest niedbalstwo.
-            #
-            # `run.py` CELOWO zamienia SIGTERM na wyjatek (`_na_sygnale`, ~2246),
-            # zeby przebieg zdazyl sie zapisac, gdy systemd utnie go po
-            # `TimeoutStartSec`. Rzuca `KeyboardInterrupt` — a ten NIE JEST
-            # podklasa `Exception`, wiec przelatywal tedy bez zatrzymania.
-            #
-            # Skutek: przebieg zapisywal sie poprawnie (pilnuje tego
-            # `test_czas.py`), ale WYWOLANIE W LOCIE nie trafialo do `calls`
-            # w ogole. A `db.spent_usd` czyta wlasnie `calls`, wiec sufit
-            # dzienny, miesieczny i przebiegu nie widzialy pieniedzy wydanych
-            # na wywolanie, ktore akurat trwalo, gdy przyszedl sygnal. Traci
-            # sie przy tym najdrozsze: sygnal przychodzi po TimeoutStartSec,
-            # czyli trafia w wywolania, ktore trwaly najdluzej.
-            #
-            # Zmierzone: `RuntimeError` -> wiersz w `calls`; ten sam kod
-            # z `KeyboardInterrupt` -> zero wierszy.
-            #
-            # Zapisujemy i PODAJEMY DALEJ (`raise` nizej). Sygnal ma nadal
-            # zatrzymac przebieg — chodzi tylko o to, zeby po sobie posprzatal.
-            if isinstance(exc, Exception) and przejsciowy(exc) \
-                    and proba <= config.PONOWIENIA:
-                czekaj = config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1)
-                print(f"  [{purpose}] {type(exc).__name__} — przejściowy, "
-                      f"ponawiam za {czekaj}s ({proba}/{config.PONOWIENIA})",
-                      flush=True)
-                time.sleep(czekaj)
+            _settle_attempt(conn, call_id, state, model, started, False, exc)
+            if isinstance(exc, Exception) and przejsciowy(exc) and proba <= config.PONOWIENIA:
+                wait = config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1)
+                if time.monotonic() + wait >= deadline:
+                    raise runtime.DeadlineExceeded('deadline leaves no time for retry') from exc
+                print(f"  [{purpose}] {type(exc).__name__}; ponowienie {proba}/{config.PONOWIENIA} za {wait}s", flush=True)
+                time.sleep(wait)
                 continue
-            # Koszt nieudanego wywołania bywa nieznany. Zapisujemy "nie wiadomo"
-            # zamiast zgadywać kwotę — zgadnięta kwota w zapisie finansowym jest
-            # gorsza niż jej brak.
-            db.record_call(
-                conn=conn, run_id=run_id, provider=provider, model=model,
-                purpose=purpose, tokens_in=0, tokens_out=0, web_searches=0,
-                cost_usd=0.0, price_verified=0, ok=0,
-                note=f"{type(exc).__name__}: {exc}"[:500],
-            )
             raise
-
-    trafienia = locals().get("cache_hit", 0) or 0
-    usd, verified = _cost(model, tin, tout, searches, trafienia)
-    db.record_call(
-        conn=conn, run_id=run_id, provider=provider, model=model, purpose=purpose,
-        tokens_in=tin, tokens_out=tout, cache_hit=trafienia,
-        web_searches=searches, cost_usd=usd,
-        price_verified=int(verified), ok=1, note=None,
-    )
-    _log(purpose, model, tin, tout, searches, usd, verified)
-    if provider == "deepseek" and web_search:
-        needs_recovery = not text.strip()
-        if purpose in SEARCH_JSON_PURPOSES and text.strip():
-            try:
-                parse_json(text)
-            except (ValueError, TypeError):
-                needs_recovery = True
-        if needs_recovery:
-            if not urls:
-                raise Truncated("Search completed without usable text or URLs; its usage was recorded")
-            print(f"  [{purpose}] odzyskuje JSON z zakonczonego researchu "
-                  f"({len(set(urls))} adresow), bez ponownego wyszukiwania", flush=True)
-            return _deepseek_pick_from_urls(
-                purpose, system, user, urls, conn=conn, run_id=run_id, partial=text)
-    return text
+        usd, verified = _settle_attempt(conn, call_id, state, model, started, True)
+        if collect_urls is not None:
+            collect_urls.extend(urls)
+        _log(purpose, model, tin, tout, searches, usd, verified)
+        if provider == 'deepseek' and web_search:
+            needs_recovery = not text.strip()
+            if purpose in SEARCH_JSON_PURPOSES and text.strip():
+                try:
+                    parse_json(text)
+                except (ValueError, TypeError):
+                    needs_recovery = True
+            if needs_recovery:
+                if not urls:
+                    raise Truncated('Search completed without usable text or URLs; its usage was recorded')
+                # Recovery shares the parent's deadline, not a new time allowance.
+                previous = runtime.RUN_DEADLINE
+                runtime.RUN_DEADLINE = min(previous, deadline) if previous is not None else deadline
+                try:
+                    return _deepseek_pick_from_urls(purpose, system, user, urls,
+                        conn=conn, run_id=run_id, partial=text)
+                finally:
+                    runtime.RUN_DEADLINE = previous
+        return text
 ```
 
 <!--KOD:llm._cost-->
 ```python
-def _cost(model: str, tokens_in: int, tokens_out: int, web_searches: int,
-          cache_hit: int = 0) -> tuple[float, bool]:
-    # DeepSeek liczy od 2026-08-16 wg pory doby, wiec stawke bierzemy na moment
-    # wywolania, a nie ze stalej. Roznica miedzy szczytem a reszta doby to
-    # dwukrotnosc — na tyle duzo, ze usrednianie zafalszowaloby zapis.
+def _cost(model, tokens_in, tokens_out, web_searches, cache_hit=0, *, when=None,
+          cache_write_5m=0, cache_write_1h=0):
+    price = dict(config.PRICING[model])
     if model.startswith("deepseek"):
-        stawka = config.stawka_deepseek(model)
-        # KLUCZ `cache` TEZ, i to nie jest kosmetyka. Bez niego linijka nizej
-        # robi `price.get("cache", price["in"])` i wycenia trafienia w cache
-        # stawka WEJSCIOWA — czyli trzydziestokrotnie za drogo u pro ($0,66
-        # zamiast $0,022).
-        #
-        # `stawka_deepseek` zwraca ten klucz swiadomie i ma przy nim komentarz
-        # o tej samej pomylce. Poprawka zatrzymala sie jednak w polowie drogi:
-        # funkcja zaczela go oddawac, a `_cost` nadal go nie przepisywal, wiec
-        # nic sie nie zmienilo. Blad zglosilem jako naprawiony, a nie byl.
-        price = {"in": stawka["in"], "out": stawka["out"],
-                 "cache": stawka["cache"],
-                 "verified": config.PRICING[model]["verified"]}
-    else:
-        price = config.PRICING[model]
-    # Trafienia w cache platne osobno i ~120x taniej. `tokens_in` liczymy jako
-    # miss, bo tak podaje je dostawca po odjeciu trafien.
-    usd = (tokens_in / 1_000_000 * price["in"]
-           + tokens_out / 1_000_000 * price["out"]
-           + cache_hit / 1_000_000 * price.get("cache", price["in"]))
-    # Osobna opłata za wyszukiwanie jest cennikiem Anthropic. U DeepSeeka
-    # wyszukiwanie mieści się w tokenach — doliczanie tu $10/1000 zawyżałoby
-    # zapis finansowy, a zmyślonej kwoty w księgach być nie może.
-    #
-    # PO DOSTAWCY, NIE PO DWOCH IDENTYFIKATORACH. Stalo tu
-    # `model in (config.CLAUDE, config.SONNET)` — czyli dokladnie ten sam
-    # ksztalt, ktory `_preflight` naprawil kilkadziesiat linii wyzej, pod
-    # naglowkiem „KONTROLA PO DOSTAWCY, NIE PO IDENTYFIKATORZE MODELU".
-    # Poprawka objela kontrole kluczy i zatrzymala sie przed wycena.
-    #
-    # Zdanie w komentarzu mowi „cennikiem Anthropic", a warunek wymienial dwa
-    # modele z trzech: `FABLE` (claude-fable-5-1, etap `write`) wypadal. Dzis
-    # zaden etap Anthropic nie wola z wyszukiwaniem, wiec galaz nie klamie —
-    # ale wybor modelu jest POLEM KONFIGURACJI (`modele.*`). Konto, ktore
-    # ustawi `discovery` na Claude, dostaje wyszukiwanie NIEDOLICZONE do
-    # kosztu: zapis finansowy zanizony, a sufity dzienny i miesieczny licza
-    # z tego zanizonego zapisu.
+        price.update(config.stawka_deepseek(model, when))
+    elif model.startswith("claude"):
+        price["cache"] = price["in"] * (.025 if model == config.FABLE else .1)
+    usd = (tokens_in * price["in"] + tokens_out * price["out"]
+           + cache_hit * price.get("cache", price["in"])
+           + cache_write_5m * price["in"] * 1.25
+           + cache_write_1h * price["in"] * 2) / 1_000_000
     if _dostawca(model) == "anthropic":
-        usd += web_searches / 1_000 * config.WEB_SEARCH_USD_PER_1K
-    return round(usd, 6), bool(price["verified"])
+        usd += web_searches / 1000 * config.WEB_SEARCH_USD_PER_1K
+    return round(usd, 6), bool(price['verified'])
 ```
 
 <!--KOD:llm._preflight-->
@@ -391,59 +290,36 @@ def _preflight(purpose: str, conn: sqlite3.Connection, run_id: int | None) -> No
 
 <!--KOD:llm.obraz-->
 ```python
-def obraz(
-    opis: str, *, conn: sqlite3.Connection, run_id: int | None = None
-) -> bytes:
-    """Generuje grafikę do artykułu i zapisuje jej koszt tam, gdzie resztę.
-
-    Obraz idzie przez tę samą warstwę co tekst nie dla elegancji, tylko dlatego,
-    że inaczej wypadłby z licznika: wyłącznik, limit na przebieg i dzienny sufit
-    wydatków siedzą w `_preflight`, a nie w każdym wywołaniu z osobna.
-    """
-    _preflight("obraz", conn, run_id)
+def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None) -> bytes:
+    _preflight('obraz', conn, run_id)
     if config.DRY_RUN:
-        print("  [obraz] DRY_RUN — wywołanie pominięte", flush=True)
-        return b""
-    if not config.OPENAI_API_KEY:
-        raise RuntimeError("brak OPENAI_API_KEY")
-
+        print('  [obraz] DRY_RUN — wywołanie pominięte', flush=True)
+        return b''
     import base64
     import urllib.request
-
-    zadanie = json.dumps({
-        "model": config.IMAGE_MODEL,
-        "prompt": opis,
-        "size": config.IMAGE_SIZE,
-        "quality": config.IMAGE_QUALITY,
-        "n": 1,
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        "https://api.openai.com/v1/images/generations",
-        data=zadanie,
-        headers={"Authorization": f"Bearer {config.OPENAI_API_KEY}",
-                 "Content-Type": "application/json"},
-    )
+    call_id, _, _ = _reserve_attempt(conn, run_id, 'obraz', '', opis, False, uuid.uuid4().hex, 1)
+    deadline = time.monotonic() + config.IMAGE_TIMEOUT_S
+    if runtime.RUN_DEADLINE is not None:
+        deadline = min(deadline, runtime.RUN_DEADLINE)
+    state = runtime.Attempt(0, deadline)
+    def request():
+        req = urllib.request.Request('https://api.openai.com/v1/images/generations',
+            data=json.dumps({'model':config.IMAGE_MODEL, 'prompt':opis, 'size':config.IMAGE_SIZE,
+                             'quality':config.IMAGE_QUALITY, 'n':1}).encode('utf-8'),
+            headers={'Authorization':f'Bearer {config.OPENAI_API_KEY}', 'Content-Type':'application/json'})
+        with urllib.request.urlopen(req, timeout=max(.1, deadline-time.monotonic())) as response:
+            runtime.watch(response)
+            return json.loads(response.read().decode('utf-8'))
+    data = {}
     try:
-        with urllib.request.urlopen(req, timeout=config.IMAGE_TIMEOUT_S) as odp:
-            dane = json.loads(odp.read().decode("utf-8"))
-        surowy = dane["data"][0]["b64_json"]
-    except Exception as exc:
-        db.record_call(
-            conn=conn, run_id=run_id, provider="openai", model=config.IMAGE_MODEL,
-            purpose="obraz", tokens_in=0, tokens_out=0, web_searches=0,
-            cost_usd=0.0, price_verified=0, ok=0,
-            note=f"{type(exc).__name__}: {exc}"[:500],
-        )
+        data = runtime.invoke(state, request)
+        output = base64.b64decode(data['data'][0]['b64_json'], validate=True)
+    except BaseException as exc:
+        _settle_image(conn, call_id, data, False, type(exc).__name__)
         raise
-
-    usd = config.IMAGE_PRICE_USD
-    db.record_call(
-        conn=conn, run_id=run_id, provider="openai", model=config.IMAGE_MODEL,
-        purpose="obraz", tokens_in=0, tokens_out=0, web_searches=0,
-        cost_usd=usd, price_verified=0, ok=1, note=config.IMAGE_SIZE,
-    )
-    print(f"  [obraz] {config.IMAGE_MODEL}  {config.IMAGE_SIZE}  ~${usd:.4f}", flush=True)
-    return base64.b64decode(surowy)
+    usd = _settle_image(conn, call_id, data, True)
+    print(f'  [obraz] {config.IMAGE_MODEL} {config.IMAGE_SIZE} ${usd:.4f}', flush=True)
+    return output
 ```
 
 <!--KOD:stages.discovery-->
@@ -1980,7 +1856,8 @@ def zajmij_zamek():
     """
     sciezka = config.DATA_DIR / "agent.lock"
     sciezka.parent.mkdir(parents=True, exist_ok=True)
-    uchwyt = open(sciezka, "w", encoding="utf-8")
+    uchwyt = open(sciezka, "a+", encoding="utf-8")
+    uchwyt.seek(0)
     try:
         try:                      # Linux, czyli serwer
             import fcntl
@@ -1993,6 +1870,8 @@ def zajmij_zamek():
         raise JuzDziala(
             f"Inny przebieg już działa (zamek: {sciezka}). Kończę bez zmian."
         ) from None
+    uchwyt.seek(0)
+    uchwyt.truncate()
     uchwyt.write(f"{os.getpid()}\n")
     uchwyt.flush()
     return uchwyt

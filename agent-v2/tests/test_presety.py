@@ -651,7 +651,7 @@ sprawdz("kanaly z A sa oznaczone jako preset", skad.get("KANALY_YOUTUBE") == "pr
 sprawdz("rola write z A jest z kartridza", skad.get("MODEL_FOR[write]") == "preset")
 sprawdz("rola, ktorej A nie tknal, jest z silnika", skad.get("MODEL_FOR[scout]") == "silnik")
 run_src = pathlib.Path("agent-v2/run.py").read_text(encoding="utf-8")
-sprawdz("cache etapu ma odcisk kartridza w nazwie pliku", 'f"{stage}.{odcisk}.json"' in run_src)
+sprawdz("cache etapu ma odcisk kartridza w nazwie pliku", "'preset': preset_hash" in run_src and 'result_cache.digest' in run_src)
 sprawdz("stan dziedziny pamieta pytanie",
         '"pytanie"' in pathlib.Path("agent-v2/aktualne_modele.py").read_text(encoding="utf-8"))
 

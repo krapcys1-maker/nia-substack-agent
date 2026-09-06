@@ -37,6 +37,9 @@ ZMIERZONE_MAX = {
 }
 PROG = 1.5
 for etap, zmierzone in sorted(ZMIERZONE_MAX.items()):
+    if etap in config.DEEPSEEK_BEZ_MYSLENIA:
+        sprawdz("mechaniczny etap bez starego budzetu rozumowania: " + etap, config.MAX_TOKENS[etap] >= 1024)
+        continue
     suf = config.MAX_TOKENS.get(etap, 0)
     sprawdz("%-12s sufit %6d vs zmierzone %5d (%.2fx)" % (
         etap, suf, zmierzone, suf / zmierzone if zmierzone else 0),

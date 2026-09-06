@@ -49,14 +49,14 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **26 plików**, 34 118 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **29 plików**, 34 371 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 26 plików zamiast dziesięciu.** Najbliższe usunięciu:
+**WADA — 29 plików zamiast dziesięciu.** Najbliższe usunięciu:
 `style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 171 zestawów
-testów, 4214 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 173 zestawów
+testów, 4181 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -141,14 +141,50 @@ Wygenerowany ze zrodel przez `ast` przy kazdym skladaniu dokumentu,
 wiec nie da sie go rozjechac z kodem.
 
 
+### `browser_reader.py` — odczyt zrodel w osobnym procesie z ograniczeniem czasu i zachowaniem wynikow
+
+120 wierszy, 5 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `_stop_owned_process(process)` *(wewn.)* | — |
+| `_results(path)` *(wewn.)* | — |
+| `_collect(command, urls, output, timeout)` *(wewn.)* | — |
+| `read_pages(urls)` | — |
+| `_worker(input_path, output)` *(wewn.)* | — |
+
+### `call_runtime.py` — terminy operacji i zuzycie; worker nie zapisuje do bazy
+
+129 wierszy, 6 funkcji na poziomie modułu, 2 klas
+
+| funkcja | co robi |
+|---|---|
+| `observe()` | — |
+| `capture(usage, provider)` | — |
+| `token_limit(default)` | — |
+| `check()` | — |
+| `watch(resource)` | — |
+| `invoke(state, fn)` | Bound even a transport that blocks; close it without blocking the caller. |
+
+### `result_cache.py` — cache zalezne od tresci i czasu waznosci
+
+38 wierszy, 4 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `digest(value)` | — |
+| `read(path, max_age)` | — |
+| `write(path, value)` | — |
+| `code_fingerprint(root)` | — |
+
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2955 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2938 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
 | `_utf8_stdout()` *(wewn.)* | Konsola Windows domyślnie cp1252 i wywala się na polskich znakach. |
-| `cached(stage, produce, use_cache)` | Zapisuje wynik etapu i oddaje go z dysku zamiast płacić drugi raz. |
+| `cached(stage, produce, use_cache)` | — |
 | `odmow_publikacji_z_kopii(wyslij)` | Kopia testowa nie ma prawa nic opublikowac. Nigdy. |
 | `zajmij_zamek()` | Nie pozwala dwóm przebiegom działać naraz. |
 | `opis_celu(cel)` | Co wiedzielismy o celu w chwili pisania — do dziennika. |
@@ -177,7 +213,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8328 wierszy, 145 funkcji na poziomie modułu, 0 klas
+8293 wierszy, 146 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -265,6 +301,7 @@ wiec nie da sie go rozjechac z kodem.
 | `sprawdz_fakty(conn, run_id, post)` | Szuka faktów do komentarza, zamiast pozwolić modelowi pisać z pamięci. |
 | `bez_wstrzykniecia(tekst, wlasny_adres_ok)` | Czy w naszym tekscie nie ma sladu cudzych POLECEN. |
 | `_status_twierdzenia(c)` *(wewn.)* | Status twierdzenia, znormalizowany. NIEZNANA ETYKIETA ZNACZY `unverified`. |
+| `przygotuj_artykul_do_publikacji(conn, run_id, draft, card, review_report)` | Repair a factual problem within the existing quota; defer only this article. |
 | `zweryfikuj(conn, run_id, tekst, kontekst)` | Sprawdza to, co model NAPISAŁ — nie to, czego szukał przed pisaniem. |
 | `_zapora_notki(tekst)` *(wewn.)* | Pusty napis, gdy tekst notki przechodzi zapory. Inaczej powod. |
 | `_zapora_komentarza(tekst)` *(wewn.)* | To samo dla komentarza — ale komentarz ma zapore o jedna wiecej. |
@@ -272,7 +309,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_slowa_zarzutu(c)` *(wewn.)* | Slowa tresciowe z samego twierdzenia — drugi sygnal tozsamosci. |
 | `_adres_zarzutu(c)` *(wewn.)* | — |
 | `_ten_sam_zarzut(a, b)` *(wewn.)* | Czy dwa zarzuty mowia o tym samym fakcie. ZACHOWAWCZO, i to celowo. |
-| `napraw_obalone(conn, run_id, tekst, audyt)` | Poprawia zdanie, ktoremu zapis przeczy. Nie wycina go i nie blokuje tekstu. |
+| `napraw_obalone(conn, run_id, tekst, audyt)` | Try one bounded repair, then validate the replacement independently. |
 | `comment_on(conn, run_id, post, fakty)` | Komentarz do cudzego posta — do szuflady. |
 | `fallback_card(question, evidence)` | Karta złożona z dowodów bez modelu — gdy synteza padnie. |
 | `synthesis(conn, run_id, question, evidence)` | Etap 6 — karta dowodowa (DeepSeek V4 Pro). |
@@ -329,12 +366,12 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5524 wierszy, 102 funkcji na poziomie modułu, 1 klas
+5478 wierszy, 102 funkcji na poziomie modułu, 2 klas
 
 | funkcja | co robi |
 |---|---|
-| `wlasciwe_konto(page)` | Czy jestesmy na WLASCIWYM koncie tuz przed publikacja. |
-| `wymagaj_wlasciwego_konta(page)` | Zatrzymuje przebieg, gdy sesja nalezy do INNEGO konta. |
+| `wymagaj_wlasciwego_konta(page)` | Verify the logged-in principal, independently of the public profile. |
+| `wlasciwe_konto(page)` | — |
 | `pod_rzad_nieudanych(rodzaj)` | Ile porazek tego rodzaju poszlo BEZPOSREDNIO po sobie w tym przebiegu. |
 | `slad_przebiegu()` | Podsumowanie tego, co ten proces zrobil — do wypisania na koncu. |
 | `dopisz_wynik(rodzaj, wynik, **szczegoly)` | Jeden wpis na dzialanie — takze wtedy, gdy sie NIE UDALO, i z powodem. |
@@ -431,14 +468,14 @@ wiec nie da sie go rozjechac z kodem.
 | `potwierdz_adres_artykulu(page, tytul)` | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. |
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
-| `read_pages(urls)` | Otwiera strony w przeglądarce i zwraca ich widoczny tekst. |
+| `read_pages(urls)` | Read sources with a deadline that also covers browser shutdown. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1017 wierszy, 16 funkcji na poziomie modułu, 3 klas
+997 wierszy, 20 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -453,8 +490,12 @@ wiec nie da sie go rozjechac z kodem.
 | `_read_search_sources(urls)` *(wewn.)* | Recover evidence from already-found public URLs, without another search. |
 | `_call_deepseek(purpose, system, user)` *(wewn.)* | — |
 | `przejsciowy(exc)` | Czy ten błąd ma szansę minąć sam. |
-| `call(purpose, system, user)` | Woła model właściwy dla etapu i zapisuje koszt. Zwraca tekst odpowiedzi. |
-| `obraz(opis)` | Generuje grafikę do artykułu i zapisuje jej koszt tam, gdzie resztę. |
+| `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no)` *(wewn.)* | — |
+| `_settle_attempt(conn, call_id, state, model, started, ok, exc)` *(wewn.)* | — |
+| `image_output_price()` | — |
+| `call(purpose, system, user)` | — |
+| `obraz(opis)` | — |
+| `_settle_image(conn, call_id, data, ok, error)` *(wewn.)* | — |
 | `_obiekty_json(tekst)` *(wewn.)* | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. |
 | `ratuj_json(purpose, tekst, ksztalt)` | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. |
 | `parse_json(text)` | Wyciąga obiekt JSON z odpowiedzi modelu. |
@@ -487,7 +528,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `db.py` — schemat i zapis
 
-347 wierszy, 11 funkcji na poziomie modułu, 1 klas
+409 wierszy, 15 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -500,6 +541,10 @@ wiec nie da sie go rozjechac z kodem.
 | `tryb_przebiegu(conn, run_id)` | Tor, do ktorego nalezy przebieg. Bez przebiegu — produkcja. |
 | `finish_run(conn, run_id, status, stage, note)` | — |
 | `record_call(conn, **fields)` | Zapisuje wywołanie, wstawiając TYLKO te kolumny, które ktoś podał. |
+| `budget_used(conn)` | Known spend plus outstanding/unknown reservations, counted only once. |
+| `available_budget(conn, run_id)` | — |
+| `start_attempt(conn, **fields)` | Caller holds BEGIN IMMEDIATE while checking and reserving the budget. |
+| `finish_attempt(conn, call_id, **fields)` | — |
 | `spent_usd(conn, since_prefix, tryb)` | Suma kosztów od znacznika czasu zaczynającego się danym prefiksem. |
 | `recent_domains(conn, limit)` | Domeny z ostatnich N artykułów — wejście do reguły różnorodności. |
 
@@ -695,7 +740,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3515 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3532 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -818,7 +863,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1589 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1594 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6504,198 +6549,97 @@ def _dopisz_brakujace_kolumny(conn: sqlite3.Connection) -> None:
 
 <!--KOD:llm.call-->
 ```python
-def call(
-    purpose: str,
-    system: str,
-    user: str,
-    *,
-    conn: sqlite3.Connection,
-    run_id: int | None = None,
-    web_search: bool = False,
-    collect_urls: list[str] | None = None,
-) -> str:
-    """Woła model właściwy dla etapu i zapisuje koszt. Zwraca tekst odpowiedzi.
-
-    `collect_urls`, jeśli podane, zostanie wypełnione adresami, które realnie
-    zwróciła wyszukiwarka — do sprawdzenia, czy model nie zmyślił URL-a.
-    """
+def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
+         run_id: int | None = None, web_search: bool = False,
+         collect_urls: list[str] | None = None) -> str:
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
-
-    # DOSTAWCE ROZSTRZYGA `_dostawca`, TAK SAMO JAK KONTROLA KLUCZY.
-    #
-    # Stalo tu wlasne `"deepseek" if model.startswith("deepseek") else
-    # "anthropic"` — czyli DRUGIE miejsce decydujace o tym samym, i o jednego
-    # dostawce ubozsze. Dzis nie pekalo tylko dlatego, ze obrazy chodza osobna
-    # funkcja (`llm.obraz`), wiec `gpt-image-1.5` nigdy tu nie trafia. Model
-    # tekstowy OpenAI dopisany do `MODEL_FOR` poszedlby jednak do Anthropic
-    # z jego identyfikatorem, a odpowiedz brzmialaby jak awaria dostawcy.
-    #
-    # `_dostawca` istnieje dokladnie po to, zeby te dwa miejsca sie nie
-    # rozjechaly — i to jest zdanie z jego wlasnego docstringa.
     provider = _dostawca(model)
-    if provider not in ("anthropic", "deepseek"):
-        raise PreflightFailed(
-            "etap %r chodzi na %s, a `call` nie ma sciezki dla dostawcy %r.\n"
-            "Obrazy maja wlasna funkcje `llm.obraz`; model tekstowy nowego "
-            "dostawcy wymaga galezi tutaj i wpisu w `_dostawca`."
-            % (purpose, model, provider or "nieznany"))
-
-    # STALA, KTORA WYGLADA JAK USTAWIENIE. Wpis w EFFORT czyta sie jak decyzja
-    # o kosztach, a przy modelu spoza Claude nie robi NIC.
-    #
-    # Pierwsza wersja tego ostrzezenia stala w `_call_claude` i BYLA MARTWA:
-    # do tamtej funkcji nie ma jak wejsc nic spoza Claude, bo `call` rozstrzyga
-    # dostawce wyzej. Wykrywacz martwych obietnic sam byl martwa obietnica —
-    # i przeszedl testy, bo test szukal napisu w pliku, a nie sprawdzal, czy
-    # ten kod da sie w ogole wykonac. Tu, po ustaleniu modelu i przed
-    # rozdzieleniem, widac oba przypadki.
-    #
-    # Raz na proces, nie przy kazdym wywolaniu: chodzi o to, zeby bylo wiadomo,
-    # a nie zeby zalac log.
-    if (purpose in config.EFFORT and provider != "anthropic"
-            and purpose not in _EFFORT_BEZ_SKUTKU):
+    if provider not in ('anthropic', 'deepseek'):
+        raise PreflightFailed("unsupported text provider: %s" % provider)
+    if purpose in config.EFFORT and provider != 'anthropic' and purpose not in _EFFORT_BEZ_SKUTKU:
         _EFFORT_BEZ_SKUTKU.add(purpose)
-        print(f"  [effort] {purpose}={config.EFFORT[purpose]} NIE MA SKUTKU"
-              f" — etap chodzi na {model}, a to pokretlo dziala tylko na"
-              f" modelach Claude (DeepSeek ma DEEPSEEK_EFFORT"
-              f"={config.DEEPSEEK_EFFORT})", flush=True)
-
+        print(f"  [effort] {purpose}={config.EFFORT[purpose]} NIE MA SKUTKU na {model}", flush=True)
     if config.DRY_RUN:
         print(f"  [{purpose}] DRY_RUN — wywołanie pominięte", flush=True)
-        return ""
-
+        return ''
+    operation = uuid.uuid4().hex
+    deadline = time.monotonic() + config.ROLE_DEADLINE_S.get(purpose, config.CALL_DEADLINE_S)
+    if runtime.RUN_DEADLINE is not None:
+        deadline = min(deadline, runtime.RUN_DEADLINE)
     for proba in range(1, config.PONOWIENIA + 2):
+        if time.monotonic() >= deadline:
+            raise runtime.DeadlineExceeded('brak czasu na kolejna probe')
+        call_id, tokens, started = _reserve_attempt(conn, run_id, purpose, system, user,
+                                                  web_search, operation, proba)
+        state = runtime.Attempt(tokens, deadline)
+        def transport():
+            if provider == 'anthropic':
+                return _call_claude(purpose, system, user, web_search)
+            if web_search:
+                return _call_deepseek_responses(purpose, system, user)
+            return _call_deepseek(purpose, system, user)
         try:
-            if provider == "anthropic":
-                text, tin, tout, searches, urls = _call_claude(
-                    purpose, system, user, web_search)
-                cache_hit = 0
-            elif web_search:
-                text, tin, tout, searches, urls = _call_deepseek_responses(
-                    purpose, system, user)
-                cache_hit = 0
-            else:
-                text, tin, tout, searches, cache_hit = _call_deepseek(
-                    purpose, system, user)
-                urls = []
-            if collect_urls is not None:
-                collect_urls.extend(urls)
-            break
+            result = runtime.invoke(state, transport)
+            text, tin, tout, searches, extra = result
+            urls = extra if provider == 'anthropic' or web_search else []
+            # Compatibility with transport adapters; real transports declare observation.
+            if not state.observed:
+                state.usage = dict(tokens_in=tin, tokens_out=tout, web_searches=searches,
+                                   cache_hit=extra if provider == 'deepseek' and not web_search else 0)
+                state.usage_known = bool(tin or tout)
+            state.usage['web_searches'] = searches
         except BaseException as exc:
-            # BaseException, NIE Exception — i to nie jest niedbalstwo.
-            #
-            # `run.py` CELOWO zamienia SIGTERM na wyjatek (`_na_sygnale`, ~2246),
-            # zeby przebieg zdazyl sie zapisac, gdy systemd utnie go po
-            # `TimeoutStartSec`. Rzuca `KeyboardInterrupt` — a ten NIE JEST
-            # podklasa `Exception`, wiec przelatywal tedy bez zatrzymania.
-            #
-            # Skutek: przebieg zapisywal sie poprawnie (pilnuje tego
-            # `test_czas.py`), ale WYWOLANIE W LOCIE nie trafialo do `calls`
-            # w ogole. A `db.spent_usd` czyta wlasnie `calls`, wiec sufit
-            # dzienny, miesieczny i przebiegu nie widzialy pieniedzy wydanych
-            # na wywolanie, ktore akurat trwalo, gdy przyszedl sygnal. Traci
-            # sie przy tym najdrozsze: sygnal przychodzi po TimeoutStartSec,
-            # czyli trafia w wywolania, ktore trwaly najdluzej.
-            #
-            # Zmierzone: `RuntimeError` -> wiersz w `calls`; ten sam kod
-            # z `KeyboardInterrupt` -> zero wierszy.
-            #
-            # Zapisujemy i PODAJEMY DALEJ (`raise` nizej). Sygnal ma nadal
-            # zatrzymac przebieg — chodzi tylko o to, zeby po sobie posprzatal.
-            if isinstance(exc, Exception) and przejsciowy(exc) \
-                    and proba <= config.PONOWIENIA:
-                czekaj = config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1)
-                print(f"  [{purpose}] {type(exc).__name__} — przejściowy, "
-                      f"ponawiam za {czekaj}s ({proba}/{config.PONOWIENIA})",
-                      flush=True)
-                time.sleep(czekaj)
+            _settle_attempt(conn, call_id, state, model, started, False, exc)
+            if isinstance(exc, Exception) and przejsciowy(exc) and proba <= config.PONOWIENIA:
+                wait = config.PONOWIENIE_ODSTEP_S * 2 ** (proba - 1)
+                if time.monotonic() + wait >= deadline:
+                    raise runtime.DeadlineExceeded('deadline leaves no time for retry') from exc
+                print(f"  [{purpose}] {type(exc).__name__}; ponowienie {proba}/{config.PONOWIENIA} za {wait}s", flush=True)
+                time.sleep(wait)
                 continue
-            # Koszt nieudanego wywołania bywa nieznany. Zapisujemy "nie wiadomo"
-            # zamiast zgadywać kwotę — zgadnięta kwota w zapisie finansowym jest
-            # gorsza niż jej brak.
-            db.record_call(
-                conn=conn, run_id=run_id, provider=provider, model=model,
-                purpose=purpose, tokens_in=0, tokens_out=0, web_searches=0,
-                cost_usd=0.0, price_verified=0, ok=0,
-                note=f"{type(exc).__name__}: {exc}"[:500],
-            )
             raise
-
-    trafienia = locals().get("cache_hit", 0) or 0
-    usd, verified = _cost(model, tin, tout, searches, trafienia)
-    db.record_call(
-        conn=conn, run_id=run_id, provider=provider, model=model, purpose=purpose,
-        tokens_in=tin, tokens_out=tout, cache_hit=trafienia,
-        web_searches=searches, cost_usd=usd,
-        price_verified=int(verified), ok=1, note=None,
-    )
-    _log(purpose, model, tin, tout, searches, usd, verified)
-    if provider == "deepseek" and web_search:
-        needs_recovery = not text.strip()
-        if purpose in SEARCH_JSON_PURPOSES and text.strip():
-            try:
-                parse_json(text)
-            except (ValueError, TypeError):
-                needs_recovery = True
-        if needs_recovery:
-            if not urls:
-                raise Truncated("Search completed without usable text or URLs; its usage was recorded")
-            print(f"  [{purpose}] odzyskuje JSON z zakonczonego researchu "
-                  f"({len(set(urls))} adresow), bez ponownego wyszukiwania", flush=True)
-            return _deepseek_pick_from_urls(
-                purpose, system, user, urls, conn=conn, run_id=run_id, partial=text)
-    return text
+        usd, verified = _settle_attempt(conn, call_id, state, model, started, True)
+        if collect_urls is not None:
+            collect_urls.extend(urls)
+        _log(purpose, model, tin, tout, searches, usd, verified)
+        if provider == 'deepseek' and web_search:
+            needs_recovery = not text.strip()
+            if purpose in SEARCH_JSON_PURPOSES and text.strip():
+                try:
+                    parse_json(text)
+                except (ValueError, TypeError):
+                    needs_recovery = True
+            if needs_recovery:
+                if not urls:
+                    raise Truncated('Search completed without usable text or URLs; its usage was recorded')
+                # Recovery shares the parent's deadline, not a new time allowance.
+                previous = runtime.RUN_DEADLINE
+                runtime.RUN_DEADLINE = min(previous, deadline) if previous is not None else deadline
+                try:
+                    return _deepseek_pick_from_urls(purpose, system, user, urls,
+                        conn=conn, run_id=run_id, partial=text)
+                finally:
+                    runtime.RUN_DEADLINE = previous
+        return text
 ```
 
 <!--KOD:llm._cost-->
 ```python
-def _cost(model: str, tokens_in: int, tokens_out: int, web_searches: int,
-          cache_hit: int = 0) -> tuple[float, bool]:
-    # DeepSeek liczy od 2026-08-16 wg pory doby, wiec stawke bierzemy na moment
-    # wywolania, a nie ze stalej. Roznica miedzy szczytem a reszta doby to
-    # dwukrotnosc — na tyle duzo, ze usrednianie zafalszowaloby zapis.
+def _cost(model, tokens_in, tokens_out, web_searches, cache_hit=0, *, when=None,
+          cache_write_5m=0, cache_write_1h=0):
+    price = dict(config.PRICING[model])
     if model.startswith("deepseek"):
-        stawka = config.stawka_deepseek(model)
-        # KLUCZ `cache` TEZ, i to nie jest kosmetyka. Bez niego linijka nizej
-        # robi `price.get("cache", price["in"])` i wycenia trafienia w cache
-        # stawka WEJSCIOWA — czyli trzydziestokrotnie za drogo u pro ($0,66
-        # zamiast $0,022).
-        #
-        # `stawka_deepseek` zwraca ten klucz swiadomie i ma przy nim komentarz
-        # o tej samej pomylce. Poprawka zatrzymala sie jednak w polowie drogi:
-        # funkcja zaczela go oddawac, a `_cost` nadal go nie przepisywal, wiec
-        # nic sie nie zmienilo. Blad zglosilem jako naprawiony, a nie byl.
-        price = {"in": stawka["in"], "out": stawka["out"],
-                 "cache": stawka["cache"],
-                 "verified": config.PRICING[model]["verified"]}
-    else:
-        price = config.PRICING[model]
-    # Trafienia w cache platne osobno i ~120x taniej. `tokens_in` liczymy jako
-    # miss, bo tak podaje je dostawca po odjeciu trafien.
-    usd = (tokens_in / 1_000_000 * price["in"]
-           + tokens_out / 1_000_000 * price["out"]
-           + cache_hit / 1_000_000 * price.get("cache", price["in"]))
-    # Osobna opłata za wyszukiwanie jest cennikiem Anthropic. U DeepSeeka
-    # wyszukiwanie mieści się w tokenach — doliczanie tu $10/1000 zawyżałoby
-    # zapis finansowy, a zmyślonej kwoty w księgach być nie może.
-    #
-    # PO DOSTAWCY, NIE PO DWOCH IDENTYFIKATORACH. Stalo tu
-    # `model in (config.CLAUDE, config.SONNET)` — czyli dokladnie ten sam
-    # ksztalt, ktory `_preflight` naprawil kilkadziesiat linii wyzej, pod
-    # naglowkiem „KONTROLA PO DOSTAWCY, NIE PO IDENTYFIKATORZE MODELU".
-    # Poprawka objela kontrole kluczy i zatrzymala sie przed wycena.
-    #
-    # Zdanie w komentarzu mowi „cennikiem Anthropic", a warunek wymienial dwa
-    # modele z trzech: `FABLE` (claude-fable-5-1, etap `write`) wypadal. Dzis
-    # zaden etap Anthropic nie wola z wyszukiwaniem, wiec galaz nie klamie —
-    # ale wybor modelu jest POLEM KONFIGURACJI (`modele.*`). Konto, ktore
-    # ustawi `discovery` na Claude, dostaje wyszukiwanie NIEDOLICZONE do
-    # kosztu: zapis finansowy zanizony, a sufity dzienny i miesieczny licza
-    # z tego zanizonego zapisu.
+        price.update(config.stawka_deepseek(model, when))
+    elif model.startswith("claude"):
+        price["cache"] = price["in"] * (.025 if model == config.FABLE else .1)
+    usd = (tokens_in * price["in"] + tokens_out * price["out"]
+           + cache_hit * price.get("cache", price["in"])
+           + cache_write_5m * price["in"] * 1.25
+           + cache_write_1h * price["in"] * 2) / 1_000_000
     if _dostawca(model) == "anthropic":
-        usd += web_searches / 1_000 * config.WEB_SEARCH_USD_PER_1K
-    return round(usd, 6), bool(price["verified"])
+        usd += web_searches / 1000 * config.WEB_SEARCH_USD_PER_1K
+    return round(usd, 6), bool(price['verified'])
 ```
 
 <!--KOD:llm._preflight-->
@@ -6822,59 +6766,36 @@ def _preflight(purpose: str, conn: sqlite3.Connection, run_id: int | None) -> No
 
 <!--KOD:llm.obraz-->
 ```python
-def obraz(
-    opis: str, *, conn: sqlite3.Connection, run_id: int | None = None
-) -> bytes:
-    """Generuje grafikę do artykułu i zapisuje jej koszt tam, gdzie resztę.
-
-    Obraz idzie przez tę samą warstwę co tekst nie dla elegancji, tylko dlatego,
-    że inaczej wypadłby z licznika: wyłącznik, limit na przebieg i dzienny sufit
-    wydatków siedzą w `_preflight`, a nie w każdym wywołaniu z osobna.
-    """
-    _preflight("obraz", conn, run_id)
+def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None) -> bytes:
+    _preflight('obraz', conn, run_id)
     if config.DRY_RUN:
-        print("  [obraz] DRY_RUN — wywołanie pominięte", flush=True)
-        return b""
-    if not config.OPENAI_API_KEY:
-        raise RuntimeError("brak OPENAI_API_KEY")
-
+        print('  [obraz] DRY_RUN — wywołanie pominięte', flush=True)
+        return b''
     import base64
     import urllib.request
-
-    zadanie = json.dumps({
-        "model": config.IMAGE_MODEL,
-        "prompt": opis,
-        "size": config.IMAGE_SIZE,
-        "quality": config.IMAGE_QUALITY,
-        "n": 1,
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        "https://api.openai.com/v1/images/generations",
-        data=zadanie,
-        headers={"Authorization": f"Bearer {config.OPENAI_API_KEY}",
-                 "Content-Type": "application/json"},
-    )
+    call_id, _, _ = _reserve_attempt(conn, run_id, 'obraz', '', opis, False, uuid.uuid4().hex, 1)
+    deadline = time.monotonic() + config.IMAGE_TIMEOUT_S
+    if runtime.RUN_DEADLINE is not None:
+        deadline = min(deadline, runtime.RUN_DEADLINE)
+    state = runtime.Attempt(0, deadline)
+    def request():
+        req = urllib.request.Request('https://api.openai.com/v1/images/generations',
+            data=json.dumps({'model':config.IMAGE_MODEL, 'prompt':opis, 'size':config.IMAGE_SIZE,
+                             'quality':config.IMAGE_QUALITY, 'n':1}).encode('utf-8'),
+            headers={'Authorization':f'Bearer {config.OPENAI_API_KEY}', 'Content-Type':'application/json'})
+        with urllib.request.urlopen(req, timeout=max(.1, deadline-time.monotonic())) as response:
+            runtime.watch(response)
+            return json.loads(response.read().decode('utf-8'))
+    data = {}
     try:
-        with urllib.request.urlopen(req, timeout=config.IMAGE_TIMEOUT_S) as odp:
-            dane = json.loads(odp.read().decode("utf-8"))
-        surowy = dane["data"][0]["b64_json"]
-    except Exception as exc:
-        db.record_call(
-            conn=conn, run_id=run_id, provider="openai", model=config.IMAGE_MODEL,
-            purpose="obraz", tokens_in=0, tokens_out=0, web_searches=0,
-            cost_usd=0.0, price_verified=0, ok=0,
-            note=f"{type(exc).__name__}: {exc}"[:500],
-        )
+        data = runtime.invoke(state, request)
+        output = base64.b64decode(data['data'][0]['b64_json'], validate=True)
+    except BaseException as exc:
+        _settle_image(conn, call_id, data, False, type(exc).__name__)
         raise
-
-    usd = config.IMAGE_PRICE_USD
-    db.record_call(
-        conn=conn, run_id=run_id, provider="openai", model=config.IMAGE_MODEL,
-        purpose="obraz", tokens_in=0, tokens_out=0, web_searches=0,
-        cost_usd=usd, price_verified=0, ok=1, note=config.IMAGE_SIZE,
-    )
-    print(f"  [obraz] {config.IMAGE_MODEL}  {config.IMAGE_SIZE}  ~${usd:.4f}", flush=True)
-    return base64.b64decode(surowy)
+    usd = _settle_image(conn, call_id, data, True)
+    print(f'  [obraz] {config.IMAGE_MODEL} {config.IMAGE_SIZE} ${usd:.4f}', flush=True)
+    return output
 ```
 
 <!--KOD:stages.discovery-->
@@ -8411,7 +8332,8 @@ def zajmij_zamek():
     """
     sciezka = config.DATA_DIR / "agent.lock"
     sciezka.parent.mkdir(parents=True, exist_ok=True)
-    uchwyt = open(sciezka, "w", encoding="utf-8")
+    uchwyt = open(sciezka, "a+", encoding="utf-8")
+    uchwyt.seek(0)
     try:
         try:                      # Linux, czyli serwer
             import fcntl
@@ -8424,6 +8346,8 @@ def zajmij_zamek():
         raise JuzDziala(
             f"Inny przebieg już działa (zamek: {sciezka}). Kończę bez zmian."
         ) from None
+    uchwyt.seek(0)
+    uchwyt.truncate()
     uchwyt.write(f"{os.getpid()}\n")
     uchwyt.flush()
     return uchwyt
@@ -10271,7 +10195,7 @@ field in general.
 You are correcting a short text that is about to be published. A fact-check
 has just examined it and found specific claims that do not survive the record.
 
-Your job is to make those claims TRUE. Not to delete them.
+Your job is to make the text accurate using the available evidence.
 
 RULES
 
@@ -10281,10 +10205,10 @@ RULES
    surrounding wording to fit the word limit. Preserve its meaning and facts;
    never drop the condition that makes the correction true.
 
-2. Do not remove the challenged sentence. Correct it. If a number is wrong, put
-   the right number in. If a comparison is wrong, state the comparison the
-   evidence actually supports. Whatever point the sentence was making should
-   still be there when you are done; only the falsehood goes.
+2. Correct the challenged sentence when the evidence supports a correction.
+   For an unverified claim, do not invent a replacement number or preserve an
+   unsupported accusation. Narrow the claim to what is established, explain
+   the specific uncertainty, or remove that claim while keeping the text coherent.
 
 3. Work from the evidence given below, not from memory. WHAT THE RECORD SAYS is
    the material you correct with. If it gives you a figure, use that figure.
@@ -11010,64 +10934,34 @@ streamline, empower, innovative, groundbreaking, transformative.
 
 #### `prompts/recenzent.md`
 
-**56 wierszy.** Pola wejsciowe: `body`, `card_json`
+**26 wierszy.** Pola wejsciowe: `body`, `card_json`
 
 ````markdown
-You are checking one article against the evidence card it was written from.
+Check every numbered segment against the evidence card. The numbers are stable
+identifiers, not part of the article. Return one decision per identifier.
 
-You are looking for exactly one thing: **a sentence that asserts a fact as
-established, where the card does not establish it.**
+FACT asserts a checkable event, quantity, rule, practice, statement or finding.
+INFERENCE expresses an interpretation or opinion. PROSE makes no checkable claim.
+Check the factual premises inside an inference too: "I think the company removed
+the right to resell" still asserts that a right was removed. A hedge does not
+make an unsupported premise acceptable. Free opinion and analogy are welcome
+when they introduce no unestablished factual premises.
 
-## Classify every sentence
+Evidence of a rule does not establish how people usually behave. Evidence of an
+effect does not establish a motive. Preserve scope, jurisdiction, date and the
+conditions of numerical comparisons. Style examples are never factual evidence.
 
-Go through the article sentence by sentence and give each one a class:
+Return only JSON:
+{{"sentences":[{{"index":1,"class":"FACT","supported":true,"why":""}}],"summary":"one sentence"}}
 
-- `FACT`: it asserts something as true about the world, in a way the reader is
-  meant to take as established: a rule, a figure, a finding, a date, what a
-  body decided, what a document says.
-- `INFERENCE`: it reasons, interprets, argues, speculates, draws an analogy or
-  notices a pattern, and is **marked** as the author's own thinking. Signals
-  include "my reading is", "this looks like", "I suspect", "the structure
-  suggests", "arguably", or an explicit statement that it is a reading rather
-  than a record.
-- `PROSE`: scene-setting, transition, address to the reader, framing. Asserts
-  nothing checkable.
+Include every identifier exactly once. Use supported=false for an unsupported
+fact or factual premise, and explain only that problem in at most 25 words.
+Do not copy the article or repeat failures in a second list. Do not rewrite it.
 
-## What counts as a problem, and what does not
-
-**Only `FACT` sentences can fail.** A FACT sentence fails if the card does not
-carry evidence for it.
-
-`INFERENCE` and `PROSE` never fail. A bold interpretation, an unexpected
-analogy, a strong opinion, a speculative leap, a comparison to something
-entirely outside the evidence: none of these is a defect, however far it
-reaches, as long as it is presented as the author's thinking rather than as
-something the record says. Do not flag them. Do not suggest hedging them.
-Interesting writing is the point of the publication; your job is not to make
-the article cautious, it is to stop it from stating things that are not so.
-
-Two things that DO fail, even when they read smoothly:
-
-- A FACT sentence describing what people or organisations **usually do in
-  practice**, when the card only establishes what a rule says. A rule is not
-  a practice.
-- A number, date or proportion that does not appear in the card.
-
-## Output
-
-Return only valid JSON, shaped exactly as:
-
-{{"sentences": [{{"text": "<the sentence, verbatim>", "class": "FACT"|"INFERENCE"|"PROSE", "supported": true|false, "why": "<only when class is FACT and supported is false: what is asserted and what the card lacks>"}}], "unsupported_facts": [{{"text": "...", "why": "..."}}], "summary": "<one sentence>"}}
-
-Include every sentence in `sentences`. Repeat only the failing ones in
-`unsupported_facts`.
-
-## The evidence card
-
+Evidence card:
 {card_json}
 
-## The article
-
+Numbered article:
 {body}
 ````
 
@@ -11806,7 +11700,7 @@ Return only valid JSON, shaped exactly as:
 
 #### `prompts/weryfikacja.md`
 
-**142 wierszy.** Pola wejsciowe: `context`, `dzis`, `text`
+**144 wierszy.** Pola wejsciowe: `context`, `dzis`, `text`
 
 ````markdown
 Check a short text that is about to be published in public: a comment, a note
@@ -11823,8 +11717,10 @@ institutions; numbers, dates, quantities, rankings; statements about what a
 document, law or company says or does; statements about what someone excluded,
 decided, admitted or predicted.
 
-Not claims: opinions, interpretations, analogies, questions, predictions, and
-statements about what the thing being responded to said.
+Pure opinions, interpretations, analogies, questions and predictions are not
+claims. Check any factual premise within them, including what a quoted text
+actually said. A claim can be checkable without containing a number. Do not
+classify a missing source as confirmation or use hedging to hide a false premise.
 
 ## How to check
 
@@ -12080,7 +11976,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `IMAGE_MODEL` | `"gpt-image-1.5"` | Grafika do artykulu. Wybor NIE jest podyktowany cena: przy jednym obrazie na artykul nawet najdrozsza opcja to grosze miesiecznie, a taniej  |
 | `IMAGE_SIZE` | `"1536x1024"` | — |
 | `IMAGE_QUALITY` | `"high"` | — |
-| `IMAGE_PRICE_USD` | `0.04` | — |
+| `IMAGE_PRICE_USD` | `0.20` | — |
 | `IMAGE_TIMEOUT_S` | `300` | — |
 | `NAZWA_MARKI` | `"Your Publication"` | Konto na Substacku. Nazwa publikacji, tak jak ma ja widziec model i czytelnik. DO 2026-09-03 NIE ISTNIALA JAKO STALA. Nazwa stala wpisana w  |
 | `SUBSTACK_HANDLE` | `"your-handle"` | — |
@@ -12243,7 +12139,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `WYBIERAJ_POWYZEJ` | `20` | — |
 | `MAX_ODPOWIEDZI_MALE` | `6` | — |
 | `MAX_ODPOWIEDZI_DUZE` | `8` | — |
-| `MAX_TOKENS` | `{ purpose: ceiling + THINKING_HEADROOM_TOKEN` | Zapas na myślenie dostają WSZYSTKIE etapy, nie tylko Claude'owe: modele DeepSeek v4 też rozumują, a tokeny rozumowania liczą się do sufitu w |
+| `MAX_TOKENS` | `{ purpose: ceiling + (0 if purpose in DEEPSE` | Zapas na myślenie dostają WSZYSTKIE etapy, nie tylko Claude'owe: modele DeepSeek v4 też rozumują, a tokeny rozumowania liczą się do sufitu w |
 | `MS_PER_OUTPUT_TOKEN` | `16.08` | — |
 | `TIMEOUT_MARGIN` | `1.5` | — |
 | `MAX_TIMEOUT_S` | `300` | Twardy sufit na JEDNO wywolanie. Bez niego wyliczenie z sufitu tokenow dawalo 965 sekund, a przy wyszukiwaniu razy trzy — 48 MINUT. Jedno za |
@@ -12280,6 +12176,15 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
+| `PRICING_VERSION` | `"rates-2026-09-06"` | Published rates checked 2026-09-06; invoice verification is separate. |
+| `PRICING_SOURCES` | `{ "deepseek": "https://api-docs.deepseek.com` | — |
+| `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. |
+| `ROLE_DEADLINE_S` | `{"write": 480, "scout": 300, "synthesis": 30` | — |
+| `SEARCH_INPUT_RESERVE_TOKENS` | `200000` | — |
+| `MIN_CALL_OUTPUT_TOKENS` | `512` | — |
+| `CLAUDE_PROMPT_CACHE` | `False` | — |
+| `CACHE_MAX_AGE_S` | `6 * 3600` | — |
+| `FACTCHECK_CACHE_MAX_AGE_S` | `3600` | — |
 
 
 ## ZALACZNIK C — MAPA DYSKU I BAZY (stan produkcji)
