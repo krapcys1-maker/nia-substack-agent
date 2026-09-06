@@ -524,7 +524,18 @@ def _deepseek_pick_from_urls(
 
 
 def _call_deepseek(purpose: str, system: str, user: str) -> tuple[str, int, int, int]:
-    response = httpx.post(
+    # STRUMIENIOWANIE — z tego samego powodu, co w `_call_deepseek_responses`:
+    # zmierzone 2026-09-06 (przebieg 4 kartridza `ai`), `note_tani` przez
+    # /chat/completions bez strumienia padlo na RemoteProtocolError po ~200 s,
+    # tak samo jak wczesniej `curiosity` i `cele`. Serwer ucina odpowiedz,
+    # na ktora nie wyslal jeszcze bajtu; przy `stream: true` plyna kawalki
+    # tresci (i rozumowania), a `usage` przychodzi w ostatnim kawalku dzieki
+    # `stream_options.include_usage`. Ksztalt wyniku bez zmian.
+    kawalki: list[str] = []
+    finish_reason = None
+    usage: dict[str, Any] = {}
+    with httpx.stream(
+        "POST",
         f"{config.DEEPSEEK_BASE_URL}/chat/completions",
         headers={"Authorization": f"Bearer {config.DEEPSEEK_API_KEY}"},
         json={
@@ -537,11 +548,40 @@ def _call_deepseek(purpose: str, system: str, user: str) -> tuple[str, int, int,
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
+            "stream": True,
+            "stream_options": {"include_usage": True},
         },
-        timeout=config.timeout_for(config.MAX_TOKENS[purpose]),
-    )
-    response.raise_for_status()
-    payload = response.json()
+        timeout=httpx.Timeout(config.timeout_for(config.MAX_TOKENS[purpose]),
+                              connect=30.0),
+    ) as response:
+        response.raise_for_status()
+        for linia in response.iter_lines():
+            if not linia.startswith("data:"):
+                continue
+            dane = linia[5:].strip()
+            if dane == "[DONE]":
+                break
+            try:
+                kawalek = json.loads(dane)
+            except ValueError:
+                continue
+            if kawalek.get("usage"):
+                usage = kawalek["usage"]
+            for wybor in kawalek.get("choices") or []:
+                delta = (wybor.get("delta") or {}).get("content")
+                if delta:
+                    kawalki.append(str(delta))
+                if wybor.get("finish_reason"):
+                    finish_reason = wybor["finish_reason"]
+    if finish_reason is None and not kawalki:
+        raise httpx.RemoteProtocolError(
+            "strumien /chat/completions urwal sie bez tresci i bez finish_reason")
+    if not usage:
+        print(f"  [{purpose}] strumien bez `usage` — koszt tego wywolania jest"
+              " NIEZNANY, zapisuje zero tokenow", flush=True)
+    payload = {"choices": [{"finish_reason": finish_reason,
+                            "message": {"content": "".join(kawalki)}}],
+               "usage": usage}
     choice = payload["choices"][0]
     if choice.get("finish_reason") == "length":
         raise Truncated(
