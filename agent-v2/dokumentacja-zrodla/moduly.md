@@ -372,7 +372,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1162 wierszy, 21 funkcji na poziomie modułu, 4 klas
+1170 wierszy, 21 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -512,7 +512,7 @@
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1101 wierszy, 39 funkcji na poziomie modułu, 4 klas
+1111 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -534,6 +534,7 @@
 | `rozwiaz(preset, cfg, baza, srodowisko)` | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). |
 | `_bez_domyslnego_korpusu(preset, cfg)` *(wewn.)* | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". |
 | `pochodzenie(preset, cfg, baza)` | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". |
+| `_dostawcy_tekstu()` *(wewn.)* | Lista z `llm`, zeby walidator nie mial wlasnej, rozjezdzajacej sie kopii. |
 | `_dostawca(model)` *(wewn.)* | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. |
 | `_napisy(x)` *(wewn.)* | Wszystkie napisy w zagniezdzonej wartosci. |
 | `sprawdz(preset, cfg, baza, srodowisko, do_aktywacji)` | Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli. |

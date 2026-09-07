@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **32 plików**, 35 612 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **32 plików**, 35 630 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 182 zestawów
-testów, 4231 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 4233 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -514,7 +514,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1162 wierszy, 21 funkcji na poziomie modułu, 4 klas
+1170 wierszy, 21 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -654,7 +654,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1101 wierszy, 39 funkcji na poziomie modułu, 4 klas
+1111 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -676,6 +676,7 @@ wiec nie da sie go rozjechac z kodem.
 | `rozwiaz(preset, cfg, baza, srodowisko)` | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). |
 | `_bez_domyslnego_korpusu(preset, cfg)` *(wewn.)* | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". |
 | `pochodzenie(preset, cfg, baza)` | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". |
+| `_dostawcy_tekstu()` *(wewn.)* | Lista z `llm`, zeby walidator nie mial wlasnej, rozjezdzajacej sie kopii. |
 | `_dostawca(model)` *(wewn.)* | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. |
 | `_napisy(x)` *(wewn.)* | Wszystkie napisy w zagniezdzonej wartosci. |
 | `sprawdz(preset, cfg, baza, srodowisko, do_aktywacji)` | Reguly PONAD ksztaltem pol. Oddaje (bledy, uwagi). Zero sieci, zero modeli. |
@@ -6612,7 +6613,7 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
-    if provider not in ('anthropic', 'deepseek', 'openai'):
+    if provider not in DOSTAWCY_TEKSTU:
         raise PreflightFailed("unsupported text provider: %s" % provider)
     if (purpose in config.EFFORT and provider not in ('anthropic', 'openai')
             and purpose not in _EFFORT_BEZ_SKUTKU):

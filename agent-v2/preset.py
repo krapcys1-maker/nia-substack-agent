@@ -481,6 +481,15 @@ def pochodzenie(preset: Preset, cfg: Any, baza: dict[str, Any]) -> dict[str, str
     return wynik
 
 
+def _dostawcy_tekstu() -> tuple[str, ...]:
+    """Lista z `llm`, zeby walidator nie mial wlasnej, rozjezdzajacej sie kopii."""
+    try:
+        import llm
+        return tuple(llm.DOSTAWCY_TEKSTU)
+    except Exception:                                           # noqa: BLE001
+        return ("anthropic", "deepseek", "openai")
+
+
 def _dostawca(model: str) -> str:
     """Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`.
 
@@ -638,14 +647,15 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
                     "OPENAI_API_KEY", "").strip():
                 brak_klucza.add("OPENAI_API_KEY (okladka)")
             continue
-        if dostawca not in ("anthropic", "deepseek"):
+        if dostawca not in _dostawcy_tekstu():
             bledy.append("modele.role: %s = %r — `llm.call` nie ma sciezki dla "
-                         "dostawcy %r (obslugiwane: anthropic, deepseek)"
-                         % (rola, model, dostawca or "nieznany"))
+                         "dostawcy %r (obslugiwane: %s)"
+                         % (rola, model, dostawca or "nieznany",
+                            ", ".join(_dostawcy_tekstu())))
         elif not srodowisko.get(klucze[dostawca], "").strip():
             brak_klucza.add(klucze[dostawca])
     zapasowy = str(getattr(proba, "ZAPASOWY_PISARZ", "") or "")
-    if zapasowy and _dostawca(zapasowy) not in ("anthropic", "deepseek"):
+    if zapasowy and _dostawca(zapasowy) not in _dostawcy_tekstu():
         bledy.append("modele.zapasowy_pisarz = %r — brak sciezki dostawcy" % zapasowy)
     if brak_klucza:
         uwagi.append("brak w srodowisku: %s — podaj przed pierwszym przebiegiem "

@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 32 |
-| functions and methods | 734 |
+| functions and methods | 735 |
 | functions that call a paid model | 27 |
 | functions that touch the browser | 67 |
 | functions that touch the database | 48 |
@@ -59,7 +59,7 @@ For paid calls the verdict comes from
 | [`migracja_okno_promocji.py`](#agent-v2migracja-okno-promocji-py) | 2 | 0 | 0 | 0 | Jednorazowe uzupelnienie pola `dodane` w kolejce promocji. |
 | [`norma.py`](#agent-v2norma-py) | 16 | 0 | 0 | 1 | Ile agent naprawde zrobil, dzien po dniu, wobec normy. |
 | [`personality.py`](#agent-v2personality-py) | 20 | 1 | 0 | 0 | Opt-in conversational short forms. |
-| [`preset.py`](#agent-v2preset-py) | 39 | 0 | 0 | 0 | Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem. |
+| [`preset.py`](#agent-v2preset-py) | 40 | 0 | 0 | 0 | Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem. |
 | [`raport_statystyk.py`](#agent-v2raport-statystyk-py) | 5 | 0 | 0 | 0 | Co przyniosla kazda notka, restack i artykul — do czytania przez czlowieka. |
 | [`result_cache.py`](#agent-v2result-cache-py) | 5 | 0 | 0 | 0 | Content-addressed cache. |
 | [`retry_policy.py`](#agent-v2retry-policy-py) | 4 | 0 | 0 | 0 | Remember server-requested pauses without treating a deferred call as an attempt. |
@@ -668,32 +668,32 @@ Provider calls with per-attempt accounting, reservations and deadlines.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 46 | `_dostawca(model)` | — | Czyj to model. | `llm._cost`, `llm._preflight`, `llm._reserve_attempt`, `llm.call` *(+1)* |
-| 64 | `_preflight(purpose, conn, run_id)` | DB | Warunki, które decydują, czy wywołanie może się w ogóle udać. | `llm._deepseek_pick_from_urls`, `llm._reserve_attempt`, `llm.call`, `llm.obraz` |
-| 191 | `_narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. | `llm._call_claude` |
-| 200 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit, when, cache_write_5m, cache_write_1h)` | — | — | `llm._settle_attempt` |
-| 216 | `_log(purpose, model, tin, tout, searches, usd, verified)` | — | — | `llm.call` |
-| 227 | `_call_claude(purpose, system, user, web_search)` | — | — | `llm.call`, `llm.call.transport` |
-| 308 | `_call_deepseek_responses(purpose, system, user)` | — | DeepSeek przez /responses z server-side `web_search`. | `llm.call`, `llm.call.transport` |
-| 411 | `_call_deepseek_responses.walk(node)` | — | — | `llm._call_deepseek_responses` |
-| 445 | `_call_openai_responses(purpose, system, user)` | — | OpenAI przez `/responses`. | `llm.call`, `llm.call.transport` |
-| 538 | `_call_openai_responses.zbierz(node)` | — | — | `llm._call_openai_responses` |
-| 555 | `_deepseek_pick_from_urls(purpose, system, user, urls, conn, run_id, partial)` | — | Reconstruct a search result with the ordinary streamed, billed transport. | `llm.call` |
-| 583 | `_read_search_sources(urls)` | — | Recover evidence from already-found public URLs, without another search. | `llm._deepseek_pick_from_urls` |
-| 595 | `_read_search_sources.public_url(url)` | — | — | `llm._read_search_sources` |
-| 656 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call`, `llm.call.transport` |
-| 747 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
-| 794 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
-| 836 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
-| 852 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
-| 861 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+25)* |
-| 897 | `call.transport()` | — | — | `llm.call` |
-| 958 | `obraz(opis, conn, run_id)` | — | — | `stages.grafika` |
-| 970 | `obraz.request()` | — | — | `llm.obraz` |
-| 990 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
-| 1006 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
-| 1071 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
-| 1116 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+24)* |
+| 54 | `_dostawca(model)` | — | Czyj to model. | `llm._cost`, `llm._preflight`, `llm._reserve_attempt`, `llm.call` *(+1)* |
+| 72 | `_preflight(purpose, conn, run_id)` | DB | Warunki, które decydują, czy wywołanie może się w ogóle udać. | `llm._deepseek_pick_from_urls`, `llm._reserve_attempt`, `llm.call`, `llm.obraz` |
+| 199 | `_narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. | `llm._call_claude` |
+| 208 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit, when, cache_write_5m, cache_write_1h)` | — | — | `llm._settle_attempt` |
+| 224 | `_log(purpose, model, tin, tout, searches, usd, verified)` | — | — | `llm.call` |
+| 235 | `_call_claude(purpose, system, user, web_search)` | — | — | `llm.call`, `llm.call.transport` |
+| 316 | `_call_deepseek_responses(purpose, system, user)` | — | DeepSeek przez /responses z server-side `web_search`. | `llm.call`, `llm.call.transport` |
+| 419 | `_call_deepseek_responses.walk(node)` | — | — | `llm._call_deepseek_responses` |
+| 453 | `_call_openai_responses(purpose, system, user)` | — | OpenAI przez `/responses`. | `llm.call`, `llm.call.transport` |
+| 546 | `_call_openai_responses.zbierz(node)` | — | — | `llm._call_openai_responses` |
+| 563 | `_deepseek_pick_from_urls(purpose, system, user, urls, conn, run_id, partial)` | — | Reconstruct a search result with the ordinary streamed, billed transport. | `llm.call` |
+| 591 | `_read_search_sources(urls)` | — | Recover evidence from already-found public URLs, without another search. | `llm._deepseek_pick_from_urls` |
+| 603 | `_read_search_sources.public_url(url)` | — | — | `llm._read_search_sources` |
+| 664 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call`, `llm.call.transport` |
+| 755 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
+| 802 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
+| 844 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
+| 860 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
+| 869 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+25)* |
+| 905 | `call.transport()` | — | — | `llm.call` |
+| 966 | `obraz(opis, conn, run_id)` | — | — | `stages.grafika` |
+| 978 | `obraz.request()` | — | — | `llm.obraz` |
+| 998 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
+| 1014 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
+| 1079 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
+| 1124 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+24)* |
 
 ---
 
@@ -776,7 +776,7 @@ Opt-in conversational short forms.
 
 Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem.
 
-39 funkcji.
+40 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -798,27 +798,28 @@ Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem.
 | 426 | `rozwiaz(preset, cfg, baza, srodowisko)` | — | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). | `preset.pochodzenie`, `preset.sprawdz` |
 | 447 | `_bez_domyslnego_korpusu(preset, cfg)` | — | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". | `preset.rozwiaz`, `preset.zastosuj` |
 | 461 | `pochodzenie(preset, cfg, baza)` | DEAD? | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". | — |
-| 484 | `_dostawca(model)` | — | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. | `preset.sprawdz` |
-| 503 | `_napisy(x)` | — | Wszystkie napisy w zagniezdzonej wartosci. | `preset.sprawdz` |
-| 515 | `sprawdz(preset, cfg, baza, srodowisko, do_aktywacji)` | — | Reguly PONAD ksztaltem pol. | `preset.podlacz` |
-| 714 | `zastosuj(preset, cfg, baza)` | DEAD? | Neutralna baza, potem pola i bloki presetu. | — |
-| 736 | `_zapisz_atomowo(plik, tekst)` | — | — | `personality.remember`, `personality.short_form`, `preset._sprawdz_wlasciciela`, `preset.podlacz` |
-| 751 | `_teraz()` | — | — | `preset._dopisz_do_dziennika`, `preset.podlacz`, `preset.z_konfiguracji` |
-| 755 | `_dopisz_do_dziennika(katalog, wpis)` | — | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. | `preset._sprawdz_wlasciciela`, `preset.odlacz`, `preset.podlacz` |
-| 771 | `czytaj_wskaznik(agent_dir)` | — | Surowa tresc wskaznika (bez wczytywania presetu) albo None. | `preset.aktywacja`, `preset.aktywacja_nadal_wazna` |
-| 786 | `aktywacja(agent_dir, srodowisko)` | DEAD? | Co jest podlaczone. | — |
-| 821 | `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko, przejmij)` | DEAD? | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. | — |
-| 865 | `wlasciciel(katalog)` | — | Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy. | `preset._sprawdz_wlasciciela` |
-| 877 | `_sprawdz_wlasciciela(katalog, preset, przejmij, uchwyt)` | — | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. | `preset.podlacz` |
-| 915 | `odlacz(agent_dir)` | DEAD? | Usuwa wskaznik. | — |
-| 955 | `wymagaj_aktywnego(cfg, co)` | — | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. | `artykul_z_puli.main`, `run.main` |
-| 976 | `tylko_podglad(cfg)` | DEAD? | Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji. | — |
-| 989 | `aktywacja_nadal_wazna(cfg)` | — | Pusty napis, gdy aktywacja z pamieci procesu nadal stoi we wskazniku; inaczej powod. | `preset.wymagaj_aktywnego` |
-| 1025 | `lista(agent_dir)` | — | Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`. | `preset.znajdz` |
-| 1040 | `nazwa_z_pliku(plik)` | — | Nazwa presetu z jego polozenia: katalog albo nazwa pliku. | `preset.znajdz` |
-| 1046 | `znajdz(nazwa, agent_dir)` | DEAD? | Preset po nazwie (katalog przed plikiem) albo po sciezce. | — |
-| 1059 | `z_konfiguracji(tekst_toml, nazwa, opis)` | DEAD? | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). | — |
-| 1083 | `eksportuj(preset)` | DEAD? | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). | — |
+| 484 | `_dostawcy_tekstu()` | — | Lista z `llm`, zeby walidator nie mial wlasnej, rozjezdzajacej sie kopii. | `preset.sprawdz` |
+| 493 | `_dostawca(model)` | — | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. | `preset.sprawdz` |
+| 512 | `_napisy(x)` | — | Wszystkie napisy w zagniezdzonej wartosci. | `preset.sprawdz` |
+| 524 | `sprawdz(preset, cfg, baza, srodowisko, do_aktywacji)` | — | Reguly PONAD ksztaltem pol. | `preset.podlacz` |
+| 724 | `zastosuj(preset, cfg, baza)` | DEAD? | Neutralna baza, potem pola i bloki presetu. | — |
+| 746 | `_zapisz_atomowo(plik, tekst)` | — | — | `personality.remember`, `personality.short_form`, `preset._sprawdz_wlasciciela`, `preset.podlacz` |
+| 761 | `_teraz()` | — | — | `preset._dopisz_do_dziennika`, `preset.podlacz`, `preset.z_konfiguracji` |
+| 765 | `_dopisz_do_dziennika(katalog, wpis)` | — | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. | `preset._sprawdz_wlasciciela`, `preset.odlacz`, `preset.podlacz` |
+| 781 | `czytaj_wskaznik(agent_dir)` | — | Surowa tresc wskaznika (bez wczytywania presetu) albo None. | `preset.aktywacja`, `preset.aktywacja_nadal_wazna` |
+| 796 | `aktywacja(agent_dir, srodowisko)` | DEAD? | Co jest podlaczone. | — |
+| 831 | `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko, przejmij)` | DEAD? | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. | — |
+| 875 | `wlasciciel(katalog)` | — | Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy. | `preset._sprawdz_wlasciciela` |
+| 887 | `_sprawdz_wlasciciela(katalog, preset, przejmij, uchwyt)` | — | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. | `preset.podlacz` |
+| 925 | `odlacz(agent_dir)` | DEAD? | Usuwa wskaznik. | — |
+| 965 | `wymagaj_aktywnego(cfg, co)` | — | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. | `artykul_z_puli.main`, `run.main` |
+| 986 | `tylko_podglad(cfg)` | DEAD? | Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji. | — |
+| 999 | `aktywacja_nadal_wazna(cfg)` | — | Pusty napis, gdy aktywacja z pamieci procesu nadal stoi we wskazniku; inaczej powod. | `preset.wymagaj_aktywnego` |
+| 1035 | `lista(agent_dir)` | — | Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`. | `preset.znajdz` |
+| 1050 | `nazwa_z_pliku(plik)` | — | Nazwa presetu z jego polozenia: katalog albo nazwa pliku. | `preset.znajdz` |
+| 1056 | `znajdz(nazwa, agent_dir)` | DEAD? | Preset po nazwie (katalog przed plikiem) albo po sciezce. | — |
+| 1069 | `z_konfiguracji(tekst_toml, nazwa, opis)` | DEAD? | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). | — |
+| 1093 | `eksportuj(preset)` | DEAD? | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). | — |
 
 ---
 
