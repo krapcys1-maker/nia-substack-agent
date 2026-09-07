@@ -23,7 +23,7 @@ presets remain available with their existing editorial checks.
 | Notes | 2/day; runs start 13:30 and 20:30 UTC | Fable 5.1 |
 | Comments | 3–4/day, shared across articles and Notes | DeepSeek V4 Pro |
 | Replies to readers | As conversations arrive | DeepSeek V4 Pro |
-| Restack captions | Up to 4/day | Fable 5.1 |
+| Restack captions | Up to 4/day | Opus 5 |
 | Research and article support stages | On demand for articles | DeepSeek V4 Flash |
 | Following | Up to 5/day | Browser, no writing model |
 | Free subscriptions | Up to 4/day; visible audience at most 1000 | Browser, no writing model |
@@ -43,35 +43,46 @@ research, evidence, review and factual-checking pipeline.
 
 ## Cost
 
-Live trials on 6–7 September 2026 produced Fable Notes at about **$0.032–0.033**
-each, and Pro comments/restack captions at about **$0.0004–0.0011** each. After the
-article and Note voice examples below were added, a cold-cache trial on 7 September
-measured Fable Notes at **$0.051–0.058** each; a longer prompt costs more, and
-editing any prompt invalidates the cache, so the first calls after a change are the
-expensive ones. Take the higher figure as the pessimistic case: 60 Notes at that
-rate is about **$3.30/month**, before articles, replies, research, retries or taxes.
+All figures below are the engine's own token-based estimates, not a reconciled
+provider invoice, and every one is a single measurement rather than an average.
+Opus 5 and DeepSeek rates are marked verified in the engine's price table; the
+Fable rate is not, so Note costs carry more uncertainty than the rest.
 
-Restack captions run on Fable because they carry her voice onto other people's
-audiences. Measured at about **$0.035** each, that is roughly **$4.20/month** for
-4/day — and it is charged even when the model decides the post is not worth a
-restack, which it is allowed to do. On DeepSeek the same call was $0.0004. The
-whole plan measures at roughly **$8.70-8.90/month** against the $15 cap: Notes
-$3.42, restacks $4.20, two articles about $1.00, comments and replies under $0.26.
+| Work | Model | Measured | Per month |
+|---|---|---|---|
+| Notes, 2/day | Fable 5.1 | $0.051–0.058 each | ~$3.48 |
+| Restack captions, up to 4/day | Opus 5 | $0.036 each | ~$4.33 |
+| Comments and replies | DeepSeek V4 Pro | $0.0002–0.005 each | under $0.55 |
+| Articles, 2/month | Fable 5.1 + Flash | ~$0.50 each, full chain | ~$1.00 |
+| **Total** | | | **~$9.40 against a $15 cap** |
 
-`CLAUDE_PROMPT_CACHE` is off by default and its comment asks for a measurement
-first. Here is one: two identical-system Fable calls back to back wrote 2812
-cache tokens and then read them, making the second call **53% cheaper**. Whether
-that pays off in a real run depends on how many Fable calls land inside the
-5-minute window; a run with one Note in it would pay the 25% write premium and
-never collect. Measure a real run before enabling it.
+A caption is charged even when the model decides the post is not worth passing
+on, which it is allowed to do — silence costs the same as a restack.
 
-These are the engine's own token-based estimates, reported with an unconfirmed rate
-flag, not a reconciled provider invoice. Article costs vary and are excluded.
+**Why Opus 5 for captions.** They were on Fable, which cost $9.90/month against
+Opus's $4.33 for output that was not better. Measured on the same post, same
+prompt, same minute: Fable wrote *"My liability cap is whatever my maintainer
+spent on tokens last month. I'm genuinely pleased it's the cheapest number in the
+whole chain."* Opus wrote *"Reading this as the eventual defendant. Twelve months
+of my token bill is a rounding error [...] Fine. Tell me before the lawyers."*
+Both open from her own position; Fable deliberately reached for a named joke
+shape, Opus landed the better closing beat, and the difference in price is 2.3x.
+DeepSeek V4 Pro is cheaper again at $0.06/month, and wrote well when it wrote —
+but it declined to restack on two consecutive runs under the same prompt, so
+captions there are not reliably captions.
 
-The preset caps recorded/reserved API spending at **$15/month, $3/day and
-$1.50/run**. Hitting a cap can prevent work; it is not a promise of a fixed monthly
-bill. Current Fable prices and cache rates are documented by
-[Anthropic](https://platform.claude.com/docs/en/models/fable-5-1/overview).
+**Effort.** Short-form roles run at `effort: low`. Against `high` on an identical
+prompt, `low` produced the better caption at 139 output tokens versus 531 — a
+quarter of the cost. Thinking bills at the output rate, which is 5x the input
+rate on Fable, so this is the single largest lever on a short form.
+
+**Prompt cache.** `CLAUDE_PROMPT_CACHE` is off by default and its comment asks for
+a measurement first. Here is one: two identical-system Fable calls back to back
+wrote 2812 cache tokens and then read them, making the second call **53% cheaper**.
+Whether that pays off in a real run depends on how many calls land inside the
+5-minute window; a run with a single Note in it would pay the 25% write premium
+and never collect. Input is now about two thirds of a caption's cost, so this is
+the largest remaining saving available — measure a real run before enabling it.
 
 ## Use and customize
 
