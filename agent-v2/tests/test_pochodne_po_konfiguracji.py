@@ -32,6 +32,7 @@ BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
     PYTHONIOENCODING=utf-8 python agent-v2/tests/test_pochodne_po_konfiguracji.py
 """
 import importlib
+import os
 import pathlib
 import shutil
 import sys
@@ -68,6 +69,15 @@ kopia = None
 if PLIK.exists():
     kopia = PLIK.with_suffix(".toml.przed-testem")
     shutil.copy2(PLIK, kopia)
+
+# KONTO Z INSTALACJI WYGRYWA Z PLIKIEM — i tak ma byc (`config.py`, sekcja
+# KONTO_ZE_SRODOWISKA): preset bywa wspolny dla wielu osob, konto nie. Ten test
+# sprawdza jednak sciezke PLIKU, wiec musi zdjac zmienne, ktore ja przykrywaja.
+# Bez tego oblewal na kazdej instalacji trzymajacej konto w `.env` — czyli na
+# kazdej, ktora ma na jednej maszynie wiecej niz jedna kopie bota. Zmierzone
+# 7 wrzesnia 2026 przy stawianiu drugiej kopii na serwerze.
+_ZDJETE = {n: os.environ.pop(n) for n in ("NAZWA_MARKI", "SUBSTACK_HANDLE")
+           if n in os.environ}
 
 try:
     PLIK.write_text('[konto]\nnazwa_marki = "%s"\n' % MARKA, encoding="utf-8")
@@ -123,6 +133,7 @@ try:
             config.FETCH_USER_AGENT)
 
 finally:
+    os.environ.update(_ZDJETE)
     if PLIK.exists():
         PLIK.unlink()
     if kopia is not None:

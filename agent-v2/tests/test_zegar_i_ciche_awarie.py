@@ -255,8 +255,29 @@ class PortChromeZInstalacji(unittest.TestCase):
         self.assertNotIn("CDP_PORT = 9222", zrodlo)
 
     def test_domyslnie_zostaje_9222(self):
-        """KONTRDOWOD: istniejaca instalacja bez tej zmiennej ma sie nie ruszyc."""
-        self.assertEqual(config.CHROME_DEBUG_PORT, 9222)
+        """KONTRDOWOD: instalacja BEZ tej zmiennej ma sie nie ruszyc.
+
+        Sprawdzamy wartosc domyslna w kodzie, nie `config.CHROME_DEBUG_PORT`:
+        ta druga czyta prawdziwe srodowisko i na maszynie z dwiema kopiami jest
+        slusznie inna. Pierwsza wersja tego testu oblewala wlasnie tam, czyli
+        w jedynym miejscu, dla ktorego cala ta zmiana powstala.
+        """
+        zrodlo = (ROOT / "agent-v2" / "config.py").read_text(encoding="utf-8")
+        self.assertIn('_env("CHROME_DEBUG_PORT", "9222")', zrodlo)
+
+    def test_zmienna_srodowiskowa_naprawde_przestawia_port(self):
+        import importlib
+        stare = os.environ.get("CHROME_DEBUG_PORT")
+        os.environ["CHROME_DEBUG_PORT"] = "9337"
+        try:
+            odswiezony = importlib.reload(config)
+            self.assertEqual(odswiezony.CHROME_DEBUG_PORT, 9337)
+        finally:
+            if stare is None:
+                os.environ.pop("CHROME_DEBUG_PORT", None)
+            else:
+                os.environ["CHROME_DEBUG_PORT"] = stare
+            importlib.reload(config)
 
     def test_port_nalezy_do_instalacji_nie_do_presetu(self):
         """Preset bywa wspolny dla wielu osob; port jest cecha maszyny."""
