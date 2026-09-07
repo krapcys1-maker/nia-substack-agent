@@ -39,6 +39,7 @@ import sys
 import types
 
 sys.path.insert(0, "agent-v2")
+import config       # noqa: E402
 import personality  # noqa: E402
 
 zdane = oblane = 0
@@ -115,6 +116,13 @@ try:
     stara_pamiec = personality.memory
     stary_stan = personality.memory_state
     stare_staty = personality.statistics
+    # TEMAT PODSTAWIAMY SAMI, i to nie jest ozdoba testu. `PERSONA_TEMATY`
+    # przychodzi z PODLACZONEGO KARTRIDZA — na maszynie z presetem lista jest
+    # pelna, a na czystym drzewie (CI, swiezy klon) pusta, wiec `notes` spada na
+    # `config.NISZA`, ktora tam tez jest pusta. Test opierajacy sie na tym, co
+    # akurat podlaczone, przechodzi u autora i oblewa u wszystkich innych.
+    stare_tematy = config.PERSONA_TEMATY
+    config.PERSONA_TEMATY = ("a deadline nobody set, enforced by a timer",)
     try:
         personality.short_form = lambda conn, run_id, kind, material: (
             zebrane.append(material) or {})
@@ -127,6 +135,7 @@ try:
         personality.memory = stara_pamiec
         personality.memory_state = stary_stan
         personality.statistics = stare_staty
+        config.PERSONA_TEMATY = stare_tematy
     sprawdz("pisarz dostal jakis material", bool(zebrane), repr(zebrane)[:80])
     material = zebrane[0] if zebrane else {}
     sprawdz("material niesie klucz `world`", "world" in material,
@@ -134,7 +143,8 @@ try:
     sprawdz("i sa w nim te same naglowki",
             NAGLOWKI in (material.get("world") or {}).get("headlines", ""),
             repr(material.get("world"))[:120])
-    sprawdz("temat z listy persony nadal jest", bool(material.get("theme")),
+    sprawdz("temat z listy persony nadal jest",
+            material.get("theme") == "a deadline nobody set, enforced by a timer",
             repr(material.get("theme"))[:80])
 
 finally:
