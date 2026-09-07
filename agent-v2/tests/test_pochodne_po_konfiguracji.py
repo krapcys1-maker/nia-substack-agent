@@ -31,6 +31,7 @@ w zlym miejscu obleje tutaj, nie na produkcji.
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
     PYTHONIOENCODING=utf-8 python agent-v2/tests/test_pochodne_po_konfiguracji.py
 """
+import dotenv
 import importlib
 import os
 import pathlib
@@ -78,6 +79,14 @@ if PLIK.exists():
 # 7 wrzesnia 2026 przy stawianiu drugiej kopii na serwerze.
 _ZDJETE = {n: os.environ.pop(n) for n in ("NAZWA_MARKI", "SUBSTACK_HANDLE")
            if n in os.environ}
+
+# ZDJECIE ZMIENNEJ NIE WYSTARCZA, i to byla moja pierwsza, nieudana poprawka
+# (7 wrzesnia 2026): `config` wola `load_dotenv(ENV_PATH)` przy KAZDYM imporcie,
+# wiec `importlib.reload` ponizej wczytywalo `.env` z powrotem i przywracalo
+# wartosc, ktora dopiero co zdjelismy. Test dalej oblewal na serwerze i wygladalo
+# to jak wada kodu. Uciszamy wiec samo wczytywanie na czas proby.
+_PRAWDZIWY_DOTENV = dotenv.load_dotenv
+dotenv.load_dotenv = lambda *a, **k: False
 
 try:
     PLIK.write_text('[konto]\nnazwa_marki = "%s"\n' % MARKA, encoding="utf-8")
@@ -133,6 +142,7 @@ try:
             config.FETCH_USER_AGENT)
 
 finally:
+    dotenv.load_dotenv = _PRAWDZIWY_DOTENV
     os.environ.update(_ZDJETE)
     if PLIK.exists():
         PLIK.unlink()
