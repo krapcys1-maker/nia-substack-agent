@@ -148,10 +148,13 @@ class RuntimeContract(unittest.TestCase):
         self.assertEqual(len(self.rows()),1)
         self.assertLessEqual(db.budget_used(self.conn,run_id=self.rid),.005)
     def test_instance_lock_excludes_process_and_releases_on_close(self):
-        child='''import pathlib,sys
+        # Not `config.DATA_DIR=...`: setting that constant alone leaves DB_PATH aimed
+        # at production (test_komplet_sciezek proves it), which is why the same file
+        # bans the pattern in subprocess stubs too. This is the supported redirect.
+        child='''import sys
 sys.path.insert(0,sys.argv[1])
 import config,run
-config.DATA_DIR=pathlib.Path(sys.argv[2])
+config.uzyj_katalogu_danych(sys.argv[2])
 try:
     lock=run.zajmij_zamek()
 except run.JuzDziala:
@@ -161,20 +164,25 @@ else:
     lock.close()
 '''
         args=[sys.executable,'-c',child,str(pathlib.Path(run.__file__).parent),self.directory.name]
+        # The child imports config, and an attached preset makes config print its
+        # banner to stdout first. Asserting on the WHOLE stream made this test green
+        # only on a machine with no preset attached, i.e. never on a real install.
+        # The verdict is the last line; the banner above it is not the subject here.
+        def verdict(result):
+            self.assertEqual(result.returncode,0,result.stderr)
+            return result.stdout.strip().splitlines()[-1].strip()
         lock=run.zajmij_zamek()
         try:
             lock.seek(0)
             before=lock.read()
             result=subprocess.run(args,capture_output=True,text=True,timeout=15)
-            self.assertEqual(result.returncode,0,result.stderr)
-            self.assertEqual(result.stdout.strip(),'locked')
+            self.assertEqual(verdict(result),'locked')
             lock.seek(0)
             self.assertEqual(lock.read(),before)
         finally:
             lock.close()
         result=subprocess.run(args,capture_output=True,text=True,timeout=15)
-        self.assertEqual(result.returncode,0,result.stderr)
-        self.assertEqual(result.stdout.strip(),'acquired')
+        self.assertEqual(verdict(result),'acquired')
     def test_deadline_bounds_blocked_worker_and_has_no_retry(self):
         done=threading.Event()
         def transport(*args): done.wait(2); return 'late',100,100,0,0
