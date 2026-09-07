@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-378 wierszy, 16 funkcji na poziomie modułu, 0 klas
+431 wierszy, 17 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -27,6 +27,7 @@
 | `_system(kind)` *(wewn.)* | — |
 | `_valid(text, maximum)` *(wewn.)* | — |
 | `short_form(conn, run_id, kind, material)` | One paid decision: respond, or remain silent. No paid repair attempts. |
+| `_swiat(conn, run_id)` *(wewn.)* | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. |
 | `notes(conn, run_id, ile, od)` | Choose a subject from the persona, not the research bank. |
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
 | `targets(posts)` | Free topical prefilter. The writing call makes the actual reply decision. |
