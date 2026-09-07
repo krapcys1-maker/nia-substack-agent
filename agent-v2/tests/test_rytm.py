@@ -145,7 +145,7 @@ sprawdz_nasze("okno publikacji nietkniete", config.OKNO_PUBLIKACJI_ET == (6, 22)
 zrodlo = pathlib.Path("agent-v2/run.py").read_text(encoding="utf-8")
 sprawdz("run.py stosuje zwloke", "ZWLOKA_PRZED_NOTKAMI" in zrodlo)
 sprawdz("zwloka TYLKO przy prawdziwym wystawianiu",
-        "if wyslij:" in zrodlo.split("ZWLOKA_PRZED_NOTKAMI")[0][-260:])
+        "if wyslij and not config.PERSONA_WLACZONA:" in zrodlo.split("ZWLOKA_PRZED_NOTKAMI")[0][-260:])
 
 print()
 print("=== 6. PLAN PRZYCIETY DO ZEGARA ===")

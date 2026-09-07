@@ -4427,6 +4427,11 @@ def przygotuj_artykul_do_publikacji(conn, run_id, draft, card, review_report):
             return draft, audit
         length = len(body.split())
         def guard(text):
+            if config.PERSONA_WLACZONA:
+                import personality
+                if personality._injection(text):
+                    return 'instruction leakage'
+                return '; '.join(i['detail'] for i in gates.artefakty_w_tekscie(text) if i['gate'] != 'WARSZTAT')
             injected = _zapora_notki(text)
             if injected:
                 return injected

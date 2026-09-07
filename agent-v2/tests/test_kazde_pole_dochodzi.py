@@ -80,6 +80,10 @@ def _probka(pole: str, sprawdzacz) -> object:
         return 1
     if pole == "harmonogram.godziny_przebiegow_utc":
         return ["11:20"]
+    if pole == "wolumeny.artykuly_miesiecznie":
+        return 0
+    if pole == "harmonogram.dni_miesiaca_artykulu":
+        return []
     if pole == "wolumeny.artykuly_tygodniowo":
         return 1
     if pole == "harmonogram.dni_artykulu":

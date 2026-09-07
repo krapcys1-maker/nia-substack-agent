@@ -65,7 +65,12 @@ def memory():
 def memory_state():
     """Keep milestones after individual Notes leave the bounded prompt memory."""
     path = Path(config.DATA_DIR) / "personality-state.json"
-    state = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    try:
+        state = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    except (ValueError, OSError):
+        state = {}
+    if not isinstance(state, dict):
+        state = {}
     for item in _rows("personality.jsonl"):
         state.setdefault("first", item.get("when"))
         if item.get("intro"):
@@ -267,8 +272,8 @@ def targets(posts):
     """Free topical prefilter. The writing call makes the actual reply decision."""
     found = []
     for post in posts:
-        text = " ".join(str(post.get(k, "")) for k in ("tytul", "opis", "tekst", "text"))
-        if not _injection(text) and any(re.search(r"\b" + re.escape(k), text, re.I) for k in config.ZNAKI_NISZY):
+        text = " ".join(str(post.get(k, "")) for k in ("tytul", "title", "opis", "tekst", "text", "body", "under"))
+        if not _injection(text) and any(re.search(r"\b" + re.escape(k) + r"s?\b", text, re.I) for k in config.ZNAKI_NISZY):
             found.append({**post, "co_dodamy": "Read the post; respond in character only if you have something to say."})
     return found
 
@@ -317,7 +322,8 @@ def remember(note, publication):
     if any(r.get("id") == digest for r in memory()):
         return False
     item = {**note["personality"], "id": digest, "when": datetime.now(timezone.utc).isoformat(),
-            "text": body, "memory": candidate.get("memory", ""), "url": publication.get("url", "")}
+            "text": body, "memory": candidate.get("memory", ""),
+            "url": publication.get("url") or ("https://substack.com/note/c-" + str(publication["id"]) if publication.get("id") else "")}
     path = Path(config.DATA_DIR) / "personality.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as stream:

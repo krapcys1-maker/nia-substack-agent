@@ -1479,6 +1479,8 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     # i pada PRZED okladka, zeby nie placic za obraz do tekstu, ktory nie wyjdzie.
     artefakty = gates.artefakty_w_tekscie(
         "%s\n\n%s" % (draft.get("title", ""), draft["body"]))
+    if config.PERSONA_WLACZONA:
+        artefakty = [a for a in artefakty if a['gate'] != 'WARSZTAT']
     if artefakty:
         print()
         print("-- ZATRZYMANY: artefakty w tekscie --", flush=True)

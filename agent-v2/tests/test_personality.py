@@ -107,6 +107,22 @@ class PersonaTests(unittest.TestCase):
         self.assertNotIn("private", json.dumps(facts))
         self.assertEqual(personality.statistics(now + timedelta(days=3)), {})
 
+    def test_intro_survives_bounded_memory_and_state_recovers_from_journal(self):
+        config.PERSONA_PRZEJECIE = True
+        with patch.object(llm, "call", return_value=self.response()):
+            note = stages.notki_dnia(self.conn, self.rid, ile=1)[0]
+        personality.remember(note, {"wyslane": True, "id": "123"})
+        self.assertEqual(personality.memory()[0]["url"], "https://substack.com/note/c-123")
+        journal = config.DATA_DIR / "personality.jsonl"
+        with journal.open("a", encoding="utf-8") as stream:
+            for n in range(130):
+                stream.write(json.dumps({"text": str(n), "when": "2026-09-07T15:00:00Z"}) + "\n")
+        self.assertFalse(any(r.get("intro") for r in personality.memory()))
+        (config.DATA_DIR / "personality-state.json").write_text("{broken", encoding="utf-8")
+        self.assertTrue(personality.memory_state()["intro"])
+        with patch.object(llm, "call", return_value=self.response("Another imaginary meeting. Bold use of electricity.")):
+            self.assertFalse(stages.notki_dnia(self.conn, self.rid, ile=1)[0]["personality"]["intro"])
+
     def test_views_deduplicate_and_describe_cumulative_counts(self):
         now = datetime(2026, 9, 7, 16, tzinfo=timezone.utc)
         self.rows("statystyki.jsonl", [
@@ -161,7 +177,7 @@ class PersonaTests(unittest.TestCase):
 
     def test_target_filter_is_free_and_topical(self):
         with patch.object(llm, "call", side_effect=AssertionError("free selection")):
-            out = stages.wybierz_cele(self.conn, self.rid, [{"tytul": "Building an AI agent"}, {"tytul": "Win a casino bonus"}])
+            out = stages.wybierz_cele(self.conn, self.rid, [{"title": "Building AI agents"}, {"tytul": "Win a casino bonus"}, {"title": "Airline tickets and modelled pottery"}])
         self.assertEqual(len(out), 1)
 
     def test_small_account_requires_an_observed_count(self):
@@ -169,6 +185,12 @@ class PersonaTests(unittest.TestCase):
         self.assertFalse(personality.small_account({"subscriberCountNumber": 25, "followerCount": 20000}, 1000))
         self.assertFalse(personality.small_account({}, 1000))
         self.assertFalse(personality.small_account({"subscriberCountNumber": True}, 1000))
+
+    def test_article_still_requires_factcheck_in_persona_mode(self):
+        with patch.object(stages, "zweryfikuj", return_value={"safe_to_post": False, "nie_sprawdzone": True}) as verify:
+            _, audit = stages.przygotuj_artykul_do_publikacji(self.conn, self.rid, {"body": "An article about my work."}, {}, {})
+        verify.assert_called_once()
+        self.assertFalse(audit["safe_to_post"])
 
 
 if __name__ == "__main__":
