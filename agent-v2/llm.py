@@ -43,6 +43,14 @@ class Truncated(RuntimeError):
     """
 
 
+# DOSTAWCY, DLA KTORYCH `call` MA SCIEZKE TEKSTOWA. Lista stoi TUTAJ, bo
+# `preset.sprawdz` musi odrzucic kartridz wskazujacy na dostawce bez sciezki —
+# a gdy obie strony trzymaly wlasna kopie, rozjechaly sie natychmiast: 7 wrzesnia
+# 2026 doszlo `openai`, `call` je przyjmowalo, a walidator kartridza dalej mowil
+# „obslugiwane: anthropic, deepseek" i blokowal podlaczenie.
+DOSTAWCY_TEKSTU = ("anthropic", "deepseek", "openai")
+
+
 def _dostawca(model: str) -> str:
     """Czyj to model. JEDNO miejsce, zeby nie rozjechalo sie z kontrola kluczy.
 
@@ -867,7 +875,7 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
-    if provider not in ('anthropic', 'deepseek', 'openai'):
+    if provider not in DOSTAWCY_TEKSTU:
         raise PreflightFailed("unsupported text provider: %s" % provider)
     if (purpose in config.EFFORT and provider not in ('anthropic', 'openai')
             and purpose not in _EFFORT_BEZ_SKUTKU):

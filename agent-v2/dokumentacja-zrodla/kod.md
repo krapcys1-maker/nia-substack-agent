@@ -82,7 +82,7 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
-    if provider not in ('anthropic', 'deepseek', 'openai'):
+    if provider not in DOSTAWCY_TEKSTU:
         raise PreflightFailed("unsupported text provider: %s" % provider)
     if (purpose in config.EFFORT and provider not in ('anthropic', 'openai')
             and purpose not in _EFFORT_BEZ_SKUTKU):

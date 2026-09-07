@@ -424,7 +424,9 @@ sprawdz("pusty obraz wylacza okladke", bez.OBRAZ_WLACZONY is False)
 rola = notki('[modele]\nrole = { obraz = "dall-e-3" }\n')
 sprawdz("sama rola tez przestawia IMAGE_MODEL", rola.IMAGE_MODEL == "dall-e-3")
 sprawdz("pisarz zapasowy z kartridza", notki('[modele]\nzapasowy_pisarz = ""\n').ZAPASOWY_PISARZ == "")
-_gpt = wczytaj("gpt", reszta='[modele]\nrole = { write = "gpt-6-astra" }\n')
+# NIE `gpt-*`: OpenAI dostalo sciezke 7 wrzesnia 2026 i ten przyklad
+# przestal byc przykladem. Model bez sciezki musi byc naprawde bez sciezki.
+_gpt = wczytaj("obcy", reszta='[modele]\nrole = { write = "mistral-large-3" }\n')
 _bledy, _ = preset.sprawdz(_gpt, config, BAZA, srodowisko={})
 sprawdz("model bez sciezki dostawcy jest bledem sprawdzenia", any("dostawcy" in b for b in _bledy), _bledy)
 
@@ -442,7 +444,7 @@ with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
     (presety / "a" / "prompty" / "okladka.md").write_text("Notatka.\n---\nBlok okladki A.\n",
                                                           encoding="utf-8")
     plik_b = presety / "b.toml"
-    plik_b.write_text(tekst("b", reszta='[modele]\nrole = { write = "gpt-6-astra" }\n'),
+    plik_b.write_text(tekst("b", reszta='[modele]\nrole = { write = "mistral-large-3" }\n'),
                       encoding="utf-8")
 
     sprawdz("bez wskaznika: nic nie jest podlaczone", preset.aktywacja(agent, srodowisko={}) is None)

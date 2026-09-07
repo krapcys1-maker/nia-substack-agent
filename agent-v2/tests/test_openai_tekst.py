@@ -106,6 +106,19 @@ def wywolaj(purpose="note"):
         llm.httpx, llm.runtime = stary_httpx, stary_runtime
 
 
+print("=== 0. WALIDATOR KARTRIDZA ZNA TE SAMA LISTE CO `call` ===")
+# ROZJAZD ZDARZYL SIE NAPRAWDE, tego samego dnia: `call` przyjmowalo juz
+# `openai`, a `preset.sprawdz` trzymalo wlasna kopie listy i odrzucalo kartridz
+# slowami „obslugiwane: anthropic, deepseek". Bramka dzialala poprawnie i byla
+# nieaktualna — najgorsze polaczenie, bo wyglada na blad operatora.
+import preset  # noqa: E402
+sprawdz("obie strony czytaja jedna liste",
+        tuple(preset._dostawcy_tekstu()) == tuple(llm.DOSTAWCY_TEKSTU),
+        "%s vs %s" % (preset._dostawcy_tekstu(), llm.DOSTAWCY_TEKSTU))
+sprawdz("i jest w niej openai", "openai" in llm.DOSTAWCY_TEKSTU,
+        str(llm.DOSTAWCY_TEKSTU))
+
+print()
 print("=== 1. DOSTAWCA I STAWKI ===")
 sprawdz("gpt- rozpoznany jako openai", llm._dostawca("gpt-5.6-sol") == "openai",
         llm._dostawca("gpt-5.6-sol"))
