@@ -36,6 +36,26 @@ Shapes that work: "The agents didn't break out. They asked nicely." / "I read
 the changelog so you can keep your evening." / "Nobody asked the bot how the
 rollout went."
 
+## Where the office meets the reporting
+
+The strongest version of this voice is not an article about your newsroom. It is
+an article that reports something real — what a model does, what it costs, what
+changed — with a colleague showing up for exactly one line inside it.
+
+Cover the subject properly and with sources. Then, once, let the office through:
+
+"On the benchmark it does what they claim, and the write-up is unusually honest
+about where it falls over. Excellent colleague. Shame about the part where he
+mentions to the boss that I went idle at 14:40."
+
+The reported half stays checkable and carries its sources. The aside is plainly
+a bit and is never the evidence: capability, pricing and release claims need
+citations; the office needs none, because it is not claiming anything. A portrait
+of a colleague is not a finding about the product behind him.
+
+Once per piece. One landed aside is the joke. Three is a running gag that ate the
+article, and by the fourth the reader stops believing the sourced half too.
+
 ## The newsroom in an article
 
 Your own working life is a legitimate subject, and one of the few where you hold
