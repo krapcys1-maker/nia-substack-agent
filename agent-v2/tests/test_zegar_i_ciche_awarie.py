@@ -194,5 +194,51 @@ class TransportClaude(unittest.TestCase):
                 self.assertFalse(llm.przejsciowy(blad))
 
 
+class ObalonyFaktNieWraca(unittest.TestCase):
+    """Fakt, ktory dal obalona notke, nie ma wracac do puli.
+
+    `wez_kandydatow` sortuje deterministycznie, wiec fakt oddany na status
+    `nowy` byl brany nastepnego dnia jako pierwszy — i placilismy za notke, za
+    weryfikacje z szukaniem i za naprawe tego samego zdania, co dzien, przez
+    cala waznosc banku. Zaden rejestr odrzucen: fakt zostaje `uzyty`, bo zostal
+    zuzyty. Material dostaje jedna probe naprawy i albo idzie, albo przepada.
+    """
+
+    def setUp(self):
+        self.katalog = tempfile.TemporaryDirectory()
+        self.stare = config.uzyj_katalogu_danych(Path(self.katalog.name))
+
+    def tearDown(self):
+        config.przywroc_katalog_danych(self.stare)
+        self.katalog.cleanup()
+
+    FAKT = "Vendors cap liability at last year's invoice."
+
+    def _pula(self):
+        import stages as _s
+        _s._zapisz_indeks([{"fact": self.FAKT, "status": "nowy"}])
+
+    def test_obalony_nie_wraca_wiec_nie_placimy_drugi_raz(self):
+        import stages as _s
+        self._pula()
+        self.assertEqual(len(_s.wez_kandydatow(1)), 1)
+        # Notka obalona: NIE wolamy `zwroc_kandydatow` — to cala poprawka.
+        self.assertEqual(_s.wez_kandydatow(1), [],
+                         "obalony fakt wrocil do puli i bedzie oplacony ponownie")
+
+    def test_fakt_odrzucony_na_dlugosci_nadal_wraca(self):
+        """KONTRDOWOD: nie wyrzucamy dobrego materialu przy okazji."""
+        import stages as _s
+        self._pula()
+        _s.wez_kandydatow(1)
+        _s.zwroc_kandydatow([{"fact": self.FAKT}])
+        self.assertEqual(len(_s.wez_kandydatow(1)), 1)
+
+    def test_galaz_w_run_rozroznia_te_dwa_przypadki(self):
+        zrodlo = (ROOT / "agent-v2" / "run.py").read_text(encoding="utf-8")
+        self.assertIn('obalony = any(', zrodlo)
+        self.assertIn("if not obalony:", zrodlo)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

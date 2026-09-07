@@ -1332,8 +1332,26 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 # Zasada „wolimy stracic niz wystawic dwa razy" zostaje
                 # nietknieta: duplikat blokuja `zuzyte_fakty.json` (dopisywany
                 # dopiero po potwierdzonej publikacji) i pamiec notek.
+                #
+                # FAKT OBALONY PRZEZ WERYFIKACJE JUZ NIE WRACA. Bez rejestru
+                # odrzucen i bez drugiej ksiegowosci: zostaje `uzyty`, bo zostal
+                # zuzyty. Material dostaje JEDNA probe naprawy (`stages.napraw`,
+                # z limitem na przebieg) i albo idzie, albo przepada.
+                #
+                # Do 7 wrzesnia 2026 szlo tu `zwroc_kandydatow`, ktore ustawia
+                # status z powrotem na `nowy`. `wez_kandydatow` sortuje
+                # deterministycznie, wiec nastepny przebieg bral ten sam obalony
+                # fakt i placil za notke, weryfikacje z szukaniem i naprawe — co
+                # dzien, przez cala waznosc banku.
+                #
+                # Fakt, ktory odpadl na DLUGOSCI albo bramce artefaktow, wraca
+                # jak dotad: tam nic nie bylo nie tak ze zdaniem, tylko z tekstem.
                 if n.get("fakt"):
-                    stages.zwroc_kandydatow([{"fact": n["fakt"]}])
+                    obalony = any(
+                        (k.get("weryfikacja") or {}).get("verdict")
+                        for k in n["candidates"])
+                    if not obalony:
+                        stages.zwroc_kandydatow([{"fact": n["fakt"]}])
                 continue
             if wyslij:
                 if not rytm("notka", "notki", rytm_stanu):

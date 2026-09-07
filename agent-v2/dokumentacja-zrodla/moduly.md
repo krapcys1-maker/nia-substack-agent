@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-371 wierszy, 16 funkcji na poziomie modułu, 0 klas
+378 wierszy, 16 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -72,7 +72,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2960 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2978 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -260,7 +260,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5501 wierszy, 102 funkcji na poziomie modułu, 2 klas
+5541 wierszy, 102 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
