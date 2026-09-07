@@ -109,7 +109,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8369 wierszy, 147 funkcji na poziomie modułu, 0 klas
+8388 wierszy, 147 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -149,7 +149,7 @@
 | `wczytaj_zuzyte()` | — |
 | `zapisz_zuzyte(nowe)` | Pamięć zużytych ciekawostek — poza bazą, bo budżet to cztery tabele. |
 | `wybierz_cele(conn, run_id, posty)` | Które posty z kanału zasługują na komentarz. |
-| `zaczyn_z_kanalow(ile, ze_skrotem)` | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. |
+| `zaczyn_z_kanalow(ile, ze_skrotem, max_dni)` | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. |
 | `_rdzen_wydarzenia(w)` *(wewn.)* | Klucz zdarzenia: posortowane slowa rdzenia, zeby ta sama premiera |
 | `_nowe_wydarzenia(wydarzenia)` *(wewn.)* | Ktore z tych zdarzen sa NOWE — czyli nie dobieralismy juz o nich materialu. |
 | `_wydarzenie_w_fakcie(w, fakt)` *(wewn.)* | Czy ten fakt jest O TYM wydarzeniu. |

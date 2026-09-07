@@ -59,12 +59,16 @@ def podstaw_kanaly(wynik=None, wyjatek=None):
     """Fałszywy `stages` w `sys.modules` — `_swiat` importuje go leniwie."""
     modul = types.ModuleType("stages")
 
+    wywolania = []
+
     def zaczyn_z_kanalow(*a, **k):
+        wywolania.append(k)
         if wyjatek is not None:
             raise wyjatek
         return wynik
 
     modul.zaczyn_z_kanalow = zaczyn_z_kanalow
+    modul.wywolania = wywolania
     sys.modules["stages"] = modul
 
 
@@ -153,6 +157,13 @@ try:
     sprawdz("i sa w nim te same naglowki",
             NAGLOWKI in (material.get("world") or {}).get("headlines", ""),
             repr(material.get("world"))[:120])
+    # OKNO SWIEZOSCI. Bez niego do promptu wchodzil wpis sprzed trzech tygodni
+    # podany jako „o czym sie mowi w tym tygodniu" — zmierzone 7 wrzesnia 2026
+    # na zywych kanalach: dwie z dwunastu pozycji byly starsze niz tydzien.
+    k = sys.modules["stages"].wywolania[-1] if sys.modules["stages"].wywolania else {}
+    sprawdz("notka prosi o okno swiezosci", k.get("max_dni") == 14, str(k))
+    sprawdz("i o skroty, bo z naglowka nie da sie nic wytlumaczyc",
+            k.get("ze_skrotem") is True, str(k))
     sprawdz("temat z listy persony nadal jest",
             material.get("theme") == "a deadline nobody set, enforced by a timer",
             repr(material.get("theme"))[:80])
