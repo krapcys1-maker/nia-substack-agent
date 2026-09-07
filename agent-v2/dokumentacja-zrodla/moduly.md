@@ -109,7 +109,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8388 wierszy, 147 funkcji na poziomie modułu, 0 klas
+8428 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -129,6 +129,7 @@
 | `poprzednie_teksty(ile, pomin_tresc)` | Treści kilku ostatnich artykułów — materiał dla bramki ODCISK_FORMY. |
 | `_nazwa_zrodla(conn, url)` *(wewn.)* | Nazwa źródła zamiast gołego adresu. |
 | `save(conn, run_id, topic, card, draft, status, blocked_by, notes)` | Etap 9 — zapis. Artykuł do szuflady: baza + plik .md. |
+| `system_pisarza()` | System artykulu. Z wlaczona persona NIESIE TOZSAMOSC, a nie „anonimowa marke". |
 | `karta_dla_pisarza(card, teraz)` | Karta bez zastrzezenia, ktorego nie wolno opublikowac. |
 | `wstaw_date_zrodel(tekst, card)` | Stopka z data zrodel pisana PRZEZ KOD, nie przez model. |
 | `write(conn, run_id, card, glebokosc)` | Etap 7 — artykuł (Claude). To jest produkt. |
