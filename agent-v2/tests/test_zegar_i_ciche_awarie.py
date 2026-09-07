@@ -240,5 +240,30 @@ class ObalonyFaktNieWraca(unittest.TestCase):
         self.assertIn("if not obalony:", zrodlo)
 
 
+class PortChromeZInstalacji(unittest.TestCase):
+    """Dwie kopie na jednej maszynie potrzebuja dwoch Chrome'ow.
+
+    `CDP_PORT` bylo stala 9222 w szesciu miejscach `browser.py`, wiec druga
+    kopia laczyla sie z przegladarka pierwszej. Straznik konta odmawial zapisu,
+    wiec nic nie szlo na cudze konto — ale nie szlo tez nigdzie, a log mowil
+    „nie to konto" i ani slowa o porcie.
+    """
+
+    def test_port_jest_konfigurowalny_a_nie_wpisany(self):
+        zrodlo = (ROOT / "agent-v2" / "browser.py").read_text(encoding="utf-8")
+        self.assertIn("CDP_PORT = config.CHROME_DEBUG_PORT", zrodlo)
+        self.assertNotIn("CDP_PORT = 9222", zrodlo)
+
+    def test_domyslnie_zostaje_9222(self):
+        """KONTRDOWOD: istniejaca instalacja bez tej zmiennej ma sie nie ruszyc."""
+        self.assertEqual(config.CHROME_DEBUG_PORT, 9222)
+
+    def test_port_nalezy_do_instalacji_nie_do_presetu(self):
+        """Preset bywa wspolny dla wielu osob; port jest cecha maszyny."""
+        import konfiguracja
+        self.assertNotIn("CHROME_DEBUG_PORT",
+                         {nazwa for nazwa, _ in konfiguracja.POLA.values() if nazwa})
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
