@@ -35,10 +35,15 @@
 | `SONNET` | `"claude-sonnet-5"` | — |
 | `FABLE_5` | `"claude-fable-5"` | PISARZ ARTYKULOW. Fable 5.1 wyszedl 1 wrzesnia 2026 i od 3 wrzesnia pisze artykuly; poprzednik zostaje pod wlasna nazwa, bo pod nia stoi cal |
 | `FABLE` | `"claude-fable-5-1"` | — |
+| `GPT_SOL` | `"gpt-5.6-sol"` | MODELE OPENAI DO TEKSTU. Klucz `OPENAI_API_KEY` sluzyl do 7 wrzesnia 2026 WYLACZNIE do grafik i tak byl opisany — teraz obsluguje takze `/re |
+| `GPT_TERRA` | `"gpt-5.6-terra"` | — |
+| `GPT_LUNA` | `"gpt-5.6-luna"` | — |
+| `GPT_ASTRA` | `"gpt-6-astra"` | — |
 | `DEEPSEEK` | `"deepseek-v4-flash"` | — |
 | `DEEPSEEK_PRO` | `"deepseek-v4-pro"` | — |
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |
+| `OPENAI_BASE_URL` | `"https://api.openai.com/v1"` | — |
 | `DEEPSEEK_EFFORT` | `"low"` | Głębokość rozumowania DeepSeeka na /responses. Tokeny rozumowania liczą się do sufitu wyjścia, więc przy `high` model kończy budżet na szuka |
 | `DEEPSEEK_BEZ_MYSLENIA` | `frozenset({ "feasibility", "classify", "bank` | MYSLENIE DEEPSEEKA NA /chat/completions JEST DOMYSLNIE WLACZONE i liczone jako tokeny wyjscia. Zmierzone 2026-09-06 na jednym zadaniu sedzie |
 | `CHEAP_MODE` | `_env("AGENT_V2_CHEAP", "0").lower() in {"1",` | Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override zostawia u Claude'a. Sluzy do testowania HYDRAULIKI — czy lancuch |

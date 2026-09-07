@@ -176,6 +176,15 @@ SONNET = "claude-sonnet-5"
 # 8 wrzesnia, wiec wyszloby to dopiero za piec dni.
 FABLE_5 = "claude-fable-5"          # poprzednik, zostaje dla historii i porownan
 FABLE = "claude-fable-5-1"  # najmocniejszy, dwa razy droższy od Opusa
+
+# MODELE OPENAI DO TEKSTU. Klucz `OPENAI_API_KEY` sluzyl do 7 wrzesnia 2026
+# WYLACZNIE do grafik i tak byl opisany — teraz obsluguje takze `/responses`.
+# Sol jest tu jedynym, ktory ma sens cenowo: Astra kosztuje tyle co Fable,
+# a Luna jest tania, bo slaba.
+GPT_SOL = "gpt-5.6-sol"
+GPT_TERRA = "gpt-5.6-terra"
+GPT_LUNA = "gpt-5.6-luna"
+GPT_ASTRA = "gpt-6-astra"
 DEEPSEEK = "deepseek-v4-flash"
 DEEPSEEK_PRO = "deepseek-v4-pro"  # ma server-side web_search przez /responses
 
@@ -330,6 +339,7 @@ MODEL_FOR = {
 }
 
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+OPENAI_BASE_URL = "https://api.openai.com/v1"
 
 # Głębokość rozumowania DeepSeeka na /responses. Tokeny rozumowania liczą się
 # do sufitu wyjścia, więc przy `high` model kończy budżet na szukaniu i nie
@@ -417,6 +427,15 @@ PRICING = {
     # — dostawca podaje ich liczbe w kazdej odpowiedzi, wiec nie zgadujemy.
     DEEPSEEK: {"in": 0.22, "out": 0.66, "cache": 0.007, "verified": True},
     DEEPSEEK_PRO: {"in": 0.66, "out": 1.98, "cache": 0.022, "verified": True},
+    # STAWKI OPENAI ODCZYTANE Z CENNIKA 7 wrzesnia 2026, NIE Z FAKTURY.
+    # Sol ma cene PROMOCYJNA, gwarantowana przez dostawce „co najmniej do
+    # 21 listopada 2026" — czyli ta liczba ma date waznosci, w odroznieniu od
+    # pozostalych. Po tej dacie trzeba ja sprawdzic, bo `verified: False`
+    # oznacza tu tylko „nie z naszego rachunku", a nie „moze wzrosnac".
+    GPT_SOL: {"in": 4.00, "out": 20.00, "cache": 0.40, "verified": False},
+    GPT_TERRA: {"in": 2.00, "out": 12.00, "cache": 0.20, "verified": False},
+    GPT_LUNA: {"in": 0.20, "out": 1.20, "cache": 0.02, "verified": False},
+    GPT_ASTRA: {"in": 10.00, "out": 50.00, "cache": 1.00, "verified": False},
 }
 
 # --- taryfa szczytowa DeepSeeka -----------------------------------------------
