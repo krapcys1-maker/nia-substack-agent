@@ -140,6 +140,49 @@ WantedBy=multi-user.target
 remote desktop, and let them enter the password themselves. Automating a login
 is not part of deployment.
 
+If the desktop is reachable only on the loopback — the usual arrangement — the
+owner needs a tunnel before the browser will open:
+
+```bash
+ssh -i <key> -L 6080:127.0.0.1:6080 -N <user>@<host>   # then http://localhost:6080/vnc.html
+```
+
+Two Chrome windows will be on that desktop and they look alike. The new one is
+the one sitting on `substack.com/sign-in`; the other is already signed in to the
+first account. Say which is which before they start typing.
+
+### Save the session once they are in
+
+Logging in is not enough. The engine reads a session file, not the live browser,
+and without it every run stops on `Brak sesji Substacka` — a message that does
+not mention which file is missing or which copy it belongs to.
+
+```bash
+cd ~/nia-agent && .venv/bin/python agent-v2/browser.py sesja
+```
+
+It reports how long the session is good for and writes
+`storage-state.json` into **this copy's** instance directory. Check the path it
+prints: with a cartridge attached it belongs under `agent-v2/instancje/<name>/`,
+and anything else means the wrong copy just captured the session.
+
+Confirm the account before trusting it, because this is the last moment a wrong
+browser is cheap to discover:
+
+```bash
+cd ~/nia-agent && .venv/bin/python -c "
+import sys; sys.path.insert(0,'agent-v2')
+import config, browser
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    b = p.chromium.connect_over_cdp('http://localhost:%d' % browser.CDP_PORT)
+    ctx = b.contexts[0] if b.contexts else b.new_context()
+    page = ctx.new_page()
+    browser.wymagaj_wlasciwego_konta(page)   # raises on the wrong account
+    print('guard says this is', config.SUBSTACK_HANDLE)
+    page.close()"
+```
+
 ## 6. Tests, then a dry run
 
 ```bash
