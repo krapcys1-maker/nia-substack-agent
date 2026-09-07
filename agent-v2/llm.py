@@ -660,7 +660,18 @@ def przejsciowy(exc: BaseException) -> bool:
     # transportu, a nie decyzja modelu; notka po prostu tracila slot.
     # `APITimeoutError` dziedziczy po `APIConnectionError`, ale wymieniam oba,
     # bo ta hierarchia jest cudza i moze sie zmienic.
-    if isinstance(exc, (anthropic.APITimeoutError, anthropic.APIConnectionError)):
+    #
+    # PRZEZ `getattr`, NIE WPROST: starsze wydania SDK nie maja
+    # `APITimeoutError`, a `anthropic.APITimeoutError` w tej linii rzucaloby
+    # wtedy AttributeError — W SRODKU KLASYFIKATORA BLEDOW, czyli w miejscu,
+    # ktore wlasnie obsluguje awarie. Klasyfikator, ktory sam sie wywala, jest
+    # gorszy od zlego klasyfikatora: gubi prawdziwy blad i podstawia swoj.
+    # Uwaga od agenta pierwszego bota, 7 wrzesnia 2026.
+    _PRZEJSCIOWE_SDK = tuple(
+        k for k in (getattr(anthropic, "APITimeoutError", None),
+                    getattr(anthropic, "APIConnectionError", None))
+        if isinstance(k, type) and issubclass(k, BaseException))
+    if _PRZEJSCIOWE_SDK and isinstance(exc, _PRZEJSCIOWE_SDK):
         return True
     kod = getattr(exc, "status_code", None) or getattr(
         getattr(exc, "response", None), "status_code", None)
