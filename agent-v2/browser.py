@@ -2943,7 +2943,13 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             return wynik
         if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
             import personality
-            profile = api_json(page, f"/api/v1/user/{handle}/public_profile")
+            # api_json navigates its page. Keep the Subscribe controls on the
+            # profile page while reading audience size in a separate tab.
+            stats_page = context.new_page()
+            try:
+                profile = api_json(stats_page, f"/api/v1/user/{handle}/public_profile")
+            finally:
+                stats_page.close()
             if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
                 wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
                 if wyslij:
