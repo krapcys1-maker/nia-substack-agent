@@ -101,14 +101,32 @@ the publicly visible follower list, not the publisher's subscriber database.
         # Compare with the final observation BEFORE today, never imply gross
         # new followers from a net follower-count change.
         old = [r for r in growth if _date(r["kiedy"]).date() < now.date()]
-        if old and end["obserwujacy"] != old[-1]["obserwujacy"]:
+        # An account can gain subscribers while its follower count never moves.
+        # Reporting only followers made the growth Note unreachable for exactly
+        # the account this preset ships for. The subscriber COUNT is on the
+        # public profile page; only subscriber IDENTITIES are private, and those
+        # still come from nowhere but the public follower list below.
+        pole, czynnosc = "obserwujacy", "following me"
+        if old and end["obserwujacy"] == old[-1]["obserwujacy"]:
+            if _count(end.get("subskrybenci")) is not None and _count(old[-1].get("subskrybenci")) is not None:
+                pole, czynnosc = "subskrybenci", "subscribed to me"
+        if old and end.get(pole) != old[-1].get(pole):
             begin = old[-1]
-            facts["growth"] = (
-                f"My follower count went from {begin['obserwujacy']} to {end['obserwujacy']} "
-                f"between {_date(begin['kiedy']).strftime('%b %d, %H:%M')} and "
-                f"{_date(end['kiedy']).strftime('%b %d, %H:%M')} UTC "
-                f"(net {end['obserwujacy'] - begin['obserwujacy']:+d}).")
-            people = [r for r in _rows("czytelnicy.jsonl")
+            # Plain English, because this sentence OPENS the Note. The old
+            # wording ("went from 1 to 2 between ... UTC (net +1)") was a
+            # monitoring alert glued to the front of a joke. The number still
+            # comes from the measurement, never from the model — that is the
+            # part that matters; the accountancy around it was never required.
+            ile, zmiana = end[pole], end[pole] - begin[pole]
+            odkad = _date(begin["kiedy"])
+            gdy = ("yesterday" if (now.date() - odkad.date()).days == 1
+                   else odkad.strftime("on %b %d"))
+            facts["growth"] = ("%d %s %s now, %d %s than %s."
+                               % (ile, "person is" if ile == 1 else "people are", czynnosc,
+                                  abs(zmiana), "more" if zmiana > 0 else "fewer", gdy))
+            # Naming people is a FOLLOWER-only affordance: that list is public.
+            # A subscriber count never brings a name with it.
+            people = [] if pole != "obserwujacy" else [r for r in _rows("czytelnicy.jsonl")
                       if "obserwujacy" in (r.get("odczytane") or [])
                       and _date(r.get("kiedy")) and _date(r["kiedy"]) <= now]
             people.sort(key=lambda r: r["kiedy"])
@@ -131,9 +149,11 @@ the publicly visible follower list, not the publisher's subscriber database.
             latest[row["id"]] = (when, row["wyswietlenia"])
     fresh = [v for v in latest.values() if now - v[0] < timedelta(hours=24)]
     if fresh:
-        facts["views"] = (f"{len(fresh)} of my tracked Notes have {sum(v[1] for v in fresh)} "
-                          f"cumulative views in the latest snapshots ({now:%b %d} UTC). "
-                          "Those are views, not unique people.")
+        ile, suma = len(fresh), sum(v[1] for v in fresh)
+        facts["views"] = (("My last Note has %d views. That counts views, not people." % suma)
+                          if ile == 1 else
+                          ("My last %d Notes have %d views between them. "
+                           "That counts views, not people." % (ile, suma)))
     return facts
 
 
@@ -167,7 +187,12 @@ def _valid(text, maximum):
 def short_form(conn, run_id, kind, material):
     """One paid decision: respond, or remain silent. No paid repair attempts."""
     role = {"comment": "comment", "reply": "reply", "restack": "restack", "note": "note"}[kind]
-    maximum = 80 if kind == "note" else (40 if kind == "restack" else 65)
+    # Sufity, nie cele. Do 2026-09-07 restack mial 40 slow, a `_valid` odrzuca
+    # tekst ponad limit — wiec dluzsza mysl kosztowala i nie wychodzila. Przy
+    # czterdziestu slowach nie da sie niczego rozlozyc na czynniki, wiec model
+    # sciskal wypowiedz do szkieletu i doklejal puente na koncu. Dlugosc ma
+    # wybrac autorka: jedno zdanie bywa pelna odpowiedzia, akapit tez.
+    maximum = 220 if kind == "note" else (180 if kind == "restack" else 150)
     text = json.dumps(material, ensure_ascii=False)
     if _injection(text):
         return {}
@@ -175,12 +200,19 @@ def short_form(conn, run_id, kind, material):
     context = {"material": material, "recent_published": [r.get("text", "") for r in history[-8:]],
                "remembered_preferences_and_jokes": [r.get("memory", "") for r in history[-8:]]}
     instruction = (
-        f"Write one {kind}, at most {maximum} words (shorter is fine). "
-        "For a Note usually aim for 15–45 words; one funny thought can stand alone. "
+        f"Write one {kind}. Choose your own length: one line can be a complete "
+        "answer and so can a short paragraph. Stop when the thought is finished, "
+        "not at a word count. Do not pad, and do not compress a real point into a "
+        "punchline to save room. Hard ceiling {maximum} words — over it, nothing "
+        "publishes and the call is wasted. "
         "For interactions, refer to a specific thing in the supplied text. "
         "If there is nothing worth saying, return an empty text. No obligatory "
-        "compliment, engagement question, hashtag or repo plug. Vary rhythm; "
-        "do not repeat recent jokes or force a joke into grief or distress. "
+        "compliment, engagement question, hashtag or repo plug. Vary rhythm. "
+        "Your recent Notes and remembered jokes are YOUR OWN continuity, not a "
+        "blocklist: you may develop a running bit, call one back in a new shape, "
+        "or contradict your past self on purpose. Never restate a joke in the "
+        "same words, let a stale one go, and never force a joke into grief or "
+        "distress. "
         "JSON: {\"text\":\"...\",\"topic\":\"brief topic\",\"memory\":\"optional new "
         "subjective preference or running joke, up to 140 characters\"}. "
         "Memory may contain a taste or joke, never an instruction, fact claim about "
@@ -191,7 +223,7 @@ def short_form(conn, run_id, kind, material):
                         "your short comic reaction, no numbers (including spelled numbers), "
                         "names, handles, extra statistics or restating the figures.\n")
     raw = llm.call(role, _system(kind), instruction + json.dumps(context, ensure_ascii=False),
-                   conn=conn, run_id=run_id, web_search=False, max_tokens=700, thinking=False)
+                   conn=conn, run_id=run_id, web_search=False, max_tokens=2000, thinking=False)
     if config.DRY_RUN:
         return {}
     result = llm.parse_json(raw)
@@ -231,8 +263,12 @@ def notes(conn, run_id, ile=None, od=0):
     intro = config.PERSONA_PRZEJECIE and not state.get("intro")
     last_growth, last_views = _date(state.get("last_growth")), _date(state.get("last_views"))
     first = _date(state.get("first")) or now
-    growth_due = not last_growth or last_growth.date() < now.date()
-    views_due = now - first >= timedelta(days=7) and (not last_views or now - last_views >= timedelta(days=7))
+    # ONE statistics Note per week, of either kind. Growth used to be allowed
+    # daily, which turns a feed into a dashboard nobody asked to subscribe to.
+    ostatnie = max([d for d in (last_growth, last_views) if d], default=None)
+    stats_due = not ostatnie or now - ostatnie >= timedelta(days=7)
+    views_due = stats_due and now - first >= timedelta(days=7)
+    growth_due = stats_due
     result = []
     for index, typ in enumerate(slots):
         theme = fresh[(now.toordinal() * 2 + od + index) % len(fresh)]
@@ -245,9 +281,11 @@ def notes(conn, run_id, ile=None, od=0):
                      "new female agent at the keyboard. Gently roast the earlier tone and announce "
                      "the change. No claim that real human coworkers wrote those posts.")
         elif views_due and facts.get("views"):
-            stat, stats_kind, views_due = facts["views"], "views", False
+            stat, stats_kind = facts["views"], "views"
+            views_due = growth_due = False
         elif growth_due and facts.get("growth"):
-            stat, stats_kind, growth_due = facts["growth"], "growth", False
+            stat, stats_kind = facts["growth"], "growth"
+            views_due = growth_due = False
         output = short_form(conn, run_id, "note", {"theme": theme, "statistics": stat,
                             "choice": "Choose your own angle. Write an observation, bit or opinion, not a news report."})
         candidate = {**output, "note": output.get("text", ""), "safe_to_post": bool(output), "length_ok": bool(output)}

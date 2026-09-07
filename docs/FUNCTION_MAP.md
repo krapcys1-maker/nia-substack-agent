@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 32 |
-| functions and methods | 727 |
+| functions and methods | 728 |
 | functions that call a paid model | 27 |
 | functions that touch the browser | 67 |
 | functions that touch the database | 48 |
@@ -47,7 +47,7 @@ For paid calls the verdict comes from
 | [`browser.py`](#agent-v2browser-py) | 103 | 0 | 47 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
 | [`browser_reader.py`](#agent-v2browser-reader-py) | 5 | 0 | 1 | 0 | Bound source reads, including Playwright shutdown, in an owned subprocess. |
 | [`call_runtime.py`](#agent-v2call-runtime-py) | 10 | 0 | 1 | 0 | Per-operation deadlines and usage; workers never write to the database. |
-| [`config.py`](#agent-v2config-py) | 43 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
+| [`config.py`](#agent-v2config-py) | 44 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
 | [`db.py`](#agent-v2db-py) | 15 | 0 | 0 | 10 | Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK. |
 | [`gates.py`](#agent-v2gates-py) | 22 | 0 | 0 | 0 | Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu. |
 | [`jezyki.py`](#agent-v2jezyki-py) | 5 | 0 | 0 | 0 | Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma. |
@@ -408,7 +408,7 @@ Per-operation deadlines and usage; workers never write to the database.
 
 Jedyne miejsce ze stałymi.
 
-43 funkcji.
+44 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -422,39 +422,40 @@ Jedyne miejsce ze stałymi.
 | 636 | `sufit_dnia(dzien)` | — | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. | `alarm.koszt`, `config (poziom modulu)` |
 | 820 | `kotwica_dlugosci(glebokosc)` | — | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. | `stages.write` |
 | 825 | `dlugosc_dla(glebokosc)` | — | Ile slow ma miec artykul o tej glebokosci. | `artykul_z_puli._napisz_i_zapisz`, `run.main`, `stages.write` |
-| 986 | `_tokens_for(chars)` | — | — | `config (poziom modulu)` |
-| 1088 | `dlugosc_notki(typ)` | — | Przedział słów dla tego typu notki. | `stages.note` |
-| 1356 | `losowa_postawa()` | — | Ktora postawa dla TEGO komentarza. | `stages.comment_on` |
-| 1404 | `otwarcia_dla_postawy(postawa)` | — | Otwarcia, ktore ta postawa ma jak wykonac. | `config.losowe_otwarcie` |
-| 1414 | `losowe_otwarcie(postawa)` | — | — | `stages.comment_on`, `stages.reply_to` |
-| 1420 | `losowa_dlugosc()` | — | Ile slow ma miec ta konkretna wypowiedz. | `stages.comment_on`, `stages.reply_to` |
-| 1563 | `formy_dla_typu(typ)` | — | Formy, ktore ten typ notki ma czym wypelnic. | `stages.notki_dnia` |
-| 1864 | `losowy_ksztalt_mysli()` | — | Ktory ksztalt dostaje ta MYSL. | `stages._opis_typu` |
-| 2021 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `alarm.bank_bez_tematow`, `alarm.max_dzialan_dziennie`, `audyt_systemu.main`, `norma.main` *(+1)* |
-| 2109 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
-| 2116 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
-| 2190 | `dzis_dzien_artykulu(kiedy)` | — | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. | `artykul_z_puli.main` |
-| 2200 | `zegar_agenta_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. | — |
-| 2206 | `zegar_artykulu_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. | — |
-| 2612 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses` |
-| 2690 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
-| 2720 | `tylko_dla_wlasciciela(sciezka)` | — | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. | `browser.rozpoznanie`, `browser.sprawdz_sesje`, `browser.zaloguj`, `config.otworz_tylko_dla_wlasciciela` |
-| 2750 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | — | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. | `kopia_subskrybentow.main`, `kopia_subskrybentow.pobierz_z_panelu` |
-| 2785 | `pytanie_o_stan_dziedziny()` | — | O co pytamy, sprawdzajac stan dziedziny. | `aktualne_modele.pobierz`, `aktualne_modele.wczytaj` |
-| 2860 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
-| 2883 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
-| 2892 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
-| 2921 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
-| 2976 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
-| 2991 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
-| 3012 | `uzyj_katalogu_danych(katalog, utworz)` | — | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | `config (poziom modulu)` |
-| 3040 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
-| 3075 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
-| 3206 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
-| 3214 | `losowa_liczba_paraleli(glebokosc, dostepne)` | — | Ile paraleli w drugim akcie. | `stages.write` |
-| 3328 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
-| 3351 | `co_teraz_w_reku(kiedy, kalendarz)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
-| 3433 | `_aktywacja_przy_starcie()` | — | — | `config (poziom modulu)` |
+| 992 | `_tokens_for(chars)` | — | — | `config (poziom modulu)` |
+| 1094 | `dlugosc_notki(typ)` | — | Przedział słów dla tego typu notki. | `stages.note` |
+| 1362 | `losowa_postawa()` | — | Ktora postawa dla TEGO komentarza. | `stages.comment_on` |
+| 1410 | `otwarcia_dla_postawy(postawa)` | — | Otwarcia, ktore ta postawa ma jak wykonac. | `config.losowe_otwarcie` |
+| 1420 | `losowe_otwarcie(postawa)` | — | — | `stages.comment_on`, `stages.reply_to` |
+| 1426 | `losowa_dlugosc()` | — | Ile slow ma miec ta konkretna wypowiedz. | `stages.comment_on`, `stages.reply_to` |
+| 1569 | `formy_dla_typu(typ)` | — | Formy, ktore ten typ notki ma czym wypelnic. | `stages.notki_dnia` |
+| 1870 | `losowy_ksztalt_mysli()` | — | Ktory ksztalt dostaje ta MYSL. | `stages._opis_typu` |
+| 2027 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `alarm.bank_bez_tematow`, `alarm.max_dzialan_dziennie`, `audyt_systemu.main`, `norma.main` *(+1)* |
+| 2115 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
+| 2122 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
+| 2196 | `dzis_dzien_artykulu(kiedy)` | — | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. | `artykul_z_puli.main` |
+| 2206 | `zegar_agenta_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. | — |
+| 2212 | `zegar_artykulu_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. | — |
+| 2603 | `sufit_wyjscia(purpose, model)` | — | Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu. | `llm._call_claude`, `llm._call_deepseek` |
+| 2639 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses` |
+| 2717 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
+| 2747 | `tylko_dla_wlasciciela(sciezka)` | — | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. | `browser.rozpoznanie`, `browser.sprawdz_sesje`, `browser.zaloguj`, `config.otworz_tylko_dla_wlasciciela` |
+| 2777 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | — | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. | `kopia_subskrybentow.main`, `kopia_subskrybentow.pobierz_z_panelu` |
+| 2812 | `pytanie_o_stan_dziedziny()` | — | O co pytamy, sprawdzajac stan dziedziny. | `aktualne_modele.pobierz`, `aktualne_modele.wczytaj` |
+| 2887 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
+| 2910 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
+| 2919 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
+| 2948 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
+| 3003 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
+| 3018 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
+| 3039 | `uzyj_katalogu_danych(katalog, utworz)` | — | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | `config (poziom modulu)` |
+| 3067 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
+| 3102 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
+| 3233 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
+| 3241 | `losowa_liczba_paraleli(glebokosc, dostepne)` | — | Ile paraleli w drugim akcie. | `stages.write` |
+| 3355 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
+| 3378 | `co_teraz_w_reku(kiedy, kalendarz)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
+| 3460 | `_aktywacja_przy_starcie()` | — | — | `config (poziom modulu)` |
 
 ---
 
@@ -596,25 +597,25 @@ Wczytanie `konfiguracja.toml` i pol presetu — jeden kontrakt pol, jeden zapis.
 | 384 | `_slownik_adresow(v, gdzie)` | — | Nazwa -> adres kanalu RSS/Atom. | `konfiguracja (poziom modulu)` |
 | 396 | `_lista_domen(v, gdzie)` | — | Lista hostow (bez schematu i sciezki), pusta dozwolona. | `konfiguracja (poziom modulu)` |
 | 409 | `_slownik_miesiecy(v, gdzie)` | — | Tablica `"1".."12" = napis` (klucze TOML sa napisami). | `konfiguracja (poziom modulu)` |
-| 584 | `sciezka(agent_dir)` | DEAD? | — | — |
-| 588 | `splaszcz(dane, nazwa)` | — | `{"temat": {"nisza": ...}}` na `{"temat.nisza": ...}` — jeden poziom. | `konfiguracja.wczytaj_tekst`, `preset.wczytaj_tekst` |
-| 601 | `sprawdz_plaskie(plaskie, nazwa)` | — | Nieznane pole to blad; kazde znane przechodzi przez swoj walidator. | `konfiguracja.wczytaj_tekst`, `preset.wczytaj_tekst` |
-| 617 | `wczytaj_tekst(tekst, nazwa)` | — | Surowy TOML (napis) -> zwalidowane pola plaskie. | `konfiguracja.wczytaj` |
-| 635 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
-| 645 | `zdjecie(cfg)` | DEAD? | Kopia stalych konta z modulu `config`, do pozniejszego przywrocenia. | — |
-| 654 | `przywroc(cfg, zdj)` | — | Przywraca stan ze `zdjecie`. | `preset.proba_konfiguracji`, `preset.zastosuj` |
-| 669 | `_rozloz_godziny(ile, baza)` | — | Godziny zegara dla `ile` przebiegow, gdy preset podal tylko liczbe. | `konfiguracja._plan` |
-| 698 | `konto_ze_srodowiska(cfg, srodowisko)` | — | Nadpisuje uchwyt i marke wartosciami ze srodowiska. | `preset.rozwiaz` |
-| 709 | `uchwyt_konta(pola, srodowisko)` | — | Uchwyt, ktory NAPRAWDE bedzie uzyty: ze srodowiska, a gdy go tam nie ma — z presetu. | `preset.podlacz` |
-| 715 | `placeholder_konta(uchwyt, marka)` | — | Co w koncie jest jeszcze placeholderem (pusta lista = konto gotowe). | `alarm.konto_placeholder`, `preset.sprawdz` |
-| 732 | `_sciezka_w_repo(cfg, napis)` | — | Bezwzgledna jak jest; `repo:x` i zwykla wzgledna — od korzenia repozytorium. | `konfiguracja._plan` |
-| 742 | `_plan(dane, cfg)` | — | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. | `konfiguracja.zastosuj` |
-| 916 | `zastosuj(dane, cfg)` | — | Wklada wartosci do modulu `config`. | `preset.rozwiaz`, `preset.zastosuj` |
-| 942 | `on_calendar_agenta(godziny)` | DEAD? | Zegar rutyny dnia: jedna linia na godzine UTC. | — |
-| 947 | `on_calendar_artykulu(dni, godzina, ile, dni_miesiaca)` | DEAD? | Zegar artykulu; pusta lista, gdy artykulow nie ma. | — |
-| 959 | `_toml_napis(v)` | — | Napis w cudzyslowie z ucieczkami. | `konfiguracja.toml_wartosc` |
-| 966 | `toml_wartosc(v)` | — | — | `konfiguracja.zapisz_toml`, `preset.z_konfiguracji` |
-| 985 | `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | — | Pola plaskie -> tekst TOML. | `preset.eksportuj` |
+| 589 | `sciezka(agent_dir)` | DEAD? | — | — |
+| 593 | `splaszcz(dane, nazwa)` | — | `{"temat": {"nisza": ...}}` na `{"temat.nisza": ...}` — jeden poziom. | `konfiguracja.wczytaj_tekst`, `preset.wczytaj_tekst` |
+| 606 | `sprawdz_plaskie(plaskie, nazwa)` | — | Nieznane pole to blad; kazde znane przechodzi przez swoj walidator. | `konfiguracja.wczytaj_tekst`, `preset.wczytaj_tekst` |
+| 622 | `wczytaj_tekst(tekst, nazwa)` | — | Surowy TOML (napis) -> zwalidowane pola plaskie. | `konfiguracja.wczytaj` |
+| 640 | `wczytaj(plik)` | DEAD? | Surowa zawartosc pliku, sprawdzona co do ksztaltu. | — |
+| 650 | `zdjecie(cfg)` | DEAD? | Kopia stalych konta z modulu `config`, do pozniejszego przywrocenia. | — |
+| 659 | `przywroc(cfg, zdj)` | — | Przywraca stan ze `zdjecie`. | `preset.proba_konfiguracji`, `preset.zastosuj` |
+| 674 | `_rozloz_godziny(ile, baza)` | — | Godziny zegara dla `ile` przebiegow, gdy preset podal tylko liczbe. | `konfiguracja._plan` |
+| 703 | `konto_ze_srodowiska(cfg, srodowisko)` | — | Nadpisuje uchwyt i marke wartosciami ze srodowiska. | `preset.rozwiaz` |
+| 714 | `uchwyt_konta(pola, srodowisko)` | — | Uchwyt, ktory NAPRAWDE bedzie uzyty: ze srodowiska, a gdy go tam nie ma — z presetu. | `preset.podlacz` |
+| 720 | `placeholder_konta(uchwyt, marka)` | — | Co w koncie jest jeszcze placeholderem (pusta lista = konto gotowe). | `alarm.konto_placeholder`, `preset.sprawdz` |
+| 737 | `_sciezka_w_repo(cfg, napis)` | — | Bezwzgledna jak jest; `repo:x` i zwykla wzgledna — od korzenia repozytorium. | `konfiguracja._plan` |
+| 747 | `_plan(dane, cfg)` | — | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. | `konfiguracja.zastosuj` |
+| 935 | `zastosuj(dane, cfg)` | — | Wklada wartosci do modulu `config`. | `preset.rozwiaz`, `preset.zastosuj` |
+| 961 | `on_calendar_agenta(godziny)` | DEAD? | Zegar rutyny dnia: jedna linia na godzine UTC. | — |
+| 966 | `on_calendar_artykulu(dni, godzina, ile, dni_miesiaca)` | DEAD? | Zegar artykulu; pusta lista, gdy artykulow nie ma. | — |
+| 978 | `_toml_napis(v)` | — | Napis w cudzyslowie z ucieczkami. | `konfiguracja.toml_wartosc` |
+| 985 | `toml_wartosc(v)` | — | — | `konfiguracja.zapisz_toml`, `preset.z_konfiguracji` |
+| 1004 | `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | — | Pola plaskie -> tekst TOML. | `preset.eksportuj` |
 
 ---
 
@@ -678,18 +679,18 @@ Provider calls with per-attempt accounting, reservations and deadlines.
 | 474 | `_read_search_sources(urls)` | — | Recover evidence from already-found public URLs, without another search. | `llm._deepseek_pick_from_urls` |
 | 486 | `_read_search_sources.public_url(url)` | — | — | `llm._read_search_sources` |
 | 547 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call`, `llm.call.transport` |
-| 637 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
-| 664 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
-| 706 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
-| 722 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
-| 731 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+25)* |
-| 765 | `call.transport()` | — | — | `llm.call` |
-| 823 | `obraz(opis, conn, run_id)` | — | — | `stages.grafika` |
-| 835 | `obraz.request()` | — | — | `llm.obraz` |
-| 855 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
-| 871 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
-| 936 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
-| 981 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+24)* |
+| 638 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
+| 665 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
+| 707 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
+| 723 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
+| 732 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+25)* |
+| 766 | `call.transport()` | — | — | `llm.call` |
+| 824 | `obraz(opis, conn, run_id)` | — | — | `stages.grafika` |
+| 836 | `obraz.request()` | — | — | `llm.obraz` |
+| 856 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
+| 872 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
+| 937 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
+| 982 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+24)* |
 
 ---
 
@@ -751,16 +752,16 @@ Opt-in conversational short forms.
 | 65 | `memory_state()` | — | Keep milestones after individual Notes leave the bounded prompt memory. | `personality.notes`, `personality.remember` |
 | 84 | `_count(value)` | — | — | `personality.small_account`, `personality.statistics` |
 | 88 | `statistics(now)` | — | Publishable facts only: net growth and cumulative measured Note views. | `personality.notes` |
-| 117 | `statistics.handles(row)` | — | — | `personality.statistics` |
-| 140 | `_system(kind)` | — | — | `personality.short_form` |
-| 157 | `_valid(text, maximum)` | — | — | `personality.short_form` |
-| 167 | `short_form(conn, run_id, kind, material)` | **$**((zmienna)) | One paid decision: respond, or remain silent. | `personality.interaction`, `personality.notes` |
-| 221 | `notes(conn, run_id, ile, od)` | — | Choose a subject from the persona, not the research bank. | `stages.notki_dnia` |
-| 259 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
-| 271 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
-| 281 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
-| 303 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu` |
-| 311 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `run.dzien`, `run.dzien.notki` |
+| 135 | `statistics.handles(row)` | — | — | `personality.statistics` |
+| 160 | `_system(kind)` | — | — | `personality.short_form` |
+| 177 | `_valid(text, maximum)` | — | — | `personality.short_form` |
+| 187 | `short_form(conn, run_id, kind, material)` | **$**((zmienna)) | One paid decision: respond, or remain silent. | `personality.interaction`, `personality.notes` |
+| 253 | `notes(conn, run_id, ile, od)` | — | Choose a subject from the persona, not the research bank. | `stages.notki_dnia` |
+| 297 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
+| 309 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
+| 319 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
+| 341 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu` |
+| 349 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `run.dzien`, `run.dzien.notki` |
 
 ---
 

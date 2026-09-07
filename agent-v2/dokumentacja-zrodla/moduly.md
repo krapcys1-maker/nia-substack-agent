@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-333 wierszy, 16 funkcji na poziomie modułu, 0 klas
+371 wierszy, 16 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -369,7 +369,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1027 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1028 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -456,7 +456,7 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-1020 wierszy, 45 funkcji na poziomie modułu, 1 klas
+1039 wierszy, 45 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -635,7 +635,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3541 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3568 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -663,6 +663,7 @@
 | `dzis_dzien_artykulu(kiedy)` | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. |
 | `zegar_agenta_on_calendar()` | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. |
 | `zegar_artykulu_on_calendar()` | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. |
+| `sufit_wyjscia(purpose, model)` | Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
 | `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. |

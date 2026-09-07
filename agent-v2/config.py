@@ -982,6 +982,12 @@ EFFORT = {
     "forma": "high",
 }
 
+# Poziomy, ktore przyjmuje `output_config.effort`. Brak wpisu w EFFORT znaczy
+# domyslne "high" po stronie API. Kartridz ustawia to polem `modele.wysilek`,
+# bo glebokosc rozumowania to ten sam rodzaj decyzji co wybor modelu: kompromis
+# koszt/jakosc jednego etapu, a nie metoda wspolna dla wszystkich publikacji.
+POZIOMY_WYSILKU: tuple[str, ...] = ("low", "medium", "high", "xhigh", "max")
+
 
 def _tokens_for(chars: int) -> int:
     return int(chars / CHARS_PER_TOKEN) + JSON_OVERHEAD_TOKENS
@@ -2592,6 +2598,27 @@ MAX_TOKENS = {
     purpose: ceiling + (0 if purpose in DEEPSEEK_BEZ_MYSLENIA else THINKING_HEADROOM_TOKENS)
     for purpose, ceiling in MAX_TOKENS.items()
 }
+
+
+def sufit_wyjscia(purpose: str, model: str) -> int:
+    """Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu.
+
+    `DEEPSEEK_BEZ_MYSLENIA` znaczy „ta rola nie mysli", i to jest prawda tylko
+    dopoki rola chodzi DeepSeekiem: tam `llm.call` naprawde wysyla
+    {"thinking": "disabled"}. Modele Anthropic tego klucza nie dostaja wcale,
+    a na Fable 5.1 myslenie jest ZAWSZE wlaczone — {"type": "disabled"} zwraca
+    400. Tokeny rozumowania licza sie do sufitu wyjscia, wiec rola przeniesiona
+    z DeepSeeka na Claude'a traci zapas, ktorego dalej potrzebuje.
+
+    7 wrzesnia 2026 restack po przejsciu na Claude'a mial sufit 3000 (notka:
+    37314). Odpowiedz ucielo, przebieg nie wystawil nic i zaplacilismy za
+    obciete rozumowanie. `MAX_TOKENS` liczy sie przy starcie modulu, zanim
+    preset przestawi `MODEL_FOR`, wiec decyzja nie moze zapasc tam.
+    """
+    sufit = MAX_TOKENS[purpose]
+    if purpose in DEEPSEEK_BEZ_MYSLENIA and not str(model).startswith("deepseek"):
+        sufit += THINKING_HEADROOM_TOKENS
+    return sufit
 
 # --- terminy -----------------------------------------------------------------
 # Termin musi pokryć własny sufit tokenów. Zmierzone: mediana 16,08 ms na token

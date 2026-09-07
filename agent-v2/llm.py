@@ -236,7 +236,7 @@ def _call_claude(
     )
     kwargs: dict[str, Any] = {
         "model": model,
-        "max_tokens": runtime.token_limit(config.MAX_TOKENS[purpose]),
+        "max_tokens": runtime.token_limit(config.sufit_wyjscia(purpose, model)),
         "system": system,
         "messages": [{"role": "user", "content": user}],
     }
@@ -565,7 +565,8 @@ def _call_deepseek(purpose: str, system: str, user: str) -> tuple[str, int, int,
             # kazdy etap bez wyszukiwania jechal na flashu niezaleznie od tego,
             # co mowil MODEL_FOR — a koszt ksiegowalismy po stawce pro.
             "model": config.MODEL_FOR[purpose],
-            "max_tokens": runtime.token_limit(config.MAX_TOKENS[purpose]),
+            "max_tokens": runtime.token_limit(
+                config.sufit_wyjscia(purpose, config.MODEL_FOR[purpose])),
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
