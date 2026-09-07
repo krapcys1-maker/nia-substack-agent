@@ -259,6 +259,14 @@ role = { }
 # przyklad — same notki na tanszy model:
 # role = { note = "deepseek-v4-pro" }
 
+# Glebokosc rozumowania na role: low, medium, high, xhigh, max.
+# Brak wpisu = domyslne "high" po stronie API. Tokeny rozumowania licza
+# sie po stawce WYJSCIA, wiec na krotkich formach to najwiekszy pojedynczy
+# koszt — czterdziestoslowny podpis nie potrzebuje najglebszego myslenia.
+wysilek = { }
+# przyklad — krotkie formy taniej:
+# wysilek = { note = "low", restack = "low", comment = "low", reply = "low" }
+
 # Model okladki artykulu. PUSTY NAPIS WYLACZA OKLADKE (zero wywolan OpenAI).
 # Podany ustawia naraz rolę `obraz` i model w ladunku zadania — do 2026-09-05
 # byly to dwie osobne stale i potrafily sie rozjechac.

@@ -492,6 +492,11 @@ POLA: dict[str, tuple[str | None, Any]] = {
 
     # --- modele --------------------------------------------------------
     "modele.role": (None, _slownik_napisow),
+    # Glebokosc rozumowania na role. Ta sama klasa decyzji co wybor modelu:
+    # kompromis koszt/jakosc jednego etapu, wiec nalezy do kartridza, nie do
+    # silnika. Do 2026-09-07 krotkie formy dostaly "low" wpisane w `config.py`
+    # dla JEDNEJ publikacji — i zmienialy przez to zachowanie wszystkich.
+    "modele.wysilek": (None, _slownik_napisow),
     # Model okladki. Pusty napis WYLACZA okladke; podany ustawia NARAZ
     # `IMAGE_MODEL` i `MODEL_FOR["obraz"]`, bo do 2026-09-05 zmiana roli
     # zostawiala stary model w ladunku zadania (proba T15 audytu).
@@ -573,7 +578,7 @@ KOLEJNOSC_SEKCJI = ("konto", "temat", "stan_dziedziny", "zrodla", "styl", "osobo
 STALE_KONTA: tuple[str, ...] = tuple(sorted(
     {n for n, _ in POLA.values() if n} | {
         "NOTE_MIX_OTHER_DAY", "NOTE_MIX_ARTICLE_DAY", "NOTKI_DZIENNIE",
-        "PRZYKLADY_NISZY", "MODEL_FOR", "IMAGE_MODEL", "OBRAZ_WLACZONY",
+        "PRZYKLADY_NISZY", "MODEL_FOR", "EFFORT", "IMAGE_MODEL", "OBRAZ_WLACZONY",
         "STYLE_CORPUS", "STYLE_PROFILE_POSITIVE", "STYLE_PROFILE_NEGATIVE",
         "PRZEBIEGOW_DZIENNIE", "GODZINY_PRZEBIEGOW_UTC",
         "ARTYKULY_TYGODNIOWO", "DNI_ARTYKULU", "W_TYM_MIESIACU",
@@ -862,6 +867,20 @@ def _plan(dane: dict[str, Any], cfg: Any) -> tuple[dict[str, Any], dict[str, dic
             # operator „wybieral" model, ktorego zadanie nie uzywalo.
             ustaw["IMAGE_MODEL"] = role["obraz"]
             ustaw["OBRAZ_WLACZONY"] = True
+    wysilek = dane.get("modele.wysilek")
+    if wysilek is not None:
+        obce = sorted(set(wysilek) - set(cfg.MODEL_FOR))
+        if obce:
+            raise BledKonfiguracji(
+                "modele.wysilek: nieznane etapy: %s\nZnane etapy: %s"
+                % (", ".join(obce), ", ".join(sorted(cfg.MODEL_FOR))))
+        zle = sorted(v for v in set(wysilek.values()) if v not in cfg.POZIOMY_WYSILKU)
+        if zle:
+            raise BledKonfiguracji(
+                "modele.wysilek: nieznane poziomy: %s\nDozwolone: %s"
+                % (", ".join(zle), ", ".join(cfg.POZIOMY_WYSILKU)))
+        slowniki["EFFORT"] = dict(wysilek)
+        meldunki.append("modele.wysilek -> EFFORT (%d rol)" % len(wysilek))
     obraz = dane.get("modele.obraz")
     if obraz is not None:
         if obraz:

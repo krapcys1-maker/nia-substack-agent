@@ -980,22 +980,13 @@ EFFORT = {
     "write": "high",
     "review": "high",
     "forma": "high",
-    # KROTKIE FORMY NA "low" — pomiar z 7 wrzesnia 2026. Brak wpisu znaczy
-    # domyslne "high", wiec restack placil najwyzszy poziom rozumowania za
-    # podpis: 649 tokenow wyjscia, z czego sam tekst i JSON to ~150, reszta to
-    # myslenie liczone po stawce WYJSCIA ($50/M na Fable).
-    #
-    # Myslenia na Fable 5.1 NIE DA SIE wylaczyc: `thinking` przyjmuje tylko
-    # "adaptive" albo brak, a {"type": "disabled"} zwraca 400. `thinking=False`
-    # z `personality.short_form` dziala wiec wylacznie na DeepSeeku (llm.py
-    # sklada ten klucz tylko w jego zadaniu) — i wlasnie dlatego przeniesienie
-    # restackow z DeepSeeka na Fable po cichu wlaczylo myslenie z powrotem.
-    # Jedyne pokretlo, ktore zostaje, to `output_config.effort`.
-    "note": "low",
-    "restack": "low",
-    "comment": "low",
-    "reply": "low",
 }
+
+# Poziomy, ktore przyjmuje `output_config.effort`. Brak wpisu w EFFORT znaczy
+# domyslne "high" po stronie API. Kartridz ustawia to polem `modele.wysilek`,
+# bo glebokosc rozumowania to ten sam rodzaj decyzji co wybor modelu: kompromis
+# koszt/jakosc jednego etapu, a nie metoda wspolna dla wszystkich publikacji.
+POZIOMY_WYSILKU: tuple[str, ...] = ("low", "medium", "high", "xhigh", "max")
 
 
 def _tokens_for(chars: int) -> int:

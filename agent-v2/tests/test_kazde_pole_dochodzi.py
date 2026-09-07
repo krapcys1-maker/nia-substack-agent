@@ -72,6 +72,9 @@ def _probka(pole: str, sprawdzacz) -> object:
     if pole == "modele.role":
         rola = sorted(config.MODEL_FOR)[0]
         return {rola: config.MODEL_FOR[rola]}
+    if pole == "modele.wysilek":
+        # Etap musi byc znany, a poziom z listy — inaczej pole ma sie odbic.
+        return {sorted(config.MODEL_FOR)[0]: config.POZIOMY_WYSILKU[0]}
     if pole == "modele.obraz":
         return config.IMAGE_MODEL
     # PARY POWIAZANE: liczba przebiegow musi zgadzac sie z liczba godzin,
