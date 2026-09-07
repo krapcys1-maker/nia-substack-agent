@@ -1552,13 +1552,22 @@ CURIOSITY_SYSTEM = (
 )
 
 
-def zaczyn_z_kanalow(ile: int = 26) -> str:
+def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False) -> str:
     """Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania.
 
     NIGDY NIE ZABIJA PRZEBIEGU. Gdy kanaly nie odpowiadaja, oddajemy jawny
     tekst zastepczy; gdy nie ma wpisow, oddajemy osobny tekst o pustym wyniku.
     Prompt w obu przypadkach radzi sobie sama siatka dziedzin. Notka bez
     zaczynu jest mniej aktualna; brak notki jest gorszy.
+
+    `ze_skrotem` DOMYSLNIE WYLACZONE i to jest decyzja o pieniadzach, nie
+    o guscie. Skaut potrzebuje samych tytulow: pyta „o czym sie mowi", a potem
+    i tak sam znajduje dokument. Notka potrzebuje czegos WIECEJ niz tytul, bo
+    ma rzecz WYTLUMACZYC, a z naglowka nie da sie niczego wytlumaczyc.
+    Trzysta znakow razy dwadziescia szesc pozycji to okolo dwoch tysiecy
+    tokenow doklejanych do KAZDEGO wywolania — przy stawce pisarza notek
+    podwoiloby to jej cene. Wlacza wiec ten, kto tego potrzebuje, i bierze
+    przy tym mniej pozycji.
     """
     try:
         wpisy = korpus_kanalow.korpus_kanalow(ile=ile)
@@ -1568,10 +1577,15 @@ def zaczyn_z_kanalow(ile: int = 26) -> str:
         return "(could not be fetched today)"
     if not wpisy:
         return "(nothing fetched today)"
-    return NOWA_LINIA.join(
-        "- [%s] %s — %s" % (str(w.get("data"))[:10], w.get("kanal") or "?",
-                            w.get("temat") or "")
-        for w in wpisy)
+    linie = []
+    for w in wpisy:
+        linie.append("- [%s] %s — %s" % (str(w.get("data"))[:10],
+                                         w.get("kanal") or "?",
+                                         w.get("temat") or ""))
+        skrot = (w.get("skrot") or "").strip() if ze_skrotem else ""
+        if skrot:
+            linie.append("    %s" % skrot)
+    return NOWA_LINIA.join(linie)
 
 
 WYDARZENIA_OBSLUZONE = config.DATA_DIR / "wydarzenia_obsluzone.json"

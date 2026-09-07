@@ -112,13 +112,19 @@ def oczysc(tytul: str) -> str:
     return t
 
 
-def _kandydaci(pozycje: list[tuple[str, str, str, str]]) -> list[dict[str, Any]]:
-    """(kanal, surowy tytul, data RRRR-MM-DD, url) -> kandydaci. Wspolne dla
+def _kandydaci(pozycje: list[tuple[str, str, str, str, str]]) -> list[dict[str, Any]]:
+    """(kanal, surowy tytul, data RRRR-MM-DD, url, skrot) -> kandydaci. Wspolne dla
     YouTube, RSS 2.0 i Atom: to samo czyszczenie, to samo odsiewanie, ten sam
-    ksztalt slownika, wiec `wielkie_wydarzenia` i prompt nie odrozniaja zrodel."""
+    ksztalt slownika, wiec `wielkie_wydarzenia` i prompt nie odrozniaja zrodel.
+
+    SKROT DOSZEDL 7 wrzesnia 2026 i bywa pusty. Kanaly RSS i Atom niosa razem
+    z tytulem opis wpisu (`description`, `summary`, `content`), a my bralismy
+    sam tytul — wiec notka, ktora ma COS WYTLUMACZYC czytelnikowi, dostawala
+    naglowek i nic pod nim. YouTube skrotu nie ma i podaje pusty napis.
+    """
     widziane: set[str] = set()
     out: list[dict[str, Any]] = []
-    for kanal, surowy, data, url in pozycje:
+    for kanal, surowy, data, url, skrot in pozycje:
         surowy = " ".join((surowy or "").split())
         if not surowy or NIE_TEMAT.search(surowy):
             continue
@@ -137,6 +143,7 @@ def _kandydaci(pozycje: list[tuple[str, str, str, str]]) -> list[dict[str, Any]]
             "kanal": kanal,
             "data": (data or "")[:10],
             "url": url or "",
+            "skrot": skrot or "",
             "rola": "zdarzenie do sprawdzenia; naglowka nie kopiujemy",
         })
     out.sort(key=lambda x: x["data"], reverse=True)
@@ -153,7 +160,7 @@ def przetworz(wpisy: list[tuple[str, Any]]) -> list[dict[str, Any]]:
         link = e.find("a:link", NS)
         opublikowano = e.find("a:published", NS)
         pozycje.append((kanal, t.text, (opublikowano.text or "") if opublikowano is not None else "",
-                        link.get("href") if link is not None else ""))
+                        link.get("href") if link is not None else "", ""))
     return _kandydaci(pozycje)
 
 
@@ -162,6 +169,29 @@ _ATOM = "{http://www.w3.org/2005/Atom}"
 
 def _tekst(el) -> str:
     return " ".join((el.text or "").split()) if el is not None else ""
+
+
+SKROT_ZNAKOW = 300
+
+
+def _skrot(*elementy) -> str:
+    """Pierwszy niepusty opis wpisu, bez HTML-a, przyciety do `SKROT_ZNAKOW`.
+
+    Kanaly wkladaja tu cala tresc wpisu albo jedno zdanie zajawki, i prawie
+    zawsze w HTML-u. Model ma z tego wytlumaczyc rzecz czytelnikowi, wiec
+    znaczniki sa szumem, a caly wpis rozsadzilby prompt. Trzysta znakow to
+    mniej wiecej akapit: dosc, zeby bylo o czym mowic, za malo, zeby przepisac.
+    """
+    for el in elementy:
+        if el is None:
+            continue
+        surowy = "".join(el.itertext()) if len(el) else (el.text or "")
+        czysty = re.sub(r"<[^>]+>", " ", surowy or "")
+        czysty = re.sub(r"&[a-z]+;|&#\d+;", " ", czysty)
+        czysty = " ".join(czysty.split())
+        if czysty:
+            return czysty[:SKROT_ZNAKOW]
+    return ""
 
 
 def _data_rss(napis: str) -> str:
@@ -200,13 +230,16 @@ def wpisy_z_kanalu(nazwa: str, tresc: bytes) -> list[dict[str, Any]]:
             pozycje.append((nazwa, _tekst(e.find(_ATOM + "title")),
                             _data_rss(_tekst(e.find(_ATOM + "published"))
                                       or _tekst(e.find(_ATOM + "updated"))),
-                            link.get("href") if link is not None else ""))
+                            link.get("href") if link is not None else "",
+                            _skrot(e.find(_ATOM + "summary"), e.find(_ATOM + "content"))))
     else:
         for it in root.iter("item"):
             pozycje.append((nazwa, _tekst(it.find("title")),
                             _data_rss(_tekst(it.find("pubDate"))
                                       or _tekst(it.find("{http://purl.org/dc/elements/1.1/}date"))),
-                            _tekst(it.find("link"))))
+                            _tekst(it.find("link")),
+                            _skrot(it.find("description"),
+                                   it.find("{http://purl.org/rss/1.0/modules/content/}encoded"))))
     return _kandydaci(pozycje)
 
 

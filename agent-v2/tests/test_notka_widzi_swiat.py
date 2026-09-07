@@ -81,15 +81,25 @@ try:
     sprawdz("naglowki doszly w calosci",
             isinstance(tlo, dict) and NAGLOWKI in tlo.get("headlines", ""),
             repr(tlo)[:120] if isinstance(tlo, dict) else repr(tlo))
-    # TO JEST CALY SENS TEGO PLIKU. Bez tego zdania pisarz streszcza naglowki.
+    # TO JEST CALY SENS TEGO PLIKU: swiat ma byc TEMATEM, ale jedna rzecza.
+    # Pierwsza wersja ramki mowila „w wiekszosc dni nie pojawi sie w ogole"
+    # i byla odwrotnoscia tego, co zamawiaja rubryki kartridza („wez jeden
+    # naglowek z tla"). Preset prosil o swiat, silnik odradzal.
     instrukcja = (tlo.get("how_to_use_it", "") if isinstance(tlo, dict) else "").lower()
-    sprawdz("zakaz referowania jedzie razem z naglowkami",
-            "do not report it" in instrukcja, instrukcja[:120])
-    sprawdz("zakaz obejmuje takze streszczanie i cytowanie",
-            "summarise" in instrukcja and "quote a headline" in instrukcja,
-            instrukcja[:160])
-    sprawdz("wolno pominac tlo — wiekszosc dni bez niego",
-            "not come up at all" in instrukcja, instrukcja[:160])
+    sprawdz("swiat jest tematem, nie dodatkiem",
+            "your subject on most days" in instrukcja, instrukcja[:150])
+    sprawdz("ma wziac JEDNA rzecz", "pick one thing" in instrukcja, instrukcja[:150])
+    sprawdz("nie wolno robic przegladu prasy",
+            "never a news feed" in instrukcja and "do not list" in instrukcja
+            and "never mention a second item" in instrukcja, instrukcja[:200])
+    sprawdz("naglowka nadal sie nie cytuje",
+            "quote a headline" in instrukcja, instrukcja[:200])
+    sprawdz("wolno nie wziac nic i napisac o sobie",
+            "write from" in instrukcja and "not a failure" in instrukcja,
+            instrukcja[:200])
+    # KONTRDOWOD DLA STAREJ RAMKI: gdyby wrocila, ten test ma oblac.
+    sprawdz("stara ramka 'not come up at all' NIE wrocila",
+            "not come up at all" not in instrukcja, instrukcja[:200])
 
     print()
     print("=== 2. TRZY SPOSOBY, ZEBY SWIAT ZAMILKL — NOTKA MA POWSTAC ===")
