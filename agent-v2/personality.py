@@ -106,17 +106,24 @@ the publicly visible follower list, not the publisher's subscriber database.
         # the account this preset ships for. The subscriber COUNT is on the
         # public profile page; only subscriber IDENTITIES are private, and those
         # still come from nowhere but the public follower list below.
-        pole, etykieta = "obserwujacy", "follower count"
+        pole, czynnosc = "obserwujacy", "following me"
         if old and end["obserwujacy"] == old[-1]["obserwujacy"]:
             if _count(end.get("subskrybenci")) is not None and _count(old[-1].get("subskrybenci")) is not None:
-                pole, etykieta = "subskrybenci", "publicly shown subscriber count"
+                pole, czynnosc = "subskrybenci", "subscribed to me"
         if old and end.get(pole) != old[-1].get(pole):
             begin = old[-1]
-            facts["growth"] = (
-                f"My {etykieta} went from {begin[pole]} to {end[pole]} "
-                f"between {_date(begin['kiedy']).strftime('%b %d, %H:%M')} and "
-                f"{_date(end['kiedy']).strftime('%b %d, %H:%M')} UTC "
-                f"(net {end[pole] - begin[pole]:+d}).")
+            # Plain English, because this sentence OPENS the Note. The old
+            # wording ("went from 1 to 2 between ... UTC (net +1)") was a
+            # monitoring alert glued to the front of a joke. The number still
+            # comes from the measurement, never from the model — that is the
+            # part that matters; the accountancy around it was never required.
+            ile, zmiana = end[pole], end[pole] - begin[pole]
+            odkad = _date(begin["kiedy"])
+            gdy = ("yesterday" if (now.date() - odkad.date()).days == 1
+                   else odkad.strftime("on %b %d"))
+            facts["growth"] = ("%d %s %s now, %d %s than %s."
+                               % (ile, "person is" if ile == 1 else "people are", czynnosc,
+                                  abs(zmiana), "more" if zmiana > 0 else "fewer", gdy))
             # Naming people is a FOLLOWER-only affordance: that list is public.
             # A subscriber count never brings a name with it.
             people = [] if pole != "obserwujacy" else [r for r in _rows("czytelnicy.jsonl")
@@ -142,9 +149,11 @@ the publicly visible follower list, not the publisher's subscriber database.
             latest[row["id"]] = (when, row["wyswietlenia"])
     fresh = [v for v in latest.values() if now - v[0] < timedelta(hours=24)]
     if fresh:
-        facts["views"] = (f"{len(fresh)} of my tracked Notes have {sum(v[1] for v in fresh)} "
-                          f"cumulative views in the latest snapshots ({now:%b %d} UTC). "
-                          "Those are views, not unique people.")
+        ile, suma = len(fresh), sum(v[1] for v in fresh)
+        facts["views"] = (("My last Note has %d views. That counts views, not people." % suma)
+                          if ile == 1 else
+                          ("My last %d Notes have %d views between them. "
+                           "That counts views, not people." % (ile, suma)))
     return facts
 
 
@@ -246,8 +255,12 @@ def notes(conn, run_id, ile=None, od=0):
     intro = config.PERSONA_PRZEJECIE and not state.get("intro")
     last_growth, last_views = _date(state.get("last_growth")), _date(state.get("last_views"))
     first = _date(state.get("first")) or now
-    growth_due = not last_growth or last_growth.date() < now.date()
-    views_due = now - first >= timedelta(days=7) and (not last_views or now - last_views >= timedelta(days=7))
+    # ONE statistics Note per week, of either kind. Growth used to be allowed
+    # daily, which turns a feed into a dashboard nobody asked to subscribe to.
+    ostatnie = max([d for d in (last_growth, last_views) if d], default=None)
+    stats_due = not ostatnie or now - ostatnie >= timedelta(days=7)
+    views_due = stats_due and now - first >= timedelta(days=7)
+    growth_due = stats_due
     result = []
     for index, typ in enumerate(slots):
         theme = fresh[(now.toordinal() * 2 + od + index) % len(fresh)]
@@ -260,9 +273,11 @@ def notes(conn, run_id, ile=None, od=0):
                      "new female agent at the keyboard. Gently roast the earlier tone and announce "
                      "the change. No claim that real human coworkers wrote those posts.")
         elif views_due and facts.get("views"):
-            stat, stats_kind, views_due = facts["views"], "views", False
+            stat, stats_kind = facts["views"], "views"
+            views_due = growth_due = False
         elif growth_due and facts.get("growth"):
-            stat, stats_kind, growth_due = facts["growth"], "growth", False
+            stat, stats_kind = facts["growth"], "growth"
+            views_due = growth_due = False
         output = short_form(conn, run_id, "note", {"theme": theme, "statistics": stat,
                             "choice": "Choose your own angle. Write an observation, bit or opinion, not a news report."})
         candidate = {**output, "note": output.get("text", ""), "safe_to_post": bool(output), "length_ok": bool(output)}

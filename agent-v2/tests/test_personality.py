@@ -93,6 +93,42 @@ class PersonaTests(unittest.TestCase):
         with patch.object(llm, "call", return_value=self.response("My imaginary manager has discovered meetings.")):
             self.assertFalse(stages.notki_dnia(self.conn, self.rid, ile=1)[0]["personality"]["intro"])
 
+    def test_statistics_note_is_weekly_not_daily(self):
+        """One statistics Note a week. Growth used to be allowed once a DAY,
+        which turns a feed into a dashboard nobody subscribed to."""
+        # Czasy WZGLEDEM teraz: `notes()` bierze wlasny `datetime.now`, wiec
+        # daty na sztywno wypadaja w przyszlosci i silnik je odsiewa.
+        teraz = datetime.now(timezone.utc)
+        wczoraj = (teraz - timedelta(days=1)).replace(hour=22, minute=0, second=0, microsecond=0)
+        self.rows("wzrost.jsonl", [{"kiedy": wczoraj.isoformat(), "obserwujacy": 3},
+                                   {"kiedy": (teraz - timedelta(minutes=30)).isoformat(), "obserwujacy": 5}])
+        with patch.object(llm, "call", return_value=self.response("Sure. No pressure.")):
+            first = personality.notes(self.conn, self.rid, ile=1)[0]
+        self.assertTrue(first["personality"]["stats"])
+        self.assertTrue(personality.remember(first, {"wyslane": True, "url": "https://example.org/a"}))
+
+        # Same day, and any day inside the week: no second statistics Note.
+        with patch.object(llm, "call", return_value=self.response("Something else entirely.")):
+            drugi = personality.notes(self.conn, self.rid, ile=1)[0]
+        self.assertFalse(drugi["personality"]["stats"])
+
+        # A week later it is due again. The JOURNAL is the source of truth here —
+        # memory_state() recomputes last_growth from it, so ageing the state file
+        # alone changes nothing. Age the published entry instead.
+        dziennik = config.DATA_DIR / "personality.jsonl"
+        wpisy = [json.loads(w) for w in dziennik.read_text(encoding="utf-8").splitlines() if w]
+        for wpis in wpisy:
+            wpis["when"] = (teraz - timedelta(days=8)).isoformat()
+        dziennik.write_text("".join(json.dumps(w) + "\n" for w in wpisy), encoding="utf-8")
+        # memory_state() takes max(state, journal), so the marker never moves
+        # backwards on its own. Both sides have to age for the clock to advance.
+        plik = config.DATA_DIR / "personality-state.json"
+        stan = json.loads(plik.read_text(encoding="utf-8"))
+        stan["last_growth"] = (teraz - timedelta(days=8)).isoformat()
+        plik.write_text(json.dumps(stan), encoding="utf-8")
+        with patch.object(llm, "call", return_value=self.response("Back again.")):
+            self.assertTrue(personality.notes(self.conn, self.rid, ile=1)[0]["personality"]["stats"])
+
     def test_stats_are_net_changes_not_invented_new_followers(self):
         now = datetime(2026, 9, 7, 16, tzinfo=timezone.utc)
         self.rows("wzrost.jsonl", [{"kiedy": "2026-09-06T22:00:00Z", "obserwujacy": 3},
@@ -102,7 +138,8 @@ class PersonaTests(unittest.TestCase):
             {"kiedy": "2026-09-07T15:00:00Z", "odczytane": ["obserwujacy"], "obserwujacy": [{"uchwyt": "old"}, {"uchwyt": "newreader"}],
              "subskrybenci": [{"uchwyt": "privatePerson", "email": "private@example.org"}]}])
         facts = personality.statistics(now)
-        self.assertIn("net +2", facts["growth"])
+        self.assertIn("2 more than", facts["growth"])
+        self.assertNotIn("UTC", facts["growth"])   # zdanie OTWIERA notke, nie jest alertem
         self.assertIn("@newreader", facts["growth"])
         self.assertNotIn("private", json.dumps(facts))
         self.assertEqual(personality.statistics(now + timedelta(days=3)), {})
@@ -119,8 +156,8 @@ class PersonaTests(unittest.TestCase):
             {"kiedy": "2026-09-07T15:00:00Z", "odczytane": ["obserwujacy"], "obserwujacy": [],
              "subskrybenci": [{"uchwyt": "privatePerson", "email": "private@example.org"}]}])
         facts = personality.statistics(now)
-        self.assertIn("subscriber count", facts["growth"])
-        self.assertIn("net +1", facts["growth"])
+        self.assertIn("subscribed to me", facts["growth"])
+        self.assertIn("1 more than", facts["growth"])
         self.assertNotIn("privatePerson", json.dumps(facts))
         self.assertNotIn("@", facts["growth"])
 
@@ -129,7 +166,7 @@ class PersonaTests(unittest.TestCase):
         now = datetime(2026, 9, 7, 16, tzinfo=timezone.utc)
         self.rows("wzrost.jsonl", [{"kiedy": "2026-09-06T22:00:00Z", "obserwujacy": 3, "subskrybenci": 1},
                                    {"kiedy": "2026-09-07T15:00:00Z", "obserwujacy": 5, "subskrybenci": 2}])
-        self.assertIn("follower count", personality.statistics(now)["growth"])
+        self.assertIn("following me", personality.statistics(now)["growth"])
 
     def test_intro_survives_bounded_memory_and_state_recovers_from_journal(self):
         config.PERSONA_PRZEJECIE = True
@@ -155,11 +192,11 @@ class PersonaTests(unittest.TestCase):
             {"rodzaj": "artykul", "id": "b", "kiedy": "2026-09-07T15:00:00Z", "wyswietlenia": 100},
             {"rodzaj": "notka", "id": "c", "kiedy": "2026-09-07T15:00:00Z", "wyswietlenia": None}])
         facts = personality.statistics(now)
-        self.assertIn("1 of my tracked Notes have 8 cumulative views", facts["views"])
+        self.assertIn("My last Note has 8 views", facts["views"])
         self.assertNotIn("growth", facts)
 
     def test_stats_generated_reaction_cannot_change_figures(self):
-        material = {"statistics": "My follower count went from 3 to 5."}
+        material = {"statistics": "5 people are following me now, 2 more than yesterday."}
         with patch.object(llm, "call", return_value=self.response("Thanks. I will try to disappoint you responsibly.")):
             output = personality.short_form(self.conn, self.rid, "note", material)
         self.assertTrue(output["text"].startswith(material["statistics"]))
