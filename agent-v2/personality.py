@@ -257,12 +257,64 @@ def short_form(conn, run_id, kind, material):
     return output
 
 
+ZASTEPCZE_ZACZYNY = ("(nothing fetched today)", "(could not be fetched today)")
+
+
+def _swiat(conn=None, run_id=None):
+    """Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki.
+
+    Notka persony nie widziala dotad swiata w ogole: dostawala temat z listy
+    i nic wiecej. Przy dwoch notkach dziennie lista dwudziestu tematow zamyka
+    petle co dziesiec dni, a kazda notka mogla powstac rownie dobrze pol roku
+    temu.
+
+    ZRODLEM SA KANALY, NIE `aktualne_modele`. Ta druga droga zostala tu najpierw
+    wpieta i byla bledna: modul opisuje swoj wynik wprost jako „liste do
+    sprawdzenia nazwy, nie material" — oddaje spis nazw i wersji, zeby pisarz
+    nie napisal o modelu, ktorego juz nie ma w API. Spis nazw nie jest jednak
+    zadnym wydarzeniem i nie ma sie do czego odniesc. `zaczyn_z_kanalow` oddaje
+    to, o czym sie w tym tygodniu MOWI — tytul, kanal i date — i nie kosztuje
+    ani grosza, bo to samo pobieranie RSS bez wywolania modelu.
+
+    RAMKA JEST OBOWIAZKOWA. Bez niej model dostaje liste naglowkow i zaczyna je
+    referowac, a `glos_notki` zabrania tego wprost („not a news report"): konto
+    zamienia sie w serwis informacyjny z zarcikami. Naglowki maja byc tlem,
+    o ktorym ona przypadkiem wie, a nie tematem do streszczenia.
+
+    NIGDY NIE PRZERYWA NOTKI. `zaczyn_z_kanalow` ma wlasna oslone i oddaje
+    zastepczy napis, gdy kanaly milcza; my zamieniamy taki napis na brak tla.
+    Notka bez tla jest mniej aktualna, brak notki jest gorszy.
+    """
+    try:
+        import stages                                            # noqa: PLC0415
+        zaczyn = stages.zaczyn_z_kanalow()
+    except Exception:                                            # noqa: BLE001
+        return ""
+    zaczyn = str(zaczyn or "").strip()
+    if not zaczyn or zaczyn in ZASTEPCZE_ZACZYNY:
+        return ""
+    return {
+        "what_this_is": (
+            "What your industry is actually talking about this week: headlines "
+            "with dates, pulled from the feeds you follow. Not a briefing you "
+            "were given — things you happen to have read."),
+        "how_to_use_it": (
+            "Do not report it, summarise it, or list anything from it. Do not "
+            "quote a headline. Use it only when it sharpens the point you were "
+            "already making — through your job, your coworkers, your boss, or "
+            "your own bills. Most days it will not come up at all, and that is "
+            "correct."),
+        "headlines": zaczyn,
+    }
+
+
 def notes(conn, run_id, ile=None, od=0):
     """Choose a subject from the persona, not the research bank."""
     slots = config.NOTE_MIX_OTHER_DAY[od:] if ile is None else config.NOTE_MIX_OTHER_DAY[od:od + ile]
     history = memory()
     now = datetime.now(timezone.utc)
     facts = statistics(now)
+    swiat = _swiat(conn, run_id)
     themes = list(config.PERSONA_TEMATY or (config.NISZA,))
     recent_themes = {r.get("theme") for r in history[-5:]}
     fresh = [t for t in themes if t not in recent_themes] or themes
@@ -294,6 +346,7 @@ def notes(conn, run_id, ile=None, od=0):
             stat, stats_kind = facts["growth"], "growth"
             views_due = growth_due = False
         output = short_form(conn, run_id, "note", {"theme": theme, "statistics": stat,
+                            "world": swiat,
                             "choice": "Choose your own angle. Write an observation, bit or opinion, not a news report."})
         candidate = {**output, "note": output.get("text", ""), "safe_to_post": bool(output), "length_ok": bool(output)}
         result.append({"type": typ, "forma": "persona", "candidates": [candidate] if output else [],
