@@ -323,7 +323,7 @@ def _swiat(conn=None, run_id=None):
     """
     try:
         import stages                                            # noqa: PLC0415
-        zaczyn = stages.zaczyn_z_kanalow(ile=12, ze_skrotem=True)
+        zaczyn = stages.zaczyn_z_kanalow(ile=12, ze_skrotem=True, max_dni=14)
     except Exception:                                            # noqa: BLE001
         return ""
     zaczyn = str(zaczyn or "").strip()

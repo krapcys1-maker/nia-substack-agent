@@ -1552,7 +1552,8 @@ CURIOSITY_SYSTEM = (
 )
 
 
-def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False) -> str:
+def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
+                     max_dni: int | None = None) -> str:
     """Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania.
 
     NIGDY NIE ZABIJA PRZEBIEGU. Gdy kanaly nie odpowiadaja, oddajemy jawny
@@ -1570,11 +1571,29 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False) -> str:
     przy tym mniej pozycji.
     """
     try:
-        wpisy = korpus_kanalow.korpus_kanalow(ile=ile)
+        # PRZY FILTRZE BIERZEMY DUZO WIECEJ, a przycinamy PO odsianiu starych.
+        # Inaczej filtr dzialalby na juz przycietej dwunastce i oddawal siedem
+        # pozycji zamiast dwunastu swiezych. `korpus_kanalow` trzyma pelna
+        # liste w zapasie, wiec wieksze `ile` nie jest dodatkowym pobraniem.
+        wpisy = korpus_kanalow.korpus_kanalow(
+            ile=ile if max_dni is None else max(ile * 8, 200))
     except Exception as exc:
         print("  [kanaly] nie zebralem zaczynu (%s)" % type(exc).__name__,
               flush=True)
         return "(could not be fetched today)"
+    if max_dni:
+        from datetime import datetime, timedelta, timezone      # noqa: PLC0415
+        prog = (datetime.now(timezone.utc).date()
+                - timedelta(days=max_dni)).isoformat()
+        swieze = [w for w in wpisy if str(w.get("data") or "")[:10] >= prog]
+        # PUSTY WYNIK FILTRA NIE MOZE ZABIC NOTKI. Cisza w kanalach przez dwa
+        # tygodnie jest mniej prawdopodobna niz nasz wlasny blad w datach,
+        # a stary temat jest lepszy niz brak tematu.
+        if not swieze:
+            print("  [kanaly] nic swiezszego niz %d dni — biore co jest" % max_dni,
+                  flush=True)
+        wpisy = swieze or wpisy
+    wpisy = wpisy[:ile]
     if not wpisy:
         return "(nothing fetched today)"
     linie = []
