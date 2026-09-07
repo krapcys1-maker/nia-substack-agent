@@ -121,15 +121,24 @@ print()
 print("=== 2. KSZTALT ZADANIA ===")
 stare_modele = dict(config.MODEL_FOR)
 stary_effort = dict(config.EFFORT)
+# KLUCZE WARTOWNICZE, a nie te z instalacji. Pierwsza wersja sprawdzala naglowek
+# przeciwko `config.OPENAI_API_KEY` — czyli przechodzila na maszynie z kluczem
+# i oblewala na CI, gdzie go nie ma. Dwie rozne wartosci sa tez mocniejszym
+# dowodem: pokazuja, ze naglowek niesie klucz OPENAI, a nie ANTHROPIC.
+stary_openai, stary_anthropic = config.OPENAI_API_KEY, config.ANTHROPIC_API_KEY
+config.OPENAI_API_KEY = "sk-test-OPENAI-wartownik"
+config.ANTHROPIC_API_KEY = "sk-test-ANTHROPIC-wartownik"
 try:
     config.MODEL_FOR["note"] = config.GPT_SOL
     config.EFFORT["note"] = "low"
     (tekst, pudla, wyjscie, szukania, trafienia), zad = wywolaj()
     body = zad["json"]
     sprawdz("idzie na /responses", zad["url"].endswith("/responses"), zad["url"])
-    sprawdz("uzywa klucza OpenAI, nie Anthropica",
-            zad["headers"].get("Authorization", "").endswith(config.OPENAI_API_KEY or "x"),
-            "brak klucza w naglowku" if config.OPENAI_API_KEY else "(klucza nie ma w .env — sprawdzam sam naglowek)")
+    naglowek = zad["headers"].get("Authorization", "")
+    sprawdz("naglowek niesie klucz OpenAI",
+            naglowek == "Bearer sk-test-OPENAI-wartownik", naglowek)
+    sprawdz("i na pewno NIE klucz Anthropica",
+            "ANTHROPIC" not in naglowek, naglowek)
     sprawdz("system idzie jako instructions", body.get("instructions") == "SYSTEM")
     sprawdz("prompt idzie jako input", body.get("input") == "USER")
     sprawdz("strumien wlaczony", body.get("stream") is True)
@@ -161,6 +170,7 @@ finally:
     config.MODEL_FOR.update(stare_modele)
     config.EFFORT.clear()
     config.EFFORT.update(stary_effort)
+    config.OPENAI_API_KEY, config.ANTHROPIC_API_KEY = stary_openai, stary_anthropic
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
