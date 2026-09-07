@@ -22,7 +22,8 @@ presets remain available with their existing editorial checks.
 | Articles | 8th and 22nd each month, starting 17:00 UTC | Fable 5.1 |
 | Notes | 2/day; runs start 13:30 and 20:30 UTC | Fable 5.1 |
 | Comments | 3–4/day, shared across articles and Notes | DeepSeek V4 Pro |
-| Replies and restack captions | Replies to readers; up to 4 restacks/day | DeepSeek V4 Pro |
+| Replies to readers | As conversations arrive | DeepSeek V4 Pro |
+| Restack captions | Up to 4/day | Fable 5.1 |
 | Research and article support stages | On demand for articles | DeepSeek V4 Flash |
 | Following | Up to 5/day | Browser, no writing model |
 | Free subscriptions | Up to 4/day; visible audience at most 1000 | Browser, no writing model |
@@ -43,10 +44,29 @@ research, evidence, review and factual-checking pipeline.
 ## Cost
 
 Live trials on 6–7 September 2026 produced Fable Notes at about **$0.032–0.033**
-each, and Pro comments/restack captions at about **$0.0004–0.0011** each, depending
-on cache hits and length. These are token-based estimates, not a reconciled invoice.
-At the same Note size, 60 Notes would cost about **$2**, before articles, replies,
-research, retries or taxes. Article costs vary and are not included in that figure.
+each, and Pro comments/restack captions at about **$0.0004–0.0011** each. After the
+article and Note voice examples below were added, a cold-cache trial on 7 September
+measured Fable Notes at **$0.051–0.058** each; a longer prompt costs more, and
+editing any prompt invalidates the cache, so the first calls after a change are the
+expensive ones. Take the higher figure as the pessimistic case: 60 Notes at that
+rate is about **$3.30/month**, before articles, replies, research, retries or taxes.
+
+Restack captions run on Fable because they carry her voice onto other people's
+audiences. Measured at about **$0.035** each, that is roughly **$4.20/month** for
+4/day — and it is charged even when the model decides the post is not worth a
+restack, which it is allowed to do. On DeepSeek the same call was $0.0004. The
+whole plan measures at roughly **$8.70-8.90/month** against the $15 cap: Notes
+$3.42, restacks $4.20, two articles about $1.00, comments and replies under $0.26.
+
+`CLAUDE_PROMPT_CACHE` is off by default and its comment asks for a measurement
+first. Here is one: two identical-system Fable calls back to back wrote 2812
+cache tokens and then read them, making the second call **53% cheaper**. Whether
+that pays off in a real run depends on how many Fable calls land inside the
+5-minute window; a run with one Note in it would pay the 25% write premium and
+never collect. Measure a real run before enabling it.
+
+These are the engine's own token-based estimates, reported with an unconfirmed rate
+flag, not a reconciled provider invoice. Article costs vary and are excluded.
 
 The preset caps recorded/reserved API spending at **$15/month, $3/day and
 $1.50/run**. Hitting a cap can prevent work; it is not a promise of a fixed monthly

@@ -55,7 +55,7 @@ dni_miesiaca_artykulu = [8, 22]
 godzina_artykulu_utc = "17:00"
 
 [modele]
-role = { aktualne_modele = "deepseek-v4-flash", bank = "deepseek-v4-flash", bibliotekarz = "deepseek-v4-flash", cele = "deepseek-v4-flash", classify = "deepseek-v4-flash", curiosity = "deepseek-v4-flash", discovery = "deepseek-v4-flash", factcheck = "deepseek-v4-flash", feasibility = "deepseek-v4-flash", fedreg = "deepseek-v4-flash", forma = "deepseek-v4-flash", grafika = "deepseek-v4-flash", naprawa = "deepseek-v4-flash", naprawa_komentarza = "deepseek-v4-flash", review = "deepseek-v4-flash", scout = "deepseek-v4-flash", synthesis = "deepseek-v4-flash", warto_pisac = "deepseek-v4-flash", wybor = "deepseek-v4-flash", write = "claude-fable-5-1", note = "claude-fable-5-1", note_tani = "claude-fable-5-1", comment = "deepseek-v4-pro", reply = "deepseek-v4-pro", restack = "deepseek-v4-pro" }
+role = { aktualne_modele = "deepseek-v4-flash", bank = "deepseek-v4-flash", bibliotekarz = "deepseek-v4-flash", cele = "deepseek-v4-flash", classify = "deepseek-v4-flash", curiosity = "deepseek-v4-flash", discovery = "deepseek-v4-flash", factcheck = "deepseek-v4-flash", feasibility = "deepseek-v4-flash", fedreg = "deepseek-v4-flash", forma = "deepseek-v4-flash", grafika = "deepseek-v4-flash", naprawa = "deepseek-v4-flash", naprawa_komentarza = "deepseek-v4-flash", review = "deepseek-v4-flash", scout = "deepseek-v4-flash", synthesis = "deepseek-v4-flash", warto_pisac = "deepseek-v4-flash", wybor = "deepseek-v4-flash", write = "claude-fable-5-1", note = "claude-fable-5-1", note_tani = "claude-fable-5-1", comment = "deepseek-v4-pro", reply = "deepseek-v4-pro", restack = "claude-fable-5-1" }
 obraz = ""
 zapasowy_pisarz = "claude-fable-5-1"
 
