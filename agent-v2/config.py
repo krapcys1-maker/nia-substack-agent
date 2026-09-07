@@ -3508,6 +3508,16 @@ else:
 # `podlacz` odmawia, gdy po tym zlozeniu uchwyt albo marka to nadal placeholder.
 KONTO_ZE_SRODOWISKA = _konf.konto_ze_srodowiska(sys.modules[__name__], os.environ)
 
+# PORT DEBUGOWANIA CHROME'A — TAK SAMO Z INSTALACJI, NIE Z PRESETU. Preset moze
+# byc wspolny, a port nie: dwie kopie bota na jednej maszynie musza rozmawiac
+# z DWOMA roznymi Chrome'ami, kazdy zalogowany na inne konto.
+#
+# Do 7 wrzesnia 2026 `browser.CDP_PORT` bylo stala 9222 w szesciu miejscach.
+# Druga kopia laczyla sie wiec z przegladarka PIERWSZEJ. Straznik konta lapal
+# to i odmawial zapisu — czyli nie publikowala na cudzym koncie, ale nie
+# publikowala tez nigdzie, a log mowil „nie to konto" i ani slowa o porcie.
+CHROME_DEBUG_PORT = int(_env("CHROME_DEBUG_PORT", "9222") or "9222")
+
 # --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI -------------------
 #
 # Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RAZ, przy

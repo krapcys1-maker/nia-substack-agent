@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **32 plików**, 35 295 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **32 plików**, 35 308 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -402,7 +402,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5541 wierszy, 102 funkcji na poziomie modułu, 3 klas
+5544 wierszy, 102 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -777,7 +777,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3568 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3578 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -12272,6 +12272,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `PRESET_AKTYWACJA` | `None` | — |
 | `INSTANCJA` | `""` | — |
 | `KONTO_ZE_SRODOWISKA` | `_konf.konto_ze_srodowiska(sys.modules[__name` | KONTO Z INSTALACJI: `.env` (SUBSTACK_HANDLE, NAZWA_MARKI) wygrywa z `[konto]` presetu i ze starego TOML-a. Preset moze byc wspolny dla wielu |
+| `CHROME_DEBUG_PORT` | `int(_env("CHROME_DEBUG_PORT", "9222") or "92` | PORT DEBUGOWANIA CHROME'A — TAK SAMO Z INSTALACJI, NIE Z PRESETU. Preset moze byc wspolny, a port nie: dwie kopie bota na jednej maszynie mu |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |

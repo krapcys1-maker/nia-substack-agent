@@ -26,7 +26,10 @@ SETTLE_MS = 2_500
 SESSION_FILE = config.DATA_DIR / "storage-state.json"
 
 
-CDP_PORT = 9222
+# Port bierze sie z instalacji (`CHROME_DEBUG_PORT` w `.env`), bo dwie kopie
+# na jednej maszynie potrzebuja dwoch Chrome'ow na dwoch portach. Nazwa
+# zostaje, zeby nie przepisywac szesciu miejsc uzycia.
+CDP_PORT = config.CHROME_DEBUG_PORT
 
 # Ciasteczko realnej sesji Substacka. `substack.lli` to tylko podpowiedź
 # "kiedyś tu byłeś" i ustawia się także anonimowo — pierwsza wersja kontroli

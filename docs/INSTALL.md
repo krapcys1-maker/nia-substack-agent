@@ -218,6 +218,11 @@ For unattended operation while your PC is off, use an always-on Linux server.
 
 ## 8. Schedule on a Linux server
 
+Running a **second account from the same machine** needs more than a second
+checkout: its own Chrome on its own debug port, its own cartridge, and a
+budget set where the engine actually reads it. See
+[a second bot on the same server](DRUGI_BOT_NA_SERWERZE.md).
+
 Create a dedicated service user and a clone owned by that user, for example at
 `/srv/substack-agent`. Repeat environment setup and **activate on the server**.
 Create the virtual environment at `/srv/substack-agent/.venv`, which is the path
