@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **32 plików**, 35 424 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **32 plików**, 35 557 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 180 zestawów
-testów, 4198 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 181 zestawów
+testów, 4218 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -512,7 +512,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1048 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1162 wierszy, 21 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -523,6 +523,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
 | `_call_claude(purpose, system, user, web_search)` *(wewn.)* | — |
 | `_call_deepseek_responses(purpose, system, user)` *(wewn.)* | DeepSeek przez /responses z server-side `web_search`. |
+| `_call_openai_responses(purpose, system, user)` *(wewn.)* | OpenAI przez `/responses`. Ten sam ksztalt zadania, co DeepSeek. |
 | `_deepseek_pick_from_urls(purpose, system, user, urls)` *(wewn.)* | Reconstruct a search result with the ordinary streamed, billed transport. |
 | `_read_search_sources(urls)` *(wewn.)* | Recover evidence from already-found public URLs, without another search. |
 | `_call_deepseek(purpose, system, user)` *(wewn.)* | — |
@@ -778,7 +779,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3578 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3597 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6609,15 +6610,17 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
-    if provider not in ('anthropic', 'deepseek'):
+    if provider not in ('anthropic', 'deepseek', 'openai'):
         raise PreflightFailed("unsupported text provider: %s" % provider)
-    if purpose in config.EFFORT and provider != 'anthropic' and purpose not in _EFFORT_BEZ_SKUTKU:
+    if (purpose in config.EFFORT and provider not in ('anthropic', 'openai')
+            and purpose not in _EFFORT_BEZ_SKUTKU):
         _EFFORT_BEZ_SKUTKU.add(purpose)
         print(f"  [effort] {purpose}={config.EFFORT[purpose]} NIE MA SKUTKU na {model}", flush=True)
     if config.DRY_RUN:
         print(f"  [{purpose}] DRY_RUN — wywołanie pominięte", flush=True)
         return ''
-    key = config.DEEPSEEK_API_KEY if provider == 'deepseek' else config.ANTHROPIC_API_KEY
+    key = {'deepseek': config.DEEPSEEK_API_KEY,
+           'openai': config.OPENAI_API_KEY}.get(provider, config.ANTHROPIC_API_KEY)
     pause = retry_policy.path_for(config.DATA_DIR, ('provider', provider, model, key))
     remaining = retry_policy.remaining(pause)
     if remaining:
@@ -6637,6 +6640,8 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         def transport():
             if provider == 'anthropic':
                 return _call_claude(purpose, system, user, web_search)
+            if provider == 'openai':
+                return _call_openai_responses(purpose, system, user)
             if web_search:
                 return _call_deepseek_responses(purpose, system, user)
             return _call_deepseek(purpose, system, user)
@@ -6647,7 +6652,8 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
             # Compatibility with transport adapters; real transports declare observation.
             if not state.observed:
                 state.usage = dict(tokens_in=tin, tokens_out=tout, web_searches=searches,
-                                   cache_hit=extra if provider == 'deepseek' and not web_search else 0)
+                                   cache_hit=extra if provider in ('deepseek', 'openai')
+                                   and not web_search else 0)
                 state.usage_known = bool(tin or tout)
             state.usage['web_searches'] = searches
         except BaseException as exc:
@@ -12082,10 +12088,15 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `SONNET` | `"claude-sonnet-5"` | — |
 | `FABLE_5` | `"claude-fable-5"` | PISARZ ARTYKULOW. Fable 5.1 wyszedl 1 wrzesnia 2026 i od 3 wrzesnia pisze artykuly; poprzednik zostaje pod wlasna nazwa, bo pod nia stoi cal |
 | `FABLE` | `"claude-fable-5-1"` | — |
+| `GPT_SOL` | `"gpt-5.6-sol"` | MODELE OPENAI DO TEKSTU. Klucz `OPENAI_API_KEY` sluzyl do 7 wrzesnia 2026 WYLACZNIE do grafik i tak byl opisany — teraz obsluguje takze `/re |
+| `GPT_TERRA` | `"gpt-5.6-terra"` | — |
+| `GPT_LUNA` | `"gpt-5.6-luna"` | — |
+| `GPT_ASTRA` | `"gpt-6-astra"` | — |
 | `DEEPSEEK` | `"deepseek-v4-flash"` | — |
 | `DEEPSEEK_PRO` | `"deepseek-v4-pro"` | — |
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |
+| `OPENAI_BASE_URL` | `"https://api.openai.com/v1"` | — |
 | `DEEPSEEK_EFFORT` | `"low"` | Głębokość rozumowania DeepSeeka na /responses. Tokeny rozumowania liczą się do sufitu wyjścia, więc przy `high` model kończy budżet na szuka |
 | `DEEPSEEK_BEZ_MYSLENIA` | `frozenset({ "feasibility", "classify", "bank` | MYSLENIE DEEPSEEKA NA /chat/completions JEST DOMYSLNIE WLACZONE i liczone jako tokeny wyjscia. Zmierzone 2026-09-06 na jednym zadaniu sedzie |
 | `CHEAP_MODE` | `_env("AGENT_V2_CHEAP", "0").lower() in {"1",` | Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override zostawia u Claude'a. Sluzy do testowania HYDRAULIKI — czy lancuch |

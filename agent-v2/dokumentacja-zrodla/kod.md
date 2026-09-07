@@ -82,15 +82,17 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
-    if provider not in ('anthropic', 'deepseek'):
+    if provider not in ('anthropic', 'deepseek', 'openai'):
         raise PreflightFailed("unsupported text provider: %s" % provider)
-    if purpose in config.EFFORT and provider != 'anthropic' and purpose not in _EFFORT_BEZ_SKUTKU:
+    if (purpose in config.EFFORT and provider not in ('anthropic', 'openai')
+            and purpose not in _EFFORT_BEZ_SKUTKU):
         _EFFORT_BEZ_SKUTKU.add(purpose)
         print(f"  [effort] {purpose}={config.EFFORT[purpose]} NIE MA SKUTKU na {model}", flush=True)
     if config.DRY_RUN:
         print(f"  [{purpose}] DRY_RUN — wywołanie pominięte", flush=True)
         return ''
-    key = config.DEEPSEEK_API_KEY if provider == 'deepseek' else config.ANTHROPIC_API_KEY
+    key = {'deepseek': config.DEEPSEEK_API_KEY,
+           'openai': config.OPENAI_API_KEY}.get(provider, config.ANTHROPIC_API_KEY)
     pause = retry_policy.path_for(config.DATA_DIR, ('provider', provider, model, key))
     remaining = retry_policy.remaining(pause)
     if remaining:
@@ -110,6 +112,8 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         def transport():
             if provider == 'anthropic':
                 return _call_claude(purpose, system, user, web_search)
+            if provider == 'openai':
+                return _call_openai_responses(purpose, system, user)
             if web_search:
                 return _call_deepseek_responses(purpose, system, user)
             return _call_deepseek(purpose, system, user)
@@ -120,7 +124,8 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
             # Compatibility with transport adapters; real transports declare observation.
             if not state.observed:
                 state.usage = dict(tokens_in=tin, tokens_out=tout, web_searches=searches,
-                                   cache_hit=extra if provider == 'deepseek' and not web_search else 0)
+                                   cache_hit=extra if provider in ('deepseek', 'openai')
+                                   and not web_search else 0)
                 state.usage_known = bool(tin or tout)
             state.usage['web_searches'] = searches
         except BaseException as exc:

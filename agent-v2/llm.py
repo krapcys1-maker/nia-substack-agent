@@ -442,6 +442,115 @@ def _call_deepseek_responses(
         urls,
     )
 
+def _call_openai_responses(
+    purpose: str, system: str, user: str
+) -> tuple[str, int, int, int, list[str]]:
+    """OpenAI przez `/responses`. Ten sam ksztalt zadania, co DeepSeek.
+
+    DLACZEGO W OGOLE. Do 7 wrzesnia 2026 `OPENAI_API_KEY` sluzyl WYLACZNIE do
+    grafik i tak byl opisany w `config`. Modele `gpt-5.6` sa jednak tansze od
+    pisarza, ktorego uzywamy do notek: Sol bierze 4/20 USD za milion wobec
+    10/50 u Fable. Wlasciciel poprosil o proba, wiec sciezka powstala.
+
+    NIE JEST TO KOPIA DEEPSEEKA, choc wyglada podobnie. Roznice, ktore
+    kosztowalyby debugowanie:
+
+    - NIE MA `tools`. Wyszukiwanie po stronie serwera jest tu niepotrzebne:
+      notka ma tlo z kanalow, a dyskoveria chodzi na DeepSeeku, ktory to robi
+      taniej. `web_search=True` nie trafi wiec nigdy w te galaz.
+    - `reasoning.effort` PRZECHODZI JEDEN DO JEDNEGO. Skala silnika
+      (`low`, `medium`, `high`, `xhigh`, `max`) jest podzbiorem skali OpenAI,
+      wiec zadnego mapowania nie ma i nie wolno go dopisywac „na wszelki
+      wypadek" — kazde tlumaczenie nazw bylo by miejscem na cicha pomylke.
+      Pole pomijamy, gdy preset nie ustawil wysilku: model ma wtedy wlasna
+      wartosc domyslna i to jest lepsze niz nasza zgadnieta.
+    - TOKENY WEJSCIA TRZEBA POMNIEJSZYC O CACHE. `usage.input_tokens` liczy
+      RAZEM z trafieniami, a `_cost` mnozy `tokens_in` przez pelna stawke
+      i dolicza `cache_hit` osobno po stawce cache. Oddanie surowego
+      `input_tokens` policzyloby trafienia dwa razy, i to po zlej cenie.
+
+    STRUMIEN Z TEGO SAMEGO POWODU, CO U DEEPSEEKA: rozumowanie potrafi trwac
+    dlugo, zanim poleci pierwszy bajt tresci, a polaczenie bez ruchu bywa
+    ucinane po drodze. Tresc bierzemy z `response.completed`, delty tylko jako
+    zapas.
+    """
+    runtime.observe()
+    delty: list[str] = []
+    payload: dict[str, Any] | None = None
+    blad_strumienia = ""
+    model = config.MODEL_FOR[purpose]
+    wysilek = config.EFFORT.get(purpose)
+    zadanie: dict[str, Any] = {
+        "model": model,
+        "instructions": system,
+        "input": user,
+        "max_output_tokens": runtime.token_limit(config.sufit_wyjscia(purpose, model)),
+        "stream": True,
+    }
+    if wysilek:
+        zadanie["reasoning"] = {"effort": wysilek}
+    if purpose in SEARCH_JSON_PURPOSES:
+        zadanie["text"] = {"format": {"type": "json_object"}}
+    with httpx.stream(
+        "POST",
+        f"{config.OPENAI_BASE_URL}/responses",
+        headers={"Authorization": f"Bearer {config.OPENAI_API_KEY}"},
+        json=zadanie,
+        timeout=httpx.Timeout(config.timeout_for(config.MAX_TOKENS[purpose]),
+                              connect=30.0),
+    ) as response:
+        runtime.watch(response)
+        response.raise_for_status()
+        for linia in response.iter_lines():
+            runtime.check()
+            if not linia.startswith("data:"):
+                continue
+            dane = linia[5:].strip()
+            if dane == "[DONE]":
+                break
+            try:
+                zdarzenie = json.loads(dane)
+            except ValueError:
+                continue
+            typ = zdarzenie.get("type")
+            if typ == "response.output_text.delta":
+                delty.append(str(zdarzenie.get("delta") or ""))
+            elif typ == "response.completed":
+                payload = zdarzenie.get("response") or {}
+                runtime.capture(payload.get("usage"), "responses")
+            elif typ in ("response.failed", "response.incomplete", "error"):
+                blad_strumienia = json.dumps(
+                    zdarzenie.get("response", {}).get("error")
+                    or zdarzenie.get("error") or zdarzenie)[:300]
+                payload = zdarzenie.get("response") or {}
+                runtime.capture(payload.get("usage"), "responses")
+    runtime.capture((payload or {}).get("usage"), "responses")
+    if payload is None:
+        # Ta sama klasa awarii, co zerwane polaczenie — `call` ma to ponowic.
+        raise httpx.RemoteProtocolError(
+            "strumien OpenAI /responses urwal sie bez response.completed"
+            + (f" ({blad_strumienia})" if blad_strumienia else ""))
+    if blad_strumienia:
+        raise Truncated(f"OpenAI /responses zglosil blad: {blad_strumienia}")
+
+    czesci: list[str] = []
+
+    def zbierz(node: Any) -> None:
+        if isinstance(node, dict):
+            if node.get("type") in {"output_text", "text"} and isinstance(node.get("text"), str):
+                czesci.append(node["text"])
+            for value in node.values():
+                zbierz(value)
+        elif isinstance(node, list):
+            for item in node:
+                zbierz(item)
+
+    zbierz(payload.get("output", []))
+    text = payload.get("output_text") or "".join(czesci) or "".join(delty)
+    usage = payload.get("usage", {}) or {}
+    trafienia = int((usage.get("input_tokens_details") or {}).get("cached_tokens", 0))
+    pudla = max(0, int(usage.get("input_tokens", 0)) - trafienia)
+    return text, pudla, int(usage.get("output_tokens", 0)), 0, trafienia
 
 def _deepseek_pick_from_urls(
     purpose: str, system: str, user: str, urls: list[str], *,
@@ -758,15 +867,17 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
-    if provider not in ('anthropic', 'deepseek'):
+    if provider not in ('anthropic', 'deepseek', 'openai'):
         raise PreflightFailed("unsupported text provider: %s" % provider)
-    if purpose in config.EFFORT and provider != 'anthropic' and purpose not in _EFFORT_BEZ_SKUTKU:
+    if (purpose in config.EFFORT and provider not in ('anthropic', 'openai')
+            and purpose not in _EFFORT_BEZ_SKUTKU):
         _EFFORT_BEZ_SKUTKU.add(purpose)
         print(f"  [effort] {purpose}={config.EFFORT[purpose]} NIE MA SKUTKU na {model}", flush=True)
     if config.DRY_RUN:
         print(f"  [{purpose}] DRY_RUN — wywołanie pominięte", flush=True)
         return ''
-    key = config.DEEPSEEK_API_KEY if provider == 'deepseek' else config.ANTHROPIC_API_KEY
+    key = {'deepseek': config.DEEPSEEK_API_KEY,
+           'openai': config.OPENAI_API_KEY}.get(provider, config.ANTHROPIC_API_KEY)
     pause = retry_policy.path_for(config.DATA_DIR, ('provider', provider, model, key))
     remaining = retry_policy.remaining(pause)
     if remaining:
@@ -786,6 +897,8 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         def transport():
             if provider == 'anthropic':
                 return _call_claude(purpose, system, user, web_search)
+            if provider == 'openai':
+                return _call_openai_responses(purpose, system, user)
             if web_search:
                 return _call_deepseek_responses(purpose, system, user)
             return _call_deepseek(purpose, system, user)
@@ -796,7 +909,8 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
             # Compatibility with transport adapters; real transports declare observation.
             if not state.observed:
                 state.usage = dict(tokens_in=tin, tokens_out=tout, web_searches=searches,
-                                   cache_hit=extra if provider == 'deepseek' and not web_search else 0)
+                                   cache_hit=extra if provider in ('deepseek', 'openai')
+                                   and not web_search else 0)
                 state.usage_known = bool(tin or tout)
             state.usage['web_searches'] = searches
         except BaseException as exc:
