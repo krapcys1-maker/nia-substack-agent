@@ -40,6 +40,11 @@ class ScheduleTests(unittest.TestCase):
         self.cfg.DNI_ARTYKULU = ("Tue",)
         self.assertIsNotNone(self.xml("article").find(".//{%s}Tuesday" % NS))
 
+    def test_task_xml_declares_its_windows_unicode_encoding(self):
+        xml = task_xml(self.cfg, "daily", "python", ROOT, "sid", self.now)
+        self.assertIn('encoding="UTF-16"', xml.splitlines()[0])
+        self.assertEqual(ET.fromstring(xml.encode("utf-16")).tag, "{%s}Task" % NS)
+
     def test_scheduled_start_opens_profile_then_checks_identity(self):
         browser = Mock()
         browser._chrome_odpowiada.return_value = False

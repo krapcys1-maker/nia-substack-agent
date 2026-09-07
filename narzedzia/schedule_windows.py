@@ -71,7 +71,8 @@ def task_xml(cfg, kind, python, root, sid, now=None):
     add(action, "Command", python)
     add(action, "Arguments", subprocess.list2cmdline([str(root / "narzedzia/scheduled_run.py"), kind, "--instance", cfg.PRESET_AKTYWACJA.instancja]))
     add(action, "WorkingDirectory", root)
-    return ET.tostring(task, encoding="unicode", xml_declaration=True)
+    # Task Scheduler imports Unicode XML; declaration and file bytes must agree.
+    return '<?xml version="1.0" encoding="UTF-16"?>\n' + ET.tostring(task, encoding="unicode")
 
 
 def main():
@@ -95,7 +96,7 @@ def main():
                 subprocess.run(["schtasks.exe", "/Delete", "/TN", name, "/F"], check=True)
             continue
         path = folder / (kind + ".xml")
-        path.write_text(xml, encoding="utf-8")
+        path.write_text(xml, encoding="utf-16")
         print(path)
         if args.install:
             subprocess.run(["schtasks.exe", "/Create", "/TN", name, "/XML", str(path), "/F"], check=True)
