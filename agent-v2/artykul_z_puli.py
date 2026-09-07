@@ -381,7 +381,7 @@ def main() -> int:
     # reczny. Preset z zerem artykulow na tydzien nie pisze nigdy; preset
     # z innym dniem nie pisze dzis — chyba ze czlowiek powie `--wymus`.
     if config.PRESET is not None and "--wymus" not in sys.argv:
-        if config.ARTYKULY_TYGODNIOWO <= 0:
+        if config.ARTYKULY_TYGODNIOWO <= 0 and config.ARTYKULY_MIESIECZNIE <= 0:
             print(">> preset %r ma 0 artykulow na tydzien — nie pisze. "
                   "(`--wymus` omija plan)" % config.PRESET.nazwa, flush=True)
             return 1

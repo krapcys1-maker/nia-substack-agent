@@ -576,7 +576,8 @@ def _call_deepseek(purpose: str, system: str, user: str) -> tuple[str, int, int,
             # BEZ MYSLENIA NA GLOS tam, gdzie zadanie jest mechaniczne —
             # patrz `config.DEEPSEEK_BEZ_MYSLENIA` i pomiar obok niego.
             **({"thinking": {"type": "disabled"}}
-               if purpose in config.DEEPSEEK_BEZ_MYSLENIA or purpose in SEARCH_JSON_PURPOSES else {}),
+               if purpose in config.DEEPSEEK_BEZ_MYSLENIA or purpose in SEARCH_JSON_PURPOSES
+               or (runtime.CURRENT.get() is not None and runtime.CURRENT.get().thinking is False) else {}),
             **({"response_format": {"type": "json_object"}}
                if purpose in SEARCH_JSON_PURPOSES else {}),
         },
@@ -660,7 +661,7 @@ def przejsciowy(exc: BaseException) -> bool:
     return False
 
 
-def _reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no):
+def _reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens=None):
     model = config.MODEL_FOR[purpose]
     started = datetime.now(timezone.utc)
     conn.execute("BEGIN IMMEDIATE")
@@ -685,6 +686,8 @@ def _reserve_attempt(conn, run_id, purpose, system, user, web_search, operation,
                 input_cost += config.DISCOVERY_MAX_SEARCHES * config.WEB_SEARCH_USD_PER_1K / 1000
             unit = rate['out'] * multiplier / 1_000_000
             maximum = config.MAX_TOKENS[purpose]
+            if max_tokens is not None:
+                maximum = min(maximum, max_tokens)
             affordable = maximum if available == float('inf') else int(max(0, available - input_cost) / unit)
             tokens = min(maximum, affordable)
             if tokens < min(maximum, config.MIN_CALL_OUTPUT_TOKENS):
@@ -727,7 +730,10 @@ def image_output_price():
 
 def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
          run_id: int | None = None, web_search: bool = False,
-         collect_urls: list[str] | None = None) -> str:
+         collect_urls: list[str] | None = None, max_tokens: int | None = None,
+         thinking: bool | None = None) -> str:
+    if max_tokens is not None and (type(max_tokens) is not int or max_tokens <= 0):
+        raise ValueError("max_tokens must be a positive integer")
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
@@ -752,8 +758,10 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         if time.monotonic() >= deadline:
             raise runtime.DeadlineExceeded('brak czasu na kolejna probe')
         call_id, tokens, started = _reserve_attempt(conn, run_id, purpose, system, user,
-                                                  web_search, operation, proba)
+                                                  web_search, operation, proba,
+                                                  **({"max_tokens": max_tokens} if max_tokens is not None else {}))
         state = runtime.Attempt(tokens, deadline)
+        state.thinking = thinking
         def transport():
             if provider == 'anthropic':
                 return _call_claude(purpose, system, user, web_search)

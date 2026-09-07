@@ -75,7 +75,10 @@ def _dopisz_brakujace_kolumny(conn: sqlite3.Connection) -> None:
 ```python
 def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
          run_id: int | None = None, web_search: bool = False,
-         collect_urls: list[str] | None = None) -> str:
+         collect_urls: list[str] | None = None, max_tokens: int | None = None,
+         thinking: bool | None = None) -> str:
+    if max_tokens is not None and (type(max_tokens) is not int or max_tokens <= 0):
+        raise ValueError("max_tokens must be a positive integer")
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
@@ -100,8 +103,10 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         if time.monotonic() >= deadline:
             raise runtime.DeadlineExceeded('brak czasu na kolejna probe')
         call_id, tokens, started = _reserve_attempt(conn, run_id, purpose, system, user,
-                                                  web_search, operation, proba)
+                                                  web_search, operation, proba,
+                                                  **({"max_tokens": max_tokens} if max_tokens is not None else {}))
         state = runtime.Attempt(tokens, deadline)
+        state.thinking = thinking
         def transport():
             if provider == 'anthropic':
                 return _call_claude(purpose, system, user, web_search)
@@ -1210,8 +1215,8 @@ def budzet_dnia(conn: sqlite3.Connection) -> dict[str, int]:
         "notki": len(config.NOTE_MIX_OTHER_DAY),
         "lajki": losuj(config.LAJKI_DZIENNIE),
         "komentarze": losuj(config.KOMENTARZE_DZIENNIE),
-        "follow": z_miesiaca(config.FOLLOW_MIESIECZNIE),
-        "subskrypcje": z_miesiaca(config.SUBSKRYPCJE_MIESIECZNIE),
+        "follow": config.FOLLOW_DZIENNIE if config.FOLLOW_DZIENNIE is not None else z_miesiaca(config.FOLLOW_MIESIECZNIE),
+        "subskrypcje": config.SUBSKRYPCJE_DZIENNIE if config.SUBSKRYPCJE_DZIENNIE is not None else z_miesiaca(config.SUBSKRYPCJE_MIESIECZNIE),
         "restacki": losuj(config.RESTACK_DZIENNIE),
     }
     print(f"  [budżet dnia{' — rozbieg' if rozbieg else ''}] "
@@ -1958,6 +1963,14 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
             print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
             return wynik
+        if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
+            import personality
+            profile = api_json(page, f"/api/v1/user/{handle}/public_profile")
+            if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
+                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                if wyslij:
+                    zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
+                return wynik
         for nazwa in napisy:
             k = page.get_by_role("button", name=nazwa, exact=True).first
             if k.count() == 0 or not k.is_visible():

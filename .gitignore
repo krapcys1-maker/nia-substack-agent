@@ -144,6 +144,7 @@ presety/*
 !presety/README.md
 !presety/SZABLON/
 !presety/ai/
+!presety/nia-unfiltered/
 !presety/hidden-bill/
 agent-v2/aktywny_preset.json
 agent-v2/instancje/

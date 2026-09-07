@@ -2941,6 +2941,14 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
             print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
             return wynik
+        if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
+            import personality
+            profile = api_json(page, f"/api/v1/user/{handle}/public_profile")
+            if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
+                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                if wyslij:
+                    zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
+                return wynik
         for nazwa in napisy:
             k = page.get_by_role("button", name=nazwa, exact=True).first
             if k.count() == 0 or not k.is_visible():
@@ -4842,6 +4850,8 @@ def uchwyt_publikacji(host: str) -> str | None:
     None — lepiej nie obserwowac nikogo niz obserwowac nieistniejace konto.
     """
     host = (host or "").strip().lower().rstrip("/")
+    if re.fullmatch(r"@[a-z0-9_]{1,64}", host):
+        return host[1:]  # Explicit public profile handle, not a guessed publication host.
     if not host:
         return None
     if host.endswith(".substack.com"):

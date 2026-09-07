@@ -157,6 +157,14 @@
 | `PRZEBIEGOW_DZIENNIE` | `5` | Pierwszy miesiac na dolnej polowie widelek. Nowe konto z jednym artykulem, ktore nagle obserwuje dwadziescia osob, wyglada dokladnie jak far |
 | `GODZINY_PRZEBIEGOW_UTC` | `("11:20", "17:00", "19:20", "21:30", "23:40"` | --- HARMONOGRAM Z KONFIGURACJI, NIE Z SZABLONU ZEGARA ---------------------- Do 2026-09-05 godziny przebiegow staly WYLACZNIE w `systemd/nia |
 | `ARTYKULY_TYGODNIOWO` | `1` | ILE ARTYKULOW NA TYDZIEN I W KTORE DNI. Zero wylacza sciezke artykulu: zegar artykulu nie powstaje, `artykul_z_puli.py` odmawia, promocja ni |
+| `ARTYKULY_MIESIECZNIE` | `0` | — |
+| `DNI_MIESIACA_ARTYKULU` | `()` | — |
+| `FOLLOW_DZIENNIE` | `None` | — |
+| `SUBSKRYPCJE_DZIENNIE` | `None` | — |
+| `SUBSKRYPCJE_MAX_ODBIORCOW` | `None` | — |
+| `PERSONA_WLACZONA` | `False` | — |
+| `PERSONA_PRZEJECIE` | `False` | — |
+| `PERSONA_TEMATY` | `()` | — |
 | `DNI_ARTYKULU` | `("Tue",)` | — |
 | `GODZINA_ARTYKULU_UTC` | `"14:00"` | — |
 | `PROB_PUBLIKACJI_ARTYKULU` | `3` | ILE CZASU MA PRZEBIEG. Musi zgadzac sie z `TimeoutStartSec` w pliku uslugi — to jedyne miejsce, gdzie ta sama liczba stoi dwa razy, i pilnuj |

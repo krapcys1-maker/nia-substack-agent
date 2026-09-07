@@ -109,7 +109,7 @@ ZAKAZANE_PLIKI = [
     # galezi, wczesniejsze przyklady `przyklady/`, ktore mialy placeholdery
     # i zostaly zastapione kartridzem `ai`. Kazdy inny katalog to instalacja.
     (r"^presety/[^/]+\.toml$", "wlasny preset operatora (uchwyt konta, temat)"),
-    (r"^presety/(?!SZABLON/|ai/|hidden-bill/|przyklady/)[^/]+/", "wlasny katalog presetu operatora"),
+    (r"^presety/(?!SZABLON/|ai/|hidden-bill/|nia-unfiltered/|przyklady/)[^/]+/", "wlasny katalog presetu operatora"),
     (r"(^|/)aktywny_preset\.json$", "wskaznik aktywnego presetu (stan instalacji)"),
     (r"(^|/)instancje/", "dane instancji presetu (baza, bank, szkice)"),
     (r"\.db$", "baza danych"),

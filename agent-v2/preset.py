@@ -661,7 +661,8 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
     if len(dni) != artykuly:
         bledy.append("artykuly na tydzien (%d) nie zgadzaja sie z dniami (%s)"
                      % (artykuly, ", ".join(dni) or "brak"))
-    if artykuly == 0:
+    miesiecznie = int(getattr(proba, "ARTYKULY_MIESIECZNIE", 0))
+    if artykuly == 0 and miesiecznie == 0:
         uwagi.append("artykuly wylaczone (0 na tydzien): zegar artykulu nie powstanie, "
                      "promocja nie ma czego promowac")
     elif notki == 0:
@@ -673,9 +674,10 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
                         ("RESTACK_DZIENNIE", "restacki"), ("FOLLOW_MIESIECZNIE", "obserwacje"),
                         ("SUBSKRYPCJE_MIESIECZNIE", "subskrypcje")):
         widelki = tuple(getattr(proba, nazwa, (0, 0)))
-        if widelki[1] == 0:
+        daily = {"FOLLOW_MIESIECZNIE": "FOLLOW_DZIENNIE", "SUBSKRYPCJE_MIESIECZNIE": "SUBSKRYPCJE_DZIENNIE"}.get(nazwa)
+        if (getattr(proba, daily, None) == 0 if daily and getattr(proba, daily, None) is not None else widelki[1] == 0):
             uwagi.append("%s wylaczone" % opis)
-    if artykuly and float(getattr(proba, "SUFIT_DZIENNY_BAZOWY", 0)) < 2 * float(
+    if (artykuly or miesiecznie) and float(getattr(proba, "SUFIT_DZIENNY_BAZOWY", 0)) < 2 * float(
             getattr(proba, "RUN_LIMIT_USD", 0)):
         uwagi.append("sufit dzienny %.2f USD nie zmiesci dwoch przebiegow po %.2f — "
                      "artykul moze nie powstac w dniu z rutyna dnia"

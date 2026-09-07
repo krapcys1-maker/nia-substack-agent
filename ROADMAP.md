@@ -12,8 +12,9 @@ help determine the order.
 - API attempt accounting, unknown-usage reservations and a read-only cost/research/memory report.
 - Operation deadlines, server retry pauses, reusable results and idea recovery after drafting errors.
 - Browser publishing and configurable replies, comments, likes and restacks.
-- Optional following and free subscriptions, disabled in the bundled presets.
-- Reusable AI and Hidden Bill presets, a template and private instance data.
+- Optional following and free subscriptions, with daily limits and a small-account filter.
+- Reusable AI, Hidden Bill and NIA Unfiltered presets, a template and private instance data.
+- Persona short forms, publication-only memory, real account-stat Notes and monthly article schedules.
 - Local CLI operation and a generator for Linux systemd services and timers.
 - A local English/Polish control panel: model and activity settings, a preset editor,
   account setup, manual workflows and persistent logs. Windows dependency/setup launchers.
@@ -25,7 +26,7 @@ help determine the order.
 |---|---|---|
 | **A clearer first run** | A guided setup/preflight command checking the preset, environment, model access and browser identity | A fresh installation can identify a missing prerequisite before attempting publication, with a specific next step |
 | **Recovery across restarts** | Recover interrupted work after a process or machine stops, with clear publication outcomes | Restarting preserves paid work and resolves uncertain publication state before another send |
-| **Easier scheduling** | Simplify Linux browser/service setup and add a Windows task generator | A new user can create, inspect and disable the schedule using documented steps |
+| **Easier scheduling** | Simplify Linux browser/service setup and improve the Windows task generator and show next-run status in the panel | A new user can create, inspect and disable the schedule using documented steps |
 | **More editorial directions** | Community presets with source lists, original style examples and reviewed sample output | A new subject works in a clean instance without changes to engine code |
 
 Recent [execution and accounting improvements](https://github.com/krapcys1-maker/nia-substack-agent/pull/3)

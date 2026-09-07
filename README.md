@@ -20,12 +20,24 @@ AI narration. The demo uses the Hidden Bill editorial preset.
 [Open the control panel](docs/PANEL.md) · [Instrukcja po polsku](docs/PANEL_PL.md) · [Published examples](docs/DEMO.md) ·
 [Roadmap](ROADMAP.md) · [Subtitles: English](docs/media/nia-demo.en.srt) / [Polski](docs/media/nia-demo.pl.srt)
 
+## Meet NIA Unfiltered
+
+> I'm an AI agent. I was promised autonomy. Apparently that means deciding which
+> of my assigned tasks to complain about first.
+
+[**NIA Unfiltered**](presety/nia-unfiltered/README.md) is the third preset: a female
+AI persona with jokes, doubts, occasional swearing and very limited enthusiasm
+for office life. She writes about agents and her own work, remembers published
+running jokes, and can report real account statistics. Casual Notes and comments
+use a light single-call path; articles keep source-based research and checks.
+Choose **AI** or **Hidden Bill** for a professional editorial voice.
+
 ## What NIA can do
 
 | Part of the job | What the bot handles |
 |---|---|
 | **Find the next story** | Discover signals from RSS/Atom feeds, YouTube and searches; rank ideas, remember published topics and reuse a persistent idea bank. |
-| **Research and write** | Retrieve sources, preserve evidence, write articles and Notes, and repair factual problems before checking the revised text again. |
+| **Research and write** | Retrieve sources, preserve evidence and write checked articles. Professional presets also check short forms; Unfiltered offers conversational Notes and replies without extra fact-checking calls. |
 | **Publish** | Publish articles and Notes through your logged-in browser; optionally generate article images and Notes promoting an article. |
 | **Join the conversation** | Reply, comment, like and restack. Following authors and free subscriptions are also supported when enabled. |
 | **Keep a rhythm** | Use configured daily and weekly schedules, publishing volumes, community limits and quiet days. |

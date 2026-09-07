@@ -1280,7 +1280,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # wychodzila zawsze kilka minut po starcie zegara, wiec piec razy
         # dziennie o tej samej porze co do kwadransa. Godziny zostaja te,
         # ktore wybralismy; przewidywalne przestaja byc minuty.
-        if wyslij:
+        if wyslij and not config.PERSONA_WLACZONA:
             import random as _r
             ile = _r.uniform(*config.ZWLOKA_PRZED_NOTKAMI)
             # NAPRAWA SIOSTRZANA DO dfc1e95a. Tamta zamknela sen MIEDZY notkami
@@ -1346,6 +1346,9 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                                              # koszt obu modeli znamy z `calls`,
                                              # a SKUTKU nie porownamy nigdy.
                                              model=gotowe[0].get("model", ""))
+                if config.PERSONA_WLACZONA:
+                    import personality
+                    personality.remember(n, wynik)
                 # Fakt odhaczamy DOPIERO po potwierdzonej publikacji. Wczesniej
                 # znikal juz przy znalezieniu, wiec przepadal takze wtedy, gdy
                 # notka nie poszla albo gdy przebieg byl tylko sprawdzeniem.
@@ -1668,7 +1671,9 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # przekroczyla przez to budzetu dobowego. Powod jest strukturalny, nie
         # szczesliwy: `zostalo` liczy sie od nowa z dziennika na poczatku
         # KAZDEGO przebiegu, wiec nadmiar jednego zabiera z puli nastepnym.
-        for cel in cele[: max(1, na_teraz["komentarze"] // 2)]:
+        limit_dyskusji = (max(0, na_teraz["komentarze"] - zrobione["komentarze"])
+                          if config.PERSONA_WLACZONA else max(1, na_teraz["komentarze"] // 2))
+        for cel in cele[:limit_dyskusji]:
             if not zostal_czas("dyskusje"):
                 return
             # Drugie miejsce, w ktorym ginelo `co_dodamy` — patrz komentarz przy
@@ -1722,6 +1727,15 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             zrobione["komentarze"] += 1
 
     # --- 3c. obserwowanie nowych: to, co poszerza krąg ------------------------
+    pula_persony = None
+
+    def nowi_dla_persony():
+        nonlocal pula_persony
+        if pula_persony is None:
+            import personality
+            pula_persony = personality.community_candidates()
+        return pula_persony
+
     def obserwuj() -> None:
         """Obserwuje autorów, których teksty faktycznie czytaliśmy.
 
@@ -1796,7 +1810,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         if not na_teraz.get("follow"):
             return
         historia = kanal._historia()
-        if not historia:
+        if not historia and not config.PERSONA_WLACZONA:
             return
 
         # ODSIEW PRZED LOSOWANIEM, A NIE PO NIM — i to jest cala roznica.
@@ -1821,6 +1835,8 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # tego dnia), i stawia na poczatku te, ktore juz zareagowaly na nasza
         # tresc. Los zostaje, ale juz tylko wewnatrz poziomu.
         wszyscy, rachunek = cele_wedlug_pierwszenstwa(historia)
+        if config.PERSONA_WLACZONA:
+            wszyscy = list(dict.fromkeys(nowi_dla_persony() + wszyscy))
         kandydaci = [h for h in wszyscy
                      if not browser.czy_juz_obserwujemy(h, pamiec)]
         print("  pula: %d hostow w historii, %d odsianych tematycznie"
@@ -2006,7 +2022,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         if not na_teraz.get("subskrypcje"):
             return
         historia = kanal._historia()
-        if not historia:
+        if not historia and not config.PERSONA_WLACZONA:
             return
 
         # TE SAME DWA POZIOMY, CO PRZY OBSERWACJI, i to jest zamierzone: jesli
@@ -2014,6 +2030,8 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # ktora zaglada wlascicielowi do skrzynki i zostawia u nich slad
         # w liscie subskrybentow — jest za stary tym bardziej.
         wszyscy, rachunek = cele_wedlug_pierwszenstwa(historia)
+        if config.PERSONA_WLACZONA:
+            wszyscy = list(dict.fromkeys(nowi_dla_persony() + wszyscy))
         pamiec = browser.kogo_obserwujemy()
         zamkniete = kogo_juz_subskrybujemy()
         kandydaci = [h for h in wszyscy

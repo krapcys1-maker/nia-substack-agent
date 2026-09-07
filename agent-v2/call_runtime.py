@@ -18,6 +18,7 @@ class Attempt:
     max_tokens: int
     deadline: float
     observed: bool = False
+    thinking: bool | None = None
     usage: dict[str, int] = field(default_factory=dict)
     usage_known: bool = False
     cancelled: threading.Event = field(default_factory=threading.Event)

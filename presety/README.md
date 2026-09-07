@@ -28,6 +28,7 @@ python narzedzia/presety.py status
 python narzedzia/presety.py odlacz           # deactivate; the instance data stays
 ```
 
+- [`presety/nia-unfiltered/`](nia-unfiltered/README.md) — a female AI comic persona: English, informal, occasionally sweary; 2 articles/month, 2 Notes/day, conversational short forms, private continuity memory and measured stats.
 - `presety/ai/` — a complete cartridge, tracked in git: AI in English, two
   notes a day, one article a week, verified channels and feeds, its own
   style profiles and editorial blocks. Your account comes from `agent-v2/.env`.

@@ -54,6 +54,7 @@ jobs:
         run: |
           python narzedzia/presety.py sprawdz ai
           python narzedzia/presety.py sprawdz hidden-bill
+          python narzedzia/presety.py sprawdz nia-unfiltered
 
       - name: czy mapa funkcji jest aktualna
         run: |

@@ -2035,12 +2035,12 @@ def normy_dzienne() -> dict[str, float]:
         "polubienie": sum(LAJKI_DZIENNIE) / 2,
         "komentarz": sum(KOMENTARZE_DZIENNIE) / 2,
         "restack": sum(RESTACK_DZIENNIE) / 2,
-        "subskrypcja": sum(SUBSKRYPCJE_MIESIECZNIE) / 2 / 30,
+        "subskrypcja": float(SUBSKRYPCJE_DZIENNIE) if SUBSKRYPCJE_DZIENNIE is not None else sum(SUBSKRYPCJE_MIESIECZNIE) / 2 / 30,
         # NAZWA MUSI BYC TAKA, JAK `rodzaj` W DZIENNIKU. Bylo tu "follow",
         # a `browser.obserwuj_profil` zapisuje "obserwacja" — licznik
         # porownywal wiec norme z niczym i zglaszal 0% przy dzialajacym
         # bloku. Dokladnie ta klasa bledu, ktora ten licznik ma lapac.
-        "obserwacja": sum(FOLLOW_MIESIECZNIE) / 2 / 30,
+        "obserwacja": float(FOLLOW_DZIENNIE) if FOLLOW_DZIENNIE is not None else sum(FOLLOW_MIESIECZNIE) / 2 / 30,
     }
 
 
@@ -2175,6 +2175,14 @@ GODZINY_PRZEBIEGOW_UTC = ("11:20", "17:00", "19:20", "21:30", "23:40")
 # zegar artykulu nie powstaje, `artykul_z_puli.py` odmawia, promocja nie ma
 # czego promowac. Dni w postaci, ktora rozumie systemd (`Mon`..`Sun`).
 ARTYKULY_TYGODNIOWO = 1
+ARTYKULY_MIESIECZNIE = 0
+DNI_MIESIACA_ARTYKULU = ()
+FOLLOW_DZIENNIE = None
+SUBSKRYPCJE_DZIENNIE = None
+SUBSKRYPCJE_MAX_ODBIORCOW = None
+PERSONA_WLACZONA = False
+PERSONA_PRZEJECIE = False
+PERSONA_TEMATY = ()
 DNI_ARTYKULU = ("Tue",)
 GODZINA_ARTYKULU_UTC = "14:00"
 
@@ -2185,7 +2193,8 @@ def dzis_dzien_artykulu(kiedy=None) -> bool:
 
     kiedy = kiedy or datetime.now(timezone.utc)
     dzien = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[kiedy.weekday()]
-    return ARTYKULY_TYGODNIOWO > 0 and dzien in DNI_ARTYKULU
+    return ((ARTYKULY_MIESIECZNIE > 0 and kiedy.day in DNI_MIESIACA_ARTYKULU)
+            or (ARTYKULY_TYGODNIOWO > 0 and dzien in DNI_ARTYKULU))
 
 
 def zegar_agenta_on_calendar() -> list[str]:
@@ -2197,7 +2206,7 @@ def zegar_agenta_on_calendar() -> list[str]:
 def zegar_artykulu_on_calendar() -> list[str]:
     """Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma."""
     import konfiguracja as _k
-    return _k.on_calendar_artykulu(DNI_ARTYKULU, GODZINA_ARTYKULU_UTC, ARTYKULY_TYGODNIOWO)
+    return _k.on_calendar_artykulu(DNI_ARTYKULU, GODZINA_ARTYKULU_UTC, ARTYKULY_TYGODNIOWO, DNI_MIESIACA_ARTYKULU)
 
 # ILE CZASU MA PRZEBIEG. Musi zgadzac sie z `TimeoutStartSec` w pliku uslugi —
 # to jedyne miejsce, gdzie ta sama liczba stoi dwa razy, i pilnuje tego test,

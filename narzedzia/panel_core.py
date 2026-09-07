@@ -26,7 +26,7 @@ import preset
 import style
 from dotenv import dotenv_values, set_key
 
-PUBLIC = {'ai', 'hidden-bill', 'SZABLON'}
+PUBLIC = {'ai', 'hidden-bill', 'nia-unfiltered', 'SZABLON'}
 KEYS = ('ANTHROPIC_API_KEY', 'DEEPSEEK_API_KEY', 'OPENAI_API_KEY')
 ACCOUNT = ('SUBSTACK_HANDLE', 'NAZWA_MARKI')
 FORMS = ('positive', 'negative', 'corpus')

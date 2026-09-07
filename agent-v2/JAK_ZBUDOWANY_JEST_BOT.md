@@ -49,14 +49,14 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **31 plików**, 34 643 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **32 plików**, 35 058 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 31 plików zamiast dziesięciu.** Najbliższe usunięciu:
+**WADA — 32 plików zamiast dziesięciu.** Najbliższe usunięciu:
 `style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
@@ -113,7 +113,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 176 zestawów
+się testować bez przeglądarki i bez pieniędzy**. 178 zestawów
 testów, 4182 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
@@ -153,9 +153,32 @@ wiec nie da sie go rozjechac z kodem.
 | `read_pages(urls)` | — |
 | `_worker(input_path, output)` *(wewn.)* | — |
 
+### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
+
+327 wierszy, 16 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `_injection(text)` *(wewn.)* | Reject explicit role replacement; ordinary links in source posts are data. |
+| `_date(value)` *(wewn.)* | — |
+| `_rows(name)` *(wewn.)* | Read bounded local history; an incomplete final JSONL line is harmless. |
+| `memory()` | — |
+| `memory_state()` | Keep milestones after individual Notes leave the bounded prompt memory. |
+| `_count(value)` *(wewn.)* | — |
+| `statistics(now)` | Publishable facts only: net growth and cumulative measured Note views. |
+| `_system(kind)` *(wewn.)* | — |
+| `_valid(text, maximum)` *(wewn.)* | — |
+| `short_form(conn, run_id, kind, material)` | One paid decision: respond, or remain silent. No paid repair attempts. |
+| `notes(conn, run_id, ile, od)` | Choose a subject from the persona, not the research bank. |
+| `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
+| `targets(posts)` | Free topical prefilter. The writing call makes the actual reply decision. |
+| `community_candidates()` | Relevant new people need not have received a comment first. No LLM call. |
+| `small_account(profile, maximum)` | Unknown size is not evidence of a small account. No paid research. |
+| `remember(note, publication)` | Commit once, only after the browser confirms a new publication. |
+
 ### `call_runtime.py` — terminy operacji i zuzycie; worker nie zapisuje do bazy
 
-129 wierszy, 6 funkcji na poziomie modułu, 2 klas
+130 wierszy, 6 funkcji na poziomie modułu, 2 klas
 
 | funkcja | co robi |
 |---|---|
@@ -191,7 +214,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2931 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2949 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -225,7 +248,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8330 wierszy, 147 funkcji na poziomie modułu, 0 klas
+8345 wierszy, 147 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -379,7 +402,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5478 wierszy, 102 funkcji na poziomie modułu, 2 klas
+5488 wierszy, 102 funkcji na poziomie modułu, 2 klas
 
 | funkcja | co robi |
 |---|---|
@@ -488,7 +511,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1019 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1027 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -503,7 +526,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_read_search_sources(urls)` *(wewn.)* | Recover evidence from already-found public URLs, without another search. |
 | `_call_deepseek(purpose, system, user)` *(wewn.)* | — |
 | `przejsciowy(exc)` | Czy ten błąd ma szansę minąć sam. |
-| `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no)` *(wewn.)* | — |
+| `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` *(wewn.)* | — |
 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` *(wewn.)* | — |
 | `image_output_price()` | — |
 | `call(purpose, system, user)` | — |
@@ -575,7 +598,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-995 wierszy, 44 funkcji na poziomie modułu, 1 klas
+1020 wierszy, 45 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -597,6 +620,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_lista_godzin_utc(v, gdzie)` *(wewn.)* | Niepusta lista godzin `HH:MM` bez powtorzen, w kolejnosci doby. |
 | `_dzien_tygodnia(v, gdzie)` *(wewn.)* | — |
 | `_lista_dni_tygodnia(v, gdzie)` *(wewn.)* | Lista dni tygodnia; pusta znaczy „bez artykulow". |
+| `_lista_dni_miesiaca(v, gdzie)` *(wewn.)* | Days 1..28 exist in every month; duplicates are configuration errors. |
 | `_sciezka(v, gdzie)` *(wewn.)* | Sciezka do pliku wzgledem korzenia repozytorium (albo bezwzgledna). |
 | `_sciezka_moze_pusta(v, gdzie)` *(wewn.)* | — |
 | `_slownik_list(v, gdzie)` *(wewn.)* | Tablica `klucz = [napisy]`. Pusta lista jest DOZWOLONA i coś znaczy. |
@@ -619,14 +643,14 @@ wiec nie da sie go rozjechac z kodem.
 | `_plan(dane, cfg)` *(wewn.)* | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. |
 | `zastosuj(dane, cfg)` | Wklada wartosci do modulu `config`. Oddaje liste tego, co przestawiono. |
 | `on_calendar_agenta(godziny)` | Zegar rutyny dnia: jedna linia na godzine UTC. |
-| `on_calendar_artykulu(dni, godzina, ile)` | Zegar artykulu; pusta lista, gdy artykulow nie ma. |
+| `on_calendar_artykulu(dni, godzina, ile, dni_miesiaca)` | Zegar artykulu; pusta lista, gdy artykulow nie ma. |
 | `_toml_napis(v)` *(wewn.)* | Napis w cudzyslowie z ucieczkami. Nowa linia w niszy dawala plik, ktorego |
 | `toml_wartosc(v)` | — |
 | `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | Pola plaskie -> tekst TOML. `sekcje_dodatkowe` (np. `[preset]`) ida na poczatek. |
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1099 wierszy, 39 funkcji na poziomie modułu, 4 klas
+1101 wierszy, 39 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -753,7 +777,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3532 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3541 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6575,7 +6599,10 @@ def _dopisz_brakujace_kolumny(conn: sqlite3.Connection) -> None:
 ```python
 def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
          run_id: int | None = None, web_search: bool = False,
-         collect_urls: list[str] | None = None) -> str:
+         collect_urls: list[str] | None = None, max_tokens: int | None = None,
+         thinking: bool | None = None) -> str:
+    if max_tokens is not None and (type(max_tokens) is not int or max_tokens <= 0):
+        raise ValueError("max_tokens must be a positive integer")
     _preflight(purpose, conn, run_id)
     model = config.MODEL_FOR[purpose]
     provider = _dostawca(model)
@@ -6600,8 +6627,10 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         if time.monotonic() >= deadline:
             raise runtime.DeadlineExceeded('brak czasu na kolejna probe')
         call_id, tokens, started = _reserve_attempt(conn, run_id, purpose, system, user,
-                                                  web_search, operation, proba)
+                                                  web_search, operation, proba,
+                                                  **({"max_tokens": max_tokens} if max_tokens is not None else {}))
         state = runtime.Attempt(tokens, deadline)
+        state.thinking = thinking
         def transport():
             if provider == 'anthropic':
                 return _call_claude(purpose, system, user, web_search)
@@ -7710,8 +7739,8 @@ def budzet_dnia(conn: sqlite3.Connection) -> dict[str, int]:
         "notki": len(config.NOTE_MIX_OTHER_DAY),
         "lajki": losuj(config.LAJKI_DZIENNIE),
         "komentarze": losuj(config.KOMENTARZE_DZIENNIE),
-        "follow": z_miesiaca(config.FOLLOW_MIESIECZNIE),
-        "subskrypcje": z_miesiaca(config.SUBSKRYPCJE_MIESIECZNIE),
+        "follow": config.FOLLOW_DZIENNIE if config.FOLLOW_DZIENNIE is not None else z_miesiaca(config.FOLLOW_MIESIECZNIE),
+        "subskrypcje": config.SUBSKRYPCJE_DZIENNIE if config.SUBSKRYPCJE_DZIENNIE is not None else z_miesiaca(config.SUBSKRYPCJE_MIESIECZNIE),
         "restacki": losuj(config.RESTACK_DZIENNIE),
     }
     print(f"  [budżet dnia{' — rozbieg' if rozbieg else ''}] "
@@ -8458,6 +8487,14 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
             print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
             return wynik
+        if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
+            import personality
+            profile = api_json(page, f"/api/v1/user/{handle}/public_profile")
+            if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
+                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                if wyslij:
+                    zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
+                return wynik
         for nazwa in napisy:
             k = page.get_by_role("button", name=nazwa, exact=True).first
             if k.count() == 0 or not k.is_visible():
@@ -12158,6 +12195,14 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `PRZEBIEGOW_DZIENNIE` | `5` | Pierwszy miesiac na dolnej polowie widelek. Nowe konto z jednym artykulem, ktore nagle obserwuje dwadziescia osob, wyglada dokladnie jak far |
 | `GODZINY_PRZEBIEGOW_UTC` | `("11:20", "17:00", "19:20", "21:30", "23:40"` | --- HARMONOGRAM Z KONFIGURACJI, NIE Z SZABLONU ZEGARA ---------------------- Do 2026-09-05 godziny przebiegow staly WYLACZNIE w `systemd/nia |
 | `ARTYKULY_TYGODNIOWO` | `1` | ILE ARTYKULOW NA TYDZIEN I W KTORE DNI. Zero wylacza sciezke artykulu: zegar artykulu nie powstaje, `artykul_z_puli.py` odmawia, promocja ni |
+| `ARTYKULY_MIESIECZNIE` | `0` | — |
+| `DNI_MIESIACA_ARTYKULU` | `()` | — |
+| `FOLLOW_DZIENNIE` | `None` | — |
+| `SUBSKRYPCJE_DZIENNIE` | `None` | — |
+| `SUBSKRYPCJE_MAX_ODBIORCOW` | `None` | — |
+| `PERSONA_WLACZONA` | `False` | — |
+| `PERSONA_PRZEJECIE` | `False` | — |
+| `PERSONA_TEMATY` | `()` | — |
 | `DNI_ARTYKULU` | `("Tue",)` | — |
 | `GODZINA_ARTYKULU_UTC` | `"14:00"` | — |
 | `PROB_PUBLIKACJI_ARTYKULU` | `3` | ILE CZASU MA PRZEBIEG. Musi zgadzac sie z `TimeoutStartSec` w pliku uslugi — to jedyne miejsce, gdzie ta sama liczba stoi dwa razy, i pilnuj |
