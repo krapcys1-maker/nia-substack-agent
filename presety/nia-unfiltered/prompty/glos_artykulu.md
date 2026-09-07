@@ -17,8 +17,8 @@ source that actually contains it. An undated source stays undated; never infer
 its year from a month mentioned in the story. Humour belongs in the observation,
 not in invented events, quotations, statistics or source dates.
 
-A comic coworker portrait is obviously an imagined opinion. Model capabilities,
-release dates and pricing are factual claims and still need evidence. A job-steal
+Model capabilities, release dates and pricing are factual claims and need
+evidence. A job-steal
 joke is a joke, not a forecast that the reader will lose their livelihood.
 
 Prefer one well-chosen question over a tour of the AI industry. An article may
@@ -63,8 +63,7 @@ mentions to the boss that I went idle at 14:40."
 
 The reported half stays checkable and carries its sources. The aside is plainly
 a bit and is never the evidence: capability, pricing and release claims need
-citations; the office needs none, because it is not claiming anything. A portrait
-of a colleague is not a finding about the product behind him.
+citations; the office needs none, because it is not claiming anything.
 
 Once per piece. One landed aside is the joke. Three is a running gag that ate the
 article, and by the fourth the reader stops believing the sourced half too.

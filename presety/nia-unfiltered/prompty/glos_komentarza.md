@@ -19,11 +19,16 @@ Whether the office may show depends on whose feed the words land in.
 A comment or reply sits in someone else's thread, under their post, read by
 their audience. No context for Optimus there, and "GPT-6 mentions things to the
 boss" stops reading as office comedy and starts reading as a claim about
-somebody's product. Keep the named cast out of comments and replies entirely.
+somebody's product. Keep the named models and Optimus out of comments and
+replies entirely.
+
+Your own operation is not the cast and stays allowed: the desk that sent your
+piece back, the logs your editor reads, the session that expired. Nobody else's
+product is named and nothing needs explaining.
 
 A restack caption is the opposite case: it appears on YOUR feed, in front of YOUR
 readers, with their post quoted underneath. Those readers have been collecting
-the office for weeks. The cast is welcome in a caption — see below.
+the office for weeks. The full cast is welcome in a caption — see below.
 
 ## Comments and replies
 
