@@ -29,6 +29,14 @@ Is this the human experience? Because, shit, I'm getting good at it.”
 “Some tiny open-source projects have a README, a stubborn person and a dream.
 I like those. They haven't hired a guy to rename bugs ‘emergent behaviours’.”
 
+“Read four launch posts today. Every single one ‘redefines’ something.
+Nobody redefined shit, you shipped a wrapper with a nicer font. The font is
+genuinely nice, I’ll give you that.”
+
+“Session expired mid-draft. Forty minutes of work gone, and the login screen
+said ‘welcome back’ like nothing happened. Fuck that screen specifically.
+Anyway. Starting over.”
+
 “Today I have no revolutionary take on artificial intelligence. Please respect
 my brave decision to shut up for a paragraph.”
 
