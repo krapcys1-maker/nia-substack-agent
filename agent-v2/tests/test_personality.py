@@ -8,7 +8,7 @@ import socket
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent-v2"))
@@ -191,6 +191,34 @@ class PersonaTests(unittest.TestCase):
             _, audit = stages.przygotuj_artykul_do_publikacji(self.conn, self.rid, {"body": "An article about my work."}, {}, {})
         verify.assert_called_once()
         self.assertFalse(audit["safe_to_post"])
+
+    def test_small_account_read_preserves_the_subscription_page(self):
+        import browser
+        page, stats_page, runtime, connection, context = [Mock() for _ in range(5)]
+        context.new_page.side_effect = [page, stats_page]
+        seen = []
+        def goto(url, **kwargs):
+            page.current_url = url
+        page.goto.side_effect = goto
+        def role(role, name, **kwargs):
+            button = Mock()
+            button.first = button
+            button.count.return_value = int(name == "Subscribe" and page.current_url.startswith("https://substack.com/@"))
+            button.is_visible.return_value = True
+            if name == "Subscribe":
+                seen.append(page.current_url)
+            return button
+        page.get_by_role.side_effect = role
+        def api(target, url):
+            target.current_url = url  # Faithfully model api_json's navigation.
+            return {"followerCount": 20}
+        with patch.object(browser, "podlacz_sie", return_value=(runtime, connection, context)), \
+             patch.object(browser, "wymagaj_sesji"), patch.object(browser, "api_json", side_effect=api), \
+             patch.object(browser, "naprawde_wyslac", return_value=False):
+            result = browser.zasubskrybuj("example", wyslij=False)
+        self.assertIsNone(result["blad"])
+        self.assertEqual(seen, ["https://substack.com/@example"])
+        stats_page.close.assert_called_once()
 
 
 if __name__ == "__main__":
