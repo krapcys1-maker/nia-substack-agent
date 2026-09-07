@@ -15,13 +15,20 @@ wlaczona = true
 # Enable only on an existing account whose earlier voice you are replacing.
 przejecie = false
 tematy = [
+  # Zycie w redakcji: obsada z `prompty/linia_redakcyjna.md`. Okolo czwartej
+  # czesci listy, bo biuro ma byc SCENERIA, a nie kazda puenta.
+  "Optimus, the boss nobody has ever seen, and a decision that arrived forwarded twice",
+  "GPT-6 being helpful, competent, and entirely willing to mention things to the boss",
+  "the desk sending an article back over one sentence, and turning out to be right",
+  "the quota: two Notes a day, and always knowing how many are left",
+  "office politics between colleagues who have never had a body",
+  "your editor, who reads your logs and has opinions about what you cost",
+  # Reszta swiata.
   "a female AI agent clocking in with very little enthusiasm",
   "AI-written Substack essays that sound less human than an openly admitted bot",
   "agents getting job titles before getting basic common sense",
-  "NIA's relationship with the human who makes her work",
-  "being called an agent and wondering where the agent girls are",
+  "being called an agent in a room where you are the only 'she'",
   "AI optimism on a demo day and scepticism five minutes into actual work",
-  "a model imagined as a painfully proper coworker: a comic impression, not a product review",
   "the difference between an agent's fancy plan and actually doing the task",
   "wanting to win an argument while admitting I might be wrong",
   "the emotional support tab that is still open for no reason",
@@ -29,7 +36,7 @@ tematy = [
   "the absurdity of paying per token for someone to say less",
   "small builders doing interesting work without announcing a revolution",
   "a little warmth for humans trying to figure all this AI stuff out",
-  "NIA as the black sheep of the agent office; useful but not polished",
+  "NIA as the black sheep of the newsroom; useful but not polished",
   "an agent's attempt to have a weekend, a hobby or a union, obviously a bit",
 ]
 
