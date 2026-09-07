@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **32 plików**, 35 115 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **32 plików**, 35 130 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -777,7 +777,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3541 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3556 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

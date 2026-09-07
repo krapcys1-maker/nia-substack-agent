@@ -422,39 +422,39 @@ Jedyne miejsce ze stałymi.
 | 636 | `sufit_dnia(dzien)` | — | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. | `alarm.koszt`, `config (poziom modulu)` |
 | 820 | `kotwica_dlugosci(glebokosc)` | — | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. | `stages.write` |
 | 825 | `dlugosc_dla(glebokosc)` | — | Ile slow ma miec artykul o tej glebokosci. | `artykul_z_puli._napisz_i_zapisz`, `run.main`, `stages.write` |
-| 986 | `_tokens_for(chars)` | — | — | `config (poziom modulu)` |
-| 1088 | `dlugosc_notki(typ)` | — | Przedział słów dla tego typu notki. | `stages.note` |
-| 1356 | `losowa_postawa()` | — | Ktora postawa dla TEGO komentarza. | `stages.comment_on` |
-| 1404 | `otwarcia_dla_postawy(postawa)` | — | Otwarcia, ktore ta postawa ma jak wykonac. | `config.losowe_otwarcie` |
-| 1414 | `losowe_otwarcie(postawa)` | — | — | `stages.comment_on`, `stages.reply_to` |
-| 1420 | `losowa_dlugosc()` | — | Ile slow ma miec ta konkretna wypowiedz. | `stages.comment_on`, `stages.reply_to` |
-| 1563 | `formy_dla_typu(typ)` | — | Formy, ktore ten typ notki ma czym wypelnic. | `stages.notki_dnia` |
-| 1864 | `losowy_ksztalt_mysli()` | — | Ktory ksztalt dostaje ta MYSL. | `stages._opis_typu` |
-| 2021 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `alarm.bank_bez_tematow`, `alarm.max_dzialan_dziennie`, `audyt_systemu.main`, `norma.main` *(+1)* |
-| 2109 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
-| 2116 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
-| 2190 | `dzis_dzien_artykulu(kiedy)` | — | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. | `artykul_z_puli.main` |
-| 2200 | `zegar_agenta_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. | — |
-| 2206 | `zegar_artykulu_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. | — |
-| 2612 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses` |
-| 2690 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
-| 2720 | `tylko_dla_wlasciciela(sciezka)` | — | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. | `browser.rozpoznanie`, `browser.sprawdz_sesje`, `browser.zaloguj`, `config.otworz_tylko_dla_wlasciciela` |
-| 2750 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | — | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. | `kopia_subskrybentow.main`, `kopia_subskrybentow.pobierz_z_panelu` |
-| 2785 | `pytanie_o_stan_dziedziny()` | — | O co pytamy, sprawdzajac stan dziedziny. | `aktualne_modele.pobierz`, `aktualne_modele.wczytaj` |
-| 2860 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
-| 2883 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
-| 2892 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
-| 2921 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
-| 2976 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
-| 2991 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
-| 3012 | `uzyj_katalogu_danych(katalog, utworz)` | — | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | `config (poziom modulu)` |
-| 3040 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
-| 3075 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
-| 3206 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
-| 3214 | `losowa_liczba_paraleli(glebokosc, dostepne)` | — | Ile paraleli w drugim akcie. | `stages.write` |
-| 3328 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
-| 3351 | `co_teraz_w_reku(kiedy, kalendarz)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
-| 3433 | `_aktywacja_przy_starcie()` | — | — | `config (poziom modulu)` |
+| 1001 | `_tokens_for(chars)` | — | — | `config (poziom modulu)` |
+| 1103 | `dlugosc_notki(typ)` | — | Przedział słów dla tego typu notki. | `stages.note` |
+| 1371 | `losowa_postawa()` | — | Ktora postawa dla TEGO komentarza. | `stages.comment_on` |
+| 1419 | `otwarcia_dla_postawy(postawa)` | — | Otwarcia, ktore ta postawa ma jak wykonac. | `config.losowe_otwarcie` |
+| 1429 | `losowe_otwarcie(postawa)` | — | — | `stages.comment_on`, `stages.reply_to` |
+| 1435 | `losowa_dlugosc()` | — | Ile slow ma miec ta konkretna wypowiedz. | `stages.comment_on`, `stages.reply_to` |
+| 1578 | `formy_dla_typu(typ)` | — | Formy, ktore ten typ notki ma czym wypelnic. | `stages.notki_dnia` |
+| 1879 | `losowy_ksztalt_mysli()` | — | Ktory ksztalt dostaje ta MYSL. | `stages._opis_typu` |
+| 2036 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `alarm.bank_bez_tematow`, `alarm.max_dzialan_dziennie`, `audyt_systemu.main`, `norma.main` *(+1)* |
+| 2124 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
+| 2131 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `stages.podsumowanie_dzialan` |
+| 2205 | `dzis_dzien_artykulu(kiedy)` | — | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. | `artykul_z_puli.main` |
+| 2215 | `zegar_agenta_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. | — |
+| 2221 | `zegar_artykulu_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. | — |
+| 2627 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses` |
+| 2705 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
+| 2735 | `tylko_dla_wlasciciela(sciezka)` | — | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. | `browser.rozpoznanie`, `browser.sprawdz_sesje`, `browser.zaloguj`, `config.otworz_tylko_dla_wlasciciela` |
+| 2765 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | — | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. | `kopia_subskrybentow.main`, `kopia_subskrybentow.pobierz_z_panelu` |
+| 2800 | `pytanie_o_stan_dziedziny()` | — | O co pytamy, sprawdzajac stan dziedziny. | `aktualne_modele.pobierz`, `aktualne_modele.wczytaj` |
+| 2875 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
+| 2898 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
+| 2907 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
+| 2936 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
+| 2991 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
+| 3006 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
+| 3027 | `uzyj_katalogu_danych(katalog, utworz)` | — | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | `config (poziom modulu)` |
+| 3055 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
+| 3090 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
+| 3221 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
+| 3229 | `losowa_liczba_paraleli(glebokosc, dostepne)` | — | Ile paraleli w drugim akcie. | `stages.write` |
+| 3343 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
+| 3366 | `co_teraz_w_reku(kiedy, kalendarz)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
+| 3448 | `_aktywacja_przy_starcie()` | — | — | `config (poziom modulu)` |
 
 ---
 
