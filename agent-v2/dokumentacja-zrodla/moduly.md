@@ -369,7 +369,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1027 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1028 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -635,7 +635,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3556 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3577 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -663,6 +663,7 @@
 | `dzis_dzien_artykulu(kiedy)` | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. |
 | `zegar_agenta_on_calendar()` | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. |
 | `zegar_artykulu_on_calendar()` | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. |
+| `sufit_wyjscia(purpose, model)` | Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
 | `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. |

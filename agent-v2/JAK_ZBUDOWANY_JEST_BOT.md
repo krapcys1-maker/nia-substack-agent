@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **32 plików**, 35 130 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **32 plików**, 35 152 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -511,7 +511,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1027 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1028 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -777,7 +777,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3556 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3577 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -805,6 +805,7 @@ wiec nie da sie go rozjechac z kodem.
 | `dzis_dzien_artykulu(kiedy)` | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. |
 | `zegar_agenta_on_calendar()` | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. |
 | `zegar_artykulu_on_calendar()` | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. |
+| `sufit_wyjscia(purpose, model)` | Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu. |
 | `timeout_for(max_tokens)` | Termin w sekundach, który realnie pokrywa podany sufit tokenów. |
 | `_znacznik_klienta(marka)` *(wewn.)* | — |
 | `tylko_dla_wlasciciela(sciezka)` | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. |

@@ -2608,6 +2608,27 @@ MAX_TOKENS = {
     for purpose, ceiling in MAX_TOKENS.items()
 }
 
+
+def sufit_wyjscia(purpose: str, model: str) -> int:
+    """Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu.
+
+    `DEEPSEEK_BEZ_MYSLENIA` znaczy „ta rola nie mysli", i to jest prawda tylko
+    dopoki rola chodzi DeepSeekiem: tam `llm.call` naprawde wysyla
+    {"thinking": "disabled"}. Modele Anthropic tego klucza nie dostaja wcale,
+    a na Fable 5.1 myslenie jest ZAWSZE wlaczone — {"type": "disabled"} zwraca
+    400. Tokeny rozumowania licza sie do sufitu wyjscia, wiec rola przeniesiona
+    z DeepSeeka na Claude'a traci zapas, ktorego dalej potrzebuje.
+
+    7 wrzesnia 2026 restack po przejsciu na Claude'a mial sufit 3000 (notka:
+    37314). Odpowiedz ucielo, przebieg nie wystawil nic i zaplacilismy za
+    obciete rozumowanie. `MAX_TOKENS` liczy sie przy starcie modulu, zanim
+    preset przestawi `MODEL_FOR`, wiec decyzja nie moze zapasc tam.
+    """
+    sufit = MAX_TOKENS[purpose]
+    if purpose in DEEPSEEK_BEZ_MYSLENIA and not str(model).startswith("deepseek"):
+        sufit += THINKING_HEADROOM_TOKENS
+    return sufit
+
 # --- terminy -----------------------------------------------------------------
 # Termin musi pokryć własny sufit tokenów. Zmierzone: mediana 16,08 ms na token
 # wyjściowy (19 rozliczonych przebiegów, R² 0,98). Poprzedni agent ustawił 60 s
