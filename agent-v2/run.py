@@ -2195,8 +2195,13 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         if not zaleg:
             print("  brak zaleglego artykulu", flush=True)
             return
-        sciezka = str(zaleg["sciezka"])
-        if not os.path.exists(sciezka):
+        # Path, NIE napis: `browser.wystaw_artykul` wola `sciezka_md.with_suffix`
+        # i `rozbierz_artykul`, wiec napis wywalal AttributeError zanim cokolwiek
+        # poszlo do publikacji. Licznik prob nie rosl, alarm po dwunastu probach
+        # nigdy nie wychodzil, a oplacony artykul zostawal na dysku. Testy tego
+        # nie widzialy, bo atrapa miala inna sygnature niz prawdziwa funkcja.
+        sciezka = Path(zaleg["sciezka"])
+        if not sciezka.exists():
             print("  [zalegly] plik zniknal (%s) — kasuje znacznik" % sciezka,
                   flush=True)
             stages.zapomnij_niewystawiony()
@@ -2312,7 +2317,13 @@ def main() -> int:
     _utf8_stdout()
     _sygnal_ma_zostawic_slad()
     import call_runtime, time
-    call_runtime.RUN_DEADLINE = time.monotonic() + 3600
+    # Termin CALEGO przebiegu. Do 7 wrzesnia 2026 stalo tu sztywne 3600, przy
+    # budzecie dnia 135 minut i przerwie miedzy notkami 35-65 minut: po godzinie
+    # kazde `llm.call` padalo od razu (`deadline = min(rola, RUN_DEADLINE)`),
+    # a `DeadlineExceeded` nie jest w `stages.PRZERYWAJA`, wiec komentarze,
+    # dyskusje i restacki konczyly sie cicho, a dzien zamykal jako DONE
+    # z niewykorzystanymi slotami. Jeden budzet, jedna liczba.
+    call_runtime.RUN_DEADLINE = time.monotonic() + config.LIMIT_CZASU_PRZEBIEGU_S
     try:
         _zamek = zajmij_zamek()   # trzymany do końca procesu
     except JuzDziala as exc:

@@ -24,6 +24,7 @@ import config
 import korpus_kanalow
 import db
 import llm
+import call_runtime
 import retry_policy
 # NA GORZE, BO UZYWAJA GO DWIE FUNKCJE, A IMPORT BYL W JEDNEJ.
 #
@@ -65,7 +66,11 @@ import statystyki
 #
 # `llm.Truncated` NIE jest tu wymieniony celowo: odpowiedz ucieta na suficie
 # tokenow to awaria JEDNEGO wywolania, a budzet po niej nadal istnieje.
-PRZERYWAJA = (llm.BudgetExceeded, llm.PreflightFailed)
+# Wyjatki, ktorych blok dnia NIE MA prawa polknac: nie sa porazka jednego
+# etapu, tylko koncem przebiegu. `DeadlineExceeded` dopisany 7 wrzesnia 2026 —
+# bez niego wyczerpany czas wygladal jak „nie bylo materialu" i dzien zamykal
+# sie jako DONE z pustymi slotami.
+PRZERYWAJA = (llm.BudgetExceeded, llm.PreflightFailed, call_runtime.DeadlineExceeded)
 
 
 def _na_kanal(nazwa: str):

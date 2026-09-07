@@ -365,6 +365,13 @@ def naprawde_wyslac(wyslij: bool, co: str) -> bool:
     if wyslij and config.DRY_RUN:
         print(f"  [{co}] DRY_RUN — NIE wysylam, mimo ze proszono", flush=True)
         return False
+    # WYLACZNIK ZATRZYMUJE TAKZE ZAPISY, NIE TYLKO MODELE. `llm` sprawdzal go
+    # w preflighcie, wiec obserwacje, subskrypcje, polubienia i zalegly artykul
+    # — ktore nie wolaja modelu — wychodzily w swiat przy wlaczonym wylaczniku,
+    # mimo ze `docs/CONFIGURATION_MAP.md` nazywa go „hard stop".
+    if wyslij and config.KILL_SWITCH:
+        print(f"  [{co}] KILL_SWITCH — NIE wysylam", flush=True)
+        return False
     # WAZNOSC AKTYWACJI PRZED KAZDYM ZAPISEM NA KONCIE (audyt 2026-09-06,
     # F01/F02): odlaczony albo podmieniony preset i podglad ze srodowiska
     # nie publikuja, nie lubia i nie komentuja.
