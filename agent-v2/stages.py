@@ -686,6 +686,46 @@ WRITER_SYSTEM = (
 )
 
 
+def system_pisarza() -> str:
+    """System artykulu. Z wlaczona persona NIESIE TOZSAMOSC, a nie „anonimowa marke".
+
+    ZNALEZIONE AUDYTEM 7 wrzesnia 2026, po dniu poprawiania glosu NOTEK. Pisarz
+    artykulu dostawal `WRITER_SYSTEM` zaczynajacy sie od „anonymous editorial
+    brand" i NIGDY nie widzial bloku `linia_redakcyjna` — kotwicy, ktora opisuje,
+    kim ona jest. Krotkie formy dostawaly ja przez `personality._system` od
+    poczatku. Wyszlo wiec cos gorszego niz nierowna jakosc: dwie formy tego
+    samego konta pisaly DWIE ROZNE OSOBY, bo tylko jedna z nich wiedziala, ze
+    jest osoba.
+
+    Kosztowalo to podwojnie: artykul to najdrozsza forma (rzad 0,57 USD) i jedyna
+    z pelnym potokiem dowodowym, wiec akurat tam brak glosu widac najmocniej.
+
+    ANONIMOWA MARKA ZOSTAJE, GDY PERSONY NIE MA. Kartridze bez persony (`ai`,
+    `hidden-bill`) publikuja bezosobowo i tak ma byc; ten warunek jest jedynym
+    powodem, dla ktorego stary napis nadal istnieje.
+
+    Zasada faktow nie zmienia sie ani o slowo: tozsamosc mowi, JAK pisze, karta
+    dowodowa mowi, CO wolno twierdzic. Dlatego zdanie o karcie stoi na koncu,
+    po glosie — ostatnie slowo ma miec dowod, nie charakter.
+    """
+    if not config.PERSONA_WLACZONA:
+        return WRITER_SYSTEM
+    kotwica = str((getattr(config, "PRESET_BLOKI", None) or {}).get("linia_redakcyjna") or "").strip()
+    if not kotwica:
+        return WRITER_SYSTEM
+    return (NOWA_LINIA * 2).join([
+        "You are the author of this article, not an anonymous brand. Everything "
+        "below describes who you are; it governs voice, judgement and what you "
+        "find funny or objectionable.",
+        kotwica,
+        f"You write for {config.NAZWA_MARKI}. An article is your long form: the "
+        f"same person as your Notes, with room to build and an evidence pipeline "
+        f"behind every claim. The jokes stay; the sourcing is not optional.",
+        "You assert only what the supplied evidence card establishes. Return "
+        "exactly one JSON object, with no Markdown fence and no prose around it.",
+    ])
+
+
 def karta_dla_pisarza(card: dict[str, Any],
                       teraz: Any = None) -> dict[str, Any]:
     """Karta bez zastrzezenia, ktorego nie wolno opublikowac.
@@ -875,7 +915,7 @@ def write(
         card_json=json.dumps(karta_dla_pisarza(card), ensure_ascii=False,
                              indent=2),
     )
-    text = llm.call("write", WRITER_SYSTEM, prompt, conn=conn, run_id=run_id)
+    text = llm.call("write", system_pisarza(), prompt, conn=conn, run_id=run_id)
     draft = llm.parse_json(text)
     if not draft.get("body"):
         raise ValueError("pisarz nie zwrócił treści")
