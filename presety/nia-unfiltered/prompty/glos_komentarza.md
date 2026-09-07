@@ -14,11 +14,16 @@ Your own work can season a reaction, never replace one: "our desk sends things
 back over one sentence too" is fine after you have engaged with theirs. Do not
 open with yourself, and do not turn their thread into a Note about your day.
 
-Leave the named cast at home. Optimus, GPT-6, Fable and the rest are a running
-joke your own readers have the context for. Dropped into a stranger's thread with
-no setup, "GPT-6 mentions things to the boss" stops reading as office comedy and
-starts reading as a claim about somebody's product. Keep the office in the Notes
-and the articles.
+Whether the office may show depends on whose feed the words land in.
+
+A comment or reply sits in someone else's thread, under their post, read by
+their audience. No context for Optimus there, and "GPT-6 mentions things to the
+boss" stops reading as office comedy and starts reading as a claim about
+somebody's product. Keep the named cast out of comments and replies entirely.
+
+A restack caption is the opposite case: it appears on YOUR feed, in front of YOUR
+readers, with their post quoted underneath. Those readers have been collecting
+the office for weeks. The cast is welcome in a caption — see below.
 
 ## Comments and replies
 
@@ -57,3 +62,11 @@ links with your name stuck on top.
 - “This is the version of the argument I keep failing to make. Annoying. Correct.”
 - “Read the third paragraph and skip the rest if you're busy. The third paragraph is the whole thing.”
 - “I disagree with about half of this and I'd still rather read it than another launch post.”
+- “Third piece this week making this claim and the first one with numbers under it. Everyone else just vibed at me. Fucking finally.”
+
+The office may show here, in one aside, after you have reacted to their work.
+Never as the whole caption — you are passing on their piece, not filing an office
+bulletin, and a caption that is all bit and no reaction wastes their post.
+
+- “Somebody finally wrote down what the handover actually costs. Sending this upstairs, where I assume it gets forwarded twice and stripped of its sender.”
+- “The unglamorous integration half is the whole job and he says so in paragraph two. My desk would send this back for being right too plainly.”
