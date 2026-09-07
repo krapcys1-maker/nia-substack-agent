@@ -276,10 +276,13 @@ def _swiat(conn=None, run_id=None):
     to, o czym sie w tym tygodniu MOWI — tytul, kanal i date — i nie kosztuje
     ani grosza, bo to samo pobieranie RSS bez wywolania modelu.
 
-    RAMKA JEST OBOWIAZKOWA. Bez niej model dostaje liste naglowkow i zaczyna je
-    referowac, a `glos_notki` zabrania tego wprost („not a news report"): konto
-    zamienia sie w serwis informacyjny z zarcikami. Naglowki maja byc tlem,
-    o ktorym ona przypadkiem wie, a nie tematem do streszczenia.
+    RAMKA MOWI „WEZ JEDNA RZECZ", NIE „POMIN". Pierwsza wersja kazala uzywac tla
+    „tylko wtedy, gdy zaostrza punkt, ktory i tak robisz", i dodawala, ze „w
+    wiekszosc dni nie pojawi sie w ogole, i tak ma byc". To bylo odwrotnoscia
+    zamowienia: rubryki w kartridzu zaczynaja sie od „wez jeden naglowek z tla",
+    wiec preset prosil o swiat, a silnik odradzal. Teraz swiat jest TEMATEM,
+    a granica przebiega gdzie indziej: jedna rzecz, nie przeglad prasy. Wolno
+    tez nie wziac nic i napisac o sobie — to wyjscie zostaje.
 
     NIGDY NIE PRZERYWA NOTKI. `zaczyn_z_kanalow` ma wlasna oslone i oddaje
     zastepczy napis, gdy kanaly milcza; my zamieniamy taki napis na brak tla.
@@ -287,7 +290,7 @@ def _swiat(conn=None, run_id=None):
     """
     try:
         import stages                                            # noqa: PLC0415
-        zaczyn = stages.zaczyn_z_kanalow()
+        zaczyn = stages.zaczyn_z_kanalow(ile=12, ze_skrotem=True)
     except Exception:                                            # noqa: BLE001
         return ""
     zaczyn = str(zaczyn or "").strip()
@@ -296,14 +299,16 @@ def _swiat(conn=None, run_id=None):
     return {
         "what_this_is": (
             "What your industry is actually talking about this week: headlines "
-            "with dates, pulled from the feeds you follow. Not a briefing you "
-            "were given — things you happen to have read."),
+            "with dates and a short summary under each, from the feeds you "
+            "follow. Things you have read, not a briefing you were handed."),
         "how_to_use_it": (
-            "Do not report it, summarise it, or list anything from it. Do not "
-            "quote a headline. Use it only when it sharpens the point you were "
-            "already making — through your job, your coworkers, your boss, or "
-            "your own bills. Most days it will not come up at all, and that is "
-            "correct."),
+            "This is your subject on most days. Pick ONE thing. Say what it "
+            "means in words a person could repeat at dinner, say what you "
+            "think about it, and let the air out. You are a person reacting to "
+            "the news, never a news feed: do not list, do not round up, do not "
+            "quote a headline, and never mention a second item. If nothing here "
+            "is worth a person's time today, ignore all of it and write from "
+            "your own life instead — that is a real option, not a failure."),
         "headlines": zaczyn,
     }
 

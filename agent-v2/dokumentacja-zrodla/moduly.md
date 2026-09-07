@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-431 wierszy, 17 funkcji na poziomie modułu, 0 klas
+436 wierszy, 17 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -107,7 +107,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8355 wierszy, 147 funkcji na poziomie modułu, 0 klas
+8369 wierszy, 147 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -147,7 +147,7 @@
 | `wczytaj_zuzyte()` | — |
 | `zapisz_zuzyte(nowe)` | Pamięć zużytych ciekawostek — poza bazą, bo budżet to cztery tabele. |
 | `wybierz_cele(conn, run_id, posty)` | Które posty z kanału zasługują na komentarz. |
-| `zaczyn_z_kanalow(ile)` | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. |
+| `zaczyn_z_kanalow(ile, ze_skrotem)` | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. |
 | `_rdzen_wydarzenia(w)` *(wewn.)* | Klucz zdarzenia: posortowane slowa rdzenia, zeby ta sama premiera |
 | `_nowe_wydarzenia(wydarzenia)` *(wewn.)* | Ktore z tych zdarzen sa NOWE — czyli nie dobieralismy juz o nich materialu. |
 | `_wydarzenie_w_fakcie(w, fakt)` *(wewn.)* | Czy ten fakt jest O TYM wydarzeniu. |
@@ -731,14 +731,15 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-489 wierszy, 11 funkcji na poziomie modułu, 0 klas
+522 wierszy, 12 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `oczysc(tytul)` | Zdejmuje obietnice, zostawia zdarzenie. |
-| `_kandydaci(pozycje)` *(wewn.)* | (kanal, surowy tytul, data RRRR-MM-DD, url) -> kandydaci. Wspolne dla |
+| `_kandydaci(pozycje)` *(wewn.)* | (kanal, surowy tytul, data RRRR-MM-DD, url, skrot) -> kandydaci. Wspolne dla |
 | `przetworz(wpisy)` | (nazwa_kanalu, element Atom z YouTube) -> kandydaci. Czysta funkcja, testowalna. |
 | `_tekst(el)` *(wewn.)* | — |
+| `_skrot(*elementy)` *(wewn.)* | Pierwszy niepusty opis wpisu, bez HTML-a, przyciety do `SKROT_ZNAKOW`. |
 | `_data_rss(napis)` *(wewn.)* | `pubDate` RSS (RFC 2822) albo data ISO -> RRRR-MM-DD; pusto, gdy nie da sie. |
 | `wpisy_z_kanalu(nazwa, tresc)` | Kanal RSS 2.0 albo Atom (blog laboratorium, lista publikacji) -> kandydaci. |
 | `przeplot_zrodel(po_zrodlach)` | Po jednym wpisie z kazdego zrodla na zmiane, od najswiezszych. |
