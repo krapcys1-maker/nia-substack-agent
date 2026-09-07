@@ -48,6 +48,19 @@ class KontoNiepotwierdzone(NieToKonto):
     """Identity could not be established; do not mutate this account."""
 
 
+class OdczytNieudany(RuntimeError):
+    """Substack answered with something we cannot read; this is not a verdict.
+
+    `api_json` returns None for a Cloudflare challenge page, an HTML login page
+    and a 429 alike — none of which can be told apart from an empty result. A
+    caller that reads None as "not there" turns an outage into evidence: the host
+    gets blamed for a comment that may well be live, and the duplicate guard
+    opens in exactly the state where it matters most. Raising instead routes the
+    failure into the path that already records "don't know" without blaming
+    anyone.
+    """
+
+
 _KONTO_SPRAWDZONE = False  # retained for diagnostic compatibility, never a bypass
 _POTWIERDZENIE_KONTA = None
 
@@ -364,6 +377,13 @@ def naprawde_wyslac(wyslij: bool, co: str) -> bool:
     """
     if wyslij and config.DRY_RUN:
         print(f"  [{co}] DRY_RUN — NIE wysylam, mimo ze proszono", flush=True)
+        return False
+    # WYLACZNIK ZATRZYMUJE TAKZE ZAPISY, NIE TYLKO MODELE. `llm` sprawdzal go
+    # w preflighcie, wiec obserwacje, subskrypcje, polubienia i zalegly artykul
+    # — ktore nie wolaja modelu — wychodzily w swiat przy wlaczonym wylaczniku,
+    # mimo ze `docs/CONFIGURATION_MAP.md` nazywa go „hard stop".
+    if wyslij and config.KILL_SWITCH:
+        print(f"  [{co}] KILL_SWITCH — NIE wysylam", flush=True)
         return False
     # WAZNOSC AKTYWACJI PRZED KAZDYM ZAPISEM NA KONCIE (audyt 2026-09-06,
     # F01/F02): odlaczony albo podmieniony preset i podglad ze srodowiska
@@ -4901,20 +4921,33 @@ def juz_sie_odezwalismy(page, url: str) -> bool:
     if not moje_id:
         return True          # nie wiem, czyli nie ryzykuje
 
+    # NIEODCZYTANA ODPOWIEDZ TO NIE JEST „NIE KOMENTOWALISMY". `api_json` oddaje
+    # None tak samo dla strony wyzwania Cloudflare, HTML-a logowania i 429 — nie
+    # da sie tego odroznic od pustki. Do 7 wrzesnia 2026 kazdy z trzech odczytow
+    # nizej rzutowal taka awarie na „nie", czyli OTWIERAL zapore przed duplikatem
+    # dokladnie wtedy, gdy Substack nie odpowiada normalnie. Pierwszy odczyt
+    # w tej funkcji juz stosowal doktryne „nie wiem, czyli nie ryzykuje";
+    # pozostale trzy jej nie stosowaly.
     if "/note/c-" in url:                    # notka
         nid = url.rstrip("/").rsplit("c-", 1)[-1]
         watek = api_json(page, f"/api/v1/reader/comment/{nid}/replies"
-                               f"?comment_id={nid}") or {}
-        wszystkie = [c for g in (watek.get("commentBranches") or [])
+                               f"?comment_id={nid}")
+        if watek is None:
+            return True      # nie wiem, czyli nie ryzykuje
+        wszystkie = [c for g in ((watek or {}).get("commentBranches") or [])
                      for c in _plaskie(g)]
     else:                                    # artykul cudzy
         czyja = f"https://{urlparse(url).netloc}"
         slug = url.rstrip("/").rsplit("/", 1)[-1]
         post = api_json(page, f"/api/v1/posts/{slug}", baza=czyja)
+        if post is None:
+            return True      # nie wiem, czyli nie ryzykuje
         if not isinstance(post, dict) or not post.get("id"):
-            return False
+            return False     # odczytane i naprawde nie ma takiego posta
         dane = api_json(page, f"/api/v1/post/{post['id']}/comments"
                               "?all_comments=true", baza=czyja)
+        if dane is None:
+            return True      # nie wiem, czyli nie ryzykuje
         wszystkie = dane if isinstance(dane, list) else (dane or {}).get("comments") or []
 
     return any(isinstance(c, dict) and c.get("user_id") == moje_id
@@ -5001,13 +5034,25 @@ def potwierdz_komentarz(page, url: str, tekst: str) -> int | None:
     slug = url.rstrip("/").rsplit("/", 1)[-1]
     czyja = f"https://{urlparse(url).netloc}"        # publikacja AUTORA posta
     post = api_json(page, f"/api/v1/posts/{slug}", baza=czyja)
+    # ODCZYT, KTORY SIE NIE UDAL, NIE JEST ODPOWIEDZIA. `api_json` oddaje None
+    # tak samo dla strony wyzwania Cloudflare, HTML-a logowania i 429. Do
+    # 7 wrzesnia 2026 obie te rzeczy konczyly sie tu `return None`, czyli
+    # „Substack odpowiedzial: nie ma" — a wywolujacy ustawia wtedy
+    # `potwierdzenie_odpowiedzialo=True`, robi z porazki dowod przeciw hostowi
+    # i host idzie na czternascie dni. Zabezpieczenie z 1 wrzesnia pokrywalo
+    # tylko WYJATKI w trakcie potwierdzania; cicha nieczytelna odpowiedz szla
+    # obok niego. Podnosimy wyjatek, zeby wpasc w te sama, dzialajaca sciezke.
+    if post is None:
+        raise OdczytNieudany("nie da sie odczytac posta %s" % slug)
     if not isinstance(post, dict) or not post.get("id"):
         return None
     # Kilka prob, bo lista komentarzy — jak kanal profilu — aktualizuje sie
     # z opoznieniem, a falszywe "nie ma" rozbraja ochrone przed dublowaniem.
+    odczytane = False
     for nr in range(4):
         dane = api_json(page, f"/api/v1/post/{post['id']}/comments?all_comments=true",
                         baza=czyja)
+        odczytane = odczytane or dane is not None
         lista = dane if isinstance(dane, list) else (dane or {}).get("comments") or []
         # GALAZ ARTYKULU CZYTALA TYLKO WIERZCH. Poprawka apostrofu z 31 sierpnia
         # weszla wylacznie do galezi notek: tutaj zostalo surowe `" ".join(...)`,
@@ -5020,6 +5065,8 @@ def potwierdz_komentarz(page, url: str, tekst: str) -> int | None:
                 return k.get("id") or -1
         if nr < 3:
             page.wait_for_timeout(8000)
+    if not odczytane:
+        raise OdczytNieudany("cztery proby i zadna nie oddala listy komentarzy")
     return None
 
 def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,

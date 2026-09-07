@@ -42,9 +42,21 @@ WZORCE: dict[str, dict[str, tuple[str, str]]] = {
         # Niewypelnione pole `{tytul}` albo `<the scene>`; znacznik TODO/TBD/
         # [uzupelnic]; „to unknown", „as of n/a"; stopka z data bez daty.
         "POLE_SZABLONU": (r"\{[a-z_][a-z_ ]{1,40}\}|<[a-z][a-z_ ,]{1,40}>", "niewypelnione pole szablonu w klamrach albo nawiasach katowych"),
-        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\blorem ipsum\b|\bTODO\b|\bTBD\b", "znacznik do uzupelnienia: TODO, TBD, [uzupelnic], lorem ipsum"),
-        "NIEWYPELNIONA_WARTOSC": (r"\b(?:to|as of|since|dated|until|of)\s+(?:unknown|n/?a|none|null|tbd|undefined)\b[.,;:]?", "slowo nieznane/brak w miejscu daty albo liczby"),
+        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\[[A-Z][A-Z _]{2,40}\]|\blorem ipsum\b|\bTODO\b|\bTBD\b", "znacznik do uzupelnienia: TODO, TBD, [INSERT DATE], lorem ipsum"),
+        # Plot bloku kodu, ktory wyciekl z odpowiedzi modelu do tresci. Ksztalt,
+        # nie slowo, wiec ten sam wzorzec sluzy kazdemu jezykowi. Przechodzil.
+        "PLOT_KODU": (r"^```|\n```", "plot bloku kodu w tresci artykulu"),
+        # Placeholder musi stac W MIEJSCU WARTOSCI: na koncu zdania albo przed
+        # interpunkcja. Bez tego „a dataset of unknown origin", „second to none"
+        # i „since none of the labs published" byly twardym stopem OPLACONEGO
+        # artykulu — zwykla angielszczyzna czytana jako niewypelnione pole.
+        "NIEWYPELNIONA_WARTOSC": (r"\b(?:dated|as of|until)\s+(?:unknown|n/?a|none|null|tbd|undefined)\b|(?<!second )\b(?:to|since|of)\s+(?:unknown|n/?a|none|null|tbd|undefined)\s*(?=[.,;:)\]]|$)", "slowo nieznane/brak w miejscu daty albo liczby"),
         "STOPKA_BEZ_DATY": (r"Figures checked against sources to (?!\d{4})", "stopka o sprawdzeniu zrodel bez daty po niej"),
+        # Model tlumaczacy sie ze swoich ograniczen zamiast pisac o temacie —
+        # dokladnie to, po co ta bramka istnieje, i dokladnie to, co przez nia
+        # przechodzilo. Frazy angielskie, wiec wpis jest tylko tutaj; polski
+        # potrzebuje wlasnych, a `brakujace_wzorce` powie o tym glosno.
+        "META_MODELU": (r"\bas an? (?:ai|large )?(?:language )?model\b|\bi (?:cannot|can't|am unable to) browse\b|\bi (?:do not|don't) have access to (?:the )?(?:internet|real-?time)\b", "model pisze o swoich ograniczeniach zamiast o temacie"),
         # WZORZEC PRZENIESIONY CO DO ZNAKU ze starego `gates.py`, wyciety
         # z gita, a NIE przepisany. Pierwsza proba byla moja wlasna,
         # "rownowazna" wersja i oblala `test_podlogi_z_pamieci`: nie lapala
@@ -126,9 +138,16 @@ WZORCE: dict[str, dict[str, tuple[str, str]]] = {
     # ------------------------------------------------------------------
     "Polish": {
         "POLE_SZABLONU": (r"\{[a-z_][a-z_ ]{1,40}\}|<[a-z][a-z_ ,]{1,40}>", "niewypelnione pole szablonu w klamrach albo nawiasach katowych"),
-        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\blorem ipsum\b|\bTODO\b|\bTBD\b", "znacznik do uzupelnienia: TODO, TBD, [uzupelnic], lorem ipsum"),
+        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\[[A-Z][A-Z _]{2,40}\]|\blorem ipsum\b|\bTODO\b|\bTBD\b", "znacznik do uzupelnienia: TODO, TBD, [INSERT DATE], lorem ipsum"),
+        # Plot bloku kodu, ktory wyciekl z odpowiedzi modelu do tresci. Ksztalt,
+        # nie slowo, wiec ten sam wzorzec sluzy kazdemu jezykowi. Przechodzil.
+        "PLOT_KODU": (r"^```|\n```", "plot bloku kodu w tresci artykulu"),
         "NIEWYPELNIONA_WARTOSC": (r"\b(?:do|od|na dzie[nń]|z dnia|według stanu na|wedlug stanu na)\s+(?:nieznan[aey]|brak|n/?a|none|null|tbd)\b[.,;:]?", "slowo nieznane/brak w miejscu daty albo liczby"),
         "STOPKA_BEZ_DATY": (r"Liczby sprawdzone ze (?:źródłami|zrodlami) do (?!\d{4})", "stopka o sprawdzeniu zrodel bez daty po niej"),
+        # NIE TLUMACZENIE wzorca angielskiego. Polski model tlumaczy sie inaczej:
+        # „jako model jezykowy", „nie mam dostepu do internetu", „nie moge
+        # przegladac stron". Zaimek bywa opuszczony, wiec czasownik stoi sam.
+        "META_MODELU": (r"\bjako (?:model|sztuczna inteligencja|asystent)\b|\bmodel(?:em)? j[eę]zykowym?\b|\bnie ma[mj]? dost[eę]pu do (?:internetu|sieci|danych w czasie rzeczywistym)\b|\bnie mog[eę] przegl[aą]da[cć]\b", "model pisze o swoich ograniczeniach zamiast o temacie"),
         "ZMYSLONE_PRZEZYCIE": (
             r"\b(sta[lł]|widzia[lł]|ogl[aą]da[lł]|posz[lł]|pojecha[lł]|"
             r"jecha[lł]|chodzi[lł]|kupi[lł]|zjad[lł]|jad[lł]|pi[lł]|"

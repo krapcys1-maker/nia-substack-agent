@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-371 wierszy, 16 funkcji na poziomie modułu, 0 klas
+378 wierszy, 16 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -72,7 +72,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2949 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2978 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -106,7 +106,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8350 wierszy, 147 funkcji na poziomie modułu, 0 klas
+8355 wierszy, 147 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -260,7 +260,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5494 wierszy, 102 funkcji na poziomie modułu, 2 klas
+5541 wierszy, 102 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -369,7 +369,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1028 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1037 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -396,7 +396,7 @@
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-668 wierszy, 19 funkcji na poziomie modułu, 0 klas
+684 wierszy, 19 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -444,7 +444,7 @@
 
 ### `jezyki.py` — wzorce bramek zalezne od jezyka; przy jezyku bez wzorcow bramka jest JAWNIE wylaczona zamiast cicho nic nie lapac
 
-323 wierszy, 5 funkcji na poziomie modułu, 0 klas
+342 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -759,7 +759,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1596 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1597 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

@@ -638,6 +638,12 @@ _POLE_SZABLONU = jezyki.wzorzec("POLE_SZABLONU", config.ARTICLE_LANGUAGE)
 _ZNACZNIK_SZABLONU = jezyki.wzorzec("ZNACZNIK_SZABLONU", config.ARTICLE_LANGUAGE)
 _NIEWYPELNIONA_WARTOSC = jezyki.wzorzec("NIEWYPELNIONA_WARTOSC", config.ARTICLE_LANGUAGE)
 _STOPKA_BEZ_DATY = jezyki.wzorzec("STOPKA_BEZ_DATY", config.ARTICLE_LANGUAGE)
+# Dwa artefakty dopisane 7 wrzesnia 2026: model tlumaczacy sie ze swoich
+# ograniczen i plot bloku kodu w tresci. Oba przechodzily przez bramke, ktora
+# jednoczesnie zatrzymywala zwykle zdania. `wzorzec` oddaje None dla jezyka bez
+# wpisu i mowi o tym glosno, wiec polski nie dostaje po cichu pustej bramki.
+_META_MODELU = jezyki.wzorzec("META_MODELU", config.ARTICLE_LANGUAGE)
+_PLOT_KODU = jezyki.wzorzec("PLOT_KODU", config.ARTICLE_LANGUAGE)
 
 
 def artefakty_w_tekscie(body: str) -> list[dict[str, str]]:
@@ -651,14 +657,24 @@ def artefakty_w_tekscie(body: str) -> list[dict[str, str]]:
     for wz, nazwa in ((_POLE_SZABLONU, "niewypelnione pole szablonu"),
                       (_ZNACZNIK_SZABLONU, "znacznik szablonu"),
                       (_NIEWYPELNIONA_WARTOSC, "wartosc nieznana zamiast daty lub liczby"),
-                      (_STOPKA_BEZ_DATY, "stopka z data bez daty")):
+                      (_STOPKA_BEZ_DATY, "stopka z data bez daty"),
+                      (_META_MODELU, "model pisze o sobie zamiast o temacie"),
+                      (_PLOT_KODU, "plot bloku kodu w tresci")):
+        if wz is None:
+            continue
         for m in wz.finditer(tekst):
             od = max(0, m.start() - 40)
             wyniki.append({"gate": "ARTEFAKT_SZABLONU",
                            "detail": "%s: …%s…" % (nazwa, " ".join(tekst[od:m.end() + 40].split()))})
     niski = tekst.lower()
+    # GRANICE SLOW, NIE PODCIAG. Do 7 wrzesnia 2026 szlo to przez `find`, wiec
+    # „as instructed" lapalo „was instructed", „i worked from" lapalo „OpenAI
+    # worked from", a „i cannot verify" lapalo „AI cannot verify". Kazde z tych
+    # zdan to zwykla angielszczyzna, a trafienie tutaj zatrzymuje OPLACONY
+    # artykul bez ponowienia i pali slot notki.
     for fraza in _WARSZTAT:
-        i = niski.find(fraza)
+        trafienie = re.search(r"\b%s\b" % re.escape(fraza), niski)
+        i = trafienie.start() if trafienie else -1
         if i >= 0:
             od = max(0, i - 40)
             wyniki.append({"gate": "WARSZTAT",

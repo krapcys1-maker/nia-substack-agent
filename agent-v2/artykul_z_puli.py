@@ -365,7 +365,8 @@ def main() -> int:
     # `run.main` i `preset.wymagaj_aktywnego`.
     import run as runner
     import call_runtime, time
-    call_runtime.RUN_DEADLINE = time.monotonic() + 3600
+    # Ten sam budzet co rutyna dnia — patrz `run.main`.
+    call_runtime.RUN_DEADLINE = time.monotonic() + config.LIMIT_CZASU_PRZEBIEGU_S
     try:
         _lock = runner.zajmij_zamek()
     except runner.JuzDziala as exc:

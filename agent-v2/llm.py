@@ -653,6 +653,15 @@ def przejsciowy(exc: BaseException) -> bool:
         return False
     if isinstance(exc, (httpx.TimeoutException, httpx.TransportError)):
         return True
+    # WYJATKI SDK ANTHROPICA NIE SA WYJATKAMI HTTPX i nie niosa `status_code`,
+    # wiec do 7 wrzesnia 2026 wpadaly nizej w galaz „nierozpoznany, czyli
+    # trwaly". Skutek: jedno zerwane polaczenie w trakcie pisania artykulu
+    # przerzucalo go na pisarza zapasowego bez sladu, ze to byla awaria
+    # transportu, a nie decyzja modelu; notka po prostu tracila slot.
+    # `APITimeoutError` dziedziczy po `APIConnectionError`, ale wymieniam oba,
+    # bo ta hierarchia jest cudza i moze sie zmienic.
+    if isinstance(exc, (anthropic.APITimeoutError, anthropic.APIConnectionError)):
+        return True
     kod = getattr(exc, "status_code", None) or getattr(
         getattr(exc, "response", None), "status_code", None)
     if isinstance(kod, int):

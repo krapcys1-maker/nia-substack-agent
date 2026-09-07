@@ -192,7 +192,15 @@ def short_form(conn, run_id, kind, material):
     # czterdziestu slowach nie da sie niczego rozlozyc na czynniki, wiec model
     # sciskal wypowiedz do szkieletu i doklejal puente na koncu. Dlugosc ma
     # wybrac autorka: jedno zdanie bywa pelna odpowiedzia, akapit tez.
-    maximum = 220 if kind == "note" else (180 if kind == "restack" else 150)
+    # ZAPORA PRZED URWANIEM SIE, NIE LIMIT DLUGOSCI. Sufit 220/180/150 z
+    # `_valid` ODRZUCAL dluzszy tekst — czyli oplacona, skonczona mysl szla do
+    # kosza — a instrukcja mowila o nim wprost, wiec autorka sciskala mysl, zeby
+    # sie zmiescic, i zamiast mysli wychodzil jej szkielet. To bylo widac na
+    # zywych podpisach: dokladnie 40 slow, teza streszczona, puenta doklejona.
+    # Numer nie jest juz zadna trescia redakcyjna: sluzy tylko temu, zeby model,
+    # ktory sie zapetlil, nie wystawil eseju. Dlugosc wybiera autorka i nikt jej
+    # nie tnie.
+    maximum = 600
     text = json.dumps(material, ensure_ascii=False)
     if _injection(text):
         return {}
@@ -202,9 +210,8 @@ def short_form(conn, run_id, kind, material):
     instruction = (
         f"Write one {kind}. Choose your own length: one line can be a complete "
         "answer and so can a short paragraph. Stop when the thought is finished, "
-        "not at a word count. Do not pad, and do not compress a real point into a "
-        "punchline to save room. Hard ceiling {maximum} words — over it, nothing "
-        "publishes and the call is wasted. "
+        "not at a word count. Do not pad, and never compress a real point to make "
+        "it shorter — a squeezed thought is worse than a long one. "
         "For interactions, refer to a specific thing in the supplied text. "
         "If there is nothing worth saying, return an empty text. No obligatory "
         "compliment, engagement question, hashtag or repo plug. Vary rhythm. "
