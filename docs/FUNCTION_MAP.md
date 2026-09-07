@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 32 |
-| functions and methods | 728 |
+| functions and methods | 729 |
 | functions that call a paid model | 27 |
 | functions that touch the browser | 67 |
 | functions that touch the database | 48 |
@@ -58,7 +58,7 @@ For paid calls the verdict comes from
 | [`llm.py`](#agent-v2llm-py) | 24 | 0 | 0 | 4 | Provider calls with per-attempt accounting, reservations and deadlines. |
 | [`migracja_okno_promocji.py`](#agent-v2migracja-okno-promocji-py) | 2 | 0 | 0 | 0 | Jednorazowe uzupelnienie pola `dodane` w kolejce promocji. |
 | [`norma.py`](#agent-v2norma-py) | 16 | 0 | 0 | 1 | Ile agent naprawde zrobil, dzien po dniu, wobec normy. |
-| [`personality.py`](#agent-v2personality-py) | 17 | 1 | 0 | 0 | Opt-in conversational short forms. |
+| [`personality.py`](#agent-v2personality-py) | 18 | 1 | 0 | 0 | Opt-in conversational short forms. |
 | [`preset.py`](#agent-v2preset-py) | 39 | 0 | 0 | 0 | Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem. |
 | [`raport_statystyk.py`](#agent-v2raport-statystyk-py) | 5 | 0 | 0 | 0 | Co przyniosla kazda notka, restack i artykul — do czytania przez czlowieka. |
 | [`result_cache.py`](#agent-v2result-cache-py) | 5 | 0 | 0 | 0 | Content-addressed cache. |
@@ -741,7 +741,7 @@ Ile agent naprawde zrobil, dzien po dniu, wobec normy.
 
 Opt-in conversational short forms.
 
-17 funkcji.
+18 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -756,12 +756,13 @@ Opt-in conversational short forms.
 | 160 | `_system(kind)` | — | — | `personality.short_form` |
 | 177 | `_valid(text, maximum)` | — | — | `personality.short_form` |
 | 187 | `short_form(conn, run_id, kind, material)` | **$**((zmienna)) | One paid decision: respond, or remain silent. | `personality.interaction`, `personality.notes` |
-| 260 | `notes(conn, run_id, ile, od)` | — | Choose a subject from the persona, not the research bank. | `stages.notki_dnia` |
-| 304 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
-| 316 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
-| 326 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
-| 348 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu` |
-| 356 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `run.dzien`, `run.dzien.notki` |
+| 263 | `_swiat(conn, run_id)` | — | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. | `personality.notes` |
+| 311 | `notes(conn, run_id, ile, od)` | — | Choose a subject from the persona, not the research bank. | `stages.notki_dnia` |
+| 357 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
+| 369 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
+| 379 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
+| 401 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu` |
+| 409 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `run.dzien`, `run.dzien.notki` |
 
 ---
 
@@ -971,7 +972,7 @@ Etapy lancucha, po kolei, w pamieci.
 | 1459 | `wczytaj_zuzyte()` | — | — | `alarm.powtorki`, `stages.zapisz_zuzyte`, `stages.znajdz_ciekawostki` |
 | 1470 | `zapisz_zuzyte(nowe)` | — | Pamięć zużytych ciekawostek — poza bazą, bo budżet to cztery tabele. | `run.dzien`, `run.dzien.notki` |
 | 1487 | `wybierz_cele(conn, run_id, posty)` | **$**(cele) | Które posty z kanału zasługują na komentarz. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` |
-| 1555 | `zaczyn_z_kanalow(ile)` | — | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. | `stages.notki_dnia`, `stages.scout`, `stages.znajdz_ciekawostki` |
+| 1555 | `zaczyn_z_kanalow(ile)` | — | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. | `personality._swiat`, `stages.notki_dnia`, `stages.scout`, `stages.znajdz_ciekawostki` |
 | 1580 | `_rdzen_wydarzenia(w)` | — | Klucz zdarzenia: posortowane slowa rdzenia, zeby ta sama premiera opisana raz jako „acme, 5.3", a raz „5.3, acme" byla JEDNYM zdarzeniem. | `stages._nowe_wydarzenia`, `stages._zapamietaj_wydarzenia` |
 | 1587 | `_nowe_wydarzenia(wydarzenia)` | — | Ktore z tych zdarzen sa NOWE — czyli nie dobieralismy juz o nich materialu. | `stages.znajdz_ciekawostki` |
 | 1606 | `_nowe_wydarzenia._obsluzone_od(wpis)` | — | — | `stages._nowe_wydarzenia` |
