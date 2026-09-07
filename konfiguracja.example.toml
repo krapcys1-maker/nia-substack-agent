@@ -286,11 +286,18 @@ notki_dziennie = 5
 # powstaje, `artykul_z_puli.py` odmawia, promocja nie ma czego promowac.
 # Dni wybiera `harmonogram.dni_artykulu`.
 artykuly_tygodniowo = 1
+# For monthly mode set weekly to 0, monthly to 2, and days to [8, 22].
+artykuly_miesiecznie = 0
 
 # Widelki [od, do]; `[0, 0]` wylacza dane dzialanie.
 komentarze_dziennie = [15, 23]
 lajki_dziennie = [10, 16]
 restacki_dziennie = [1, 2]
+# Optional daily overrides take precedence over monthly ranges.
+# Delete these daily fields to use the monthly ranges instead.
+follow_dziennie = 0
+subskrypcje_dziennie = 0
+subskrypcje_max_odbiorcow = 1000
 follow_miesiecznie = [10, 16]
 subskrypcje_miesiecznie = [12, 20]
 
@@ -310,6 +317,7 @@ godziny_przebiegow_utc = ["11:20", "17:00", "19:20", "21:30", "23:40"]
 # Dni artykulu (Mon..Sun) — tyle, ile `wolumeny.artykuly_tygodniowo`.
 # Mozna pominac: wtedy dni dobiera silnik (1 -> Tue, 2 -> Tue i Fri, ...).
 dni_artykulu = ["Tue"]
+dni_miesiaca_artykulu = []
 
 # O ktorej (UTC) startuje przebieg artykulu w te dni.
 godzina_artykulu_utc = "14:00"
@@ -367,3 +375,9 @@ miks_notek = ["CIEKAWOSTKA", "CIEKAWOSTKA", "DYSKUSJA", "SPROSTOWANIE", "MYSL"]
 # wyjatku, tez ma rytm maszyny.
 ciche_dni_wlaczone = true
 cichy_dzien_na_ile = 8
+
+# Opt-in conversational short forms. Professional defaults keep this off.
+[osobowosc]
+wlaczona = false
+przejecie = false
+tematy = ["a working day in the configured field", "an observation about the configured project"]

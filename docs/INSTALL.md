@@ -197,26 +197,24 @@ Do not treat a successful prompt preview as a completed publication test.
 
 ## 7. Schedule on your computer
 
-On Windows, Task Scheduler must currently be configured manually. For a daily
-workflow task set:
+On Windows, generate tasks from the active preset using the installed environment:
 
-| Task Scheduler field | Value |
-|---|---|
-| Program | Absolute path to this clone's `.venv\Scripts\python.exe` |
-| Arguments | `agent-v2/run.py --dzien --wyslij` |
-| Start in | Absolute path to the repository root |
-| Trigger | Each time in the preset's `harmonogram.godziny_przebiegow_utc`, converted to the scheduler's timezone |
-| Account/session | The operating-system user whose dedicated Chrome profile is logged in |
-| Existing task | Do not start another instance of the same task |
+```powershell
+.\.venv\Scripts\python.exe narzedzia\schedule_windows.py
+.\.venv\Scripts\python.exe narzedzia\schedule_windows.py --install
+```
 
-Create the weekly article task using `agent-v2/artykul_z_puli.py --wyslij`
-and the preset's article days/time. An optional health task runs
-`agent-v2/alarm.py`. Disable the article task when the preset has zero articles.
+The first command only writes XML for review. The second registers tasks that
+**publish autonomously** using the selected account. The daily times and weekly
+or monthly article dates come from the preset. The instance lock prevents
+simultaneous runs. The account and budget guards still apply.
 
-For interactive Chrome, use a logged-in desktop session. The computer must be
-awake, online and able to reach Chrome when the task starts. The repository does
-not yet generate Windows tasks, handle timezone conversion or manage wake-up
-settings. Linux desktop users can use the systemd setup below.
+The computer must be awake and your user signed in. No Windows password is stored.
+Task names are `NIA-<instance>-daily` and `NIA-<instance>-article`; disable them in
+Task Scheduler to stop. Reinstall after changing the schedule or checkout path.
+Tasks refuse to run if a different instance is active. Logs are saved in the
+instance's `logi/` directory. Missed runs are not replayed automatically on wake-up.
+For unattended operation while your PC is off, use an always-on Linux server.
 
 ## 8. Schedule on a Linux server
 

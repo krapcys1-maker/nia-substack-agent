@@ -381,7 +381,7 @@ def main() -> int:
     # reczny. Preset z zerem artykulow na tydzien nie pisze nigdy; preset
     # z innym dniem nie pisze dzis — chyba ze czlowiek powie `--wymus`.
     if config.PRESET is not None and "--wymus" not in sys.argv:
-        if config.ARTYKULY_TYGODNIOWO <= 0:
+        if config.ARTYKULY_TYGODNIOWO <= 0 and config.ARTYKULY_MIESIECZNIE <= 0:
             print(">> preset %r ma 0 artykulow na tydzien — nie pisze. "
                   "(`--wymus` omija plan)" % config.PRESET.nazwa, flush=True)
             return 1
@@ -1479,6 +1479,8 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     # i pada PRZED okladka, zeby nie placic za obraz do tekstu, ktory nie wyjdzie.
     artefakty = gates.artefakty_w_tekscie(
         "%s\n\n%s" % (draft.get("title", ""), draft["body"]))
+    if config.PERSONA_WLACZONA:
+        artefakty = [a for a in artefakty if a['gate'] != 'WARSZTAT']
     if artefakty:
         print()
         print("-- ZATRZYMANY: artefakty w tekscie --", flush=True)

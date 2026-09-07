@@ -136,3 +136,10 @@ i logowania; generator timerów tego nie robi.
 
 Szczegóły, priorytety i kryteria odbioru:
 [raport dystrybucji](../analizy/2026-09-06-dystrybucja-github/RAPORT.md).
+
+## NIA Unfiltered
+
+Trzeci preset to agentka pisząca po angielsku z humorem i okazjonalnym przekleństwem.
+Krótkie formy nie uruchamiają researchu ani fact-checkera; artykuły zachowują źródła i weryfikację.
+Plan: 2 artykuły miesięcznie (8. i 22.), 2 notki dziennie, prywatna pamięć po publikacji.
+[Instrukcja, modele, limity kosztów i harmonogram Windows](../presety/nia-unfiltered/README.md).

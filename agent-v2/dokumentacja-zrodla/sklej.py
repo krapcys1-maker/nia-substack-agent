@@ -46,6 +46,7 @@ NL = "\n"
 # znaczenie: od rozdzielnika w dol, tak jak czyta sie system.
 MODULY = [
     ("browser_reader.py", "odczyt zrodel w osobnym procesie z ograniczeniem czasu i zachowaniem wynikow"),
+    ("personality.py", "opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje"),
     ("call_runtime.py", "terminy operacji i zuzycie; worker nie zapisuje do bazy"),
     ("result_cache.py", "cache zalezne od tresci i czasu waznosci"),
     ("retry_policy.py", "Retry-After i trwale przerwy przed kolejnym zapytaniem do serwera"),

@@ -11,9 +11,32 @@
 | `read_pages(urls)` | — |
 | `_worker(input_path, output)` *(wewn.)* | — |
 
+### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
+
+333 wierszy, 16 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `_injection(text)` *(wewn.)* | Reject explicit role replacement; ordinary links in source posts are data. |
+| `_date(value)` *(wewn.)* | — |
+| `_rows(name)` *(wewn.)* | Read bounded local history; an incomplete final JSONL line is harmless. |
+| `memory()` | — |
+| `memory_state()` | Keep milestones after individual Notes leave the bounded prompt memory. |
+| `_count(value)` *(wewn.)* | — |
+| `statistics(now)` | Publishable facts only: net growth and cumulative measured Note views. |
+| `_system(kind)` *(wewn.)* | — |
+| `_valid(text, maximum)` *(wewn.)* | — |
+| `short_form(conn, run_id, kind, material)` | One paid decision: respond, or remain silent. No paid repair attempts. |
+| `notes(conn, run_id, ile, od)` | Choose a subject from the persona, not the research bank. |
+| `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
+| `targets(posts)` | Free topical prefilter. The writing call makes the actual reply decision. |
+| `community_candidates()` | Relevant new people need not have received a comment first. No LLM call. |
+| `small_account(profile, maximum)` | Unknown size is not evidence of a small account. No paid research. |
+| `remember(note, publication)` | Commit once, only after the browser confirms a new publication. |
+
 ### `call_runtime.py` — terminy operacji i zuzycie; worker nie zapisuje do bazy
 
-129 wierszy, 6 funkcji na poziomie modułu, 2 klas
+130 wierszy, 6 funkcji na poziomie modułu, 2 klas
 
 | funkcja | co robi |
 |---|---|
@@ -49,7 +72,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2931 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2949 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -83,7 +106,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8330 wierszy, 147 funkcji na poziomie modułu, 0 klas
+8350 wierszy, 147 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -237,7 +260,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5478 wierszy, 102 funkcji na poziomie modułu, 2 klas
+5488 wierszy, 102 funkcji na poziomie modułu, 2 klas
 
 | funkcja | co robi |
 |---|---|
@@ -346,7 +369,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1019 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1027 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -361,7 +384,7 @@
 | `_read_search_sources(urls)` *(wewn.)* | Recover evidence from already-found public URLs, without another search. |
 | `_call_deepseek(purpose, system, user)` *(wewn.)* | — |
 | `przejsciowy(exc)` | Czy ten błąd ma szansę minąć sam. |
-| `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no)` *(wewn.)* | — |
+| `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` *(wewn.)* | — |
 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` *(wewn.)* | — |
 | `image_output_price()` | — |
 | `call(purpose, system, user)` | — |
@@ -433,7 +456,7 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-995 wierszy, 44 funkcji na poziomie modułu, 1 klas
+1020 wierszy, 45 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -455,6 +478,7 @@
 | `_lista_godzin_utc(v, gdzie)` *(wewn.)* | Niepusta lista godzin `HH:MM` bez powtorzen, w kolejnosci doby. |
 | `_dzien_tygodnia(v, gdzie)` *(wewn.)* | — |
 | `_lista_dni_tygodnia(v, gdzie)` *(wewn.)* | Lista dni tygodnia; pusta znaczy „bez artykulow". |
+| `_lista_dni_miesiaca(v, gdzie)` *(wewn.)* | Days 1..28 exist in every month; duplicates are configuration errors. |
 | `_sciezka(v, gdzie)` *(wewn.)* | Sciezka do pliku wzgledem korzenia repozytorium (albo bezwzgledna). |
 | `_sciezka_moze_pusta(v, gdzie)` *(wewn.)* | — |
 | `_slownik_list(v, gdzie)` *(wewn.)* | Tablica `klucz = [napisy]`. Pusta lista jest DOZWOLONA i coś znaczy. |
@@ -477,14 +501,14 @@
 | `_plan(dane, cfg)` *(wewn.)* | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. |
 | `zastosuj(dane, cfg)` | Wklada wartosci do modulu `config`. Oddaje liste tego, co przestawiono. |
 | `on_calendar_agenta(godziny)` | Zegar rutyny dnia: jedna linia na godzine UTC. |
-| `on_calendar_artykulu(dni, godzina, ile)` | Zegar artykulu; pusta lista, gdy artykulow nie ma. |
+| `on_calendar_artykulu(dni, godzina, ile, dni_miesiaca)` | Zegar artykulu; pusta lista, gdy artykulow nie ma. |
 | `_toml_napis(v)` *(wewn.)* | Napis w cudzyslowie z ucieczkami. Nowa linia w niszy dawala plik, ktorego |
 | `toml_wartosc(v)` | — |
 | `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | Pola plaskie -> tekst TOML. `sekcje_dodatkowe` (np. `[preset]`) ida na poczatek. |
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1099 wierszy, 39 funkcji na poziomie modułu, 4 klas
+1101 wierszy, 39 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -611,7 +635,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3532 wierszy, 42 funkcji na poziomie modułu, 0 klas
+3541 wierszy, 42 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -734,7 +758,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1594 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1596 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

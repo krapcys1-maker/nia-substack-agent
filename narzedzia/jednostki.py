@@ -148,7 +148,8 @@ def zegar_z_konfiguracji(nazwa_zegara: str, tresc: str, uslugi: dict[str, str],
         linie = konfiguracja.on_calendar_agenta(cfg.GODZINY_PRZEBIEGOW_UTC)
     elif "artykul_z_puli.py" in start:
         linie = konfiguracja.on_calendar_artykulu(
-            cfg.DNI_ARTYKULU, cfg.GODZINA_ARTYKULU_UTC, cfg.ARTYKULY_TYGODNIOWO)
+            cfg.DNI_ARTYKULU, cfg.GODZINA_ARTYKULU_UTC, cfg.ARTYKULY_TYGODNIOWO,
+            getattr(cfg, "DNI_MIESIACA_ARTYKULU", ()))
     else:
         return tresc                     # zegar, ktorego preset nie opisuje (alarm)
     if not linie:

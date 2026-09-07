@@ -163,6 +163,8 @@ def cmd_pokaz(args) -> int:
     print("  artykuly na tydzien: %d   dni: %s   godzina UTC: %s" % (
         proba.ARTYKULY_TYGODNIOWO, ", ".join(proba.DNI_ARTYKULU) or "-",
         proba.GODZINA_ARTYKULU_UTC))
+    print("  artykuly na miesiac: %d   dni miesiaca: %s" % (proba.ARTYKULY_MIESIECZNIE, proba.DNI_MIESIACA_ARTYKULU))
+    print("  obserwacje/dobe: %s   subskrypcje/dobe: %s (None = zakres miesieczny)" % (proba.FOLLOW_DZIENNIE, proba.SUBSKRYPCJE_DZIENNIE))
     print("  przebiegi na dobe: %d   zegar UTC: %s" % (
         proba.PRZEBIEGOW_DZIENNIE, ", ".join(proba.GODZINY_PRZEBIEGOW_UTC)))
     print("  komentarze %s  polubienia %s  restacki %s  obserwacje/mies %s  subskrypcje/mies %s"

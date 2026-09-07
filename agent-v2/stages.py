@@ -1016,6 +1016,9 @@ def reply_to(
     evidence: dict[str, Any],
 ) -> dict[str, Any]:
     """Odpowiedź na komentarz pod własną treścią — do szuflady."""
+    if config.PERSONA_WLACZONA:
+        import personality
+        return personality.interaction(conn, run_id, "reply", comment)
     prompt = _prompt(
         "odpowiedz.md",
         cel_slow=config.losowa_dlugosc(),
@@ -1285,8 +1288,8 @@ def budzet_dnia(conn: sqlite3.Connection) -> dict[str, int]:
         "notki": len(config.NOTE_MIX_OTHER_DAY),
         "lajki": losuj(config.LAJKI_DZIENNIE),
         "komentarze": losuj(config.KOMENTARZE_DZIENNIE),
-        "follow": z_miesiaca(config.FOLLOW_MIESIECZNIE),
-        "subskrypcje": z_miesiaca(config.SUBSKRYPCJE_MIESIECZNIE),
+        "follow": config.FOLLOW_DZIENNIE if config.FOLLOW_DZIENNIE is not None else z_miesiaca(config.FOLLOW_MIESIECZNIE),
+        "subskrypcje": config.SUBSKRYPCJE_DZIENNIE if config.SUBSKRYPCJE_DZIENNIE is not None else z_miesiaca(config.SUBSKRYPCJE_MIESIECZNIE),
         "restacki": losuj(config.RESTACK_DZIENNIE),
     }
     print(f"  [budżet dnia{' — rozbieg' if rozbieg else ''}] "
@@ -1486,6 +1489,9 @@ def wybierz_cele(
     agent komentowałby wszystko, czyli zachowywałby się jak farma komentarzy,
     a nie jak ktoś, kto czyta.
     """
+    if config.PERSONA_WLACZONA:
+        import personality
+        return personality.targets(posty)
     opis = "\n\n".join(
         f"[{i}] {p.get('tytul', '')}\n"
         f"    publikacja: {p.get('pub', '')}\n"
@@ -3813,6 +3819,9 @@ def notki_dnia(
     fakt z puli. Jedna notka dostaje wiec jeden fakt i zestaw dnia rozni sie
     z konstrukcji, a nie z nadziei.
     """
+    if config.PERSONA_WLACZONA:
+        import personality
+        return personality.notes(conn, run_id, ile=ile, od=od)
     typy = list(config.NOTE_MIX_ARTICLE_DAY if dzien_artykulu
                 else config.NOTE_MIX_OTHER_DAY)
     # Przebieg bierze tylko czesc dziennej normy, a robilismy pelne piec notek
@@ -4142,6 +4151,9 @@ def ocen_restack(
     Milczenie jest pelnoprawnym wynikiem i nie jest porazka — dlatego decyzja
     modelu ma dwa stany, a kod nie probuje jej naginac w strone dzialania.
     """
+    if config.PERSONA_WLACZONA:
+        import personality
+        return personality.interaction(conn, run_id, "restack", notka)
     tekst = (notka.get("tekst") or notka.get("body") or "").strip()
     if not tekst:
         return {"restack": False, "reason": "pusta notka"}
@@ -4415,6 +4427,11 @@ def przygotuj_artykul_do_publikacji(conn, run_id, draft, card, review_report):
             return draft, audit
         length = len(body.split())
         def guard(text):
+            if config.PERSONA_WLACZONA:
+                import personality
+                if personality._injection(text):
+                    return 'instruction leakage'
+                return '; '.join(i['detail'] for i in gates.artefakty_w_tekscie(text) if i['gate'] != 'WARSZTAT')
             injected = _zapora_notki(text)
             if injected:
                 return injected
@@ -4797,6 +4814,9 @@ def comment_on(
     jest napisać TEN komentarz. Cisza została w pięciu wyliczonych przypadkach
     (`POWODY_CISZY`), a nie jako wyjście dla „nie mam nic do dodania".
     """
+    if config.PERSONA_WLACZONA:
+        import personality
+        return personality.interaction(conn, run_id, "comment", post)
     # Domyślnie model pisze z WŁASNEJ WIEDZY, bez szukania na zapas.
     #
     # Zdjęte po uwadze właściciela i miał rację: były tu dwa zabezpieczenia, a

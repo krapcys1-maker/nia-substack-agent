@@ -325,6 +325,15 @@ def _lista_dni_tygodnia(v: Any, gdzie: str) -> tuple[str, ...]:
     return tuple(d for d in DNI_TYGODNIA if d in dni)
 
 
+def _lista_dni_miesiaca(v: Any, gdzie: str) -> tuple[int, ...]:
+    """Days 1..28 exist in every month; duplicates are configuration errors."""
+    if not isinstance(v, (list, tuple)) or any(type(d) is not int or not 1 <= d <= 28 for d in v):
+        raise BledKonfiguracji(gdzie + ": podaj liste dni miesiaca od 1 do 28")
+    if len(set(v)) != len(v):
+        raise BledKonfiguracji(gdzie + ": powtorzony dzien miesiaca")
+    return tuple(sorted(v))
+
+
 def _sciezka(v: Any, gdzie: str) -> str:
     """Sciezka do pliku wzgledem korzenia repozytorium (albo bezwzgledna).
 
@@ -467,6 +476,9 @@ POLA: dict[str, tuple[str | None, Any]] = {
     # komentarza i odpowiedzi jako `{styl_opis}`. Pusty znaczy „bez uwag
     # dodatkowych", a NIE „bez stylu": profile i korpus dzialaja jak dotad.
     "styl.opis": ("STYL_OPIS", _napis_moze_pusty),
+    "osobowosc.wlaczona": ("PERSONA_WLACZONA", _prawda),
+    "osobowosc.przejecie": ("PERSONA_PRZEJECIE", _prawda),
+    "osobowosc.tematy": ("PERSONA_TEMATY", _lista_napisow),
     # Sciezki wzgledem korzenia repozytorium. Rozwiazywane w `zastosuj`.
     "styl.profil_pozytywny": (None, _sciezka),
     "styl.profil_negatywny": (None, _sciezka),
@@ -496,6 +508,10 @@ POLA: dict[str, tuple[str | None, Any]] = {
     # `artykul_z_puli`). Dni wybiera `harmonogram.dni_artykulu`, a gdy ich nie
     # podano — `DNI_ARTYKULU_DOMYSLNE`.
     "wolumeny.artykuly_tygodniowo": (None, _calkowita_nieujemna),
+    "wolumeny.artykuly_miesiecznie": ("ARTYKULY_MIESIECZNIE", _calkowita_nieujemna),
+    "wolumeny.follow_dziennie": ("FOLLOW_DZIENNIE", _calkowita_nieujemna),
+    "wolumeny.subskrypcje_dziennie": ("SUBSKRYPCJE_DZIENNIE", _calkowita_nieujemna),
+    "wolumeny.subskrypcje_max_odbiorcow": ("SUBSKRYPCJE_MAX_ODBIORCOW", _calkowita_dodatnia),
     "wolumeny.komentarze_dziennie": ("KOMENTARZE_DZIENNIE", _widelki),
     "wolumeny.lajki_dziennie": ("LAJKI_DZIENNIE", _widelki),
     "wolumeny.restacki_dziennie": ("RESTACK_DZIENNIE", _widelki),
@@ -512,6 +528,7 @@ POLA: dict[str, tuple[str | None, Any]] = {
     # powstaja z TYCH pol — `config.zegar_agenta_on_calendar()`.
     "harmonogram.godziny_przebiegow_utc": (None, _lista_godzin_utc),
     "harmonogram.dni_artykulu": (None, _lista_dni_tygodnia),
+    "harmonogram.dni_miesiaca_artykulu": ("DNI_MIESIACA_ARTYKULU", _lista_dni_miesiaca),
     "harmonogram.godzina_artykulu_utc": ("GODZINA_ARTYKULU_UTC", _godzina_utc),
 
     # --- pieniadze -----------------------------------------------------
@@ -542,7 +559,7 @@ POLA: dict[str, tuple[str | None, Any]] = {
 }
 
 # Sekcje w kolejnosci, w jakiej czlowiek je czyta — do zapisu presetu.
-KOLEJNOSC_SEKCJI = ("konto", "temat", "stan_dziedziny", "zrodla", "styl",
+KOLEJNOSC_SEKCJI = ("konto", "temat", "stan_dziedziny", "zrodla", "styl", "osobowosc",
                     "modele", "wolumeny", "harmonogram", "publikowanie",
                     "pieniadze")
 
@@ -773,8 +790,14 @@ def _plan(dane: dict[str, Any], cfg: Any) -> tuple[dict[str, Any], dict[str, dic
         ustaw["DNI_ARTYKULU"] = DNI_ARTYKULU_DOMYSLNE[artykulow_tyg]
         meldunki.append("wolumeny.artykuly_tygodniowo -> ARTYKULY_TYGODNIOWO "
                         "(dni: %s)" % (", ".join(ustaw["DNI_ARTYKULU"]) or "zadne"))
-    artykuly_w_ogole = ustaw.get("ARTYKULY_TYGODNIOWO",
-                                 getattr(cfg, "ARTYKULY_TYGODNIOWO", 1)) > 0
+    tyg = ustaw.get("ARTYKULY_TYGODNIOWO", getattr(cfg, "ARTYKULY_TYGODNIOWO", 1))
+    mies = ustaw.get("ARTYKULY_MIESIECZNIE", getattr(cfg, "ARTYKULY_MIESIECZNIE", 0))
+    dni_mies = ustaw.get("DNI_MIESIACA_ARTYKULU", getattr(cfg, "DNI_MIESIACA_ARTYKULU", ()))
+    if mies != len(dni_mies):
+        raise BledKonfiguracji("artykuly_miesiecznie musi zgadzac sie z dni_miesiaca_artykulu")
+    if mies and tyg:
+        raise BledKonfiguracji("wybierz harmonogram miesieczny albo tygodniowy; drugi ustaw na 0")
+    artykuly_w_ogole = tyg > 0 or mies > 0
 
     if miks is not None or ile_notek is not None:
         typy = tuple(miks) if miks is not None else tuple(
@@ -921,8 +944,10 @@ def on_calendar_agenta(godziny) -> list[str]:
     return ["*-*-* %s:00" % g for g in (godziny or ())]
 
 
-def on_calendar_artykulu(dni, godzina: str, ile: int) -> list[str]:
+def on_calendar_artykulu(dni, godzina: str, ile: int, dni_miesiaca=()) -> list[str]:
     """Zegar artykulu; pusta lista, gdy artykulow nie ma."""
+    if dni_miesiaca:
+        return ["*-*-%s %s:00" % (",".join(str(d) for d in dni_miesiaca), godzina)]
     if int(ile or 0) <= 0 or not dni:
         return []
     return ["%s *-*-* %s:00" % (",".join(dni), godzina)]
