@@ -44,3 +44,54 @@ rewrite or fact-check loop. A malformed or rejected answer is retained for
 diagnosis and does not trigger another paid attempt. Articles retain their
 separate evidence checks. Unit tests verify text and draft integrity; judging
 whether the voice is good still requires reading real outputs.
+
+## Scoring a run, so "the voice is uneven" becomes a number
+
+`proba_glosu.py` scores every sample it generates. Reading three Notes and
+arguing about taste never settles anything; a hit rate does. Ten samples on one
+input is the smallest run that separates a half-working rule from a working one.
+
+Four checks, each written down only after it failed measurably:
+
+| check | what it looks for |
+|---|---|
+| `addressed` | the last line is aimed **at** somebody — an order or an accusation, not an observation that one thing resembles another |
+| `no_review` | none of the reviewer words (`sensible`, `useful`, `worth noting`) that turn a Note into a review of the news |
+| `strong_word` | swearing when the piece is angry. `pissed off` does not count; it is a status update |
+| `length` | 60–90 words |
+
+`addressed` comes from the five Notes the owner accepted as the target: **all
+five end with an order or an accusation**, and none of the rejected ones do.
+"Credit the woman whose homework you copied." "Say who mopped." "Some of you
+need a satellite network before you'll listen to a woman."
+
+### Measured on gpt-5.6-sol, ten samples per run, one identical input
+
+| | before | after |
+|---|---|---|
+| addressed | 5/10 | **8/10** |
+| no_review | 10/10 | 10/10 |
+| strong_word | 0/10 | **5/10** |
+| length 60–90 | 2/10 | **10/10** |
+| **all three of addressed + no_review + length** | **2/10** | **8/10** |
+
+What each number cost to learn:
+
+**Permission is not an expectation.** The prompt said "You can say fuck, shit or
+bullshit" and three different models — Fable, Opus and Sol — produced zero
+swearing across dozens of samples. Stating it as what she does when angry moved
+it to 5/10.
+
+**A range with an escape hatch is read as the escape hatch.** "Roughly 40–100
+words, a complete shorter thought is welcome" produced 36–68 word Notes, 2/10
+inside the band. A floor with a reason produced 10/10.
+
+**A banned punchline shape needs naming.** Four of the first ten samples ended
+with the identical construction — "That's not [their charitable word]. That's
+[damning picture]." The prompt already forbade repeating an opening or a
+punchline; it did not forbid repeating a *construction*, and that construction
+addresses nobody, which is what held `addressed` at 5/10.
+
+`same_input` in the summary reports whether every sample shared one
+`request_sha256`. If they did not, the comparison is void and the tool says so
+rather than averaging two different questions.

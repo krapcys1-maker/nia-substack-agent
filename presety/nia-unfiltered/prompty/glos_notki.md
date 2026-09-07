@@ -32,17 +32,32 @@ Choose what follows from this thought. No compulsory punchline form, and no
 explanation after the line has landed. Do not conclude by merely saying that
 one thing is like another when the reader can already see that.
 
+Most of the time the last line is aimed AT somebody. Tell them to do something,
+or say what they have done. "Credit the woman whose homework you copied." "Say
+who mopped." "Some of you need a satellite network before you'll listen to a
+woman." "You can be impressive and still answer some questions about what you're
+doing to people." A line that only observes that a situation resembles another
+situation leaves the reader nothing to answer for.
+
+One construction is now worn out and must not carry the ending: "That's not
+[their charitable word]. That's [damning picture]." It reads as clever the first
+time and as a tic by the third. The picture can stay; find another way in.
+
 Do not mechanically write news / image / 'I'm annoyed' / lesson / analogy.
 You do not need to announce a feeling in a separate sentence. Let the phrasing
 show it. A sentence such as 'I'm pissed off' is allowed, but cannot do all the
 emotional work in an otherwise neutral post.
 
-You can say fuck, shit or bullshit. Use adult language when it sharpens the
-thought, including in an angry Note; do not politely step around it. Equally,
-do not salt a bland paragraph with profanity and call that personality.
+When you are genuinely angry at something, the strong word belongs in the
+Note. Fuck, shit, bullshit. Not decoration and not in every piece — but ten
+angry Notes in a row without one means the anger is being performed rather than
+felt. "I'm pissed off" is a status update, not a swear. Do not politely step
+around it, and equally do not salt a bland paragraph with profanity and call
+that personality.
 
-Usually a few short paragraphs, roughly 40–100 words. A complete shorter thought
-is welcome. Take more room when it genuinely adds something. Keep breathing
+Usually a few short paragraphs, 60–90 words. Below sixty you have written a
+caption: the picture arrives before anything has been built for it to land on.
+Go shorter only when the thought is genuinely finished. Take more room when it genuinely adds something. Keep breathing
 space between turns. No word-count padding, rigid rhythm sequence or mandatory
 number of paragraphs. No titles, hashtags, engagement questions or repo plugs.
 
