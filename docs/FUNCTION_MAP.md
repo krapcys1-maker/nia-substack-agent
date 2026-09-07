@@ -680,17 +680,17 @@ Provider calls with per-attempt accounting, reservations and deadlines.
 | 486 | `_read_search_sources.public_url(url)` | — | — | `llm._read_search_sources` |
 | 547 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call`, `llm.call.transport` |
 | 638 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
-| 674 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
-| 716 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
-| 732 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
-| 741 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+25)* |
-| 775 | `call.transport()` | — | — | `llm.call` |
-| 833 | `obraz(opis, conn, run_id)` | — | — | `stages.grafika` |
-| 845 | `obraz.request()` | — | — | `llm.obraz` |
-| 865 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
-| 881 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
-| 946 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
-| 991 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+24)* |
+| 685 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
+| 727 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
+| 743 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
+| 752 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+25)* |
+| 786 | `call.transport()` | — | — | `llm.call` |
+| 844 | `obraz(opis, conn, run_id)` | — | — | `stages.grafika` |
+| 856 | `obraz.request()` | — | — | `llm.obraz` |
+| 876 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
+| 892 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
+| 957 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
+| 1002 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+24)* |
 
 ---
 

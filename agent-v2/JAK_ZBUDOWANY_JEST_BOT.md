@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **32 plików**, 35 308 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **32 plików**, 35 319 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -511,7 +511,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1037 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1048 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
