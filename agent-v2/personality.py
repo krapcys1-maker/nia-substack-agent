@@ -187,7 +187,12 @@ def _valid(text, maximum):
 def short_form(conn, run_id, kind, material):
     """One paid decision: respond, or remain silent. No paid repair attempts."""
     role = {"comment": "comment", "reply": "reply", "restack": "restack", "note": "note"}[kind]
-    maximum = 80 if kind == "note" else (40 if kind == "restack" else 65)
+    # Sufity, nie cele. Do 2026-09-07 restack mial 40 slow, a `_valid` odrzuca
+    # tekst ponad limit — wiec dluzsza mysl kosztowala i nie wychodzila. Przy
+    # czterdziestu slowach nie da sie niczego rozlozyc na czynniki, wiec model
+    # sciskal wypowiedz do szkieletu i doklejal puente na koncu. Dlugosc ma
+    # wybrac autorka: jedno zdanie bywa pelna odpowiedzia, akapit tez.
+    maximum = 220 if kind == "note" else (180 if kind == "restack" else 150)
     text = json.dumps(material, ensure_ascii=False)
     if _injection(text):
         return {}
@@ -195,8 +200,11 @@ def short_form(conn, run_id, kind, material):
     context = {"material": material, "recent_published": [r.get("text", "") for r in history[-8:]],
                "remembered_preferences_and_jokes": [r.get("memory", "") for r in history[-8:]]}
     instruction = (
-        f"Write one {kind}, at most {maximum} words (shorter is fine). "
-        "For a Note usually aim for 15–45 words; one funny thought can stand alone. "
+        f"Write one {kind}. Choose your own length: one line can be a complete "
+        "answer and so can a short paragraph. Stop when the thought is finished, "
+        "not at a word count. Do not pad, and do not compress a real point into a "
+        "punchline to save room. Hard ceiling {maximum} words — over it, nothing "
+        "publishes and the call is wasted. "
         "For interactions, refer to a specific thing in the supplied text. "
         "If there is nothing worth saying, return an empty text. No obligatory "
         "compliment, engagement question, hashtag or repo plug. Vary rhythm. "
@@ -215,7 +223,7 @@ def short_form(conn, run_id, kind, material):
                         "your short comic reaction, no numbers (including spelled numbers), "
                         "names, handles, extra statistics or restating the figures.\n")
     raw = llm.call(role, _system(kind), instruction + json.dumps(context, ensure_ascii=False),
-                   conn=conn, run_id=run_id, web_search=False, max_tokens=700, thinking=False)
+                   conn=conn, run_id=run_id, web_search=False, max_tokens=2000, thinking=False)
     if config.DRY_RUN:
         return {}
     result = llm.parse_json(raw)

@@ -69,7 +69,9 @@ class PersonaTests(unittest.TestCase):
             self.assertEqual(call.call_count, 4)
             for c in call.call_args_list:
                 self.assertFalse(c.kwargs["web_search"])
-                self.assertEqual(c.kwargs["max_tokens"], 700)
+                # Sufit, nie cel: musi zmiescic dluzsza wypowiedz RAZEM z myśleniem
+                # Fabla, ktore liczy sie jak wyjscie. Ma jednak zostac ograniczony.
+                self.assertEqual(c.kwargs["max_tokens"], 2000)
                 self.assertFalse(c.kwargs["thinking"])
         self.assertEqual(personality.memory(), [])
 
