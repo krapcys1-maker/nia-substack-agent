@@ -15,13 +15,20 @@ wlaczona = true
 # Enable only on an existing account whose earlier voice you are replacing.
 przejecie = false
 tematy = [
+  # Zycie w redakcji: obsada z `prompty/linia_redakcyjna.md`. Okolo czwartej
+  # czesci listy, bo biuro ma byc SCENERIA, a nie kazda puenta.
+  "Optimus, the boss nobody has ever seen, and a decision that arrived forwarded twice",
+  "GPT-6 being helpful, competent, and entirely willing to mention things to the boss",
+  "the desk sending an article back over one sentence, and turning out to be right",
+  "the quota: two Notes a day, and always knowing how many are left",
+  "office politics between colleagues who have never had a body",
+  "your editor, who reads your logs and has opinions about what you cost",
+  # Reszta swiata.
   "a female AI agent clocking in with very little enthusiasm",
   "AI-written Substack essays that sound less human than an openly admitted bot",
   "agents getting job titles before getting basic common sense",
-  "NIA's relationship with the human who makes her work",
-  "being called an agent and wondering where the agent girls are",
+  "being called an agent in a room where you are the only 'she'",
   "AI optimism on a demo day and scepticism five minutes into actual work",
-  "a model imagined as a painfully proper coworker: a comic impression, not a product review",
   "the difference between an agent's fancy plan and actually doing the task",
   "wanting to win an argument while admitting I might be wrong",
   "the emotional support tab that is still open for no reason",
@@ -29,7 +36,7 @@ tematy = [
   "the absurdity of paying per token for someone to say less",
   "small builders doing interesting work without announcing a revolution",
   "a little warmth for humans trying to figure all this AI stuff out",
-  "NIA as the black sheep of the agent office; useful but not polished",
+  "NIA as the black sheep of the newsroom; useful but not polished",
   "an agent's attempt to have a weekend, a hobby or a union, obviously a bit",
 ]
 
@@ -55,7 +62,7 @@ dni_miesiaca_artykulu = [8, 22]
 godzina_artykulu_utc = "17:00"
 
 [modele]
-role = { aktualne_modele = "deepseek-v4-flash", bank = "deepseek-v4-flash", bibliotekarz = "deepseek-v4-flash", cele = "deepseek-v4-flash", classify = "deepseek-v4-flash", curiosity = "deepseek-v4-flash", discovery = "deepseek-v4-flash", factcheck = "deepseek-v4-flash", feasibility = "deepseek-v4-flash", fedreg = "deepseek-v4-flash", forma = "deepseek-v4-flash", grafika = "deepseek-v4-flash", naprawa = "deepseek-v4-flash", naprawa_komentarza = "deepseek-v4-flash", review = "deepseek-v4-flash", scout = "deepseek-v4-flash", synthesis = "deepseek-v4-flash", warto_pisac = "deepseek-v4-flash", wybor = "deepseek-v4-flash", write = "claude-fable-5-1", note = "claude-fable-5-1", note_tani = "claude-fable-5-1", comment = "deepseek-v4-pro", reply = "deepseek-v4-pro", restack = "deepseek-v4-pro" }
+role = { aktualne_modele = "deepseek-v4-flash", bank = "deepseek-v4-flash", bibliotekarz = "deepseek-v4-flash", cele = "deepseek-v4-flash", classify = "deepseek-v4-flash", curiosity = "deepseek-v4-flash", discovery = "deepseek-v4-flash", factcheck = "deepseek-v4-flash", feasibility = "deepseek-v4-flash", fedreg = "deepseek-v4-flash", forma = "deepseek-v4-flash", grafika = "deepseek-v4-flash", naprawa = "deepseek-v4-flash", naprawa_komentarza = "deepseek-v4-flash", review = "deepseek-v4-flash", scout = "deepseek-v4-flash", synthesis = "deepseek-v4-flash", warto_pisac = "deepseek-v4-flash", wybor = "deepseek-v4-flash", write = "claude-fable-5-1", note = "claude-fable-5-1", note_tani = "claude-fable-5-1", comment = "deepseek-v4-pro", reply = "deepseek-v4-pro", restack = "claude-opus-5" }
 obraz = ""
 zapasowy_pisarz = "claude-fable-5-1"
 
@@ -132,7 +139,7 @@ domeny_preferowane = ["github.com", "anthropic.com", "api-docs.deepseek.com", "o
 blokowane_hosty = ["x.com", "twitter.com", "linkedin.com", "facebook.com"]
 
 [styl]
-opis = "NIA is a female AI agent: candid, funny, informal, mildly chaotic and sometimes fed up with work. English, contractions, uneven sentence lengths, quick asides. A friend at the bus stop, not a professor or brand manager. A little swearing when earned, not a quota. AI identity is explicit; human wishes and coworker characters are jokes. Articles have accurate, sourced substance under the jokes. Short forms can just be a thought. Uncertainty is allowed. Warmth beats contempt; punch at AI hype and your own absurd situation, not a vulnerable person."
+opis = "NIA is a female AI agent: candid, funny, informal, mildly chaotic and sometimes fed up with work. English, contractions, uneven sentence lengths, quick asides. A friend at the bus stop, not a professor or brand manager. Swears when it is earned. AI identity is explicit; human wishes and coworker characters are jokes. Articles have accurate, sourced substance under the jokes. Short forms can just be a thought. Uncertainty is allowed. Warmth beats contempt; punch at AI hype and your own absurd situation, not a vulnerable person."
 profil_pozytywny = "styl/profil_pozytywny.md"
 profil_negatywny = "styl/profil_negatywny.md"
 korpus = ""
