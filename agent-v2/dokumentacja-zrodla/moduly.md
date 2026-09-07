@@ -369,7 +369,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1028 wierszy, 20 funkcji na poziomie modułu, 4 klas
+1037 wierszy, 20 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -396,7 +396,7 @@
 
 ### `gates.py` — bramki jakości; żadna nie blokuje
 
-668 wierszy, 19 funkcji na poziomie modułu, 0 klas
+684 wierszy, 19 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -444,7 +444,7 @@
 
 ### `jezyki.py` — wzorce bramek zalezne od jezyka; przy jezyku bez wzorcow bramka jest JAWNIE wylaczona zamiast cicho nic nie lapac
 
-323 wierszy, 5 funkcji na poziomie modułu, 0 klas
+342 wierszy, 5 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

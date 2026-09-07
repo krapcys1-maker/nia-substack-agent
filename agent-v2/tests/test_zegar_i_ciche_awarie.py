@@ -38,9 +38,14 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent-v2"))
 os.environ["AGENT_V2_BEZ_KONFIGURACJI"] = "1"
+import anthropic
+import httpx
+
 import browser
 import call_runtime
 import config
+import gates
+import llm
 import run
 import stages
 
@@ -125,6 +130,68 @@ class Wylacznik(unittest.TestCase):
     def test_wylacznik_jest_sprawdzany_w_jedynej_bramce_zapisow(self):
         zrodlo = inspect.getsource(browser.naprawde_wyslac)
         self.assertIn("config.KILL_SWITCH", zrodlo)
+
+
+class BramkaArtefaktow(unittest.TestCase):
+    """Bramka blokowala zwykla angielszczyzne i przepuszczala artefakty.
+
+    Frazy warsztatowe szly przez `find`, wiec „as instructed" lapalo „was
+    instructed", „i worked from" lapalo „OpenAI worked from", „i cannot verify"
+    lapalo „AI cannot verify". Wzorzec pustej wartosci lapal „of unknown origin",
+    „second to none" i „since none of the labs". Kazde trafienie to twardy stop
+    OPLACONEGO artykulu bez ponowienia albo spalony slot notki.
+    """
+
+    ZWYKLE = (
+        "The vendor was instructed to disclose the cap.",
+        "OpenAI worked from a smaller evaluation set.",
+        "AI cannot verify its own citations.",
+        "A dataset of unknown origin turned up in the audit.",
+        "On documentation they are second to none.",
+        "Since none of the labs published the numbers, we asked.",
+    )
+    ARTEFAKTY = (
+        ("meta-zdanie modelu", "As an AI language model, I cannot browse the web."),
+        ("plot bloku kodu", "Here is the article:\n```json\n{}\n```"),
+        ("pole wielkimi literami", "Published on [INSERT DATE] by the team."),
+        ("prawdziwy warsztat", "The excerpts I worked from did not mention it."),
+        ("pusta wartosc", "Figures checked against sources to unknown."),
+        ("znacznik TODO", "The section on pricing is TODO."),
+    )
+
+    def test_zwykle_zdania_przechodza(self):
+        for zdanie in self.ZWYKLE:
+            with self.subTest(zdanie=zdanie):
+                self.assertEqual(gates.artefakty_w_tekscie(zdanie), [])
+
+    def test_artefakty_nadal_zatrzymuja(self):
+        """KONTRDOWOD: rozluznienie nie moze otworzyc bramki na osciez."""
+        for opis, zdanie in self.ARTEFAKTY:
+            with self.subTest(artefakt=opis):
+                self.assertTrue(gates.artefakty_w_tekscie(zdanie),
+                                "%s przechodzi przez bramke" % opis)
+
+
+class TransportClaude(unittest.TestCase):
+    """Zerwane polaczenie przerzucalo artykul na pisarza zapasowego.
+
+    Wyjatki SDK Anthropica nie sa wyjatkami httpx i nie niosa `status_code`,
+    wiec `przejsciowy` konczyl na galezi „nierozpoznany, czyli trwaly".
+    """
+
+    def _blad(self, klasa):
+        return klasa(request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"))
+
+    def test_zerwane_polaczenie_i_przekroczony_czas_sa_przejsciowe(self):
+        for klasa in (anthropic.APITimeoutError, anthropic.APIConnectionError):
+            with self.subTest(klasa=klasa.__name__):
+                self.assertTrue(llm.przejsciowy(self._blad(klasa)))
+
+    def test_trwale_bledy_dalej_nie_sa_ponawiane(self):
+        """KONTRDOWOD: nie zrobilismy z kazdego bledu przejsciowego."""
+        for blad in (llm.BudgetExceeded("x"), llm.PreflightFailed("x"), llm.Truncated("x")):
+            with self.subTest(blad=type(blad).__name__):
+                self.assertFalse(llm.przejsciowy(blad))
 
 
 if __name__ == "__main__":

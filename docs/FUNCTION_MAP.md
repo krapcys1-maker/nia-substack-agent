@@ -516,7 +516,7 @@ Bramki wykrywaja naruszenia, ale zadna nie blokuje artykulu.
 | 545 | `frazy_z_instrukcji.ciagi(slowa)` | — | — | `gates.frazy_z_instrukcji` |
 | 572 | `verdict(findings)` | — | Artykuł powstaje ZAWSZE. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
 | 587 | `zapowiedziany_akapit_granic(body)` | — | Czy akapit o granicach zaczyna sie od zdania o samym sobie. | `gates.deterministic_floors` |
-| 643 | `artefakty_w_tekscie(body)` | — | Co w tym tekscie wyglada na blad programu, a nie na zdanie autora. | `artykul_z_puli._napisz_i_zapisz`, `personality._valid`, `stages.przygotuj_artykul_do_publikacji`, `stages.przygotuj_artykul_do_publikacji.guard` |
+| 649 | `artefakty_w_tekscie(body)` | — | Co w tym tekscie wyglada na blad programu, a nie na zdanie autora. | `artykul_z_puli._napisz_i_zapisz`, `personality._valid`, `stages.przygotuj_artykul_do_publikacji`, `stages.przygotuj_artykul_do_publikacji.guard` |
 
 ---
 
@@ -529,11 +529,11 @@ Wzorce bramek ZALEZNE OD JEZYKA — i glosny sprzeciw, gdy jezyka nie ma.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 282 | `_ostrzez(jezyk, czego_brak)` | — | Raz na proces, ale GLOSNO. | `jezyki.frazy`, `jezyki.wzorzec` |
-| 294 | `wzorzec(nazwa, jezyk)` | DEAD? | Skompilowany wzorzec bramki dla tego jezyka. | — |
-| 303 | `frazy(nazwa, jezyk)` | DEAD? | Lista fraz dla tego jezyka. | — |
-| 312 | `znane_jezyki()` | DEAD? | — | — |
-| 316 | `brakujace(jezyk)` | — | Czego brakuje temu jezykowi wobec angielskiego. | `preset.sprawdz` |
+| 301 | `_ostrzez(jezyk, czego_brak)` | — | Raz na proces, ale GLOSNO. | `jezyki.frazy`, `jezyki.wzorzec` |
+| 313 | `wzorzec(nazwa, jezyk)` | DEAD? | Skompilowany wzorzec bramki dla tego jezyka. | — |
+| 322 | `frazy(nazwa, jezyk)` | DEAD? | Lista fraz dla tego jezyka. | — |
+| 331 | `znane_jezyki()` | DEAD? | — | — |
+| 335 | `brakujace(jezyk)` | — | Czego brakuje temu jezykowi wobec angielskiego. | `preset.sprawdz` |
 
 ---
 
@@ -680,17 +680,17 @@ Provider calls with per-attempt accounting, reservations and deadlines.
 | 486 | `_read_search_sources.public_url(url)` | — | — | `llm._read_search_sources` |
 | 547 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call`, `llm.call.transport` |
 | 638 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
-| 665 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
-| 707 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
-| 723 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
-| 732 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+25)* |
-| 766 | `call.transport()` | — | — | `llm.call` |
-| 824 | `obraz(opis, conn, run_id)` | — | — | `stages.grafika` |
-| 836 | `obraz.request()` | — | — | `llm.obraz` |
-| 856 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
-| 872 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
-| 937 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
-| 982 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+24)* |
+| 674 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
+| 716 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
+| 732 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
+| 741 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+25)* |
+| 775 | `call.transport()` | — | — | `llm.call` |
+| 833 | `obraz(opis, conn, run_id)` | — | — | `stages.grafika` |
+| 845 | `obraz.request()` | — | — | `llm.obraz` |
+| 865 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
+| 881 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
+| 946 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
+| 991 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+24)* |
 
 ---
 
