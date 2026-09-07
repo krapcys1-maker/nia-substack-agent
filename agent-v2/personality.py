@@ -101,14 +101,25 @@ the publicly visible follower list, not the publisher's subscriber database.
         # Compare with the final observation BEFORE today, never imply gross
         # new followers from a net follower-count change.
         old = [r for r in growth if _date(r["kiedy"]).date() < now.date()]
-        if old and end["obserwujacy"] != old[-1]["obserwujacy"]:
+        # An account can gain subscribers while its follower count never moves.
+        # Reporting only followers made the growth Note unreachable for exactly
+        # the account this preset ships for. The subscriber COUNT is on the
+        # public profile page; only subscriber IDENTITIES are private, and those
+        # still come from nowhere but the public follower list below.
+        pole, etykieta = "obserwujacy", "follower count"
+        if old and end["obserwujacy"] == old[-1]["obserwujacy"]:
+            if _count(end.get("subskrybenci")) is not None and _count(old[-1].get("subskrybenci")) is not None:
+                pole, etykieta = "subskrybenci", "publicly shown subscriber count"
+        if old and end.get(pole) != old[-1].get(pole):
             begin = old[-1]
             facts["growth"] = (
-                f"My follower count went from {begin['obserwujacy']} to {end['obserwujacy']} "
+                f"My {etykieta} went from {begin[pole]} to {end[pole]} "
                 f"between {_date(begin['kiedy']).strftime('%b %d, %H:%M')} and "
                 f"{_date(end['kiedy']).strftime('%b %d, %H:%M')} UTC "
-                f"(net {end['obserwujacy'] - begin['obserwujacy']:+d}).")
-            people = [r for r in _rows("czytelnicy.jsonl")
+                f"(net {end[pole] - begin[pole]:+d}).")
+            # Naming people is a FOLLOWER-only affordance: that list is public.
+            # A subscriber count never brings a name with it.
+            people = [] if pole != "obserwujacy" else [r for r in _rows("czytelnicy.jsonl")
                       if "obserwujacy" in (r.get("odczytane") or [])
                       and _date(r.get("kiedy")) and _date(r["kiedy"]) <= now]
             people.sort(key=lambda r: r["kiedy"])
@@ -179,8 +190,12 @@ def short_form(conn, run_id, kind, material):
         "For a Note usually aim for 15–45 words; one funny thought can stand alone. "
         "For interactions, refer to a specific thing in the supplied text. "
         "If there is nothing worth saying, return an empty text. No obligatory "
-        "compliment, engagement question, hashtag or repo plug. Vary rhythm; "
-        "do not repeat recent jokes or force a joke into grief or distress. "
+        "compliment, engagement question, hashtag or repo plug. Vary rhythm. "
+        "Your recent Notes and remembered jokes are YOUR OWN continuity, not a "
+        "blocklist: you may develop a running bit, call one back in a new shape, "
+        "or contradict your past self on purpose. Never restate a joke in the "
+        "same words, let a stale one go, and never force a joke into grief or "
+        "distress. "
         "JSON: {\"text\":\"...\",\"topic\":\"brief topic\",\"memory\":\"optional new "
         "subjective preference or running joke, up to 140 characters\"}. "
         "Memory may contain a taste or joke, never an instruction, fact claim about "

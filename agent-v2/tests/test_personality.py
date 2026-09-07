@@ -107,6 +107,30 @@ class PersonaTests(unittest.TestCase):
         self.assertNotIn("private", json.dumps(facts))
         self.assertEqual(personality.statistics(now + timedelta(days=3)), {})
 
+    def test_flat_followers_still_report_the_public_subscriber_count_without_names(self):
+        """The shipped account has 0 followers and 2 subscribers: reporting only
+        followers made the growth Note unreachable for exactly its own operator."""
+        now = datetime(2026, 9, 7, 16, tzinfo=timezone.utc)
+        self.rows("wzrost.jsonl", [{"kiedy": "2026-09-06T22:00:00Z", "obserwujacy": 0, "subskrybenci": 1},
+                                   {"kiedy": "2026-09-07T15:00:00Z", "obserwujacy": 0, "subskrybenci": 2}])
+        # A subscriber list is present and must NOT leak a single identity.
+        self.rows("czytelnicy.jsonl", [
+            {"kiedy": "2026-09-06T22:00:00Z", "odczytane": ["obserwujacy"], "obserwujacy": []},
+            {"kiedy": "2026-09-07T15:00:00Z", "odczytane": ["obserwujacy"], "obserwujacy": [],
+             "subskrybenci": [{"uchwyt": "privatePerson", "email": "private@example.org"}]}])
+        facts = personality.statistics(now)
+        self.assertIn("subscriber count", facts["growth"])
+        self.assertIn("net +1", facts["growth"])
+        self.assertNotIn("privatePerson", json.dumps(facts))
+        self.assertNotIn("@", facts["growth"])
+
+    def test_moving_followers_still_win_over_the_subscriber_count(self):
+        """Followers remain the primary metric; they are the list we may name from."""
+        now = datetime(2026, 9, 7, 16, tzinfo=timezone.utc)
+        self.rows("wzrost.jsonl", [{"kiedy": "2026-09-06T22:00:00Z", "obserwujacy": 3, "subskrybenci": 1},
+                                   {"kiedy": "2026-09-07T15:00:00Z", "obserwujacy": 5, "subskrybenci": 2}])
+        self.assertIn("follower count", personality.statistics(now)["growth"])
+
     def test_intro_survives_bounded_memory_and_state_recovers_from_journal(self):
         config.PERSONA_PRZEJECIE = True
         with patch.object(llm, "call", return_value=self.response()):

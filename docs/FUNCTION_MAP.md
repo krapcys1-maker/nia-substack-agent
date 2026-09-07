@@ -751,16 +751,16 @@ Opt-in conversational short forms.
 | 65 | `memory_state()` | — | Keep milestones after individual Notes leave the bounded prompt memory. | `personality.notes`, `personality.remember` |
 | 84 | `_count(value)` | — | — | `personality.small_account`, `personality.statistics` |
 | 88 | `statistics(now)` | — | Publishable facts only: net growth and cumulative measured Note views. | `personality.notes` |
-| 117 | `statistics.handles(row)` | — | — | `personality.statistics` |
-| 140 | `_system(kind)` | — | — | `personality.short_form` |
-| 157 | `_valid(text, maximum)` | — | — | `personality.short_form` |
-| 167 | `short_form(conn, run_id, kind, material)` | **$**((zmienna)) | One paid decision: respond, or remain silent. | `personality.interaction`, `personality.notes` |
-| 221 | `notes(conn, run_id, ile, od)` | — | Choose a subject from the persona, not the research bank. | `stages.notki_dnia` |
-| 259 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
-| 271 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
-| 281 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
-| 303 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu` |
-| 311 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `run.dzien`, `run.dzien.notki` |
+| 128 | `statistics.handles(row)` | — | — | `personality.statistics` |
+| 151 | `_system(kind)` | — | — | `personality.short_form` |
+| 168 | `_valid(text, maximum)` | — | — | `personality.short_form` |
+| 178 | `short_form(conn, run_id, kind, material)` | **$**((zmienna)) | One paid decision: respond, or remain silent. | `personality.interaction`, `personality.notes` |
+| 236 | `notes(conn, run_id, ile, od)` | — | Choose a subject from the persona, not the research bank. | `stages.notki_dnia` |
+| 274 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
+| 286 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
+| 296 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
+| 318 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu` |
+| 326 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `run.dzien`, `run.dzien.notki` |
 
 ---
 
