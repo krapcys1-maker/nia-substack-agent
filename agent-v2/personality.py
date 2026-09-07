@@ -174,10 +174,43 @@ def _system(kind):
     ])
 
 
+_RUBRYKA = re.compile(r"^([A-Z][A-Z' ]{2,39}):\s+(.*)$", re.S)
+
+
+def _rozdziel_rubryke(temat: str) -> tuple[str, str]:
+    """„NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat).
+
+    ETYKIETA JEST DLA NAS, NIE DLA MODELU, i to nie jest kosmetyka. Rubryki
+    zaczynaja sie od wersalikowej nazwy, bo po niej mierzymy pozniej, ktory
+    format sie broni. Model dostawal ja jednak razem z poleceniem — i przy
+    pierwszej probie na `gpt-5.6-sol` wyszla notka zaczynajaca sie od
+    „PARAGONY reads the articles, not the Notes": model wzial nasza polska
+    etykieta za NAZWE SYSTEMU i wpisal ja do tekstu, ktory szedl na konto.
+    Fable i Opus czytaly ja jako naglowek i nie powtarzaly, wiec wada byla
+    niewidoczna, dopoki nie zmienilismy pisarza.
+
+    Nazwa zostaje w dzienniku (pole `rubryka`) i w pamieci tematow, wiec
+    pomiar i odsiewanie piegciu ostatnich dzialaja jak dotad.
+    """
+    m = _RUBRYKA.match((temat or "").strip())
+    return (m.group(1), m.group(2).strip()) if m else ("", temat or "")
+
+
+def _etykiety() -> set[str]:
+    """Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly."""
+    return {e for e in (_rozdziel_rubryke(t)[0] for t in (config.PERSONA_TEMATY or ())) if e}
+
+
 def _valid(text, maximum):
     if not isinstance(text, str) or not text.strip() or len(text.split()) > maximum:
         return False
     if _injection(text) or re.search(r"https?://|\bwww\.|(?:^|\s)@[A-Za-z0-9_]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}", text, re.I):
+        return False
+    # NAZWA RUBRYKI W TEKSCIE = NASZE RUSZTOWANIE NA KONCIE. Sprawdzamy mimo
+    # rozdzielenia wyzej, bo rozdzielenie chroni tylko przed przepisaniem
+    # z polecenia; model moze te nazwe dostac takze z pamieci wczesniejszej
+    # notki, jesli jedna juz wyszla.
+    if any(e in text for e in _etykiety()):
         return False
     # This persona is allowed to talk about her own writing. Template leakage
     # still blocks publication; generic WARSZTAT checks do not apply here.
@@ -350,12 +383,15 @@ def notes(conn, run_id, ile=None, od=0):
         elif growth_due and facts.get("growth"):
             stat, stats_kind = facts["growth"], "growth"
             views_due = growth_due = False
-        output = short_form(conn, run_id, "note", {"theme": theme, "statistics": stat,
+        etykieta, polecenie = _rozdziel_rubryke(theme)
+        output = short_form(conn, run_id, "note", {"theme": polecenie, "statistics": stat,
                             "world": swiat,
                             "choice": "Choose your own angle. Write an observation, bit or opinion, not a news report."})
         candidate = {**output, "note": output.get("text", ""), "safe_to_post": bool(output), "length_ok": bool(output)}
         result.append({"type": typ, "forma": "persona", "candidates": [candidate] if output else [],
-                       "personality": {"theme": theme, "intro": takeover, "stats": bool(stat), "stats_kind": stats_kind}})
+                       "personality": {"theme": theme, "rubryka": etykieta,
+                                       "intro": takeover, "stats": bool(stat),
+                                       "stats_kind": stats_kind}})
     return result
 
 
