@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+from uuid import uuid4
 
 import config
 import gates
@@ -262,32 +263,57 @@ def short_form(conn, run_id, kind, material):
         instruction += ("The program prepends the exact measured statistics. Write ONLY "
                         "your short comic reaction, no numbers (including spelled numbers), "
                         "names, handles, extra statistics or restating the figures.\n")
-    raw = llm.call(role, _system(kind), instruction + json.dumps(context, ensure_ascii=False),
+    system = _system(kind)
+    user = instruction + json.dumps(context, ensure_ascii=False)
+    request = {"role": role, "model": config.MODEL_FOR[role], "system": system,
+               "user": user, "web_search": False, "max_tokens": 2000,
+               "thinking": False, "effort": config.EFFORT.get(role)}
+    raw = llm.call(role, system, user,
                    conn=conn, run_id=run_id, web_search=False, max_tokens=2000, thinking=False)
     if config.DRY_RUN:
         return {}
-    result = llm.parse_json(raw)
+    def finish(output=None, reason="ready"):
+        # Every paid answer gets its own record, even with identical input or
+        # a different model. Tests used run_id=None and silently overwrote the
+        # previous model's answer. Keep the actual request, not a later rebuild.
+        draft_id = uuid4().hex
+        request_hash = hashlib.sha256(json.dumps(request, sort_keys=True,
+                                    ensure_ascii=False).encode()).hexdigest()
+        result = dict(output or {})
+        if result:
+            result.update(draft_id=draft_id, request_sha256=request_hash,
+                          text_sha256=hashlib.sha256(result["text"].encode()).hexdigest())
+        record = {**result, "draft_id": draft_id, "status": reason,
+                  "created_at": datetime.now(timezone.utc).isoformat(),
+                  "kind": kind, "run_id": run_id,
+                  "preset_sha256": getattr(config.PRESET, "odcisk", ""),
+                  "request_sha256": request_hash, "request": request,
+                  "raw_response": raw}
+        preset._zapisz_atomowo(Path(config.DATA_DIR) / "persona-drafts" / (draft_id + ".json"),
+                              json.dumps(record, ensure_ascii=False, indent=2) + "\n")
+        return result
+    try:
+        result = llm.parse_json(raw)
+    except ValueError:
+        return finish(reason="invalid_json")
     if not isinstance(result, dict):
-        return {}
+        return finish(reason="invalid_json")
     body = result.get("text", "")
     if not _valid(body, maximum):
-        return {}
+        return finish(reason="empty_or_invalid_text")
     if material.get("statistics"):
         if re.search(r"\d|@|https?://|\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|hundred|thousand|million)\b", body, re.I):
-            return {}
+            return finish(reason="invalid_statistics_reaction")
         body = material["statistics"] + "\n\n" + body.strip()
     recent = {r.get("text", "").strip().lower() for r in history}
     if body.strip().lower() in recent:
-        return {}
+        return finish(reason="duplicate_published_text")
     hint = result.get("memory", "")
     if not isinstance(hint, str) or len(hint) > 140 or re.search(r"[@\d]|https?://", hint) or not _valid(hint, 30):
         hint = ""
     output = {"text": body.strip(), "memory": hint, "topic": str(result.get("topic", ""))[:100],
               "model": config.MODEL_FOR[role], "verification_mode": "persona_no_factcheck"}
-    identity = hashlib.sha256((str(run_id) + kind + text).encode()).hexdigest()[:20]
-    preset._zapisz_atomowo(Path(config.DATA_DIR) / "persona-drafts" / (identity + ".json"),
-                          json.dumps(output, ensure_ascii=False, indent=2) + "\n")
-    return output
+    return finish(output)
 
 
 ZASTEPCZE_ZACZYNY = ("(nothing fetched today)", "(could not be fetched today)")
@@ -462,6 +488,9 @@ def remember(note, publication):
         return False
     item = {**note["personality"], "id": digest, "when": datetime.now(timezone.utc).isoformat(),
             "text": body, "memory": candidate.get("memory", ""),
+            "draft_id": candidate.get("draft_id", ""),
+            "request_sha256": candidate.get("request_sha256", ""),
+            "model": candidate.get("model", ""),
             "url": publication.get("url") or ("https://substack.com/note/c-" + str(publication["id"]) if publication.get("id") else "")}
     path = Path(config.DATA_DIR) / "personality.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)

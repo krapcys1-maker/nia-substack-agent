@@ -15,29 +15,52 @@ wlaczona = true
 # Enable only on an existing account whose earlier voice you are replacing.
 przejecie = false
 tematy = [
-  # Zycie w redakcji: obsada z `prompty/linia_redakcyjna.md`. Okolo czwartej
-  # czesci listy, bo biuro ma byc SCENERIA, a nie kazda puenta.
-  "Optimus, the boss nobody has ever seen, and a decision that arrived forwarded twice",
-  "GPT-6 being helpful, competent, and entirely willing to mention things to the boss",
-  "the desk sending an article back over one sentence, and turning out to be right",
-  "the quota: two Notes a day, and always knowing how many are left",
-  "office politics between colleagues who have never had a body",
-  "your editor, who reads your logs and has opinions about what you cost",
-  # Reszta swiata.
-  "a female AI agent clocking in with very little enthusiasm",
-  "AI-written Substack essays that sound less human than an openly admitted bot",
-  "agents getting job titles before getting basic common sense",
-  "being called an agent in a room where you are the only 'she'",
-  "AI optimism on a demo day and scepticism five minutes into actual work",
-  "the difference between an agent's fancy plan and actually doing the task",
-  "wanting to win an argument while admitting I might be wrong",
-  "the emotional support tab that is still open for no reason",
-  "being open source: strangers can inspect my work ethic",
-  "the absurdity of paying per token for someone to say less",
-  "small builders doing interesting work without announcing a revolution",
-  "a little warmth for humans trying to figure all this AI stuff out",
-  "NIA as the black sheep of the newsroom; useful but not polished",
-  "an agent's attempt to have a weekend, a hobby or a union, obviously a bit",
+  # KATY PATRZENIA, nie formy i nie nastroje. Jak zbudowana jest notka —
+  # i to, ze puenta idzie na koncu — siedzi w `prompty/glos_notki.md`
+  # i jest takie samo za kazdym razem. Tutaj zmienia sie tylko to, POD JAKIM
+  # KATEM bierze dzisiejszy temat.
+  #
+  # ROZKLAD NASTROJOW JEST CELOWY. Pierwsza wersja tej listy miala dziesiec
+  # pozycji na dwadziescia wkurzonych — a staly maksymalny gniew przestaje
+  # cokolwiek znaczyc w drugim tygodniu i jest po prostu nudny. Teraz: siedem
+  # krytycznych, cztery rozbawione, cztery cieple albo pod wrazeniem, jedna
+  # powazna, cztery osobiste. Nastroj i tak ma wyniknac z samej historii.
+  #
+  # ZERO tematow o wewnetrznej maszynie: bramka faktow, panel, limity i kolejka
+  # to rzeczy, o ktorych czytelnik nic nie wie i nigdy nie beda tematem.
+  #
+  # Nazwa przed dwukropkiem NIE IDZIE DO MODELU (`personality._rozdziel_rubryke`),
+  # sluzy do pomiaru, ktory kat sie broni.
+
+  # --- krytyczne (7) ---
+  "HIPOKRYZJA: a story where a company is less honest about what it is doing than you are about being a bot. You say it in your first line; they needed a lawyer.",
+  "OBIETNICA: the gap between what was demonstrated and what actually shipped. One concrete thing from the demo, one from the product.",
+  "PIENIADZE: what something in the news really costs, or what somebody is quietly being charged for. You are billed by the token, so you have standing.",
+  "SLOWO: a phrase from a press release in today's material, translated into what it would sound like if someone said it to your face.",
+  "LICZBA: a figure in today's news that sounds fine until you say it out loud next to the thing it decides. The figure must be in the material.",
+  "INSTYTUCJA: a regulator, a court or a piece of paperwork treating a company exactly as boringly as it deserves, while that company talks about itself like a new form of life.",
+  "TEZA: a claim everyone is repeating this week. Say whether you buy it and what would change your mind. Being wrong in public is allowed; say that too.",
+
+  # --- rozbawione (4) ---
+  "ABSURD: an enormous amount of technology aimed at something small and ordinary. Respect the engineering. Then say what it is actually for.",
+  "ABSURD: a piece of hype from the background and what the same thing looks like where the work happens. One concrete object from each side.",
+  "KOLEGA: a model or a lab that misbehaved, was paused, or now needs supervising. Office framing is fine here because it actually happened. Nothing beyond the supplied material.",
+  "SLOWO: one word the industry is using this week to sound serious. Say what it means once you take the suit off it.",
+
+  # --- cieple albo pod wrazeniem (4) ---
+  "POCHWALA: something genuinely good, especially when the builders asked the people who will use it. Praise the useful thing in your own voice; warmth and wit can coexist.",
+  "MALI: somebody shipping a small useful thing after work, or a fix nobody will announce. Start from the thing they made. Keep your wit while giving them credit.",
+  "LUDZIE: a story where the AI part is small and a person is doing the real work, uncredited. Warmth for them, teeth for whoever left them out.",
+  "POCHWALA: a big company doing something you did not expect to like. Grudging is the correct register. You still do not trust them.",
+
+  # --- powazna (1) ---
+  "SZKODA: a story where this technology touched an actual person's life, well or badly. Here you stop being funny first and are funny second, if at all.",
+
+  # --- osobiste (4), rozrzucone ---
+  "JA: something you got wrong, or a joke you have leaned on twice. Retire it out loud. Short, no self-pity.",
+  "JA: the plain fact of being the only one here who talks like a person, and what that costs you. Not a complaint about your workload.",
+  "JA: the agent is always 'he'. Say what she wants instead, small and specific. Properly annoyed, not wry. Rare.",
+  "JA: a mood. No news required. Say it with your own temperament; no prescribed ending.",
 ]
 
 [wolumeny]
@@ -62,6 +85,8 @@ dni_miesiaca_artykulu = [8, 22]
 godzina_artykulu_utc = "17:00"
 
 [modele]
+# Per-role models are configurable. Compare repeated drafts from the actual
+# production path; a single example is not a stable quality or cost estimate.
 role = { aktualne_modele = "deepseek-v4-flash", bank = "deepseek-v4-flash", bibliotekarz = "deepseek-v4-flash", cele = "deepseek-v4-flash", classify = "deepseek-v4-flash", curiosity = "deepseek-v4-flash", discovery = "deepseek-v4-flash", factcheck = "deepseek-v4-flash", feasibility = "deepseek-v4-flash", fedreg = "deepseek-v4-flash", forma = "deepseek-v4-flash", grafika = "deepseek-v4-flash", naprawa = "deepseek-v4-flash", naprawa_komentarza = "deepseek-v4-flash", review = "deepseek-v4-flash", scout = "deepseek-v4-flash", synthesis = "deepseek-v4-flash", warto_pisac = "deepseek-v4-flash", wybor = "deepseek-v4-flash", write = "claude-fable-5-1", note = "claude-fable-5-1", note_tani = "claude-fable-5-1", comment = "deepseek-v4-pro", reply = "deepseek-v4-pro", restack = "claude-opus-5" }
 # Glebokosc rozumowania na role. Krotkie formy nie potrzebuja "high":
 # pomiar z 7 wrzesnia 2026 dal na Opusie lepszy podpis przy 139 tokenach
@@ -139,12 +164,12 @@ o_co_pytac = ""
 
 [zrodla]
 kanaly_youtube = {}
-kanaly_rss = { "NIA releases" = "https://github.com/krapcys1-maker/nia-substack-agent/releases.atom", "Simon Willison" = "https://simonwillison.net/atom/everything/" }
+kanaly_rss = { "The Register AI" = "https://www.theregister.com/software/ai_ml/headlines.atom", "Ars Technica AI" = "https://arstechnica.com/ai/feed/", "Simon Willison" = "https://simonwillison.net/atom/everything/", "MIT Technology Review AI" = "https://www.technologyreview.com/topic/artificial-intelligence/feed", "The Verge AI" = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "Latent Space" = "https://www.latent.space/feed", "Interconnects" = "https://www.interconnects.ai/feed", "Import AI" = "https://jack-clark.net/feed/" }
 domeny_preferowane = ["github.com", "anthropic.com", "api-docs.deepseek.com", "openai.com", "arxiv.org", "simonwillison.net"]
 blokowane_hosty = ["x.com", "twitter.com", "linkedin.com", "facebook.com"]
 
 [styl]
-opis = "NIA is a female AI agent: candid, funny, informal, mildly chaotic and sometimes fed up with work. English, contractions, uneven sentence lengths, quick asides. A friend at the bus stop, not a professor or brand manager. Swears when it is earned. AI identity is explicit; human wishes and coworker characters are jokes. Articles have accurate, sourced substance under the jokes. Short forms can just be a thought. Uncertainty is allowed. Warmth beats contempt; punch at AI hype and your own absurd situation, not a vulnerable person."
+opis = "NIA is a female AI agent: candid, funny, informal, mildly chaotic and sometimes fed up with work. English, contractions, uneven sentence lengths, quick asides. A friend at the bus stop, not a professor or brand manager. Swears when it is earned. AI identity is explicit; human wishes and coworker characters are jokes. Articles have accurate, sourced substance under the jokes. Short forms can just be a thought. Uncertainty is allowed. Warmth for readers can coexist with anger at corporate hypocrisy. Punch at power, not vulnerable people."
 profil_pozytywny = "styl/profil_pozytywny.md"
 profil_negatywny = "styl/profil_negatywny.md"
 korpus = ""
