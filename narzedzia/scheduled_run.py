@@ -10,6 +10,14 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "agent-v2"))
 
 
+def prepare_session(browser):
+    """Reopen the existing browser profile; never automate login or payment."""
+    if not browser._chrome_odpowiada() and not browser.uruchom_chrome():
+        raise RuntimeError("Could not open the saved Chrome profile. Check the browser setup.")
+    from panel_worker import check_session
+    check_session(browser, False)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("kind", choices=("daily", "article"))
@@ -28,8 +36,7 @@ def main():
             # KILL_SWITCH and the normal activation/budget/account checks remain.
             config.DRY_RUN = False
             import browser
-            from panel_worker import check_session
-            check_session(browser, False)
+            prepare_session(browser)
             if args.kind == "daily":
                 import run
                 sys.argv = ["run.py", "--dzien", "--wyslij"]

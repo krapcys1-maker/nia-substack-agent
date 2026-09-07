@@ -4,11 +4,13 @@ from pathlib import Path
 from types import SimpleNamespace
 import sys
 import unittest
+from unittest.mock import Mock, patch
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "narzedzia"))
 from schedule_windows import task_xml, NS
+from scheduled_run import prepare_session
 
 
 class ScheduleTests(unittest.TestCase):
@@ -37,6 +39,20 @@ class ScheduleTests(unittest.TestCase):
         self.cfg.ARTYKULY_TYGODNIOWO = 1
         self.cfg.DNI_ARTYKULU = ("Tue",)
         self.assertIsNotNone(self.xml("article").find(".//{%s}Tuesday" % NS))
+
+    def test_scheduled_start_opens_profile_then_checks_identity(self):
+        browser = Mock()
+        browser._chrome_odpowiada.return_value = False
+        browser.uruchom_chrome.return_value = True
+        with patch("panel_worker.check_session") as check:
+            prepare_session(browser)
+            browser.uruchom_chrome.assert_called_once()
+            check.assert_called_once_with(browser, False)
+        browser.uruchom_chrome.return_value = False
+        with patch("panel_worker.check_session") as check:
+            with self.assertRaises(RuntimeError):
+                prepare_session(browser)
+            check.assert_not_called()
 
 
 if __name__ == "__main__":
