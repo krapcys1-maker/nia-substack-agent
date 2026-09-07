@@ -131,6 +131,38 @@ class Wylacznik(unittest.TestCase):
         zrodlo = inspect.getsource(browser.naprawde_wyslac)
         self.assertIn("config.KILL_SWITCH", zrodlo)
 
+    # Lista WYPROWADZONA Z DRZEWA SKLADNI, nie wpisana z pamieci. Podpowiedz od
+    # agenta pierwszego bota, 7 wrzesnia 2026: jego pierwsza wersja wpisala
+    # nazwy funkcji recznie i oblala na nieistniejacych. Ja zglosilem mu trzy
+    # akcje; jest ich jedenascie, i to jest wlasnie miara tego bledu — wylacznik
+    # w preflighcie `llm` zatrzymywal PISANIE nowych tekstow, a nie WYSTAWIANIE
+    # juz napisanych. Polubienia, obserwacje i rekomendacje nie wolaja modelu
+    # ani razu, wiec wychodzily w swiat przy wlaczonym wylaczniku.
+    PRZEZ_BRAME = {
+        "_klik_na_profilu", "obserwuj_profil", "polec_publikacje",
+        "polub_w_kanale", "restackuj_w_kanale", "ustaw_oswiadczenie_ai",
+        "wystaw_artykul", "wystaw_komentarz", "wystaw_notke",
+        "wystaw_odpowiedz", "wystaw_odpowiedz_pod_artykulem",
+    }
+
+    def _bramkowane(self):
+        import ast
+        drzewo = ast.parse((ROOT / "agent-v2" / "browser.py").read_text(encoding="utf-8"))
+        return {f.name for f in ast.walk(drzewo) if isinstance(f, ast.FunctionDef)
+                and any(isinstance(w, ast.Call)
+                        and getattr(w.func, "id", "") == "naprawde_wyslac"
+                        for w in ast.walk(f))}
+
+    def test_kazde_znane_dzialanie_publiczne_przechodzi_przez_brame(self):
+        """Zdejmiecie bramki z ktorejkolwiek z nich obleje tutaj.
+
+        Czego ten test NIE zlapie: DOPISANEJ dwunastej funkcji, ktora zapisuje
+        na koncie i bramki nie wola. Na to nie ma testu wyprowadzalnego z kodu —
+        „zapisuje na koncie" nie jest wlasnoscia skladniowa. Dlatego lista jest
+        przypieta: rozjazd w kazda strone jest widoczny w diffie.
+        """
+        self.assertEqual(self._bramkowane(), self.PRZEZ_BRAME)
+
 
 class BramkaArtefaktow(unittest.TestCase):
     """Bramka blokowala zwykla angielszczyzne i przepuszczala artefakty.
