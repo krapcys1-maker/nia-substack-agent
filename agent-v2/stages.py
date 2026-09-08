@@ -2119,7 +2119,17 @@ def znajdz_ciekawostki(
         dziedziny=NOWA_LINIA.join(f"- {d}" for d in dziedziny),
         generatory=NOWA_LINIA.join(
             f"**{g}** — {config.GENERATORY[g]}" for g in generatory),
-        zaczyn_kanalow=zaczyn_z_kanalow(),
+        # SKROTY WLACZONE — z tego samego powodu co w `scout`, i znaleziony tym
+        # samym wydrukiem: to bylo DRUGIE miejsce wolajace selektor bez
+        # argumentow. Etap buduje bank kandydatow artykulowych, a robil to
+        # z samych tytulow, choc `oczysc` tuz obok zdejmuje z tytulu obietnice,
+        # bo naglowek sprzedaje zamiast opisywac.
+        #
+        # CENA, ZMIERZONA NA PRAWDZIWYM WYWOLANIU: ten etap chodzi na
+        # `deepseek-v4-flash` i zjada 41 333 tokeny wejscia za 0,0485 USD.
+        # Skroty dokladaja okolo 2100 tokenow, czyli JEDEN PROCENT ceny etapu,
+        # ktory i tak idzie najwyzej raz na dobe (`SZUKANIE_BANKU_NA_DOBE`).
+        zaczyn_kanalow=zaczyn_z_kanalow(ze_skrotem=True, run_id=run_id),
         # WYDARZENIE JAKO OKAZJA, NIE TEMAT — patrz komentarz wyzej.
         wydarzenia=("\n".join(
             "- %s (mowi o tym %d kanalow): %s"
