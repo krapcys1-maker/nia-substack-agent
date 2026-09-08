@@ -782,7 +782,7 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-574 wierszy, 13 funkcji na poziomie modułu, 0 klas
+653 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -790,6 +790,7 @@
 | `_kandydaci(pozycje)` *(wewn.)* | (kanal, surowy tytul, data RRRR-MM-DD, url, skrot) -> kandydaci. Wspolne dla |
 | `przetworz(wpisy)` | (nazwa_kanalu, element Atom z YouTube) -> kandydaci. Czysta funkcja, testowalna. |
 | `_tekst(el)` *(wewn.)* | — |
+| `_bez_wstepu(tekst)` *(wewn.)* | Opis bez reklamy i naglowka redakcji z POCZATKU. |
 | `_skrot(*elementy)` *(wewn.)* | Pierwszy niepusty opis wpisu, bez HTML-a, przyciety do `SKROT_ZNAKOW`. |
 | `_data_rss(napis)` *(wewn.)* | `pubDate` RSS (RFC 2822) albo data ISO -> RRRR-MM-DD; pusto, gdy nie da sie. |
 | `wpisy_z_kanalu(nazwa, tresc)` | Kanal RSS 2.0 albo Atom (blog laboratorium, lista publikacji) -> kandydaci. |
