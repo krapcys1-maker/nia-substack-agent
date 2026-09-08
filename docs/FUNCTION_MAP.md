@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 37 |
-| functions and methods | 767 |
+| functions and methods | 768 |
 | functions that call a paid model | 27 |
 | functions that touch the browser | 67 |
 | functions that touch the database | 49 |
@@ -57,7 +57,7 @@ For paid calls the verdict comes from
 | [`kanal.py`](#agent-v2kanal-py) | 13 | 0 | 3 | 0 | Kanal czytelnika — jedyne zrodlo celow do komentowania. |
 | [`konfiguracja.py`](#agent-v2konfiguracja-py) | 45 | 0 | 0 | 0 | Wczytanie `konfiguracja.toml` i pol presetu — jeden kontrakt pol, jeden zapis. |
 | [`kopia_subskrybentow.py`](#agent-v2kopia-subskrybentow-py) | 4 | 0 | 1 | 0 | Kopia listy subskrybentow — jedyne aktywo, ktorego nie da sie odtworzyc. |
-| [`korpus_kanalow.py`](#agent-v2korpus-kanalow-py) | 13 | 0 | 0 | 0 | Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja. |
+| [`korpus_kanalow.py`](#agent-v2korpus-kanalow-py) | 14 | 0 | 0 | 0 | Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja. |
 | [`llm.py`](#agent-v2llm-py) | 26 | 0 | 0 | 4 | Provider calls with per-attempt accounting, reservations and deadlines. |
 | [`migracja_okno_promocji.py`](#agent-v2migracja-okno-promocji-py) | 2 | 0 | 0 | 0 | Jednorazowe uzupelnienie pola `dodane` w kolejce promocji. |
 | [`norma.py`](#agent-v2norma-py) | 16 | 0 | 0 | 1 | Ile agent naprawde zrobil, dzien po dniu, wobec normy. |
@@ -700,7 +700,7 @@ Kopia listy subskrybentow — jedyne aktywo, ktorego nie da sie odtworzyc.
 
 Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja.
 
-13 funkcji.
+14 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -708,15 +708,16 @@ Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja.
 | 118 | `_kandydaci(pozycje)` | — | (kanal, surowy tytul, data RRRR-MM-DD, url, skrot) -> kandydaci. | `korpus_kanalow.przetworz`, `korpus_kanalow.wpisy_z_kanalu` |
 | 156 | `przetworz(wpisy)` | — | (nazwa_kanalu, element Atom z YouTube) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
 | 173 | `_tekst(el)` | — | — | `korpus_kanalow.wpisy_z_kanalu` |
-| 180 | `_skrot(*elementy)` | — | Pierwszy niepusty opis wpisu, bez HTML-a, przyciety do `SKROT_ZNAKOW`. | `korpus_kanalow.wpisy_z_kanalu` |
-| 204 | `_data_rss(napis)` | — | `pubDate` RSS (RFC 2822) albo data ISO -> RRRR-MM-DD; pusto, gdy nie da sie. | `korpus_kanalow.wpisy_z_kanalu`, `stages.zaczyn_z_kanalow` |
-| 224 | `wpisy_z_kanalu(nazwa, tresc)` | — | Kanal RSS 2.0 albo Atom (blog laboratorium, lista publikacji) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
-| 280 | `przeplot_zrodel(po_zrodlach)` | — | Po jednym wpisie z kazdego zrodla na zmiane, od najswiezszych. | `korpus_kanalow.korpus_kanalow` |
-| 326 | `_rdzen(temat)` | — | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. | `korpus_kanalow.wielkie_wydarzenia` |
-| 338 | `_numer_wersji(slowo)` | — | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. | `korpus_kanalow.wielkie_wydarzenia` |
-| 346 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | — | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
-| 497 | `_cache_key()` | — | — | `korpus_kanalow.korpus_kanalow` |
-| 503 | `korpus_kanalow(ile)` | — | — | `audyt_tematow.main`, `korpus_kanalow (poziom modulu)`, `stages.zaczyn_z_kanalow`, `stages.znajdz_ciekawostki` |
+| 216 | `_bez_wstepu(tekst)` | — | Opis bez reklamy i naglowka redakcji z POCZATKU. | `korpus_kanalow._skrot` |
+| 255 | `_skrot(*elementy)` | — | Pierwszy niepusty opis wpisu, bez HTML-a, przyciety do `SKROT_ZNAKOW`. | `korpus_kanalow.wpisy_z_kanalu` |
+| 283 | `_data_rss(napis)` | — | `pubDate` RSS (RFC 2822) albo data ISO -> RRRR-MM-DD; pusto, gdy nie da sie. | `korpus_kanalow.wpisy_z_kanalu`, `stages.zaczyn_z_kanalow` |
+| 303 | `wpisy_z_kanalu(nazwa, tresc)` | — | Kanal RSS 2.0 albo Atom (blog laboratorium, lista publikacji) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
+| 359 | `przeplot_zrodel(po_zrodlach)` | — | Po jednym wpisie z kazdego zrodla na zmiane, od najswiezszych. | `korpus_kanalow.korpus_kanalow` |
+| 405 | `_rdzen(temat)` | — | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. | `korpus_kanalow.wielkie_wydarzenia` |
+| 417 | `_numer_wersji(slowo)` | — | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. | `korpus_kanalow.wielkie_wydarzenia` |
+| 425 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | — | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
+| 576 | `_cache_key()` | — | — | `korpus_kanalow.korpus_kanalow` |
+| 582 | `korpus_kanalow(ile)` | — | — | `audyt_tematow.main`, `korpus_kanalow (poziom modulu)`, `stages.zaczyn_z_kanalow`, `stages.znajdz_ciekawostki` |
 
 ---
 

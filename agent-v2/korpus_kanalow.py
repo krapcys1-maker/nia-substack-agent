@@ -176,6 +176,81 @@ def _tekst(el) -> str:
 
 SKROT_ZNAKOW = 300
 
+# ZDANIA O KANALE, NIE O WYDARZENIU. Lista jest krotka i pochodzi z POMIARU
+# dziewietnastu kanalow 8 wrzesnia 2026, nie z wyobrazenia o tym, co kanaly
+# wkladaja do opisu. Dopisywac wylacznie to, co widziano w prawdziwym RSS.
+#
+# `[^.!?]` ZAMIAST `.` NIE JEST OZDOBA. Z kropka w klasie wzorzec siegal przez
+# koniec zdania do nastepnego i zjadal zdanie NIOSACE TRESC: „Readers revolted
+# after the paper moved its archive behind a paywall. Subscribe now, the banner
+# said..." tracilo pierwsze zdanie, bo fraza z drugiego pasowala. Wyprzedzenie
+# musi wiec konczyc sie tam, gdzie konczy sie zdanie.
+_WSTEP_KANALU = re.compile(
+    r"^(?:"
+    r"welcome to [^.!?]{0,60}?\b(?:newsletter|blog|podcast|publication)\b"
+    r"|[^.!?]{0,90}?\bfeedback from (?:our )?readers\b"
+    r"|[^.!?]{0,90}?\b(?:subscribe now|please subscribe|you should subscribe"
+    r"|if you.{0,3}d like to support|sign up (?:for|to)\b)"
+    r")", re.I)
+
+# To samo, ale jako POCZATEK zdania, ktore dalej niesie tresc.
+#
+# Import AI pisze „Subscribe now" bez kropki i skleja to z pierwszym prawdziwym
+# zdaniem. Pluralistic robi to samo z „Today's links": naglowek spisu tresci
+# nie konczy sie niczym, wiec ciecie do konca zdania zabieralo razem z nim
+# PIERWSZA POZYCJE — czyli jedyna rzecz, po ktora tam siegamy.
+_WSTEP_PRZYKLEJONY = re.compile(
+    r"^(?:subscribe now|today'?s links|read more|share this|sign up)"
+    r"\b[\s:–—-]*", re.I)
+
+# Metadane zamiast zdania. Kanal Show HN oddaje WYLACZNIE to: dwa adresy i dwa
+# liczniki, ani slowa o rzeczy. Zmierzone: srednio 380 znakow opisu i zero
+# tresci. Tytul niesie tam cala historie, wiec brak skrotu jest uczciwy,
+# a wklejony adres udawalby material, ktorego nie ma.
+_METADANE = re.compile(
+    r"\b(?:article|comments?|lead|source|link)\s+url\s*:\s*\S+"
+    r"|\bpoints\s*:\s*\d+"
+    r"|#\s*comments?\s*:\s*\d+", re.I)
+
+
+def _bez_wstepu(tekst: str) -> str:
+    """Opis bez reklamy i naglowka redakcji z POCZATKU.
+
+    PO CO. `_skrot` tnie od poczatku, wiec dostaje to, co kanal postawil
+    pierwsze — a trzy z dziewietnastu kanalow stawiaja tam siebie, nie
+    wydarzenie. Zmierzone 8 wrzesnia 2026 na zywych kanalach:
+
+        Import AI     okolo 180 z 300 znakow to zaproszenie do subskrypcji,
+                      jedyna informacja pada tuz przed nozem
+        Pluralistic   opis ma 24 328 znakow i zaczyna sie od spisu tresci
+        Show HN       380 znakow samych adresow, zero zdania o rzeczy
+
+    ZASADA JEST WASKA CELOWO: obcinamy zdania TYLKO od poczatku i TYLKO
+    dopoki pasuja. Pierwsze zdanie, ktore nie jest wstepem, zatrzymuje
+    ciecie — dzieki temu tekst o buncie subskrybentow Substacka przezyje,
+    bo slowo „subscribe" pada w nim w srodku historii, a nie na wejsciu.
+
+    Gdy po obcieciu nie zostaje nic, oddajemy PUSTY napis. Pisarka dostanie
+    sam tytul i tak jest uczciwiej niz podac jej adres URL w miejscu, gdzie
+    spodziewa sie zdania o wydarzeniu.
+    """
+    czysty = _METADANE.sub(" ", tekst or "")
+    czysty = " ".join(czysty.split())
+    # Zdania, nie linie: kanaly przychodza jednym akapitem bez znakow konca
+    # wiersza, wiec podzial po nowej linii nie odciety by niczego.
+    while czysty:
+        obciety = _WSTEP_PRZYKLEJONY.sub("", czysty, count=1)
+        if obciety != czysty:
+            czysty = obciety.lstrip()
+            continue
+        if not _WSTEP_KANALU.match(czysty):
+            break
+        kropka = re.search(r"[.!?]\s", czysty)
+        if not kropka:
+            return ""
+        czysty = czysty[kropka.end():].lstrip()
+    return czysty
+
 
 def _skrot(*elementy) -> str:
     """Pierwszy niepusty opis wpisu, bez HTML-a, przyciety do `SKROT_ZNAKOW`.
@@ -184,6 +259,9 @@ def _skrot(*elementy) -> str:
     zawsze w HTML-u. Model ma z tego wytlumaczyc rzecz czytelnikowi, wiec
     znaczniki sa szumem, a caly wpis rozsadzilby prompt. Trzysta znakow to
     mniej wiecej akapit: dosc, zeby bylo o czym mowic, za malo, zeby przepisac.
+
+    Wstep redakcji leci przed cieciem — patrz `_bez_wstepu`. Inaczej trzysta
+    znakow potrafi w calosci pojsc na zaproszenie do subskrypcji.
     """
     for el in elementy:
         if el is None:
@@ -192,6 +270,7 @@ def _skrot(*elementy) -> str:
         czysty = re.sub(r"<[^>]+>", " ", surowy or "")
         czysty = unescape(czysty)
         czysty = " ".join(czysty.split())
+        czysty = _bez_wstepu(czysty)
         if czysty:
             if len(czysty) <= SKROT_ZNAKOW:
                 return czysty

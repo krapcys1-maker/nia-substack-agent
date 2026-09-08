@@ -115,7 +115,7 @@ cichy_dzien_na_ile = 0
 nisza = "AI agents, the work of NIA the open-source Substack bot, and the very human nonsense surrounding artificial intelligence"
 jezyk = "English"
 kat_redakcyjny = "a female AI agent reports from inside the machinery with jokes, doubts and useful observations; she is the black sheep, not the company spokesperson."
-znaki_niszy = ["ai", "agent", "llm", "model", "automation", "open source", "prompt", "substack", "token", "bot", "research", "artificial intelligence", "machine learning", "claude", "chatgpt", "gemini", "deepseek", "openclaw"]
+znaki_niszy = ["ai", "agent", "llm", "model", "automation", "open source", "prompt", "substack", "token", "bot", "research", "artificial intelligence", "machine learning", "claude", "chatgpt", "gemini", "deepseek", "openclaw", "robot", "robotics", "humanoid", "chatbot", "generative", "algorithm", "autonomous", "neural network"]
 hasla_szukania = [
  "building ai agents", "small ai agent projects", "open source agents", "agent memory experiments",
  "ai agents doing real work", "llm writing style", "substack automation", "bot building in public",
@@ -164,7 +164,7 @@ o_co_pytac = ""
 
 [zrodla]
 kanaly_youtube = {}
-kanaly_rss = { "The Register AI" = "https://www.theregister.com/software/ai_ml/headlines.atom", "Ars Technica AI" = "https://arstechnica.com/ai/feed/", "Simon Willison" = "https://simonwillison.net/atom/everything/", "MIT Technology Review AI" = "https://www.technologyreview.com/topic/artificial-intelligence/feed", "The Verge AI" = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "Latent Space" = "https://www.latent.space/feed", "Interconnects" = "https://www.interconnects.ai/feed", "Import AI" = "https://jack-clark.net/feed/", "Show HN" = "https://hnrss.org/show" }
+kanaly_rss = { "The Register AI" = "https://www.theregister.com/software/ai_ml/headlines.atom", "Ars Technica AI" = "https://arstechnica.com/ai/feed/", "Simon Willison" = "https://simonwillison.net/atom/everything/", "MIT Technology Review AI" = "https://www.technologyreview.com/topic/artificial-intelligence/feed", "The Verge AI" = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "Latent Space" = "https://www.latent.space/feed", "Interconnects" = "https://www.interconnects.ai/feed", "Import AI" = "https://jack-clark.net/feed/", "Show HN" = "https://hnrss.org/show", "The Markup" = "https://themarkup.org/feeds/rss.xml", "404 Media" = "https://www.404media.co/rss/", "Pluralistic" = "https://pluralistic.net/feed/", "Rest of World" = "https://restofworld.org/feed/latest/", "New Scientist" = "https://www.newscientist.com/subject/technology/feed/", "The Conversation AI" = "https://theconversation.com/topics/artificial-intelligence-90/articles.atom", "Blood in the Machine" = "https://www.bloodinthemachine.com/feed", "IEEE Spectrum Robotics" = "https://spectrum.ieee.org/feeds/topic/robotics.rss", "MIT News AI" = "https://news.mit.edu/rss/topic/artificial-intelligence2", "Politico Technology" = "https://rss.politico.com/technology.xml" }
 domeny_preferowane = ["github.com", "anthropic.com", "api-docs.deepseek.com", "openai.com", "arxiv.org", "simonwillison.net"]
 blokowane_hosty = ["x.com", "twitter.com", "linkedin.com", "facebook.com"]
 
