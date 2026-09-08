@@ -2962,6 +2962,57 @@ def polub_w_kanale(ile: int, wyslij: bool = False, *,
     return wynik
 
 
+def konto_za_duze(handle: str) -> bool:
+    """Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS.
+
+    ZMIERZONE NA PRAWDZIWYM PRZEBIEGU, 8 wrzesnia 2026. Rutyna dnia zrobila
+    jedna notke i jeden komentarz w 116 minut, a restacki — norma cztery na
+    dobe — nie wyszly wcale, bo przebieg do nich nie dotarl. Piec podejsc do
+    subskrypcji skonczylo sie tym samym zdaniem w dzienniku:
+
+        "account exceeds the size limit or its size is unknown"
+
+    Kazde z nich kosztowalo PELNA przerwe rytmu (5-15 min, po serii porazek
+    dwa razy tyle) i jeden z czterech dziennych slotow. Piec pominiec razy
+    okolo trzynastu minut to okolo szescdziesieciu pieciu minut — dokladnie
+    tyle, ile zabraklo na restacki.
+
+    A sprawdzenie jest DARMOWE I NATYCHMIASTOWE: rozmiar publicznosci stoi
+    w publicznym JSON-ie `/api/v1/user/<handle>/public_profile`. Nie trzeba
+    ani wchodzic na profil, ani czekac, az sie ustoi.
+
+    Kolejnosc byla wiec odwrotna do ceny: platnosc przed sprawdzeniem.
+
+    DLACZEGO TO NIE ZASTEPUJE STRAZNIKA W `_klik_na_profilu`. Tamten zostaje
+    i ma zostac. To sito jest TANIE, wiec wolno mu sie mylic w strone „wpusc";
+    straznik przy samym przycisku jest OSTATNI i on decyduje. Sito, ktore
+    zastapiloby straznika, przy pierwszym bledzie sieci zasubskrybowaloby
+    konto z limitu.
+
+    Oddaje True takze wtedy, gdy rozmiaru NIE DA SIE ustalic — to ta sama
+    decyzja, ktora podejmuje `_klik_na_profilu`, i musi byc ta sama, bo inaczej
+    sito przepuszczaloby dokladnie te konta, ktore straznik zaraz odrzuci.
+    """
+    if config.SUBSKRYPCJE_MAX_ODBIORCOW is None:
+        return False
+    import personality
+    try:
+        p, browser_, context = podlacz_sie()
+        strona = context.new_page()
+        try:
+            profil = api_json(strona, f"/api/v1/user/{handle}/public_profile")
+        finally:
+            strona.close()
+    except Exception as exc:                                   # noqa: BLE001
+        # AWARIA SITA NIE MOZE ZATRZYMAC BLOKU. Gdy nie wiemy, puszczamy dalej
+        # — straznik przy przycisku i tak sprawdzi, a tam pomylka nic nie
+        # kosztuje poza jedna proba.
+        print("  [subskrypcje] nie sprawdzilem rozmiaru @%s (%s) — decyzja"
+              " zostaje przy profilu" % (handle, type(exc).__name__), flush=True)
+        return False
+    return not personality.small_account(profil, config.SUBSKRYPCJE_MAX_ODBIORCOW)
+
+
 def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                      wyslij: bool) -> dict[str, Any]:
     """Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego.

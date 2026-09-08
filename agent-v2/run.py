@@ -2133,6 +2133,31 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                     zostal_slad = True
                 print(f"  (nie ustalilem konta dla {host} — pomijam)", flush=True)
                 continue
+            # SUFIT ODBIORCOW SPRAWDZANY PRZED PRZERWA, NIE PO NIEJ.
+            #
+            # Zmierzone na przebiegu z 8 wrzesnia 2026: piec podejsc do
+            # subskrypcji skonczylo sie zdaniem „account exceeds the size
+            # limit or its size is unknown", a kazde z nich zaplacilo najpierw
+            # pelna przerwe rytmu i zuzylo jeden z czterech slotow. Okolo
+            # szescdziesieciu pieciu minut z przebiegu, ktory tego dnia zrobil
+            # jedna notke i jeden komentarz, a do restackow nie dotarl wcale.
+            #
+            # Rozmiar publicznosci stoi w publicznym JSON-ie i kosztuje
+            # sekunde. Placilismy wiec za rzecz PRZED sprawdzeniem, czy jest
+            # nam potrzebna.
+            #
+            # POMINIECIE NIE JEST PROBA. Komentarz przy `proby += 1` mowi
+            # slusznie, ze odmowa profilu to zuzyty slot, bo weszlismy na
+            # cudza strone i dostalismy odpowiedz. Tutaj nie weszlismy
+            # nigdzie: odczytalismy publiczna liczbe i odeszlismy.
+            if wyslij and browser.konto_za_duze(uchwyt):
+                browser.dopisz_wynik(
+                    "subskrypcja", {}, komu=uchwyt,
+                    powod="account exceeds the size limit or its size is unknown")
+                zostal_slad = True
+                print(f"  (@{uchwyt} przekracza sufit odbiorcow — pomijam bez"
+                      f" przerwy i bez zuzycia proby)", flush=True)
+                continue
             if wyslij:
                 if not rytm("komentarz", "subskrypcje", rytm_stanu):
                     break

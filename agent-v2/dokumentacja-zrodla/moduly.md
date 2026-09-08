@@ -121,7 +121,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2989 wierszy, 27 funkcji na poziomie modułu, 1 klas
+3014 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -310,7 +310,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5594 wierszy, 103 funkcji na poziomie modułu, 3 klas
+5645 wierszy, 104 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -374,6 +374,7 @@
 | `_stan_przycisku(uchwyt)` *(wewn.)* | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. |
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
+| `konto_za_duze(handle)` | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
 | `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |
 | `pobierz_subskrybentow()` | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. |
@@ -688,7 +689,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3597 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3609 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
