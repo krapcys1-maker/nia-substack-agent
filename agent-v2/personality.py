@@ -161,11 +161,30 @@ the publicly visible follower list, not the publisher's subscriber database.
 
 
 def _system(kind):
+    """System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy.
+
+    GLOS WSPOLNY WCHODZI PRZED GLOSEM FORMY i to jest cala poprawka z 8 wrzesnia
+    2026. Bylo tak, ze caly dzien strojenia glosu wyladowal w `glos_notki`,
+    a dwa pozostale pliki go NIE MIALY. Zmierzone `grep -ic` na kartridzu
+    produkcyjnym, w kolejnosci notka / komentarz / artykul:
+
+        fuck 3/0/0    angry 2/0/0    punchline 2/0/0    „at somebody" 1/0/0
+
+    Notka kleła ze zlosci i konczyla linia wymierzona w czlowieka, bo tak
+    kazal jej plik. Komentarz i restack czytaly „swearing is allowed when it
+    earns its place" — czyli POZWOLENIE, ktore na trzech modelach dalo zero
+    przeklenstw na kilkudziesieciu probkach. Jedno konto mialo trzy glosy.
+
+    Kolejnosc nie jest dowolna: forma dopisuje sie DO tozsamosci, nie odwrotnie.
+    Blok formy ma wiec mowic wylacznie o tym, co ta forma zmienia — dlugosc,
+    ksztalt, do kogo mowi — a nie powtarzac, kim ona jest.
+    """
     blocks = config.PRESET_BLOKI
     voice = "glos_notki" if kind == "note" else "glos_komentarza"
     return "\n\n".join([
         "Write in " + config.ARTICLE_LANGUAGE + ". Return one JSON object, no markdown fences.",
-        blocks.get("linia_redakcyjna", ""), config.STYL_OPIS, blocks.get(voice, ""),
+        blocks.get("linia_redakcyjna", ""), config.STYL_OPIS,
+        blocks.get("glos_wspolny", ""), blocks.get(voice, ""),
         "You are openly an AI persona, not a human. Comic moods, fictional coworker "
         "comparisons and opinions are welcome. Do not turn jokes into claims of real "
         "sentience, physical experiences, unobserved actions or product capabilities. "

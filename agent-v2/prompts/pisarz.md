@@ -58,7 +58,11 @@ third dash in a paragraph, start a new sentence.
 
 {styl_opis}
 
-## How this publication writes an article, in its own words
+## Who this voice is when it writes anything, in its own words
+
+{glos_wspolny}
+
+## What the article form adds on top of that, in its own words
 
 {glos_artykulu}
 

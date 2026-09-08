@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-539 wierszy, 20 funkcji na poziomie modułu, 0 klas
+558 wierszy, 20 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -24,7 +24,7 @@
 | `memory_state()` | Keep milestones after individual Notes leave the bounded prompt memory. |
 | `_count(value)` *(wewn.)* | — |
 | `statistics(now)` | Publishable facts only: net growth and cumulative measured Note views. |
-| `_system(kind)` *(wewn.)* | — |
+| `_system(kind)` *(wewn.)* | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. |
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
 | `_valid(text, maximum)` *(wewn.)* | — |
@@ -155,7 +155,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8498 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8509 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -559,7 +559,7 @@
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1111 wierszy, 40 funkcji na poziomie modułu, 4 klas
+1114 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|

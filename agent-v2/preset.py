@@ -122,6 +122,9 @@ BLOKI: dict[str, str] = {
     "linia_redakcyjna": ("co dla tej publikacji JEST tematem, a co nie, i jakie pytania "
                          "warto stawiac — czytaja skaut, ciekawostki, bank i bramka "
                          "'warto pisac'"),
+    "glos_wspolny": ("kim jest ten glos, gdy pisze COKOLWIEK — czytaja WSZYSTKIE "
+                     "formy: notka, komentarz, odpowiedz, restack i artykul. Bloki "
+                     "form dopisuja tylko to, co dana forma zmienia"),
     "glos_artykulu": "jak ten tytul pisze dlugi tekst — czyta pisarz artykulu",
     "glos_notki": "jak brzmi notka — czytaja briefy notki i mysli",
     "glos_komentarza": "jak brzmi komentarz i odpowiedz — komentarz, odpowiedz, restack",
