@@ -194,6 +194,40 @@ class AuditPorts(unittest.TestCase):
         self.assertEqual(report['groups']['notka']['unknown_attempts'],2)
         self.assertIsNone(report['groups']['notka']['period_usd_per_publication'])
 
+    def test_publication_ids_match_measurements_and_deduplicate_edited_records(self):
+        published = (NOW-timedelta(hours=24)).isoformat()
+        records = [dict(rodzaj=kind, udane=True, id=ident, kiedy=published, tekst='Published')
+                   for kind, ident in [('notka', 101), ('artykul', 102)]]
+        records.append(dict(records[0], tekst='Edited'))
+        self.write_rows('dziennik.jsonl', records)
+        self.write_rows('statystyki.jsonl', [dict(rodzaj=kind, id=str(ident), kiedy=NOW.isoformat(),
+            ma_karty_zasiegu=True, wyswietlenia=views)
+            for kind, ident, views in [('notka', 101, 15), ('artykul', 102, 30)]])
+        before = {p.name: p.read_bytes() for p in self.directory.iterdir()}
+        report = insights.collect(self.directory, now=NOW)
+        self.assertEqual(len(report['publications']), 2)
+        for kind, views in [('notka', 15), ('artykul', 30)]:
+            self.assertEqual(report['groups'][kind]['publications'], 1)
+            self.assertEqual(report['groups'][kind]['views_24h'], views)
+            self.assertEqual(report['groups'][kind]['measured_24h'], 1)
+        self.assertEqual(before, {p.name: p.read_bytes() for p in self.directory.iterdir()})
+        self.paid_mock.assert_not_called()
+
+    def test_interaction_target_id_cannot_supply_our_publication_measurements(self):
+        published = (NOW-timedelta(hours=24)).isoformat()
+        self.write_rows('dziennik.jsonl', [dict(rodzaj=kind, udane=True, id=900, kiedy=published)
+            for kind in ('komentarz', 'odpowiedz', 'restack')] +
+            [dict(rodzaj='restack', udane=True, id=900, nasz_id=901, kiedy=published)])
+        self.write_rows('statystyki.jsonl', [dict(rodzaj=kind, id='900', kiedy=NOW.isoformat(),
+            ma_karty_zasiegu=True, wyswietlenia=999)
+            for kind in ('komentarz', 'odpowiedz', 'notka')] +
+            [dict(rodzaj='notka', id='901', kiedy=NOW.isoformat(), ma_karty_zasiegu=True, wyswietlenia=7)])
+        report = insights.collect(self.directory, now=NOW)
+        self.assertEqual([p['id'] for p in report['publications']], [None, None, None, 901])
+        self.assertIsNone(report['groups']['komentarz']['views_24h'])
+        self.assertIsNone(report['groups']['odpowiedz']['views_24h'])
+        self.assertEqual(report['groups']['restack']['views_24h'], 7)
+
     def test_followup_uses_held_evidence_and_actual_missing_sources_without_any_model(self):
         brief=dict(title='Fixture question',question='What changed?',zrodlo_faktu='https://example.org/lead')
         corpus=[dict(url='https://example.org/held',text='Observed material',**{'class':'PRIMARY'}),

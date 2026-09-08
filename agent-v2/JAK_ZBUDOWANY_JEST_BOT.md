@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 36 494 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 36 497 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -226,7 +226,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `insights.py` — raport kosztow, porownywalnych pomiarow i decyzji researchu; tylko odczyt
 
-281 wierszy, 9 funkcji na poziomie modułu, 0 klas
+284 wierszy, 9 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
