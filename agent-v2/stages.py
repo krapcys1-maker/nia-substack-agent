@@ -697,6 +697,12 @@ WRITER_SYSTEM = (
 )
 
 
+def pisarz_z_persona() -> bool:
+    """Writing and prompt preview must choose the same persona route."""
+    return bool(config.PERSONA_WLACZONA and str(
+        (getattr(config, "PRESET_BLOKI", None) or {}).get("linia_redakcyjna") or "").strip())
+
+
 def system_pisarza() -> str:
     """System artykulu. Z wlaczona persona NIESIE TOZSAMOSC, a nie „anonimowa marke".
 
@@ -719,16 +725,14 @@ def system_pisarza() -> str:
     dowodowa mowi, CO wolno twierdzic. Dlatego zdanie o karcie stoi na koncu,
     po glosie — ostatnie slowo ma miec dowod, nie charakter.
     """
-    if not config.PERSONA_WLACZONA:
+    if not pisarz_z_persona():
         return WRITER_SYSTEM
-    kotwica = str((getattr(config, "PRESET_BLOKI", None) or {}).get("linia_redakcyjna") or "").strip()
-    if not kotwica:
-        return WRITER_SYSTEM
+    import personality
     return (NOWA_LINIA * 2).join([
         "You are the author of this article, not an anonymous brand. Everything "
         "below describes who you are; it governs voice, judgement and what you "
         "find funny or objectionable.",
-        kotwica,
+        *personality.voice_blocks("article"),
         f"You write for {config.NAZWA_MARKI}. An article is your long form: the "
         f"same person as your Notes, with room to build and an evidence pipeline "
         f"behind every claim. The jokes stay; the sourcing is not optional.",
@@ -881,7 +885,7 @@ def write(
     conn: sqlite3.Connection, run_id: int, card: dict[str, Any],
     glebokosc: str = "RICH",
 ) -> dict[str, Any]:
-    """Etap 7 — artykuł (Claude). To jest produkt.
+    """Etap 7 — artykuł, modelem wybranym w presecie dla roli `write`.
 
     `glebokosc` pochodzi z odsiewu i decyduje o DLUGOSCI. Temat bez
     drugiego aktu dostaje krotsza forme zamiast rozciagania: artykul
@@ -891,22 +895,26 @@ def write(
     """
 
     dl = config.dlugosc_dla(glebokosc)
+    persona = pisarz_z_persona()
     # Ruch koncowy i szerokosc drugiego aktu losujemy per artykul. Dwa
     # teksty napisane po jednej z poprzednich poprawek mialy identyczny
     # szkielet, bo prompt
     # zamawial go doslownie: ten sam drogowskaz, trzy paralele, to samo
     # zamkniecie. Powtarzalna forma zdradza maszyne tak samo jak powtarzana tresc.
-    ruch_nazwa, ruch_opis = config.losowy_ruch_koncowy()
+    ruch_nazwa, ruch_opis = ("", "") if persona else config.losowy_ruch_koncowy()
     # KARTA USTAWIA SUFIT. Do tej pory liczba paraleli byla losowana z samej
     # glebokosci i nie ogladala materialu, wiec artykul z pusta lista
     # `parallel_mechanisms` i tak dostawal polecenie rozwiniecia porownania
     # z inna dziedzina. Nie ma z czego go zrobic — zostaje zmyslenie.
-    ile_paraleli, opis_paraleli = config.losowa_liczba_paraleli(
+    ile_paraleli, opis_paraleli = (0, "") if persona else config.losowa_liczba_paraleli(
         glebokosc, dostepne=len(card.get("parallel_mechanisms") or []))
     print("  [pisanie] glebokosc %s -> cel %s slow (%s-%s)"
           % (glebokosc, dl["cel"], dl["min"], dl["max"]), flush=True)
-    print("  [pisanie] zakonczenie %s, paraleli: %d"
-          % (ruch_nazwa, ile_paraleli), flush=True)
+    if persona:
+        print("  [pisanie] persona: ksztalt i zakonczenie wybiera autorka", flush=True)
+    else:
+        print("  [pisanie] zakonczenie %s, paraleli: %d"
+              % (ruch_nazwa, ile_paraleli), flush=True)
     import style
 
     # KORPUS WEDLE PRESETU. `load_examples` odmawia bez przypietego korpusu
@@ -920,7 +928,7 @@ def write(
     ) or ("(no pinned style examples for this publication — follow the two "
           "profiles and the voice notes, and do not imitate any author)")
     prompt = _prompt(
-        "pisarz.md",
+        "pisarz_persona.md" if persona else "pisarz.md",
         target_words=dl["cel"],
         min_words=dl["min"],
         max_words=dl["max"],

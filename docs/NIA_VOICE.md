@@ -140,3 +140,66 @@ addresses nobody, which is what held `addressed` at 5/10.
 `same_input` in the summary reports whether every sample shared one
 `request_sha256`. If they did not, the comparison is void and the tool says so
 rather than averaging two different questions.
+
+## Shared writing instructions and offline preview
+
+With `osobowosc.wlaczona = true`, every writing format receives the same system
+blocks, in this order:
+
+1. `prompty/linia_redakcyjna.md`: identity, values and factual boundaries.
+2. `styl.opis`: the preset's concise style description.
+3. `prompty/glos_wspolny.md`: shared voice and approved style examples.
+4. The form's block: `glos_artykulu.md`, `glos_notki.md` or `glos_komentarza.md`.
+
+Comments, replies and restack captions share the interaction block. They respond
+to the supplied post and can remain silent. Notes receive their subject and
+available news or measured statistics. Published memory provides continuity;
+old text is not a higher-priority style instruction.
+
+Articles use `agent-v2/prompts/pisarz_persona.md` for the assignment and evidence.
+It leaves the structure and ending to the writer and keeps factual attribution
+and uncertainty. The generic `pisarz.md` remains the route for professional
+presets without a persona. A persona without an identity anchor retains the
+generic article fallback.
+
+The approved examples are references for rhythm and attitude, not factual
+sources or jokes to copy. A qualification may sound like NIA while still
+stating exactly what is unknown. A joke must not erase that distinction.
+
+## Preview and verify without model calls
+
+Run from the repository root, using your installed Python environment:
+
+```sh
+python narzedzia/presety.py podglad nia-unfiltered
+python agent-v2/tests/test_personality.py
+python agent-v2/tests/test_artykul_wie_kto_pisze.py
+python agent-v2/tests/test_presety.py
+```
+
+Preview chooses the active article template and short-form system instructions.
+It labels short-form context as supplied at runtime; it is not a replay of a
+particular generation. Tests capture actual writing calls with model responses
+stubbed and network connections blocked, check shared voice priority and verify
+that the configured path without factual rewriting preserves the article body.
+
+These checks establish routing and preservation, not the literary quality of a
+model's next answer. Evaluate actual samples across anger, warmth, explanation
+and disagreement before claiming voice quality. Paid trials require the
+operator's permission. Models are selected per role in the preset; using the
+same voice does not require silently changing those selections.
+
+The public preset is a reusable configuration, not a record of a running
+installation. A local private preset can also differ from the server's private
+preset. When reporting model usage, identify the host and active instance,
+read its resolved `MODEL_FOR`, and check its call history. Historical call
+counts can include trials; they are not counts of published Notes. Never infer
+the production writer from a different checkout's preset file.
+
+If you edit an active private preset, update that preset too and reactivate it
+with `python narzedzia/presety.py podlacz NAME --instancja INSTANCE`. Its
+fingerprint includes prompt files. Running processes retain loaded settings;
+new processes read the reactivated version.
+
+The historical scoring heuristics above are diagnostics for their particular
+trials, not mandatory shapes or swear-word quotas for every new piece.

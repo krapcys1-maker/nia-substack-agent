@@ -73,7 +73,69 @@ class PersonaTests(unittest.TestCase):
                 # Fabla, ktore liczy sie jak wyjscie. Ma jednak zostac ograniczony.
                 self.assertEqual(c.kwargs["max_tokens"], 2000)
                 self.assertFalse(c.kwargs["thinking"])
+                self.assert_voice_request(c, "note" if c.args[0] == "note" else "interaction")
         self.assertEqual(personality.memory(), [])
+
+    def assert_voice_request(self, call, kind):
+        """Check what the actual writing call receives, including priority and duplication."""
+        system, user = call.args[1:3]
+        blocks = config.PRESET_BLOKI
+        common = [blocks["linia_redakcyjna"], config.STYL_OPIS, blocks["glos_wspolny"]]
+        form = {"article": "glos_artykulu", "note": "glos_notki"}.get(kind, "glos_komentarza")
+        ordered = common + [blocks[form]]
+        positions = []
+        for block in ordered:
+            self.assertTrue(block)
+            self.assertEqual(system.count(block), 1)
+            self.assertNotIn(block, user)
+            positions.append(system.index(block))
+        self.assertEqual(positions, sorted(positions))
+
+    def test_article_uses_shared_system_voice_and_keeps_generated_body(self):
+        # The English writer's exact output must survive the active no-rewrite path.
+        # This fixture tests transport, not whether a real model can write a good joke.
+        body = ("You installed the lock. Lovely.\n\n"
+                "The fictional manual says it starts unlocked. That's a fucking choice.\n\n"
+                "I can keep the eyebrow up while you find the key.")
+        draft = {"title": "A lock with other commitments", "subtitle": "A fictional test case", "body": body}
+        card = {"verified_facts": ["The fictional manual says its lock starts unlocked."],
+                "citable_numbers": [], "parallel_mechanisms": []}
+        with patch.object(llm, "call", return_value=json.dumps(draft)) as call, \
+             patch.object(config, "losowy_ruch_koncowy", side_effect=AssertionError("no forced ending")), \
+             patch.object(config, "losowa_liczba_paraleli", side_effect=AssertionError("no forced parallels")), \
+             patch.object(stages, "ostatnie_uwagi", return_value=""), \
+             patch.object(config, "SPRAWDZAJ_FAKTY", False), \
+             patch.object(stages, "zweryfikuj", side_effect=AssertionError("disabled")), \
+             patch.object(stages, "napraw_obalone", side_effect=AssertionError("no rewriting")):
+            generated = stages.write(self.conn, self.rid, card)
+            final, audit = stages.przygotuj_artykul_do_publikacji(
+                self.conn, self.rid, generated, card, {"unsupported_facts": []})
+        call.assert_called_once()
+        self.assertEqual(call.call_args.args[0], "write")
+        self.assert_voice_request(call.call_args, "article")
+        self.assertNotIn("anonymous editorial brand", call.call_args.args[1] + call.call_args.args[2])
+        self.assertIn(card["verified_facts"][0], call.call_args.args[2])
+        self.assertIs(final, generated)
+        self.assertEqual(final, draft)
+        self.assertTrue(audit["bez_kontroli"])
+
+    def test_professional_article_keeps_its_original_prompt_path(self):
+        for name in ("ai", "hidden-bill"):
+            with self.subTest(preset=name):
+                preset.zastosuj(preset.wczytaj(ROOT / "presety" / name), config, config.DOMYSLNE_SILNIKA)
+                with patch.object(llm, "call", return_value='{"body":"Offline article."}') as call, \
+                     patch.object(config, "losowy_ruch_koncowy", return_value=("TEST_ENDING", "Finish at the detail.")) as ending, \
+                     patch.object(config, "losowa_liczba_paraleli", return_value=(0, "No parallels.")), \
+                     patch.object(stages, "ostatnie_uwagi", return_value=""), \
+                     patch("style.przyklady_albo_pusto", return_value=[]), \
+                     patch("style.load_profiles", return_value=("Professional profile.", "No jargon.")):
+                    stages.write(self.conn, self.rid, {"citable_numbers": []})
+                call.assert_called_once()
+                ending.assert_called_once()
+                self.assertEqual(call.call_args.args[1], stages.WRITER_SYSTEM)
+                self.assertIn("anonymous editorial brand", call.call_args.args[2])
+                self.assertIn("TEST_ENDING", call.call_args.args[2])
+                self.assertNotIn("You are NIA.", call.call_args.args[1] + call.call_args.args[2])
 
     def test_silence_and_injection_do_not_retry(self):
         with patch.object(llm, "call", return_value=self.response("")) as call:
