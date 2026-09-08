@@ -9,6 +9,52 @@ the [issue forms](https://github.com/krapcys1-maker/nia-substack-agent/issues/ne
 and [roadmap](ROADMAP.md). A public or redacted example is enough; never include
 account sessions or private drafts.
 
+## Pick a first contribution
+
+**Help build a small, self-hosted publishing project whose voice can be its own.**
+Writers, subject experts, designers, translators and Python developers are welcome.
+These are open tasks, checked against the repository on 8 September 2026:
+
+| Task | Useful skills | First deliverable |
+|---|---|---|
+| [Fresh installation #31](https://github.com/krapcys1-maker/nia-substack-agent/issues/31) | Trying software, clear reporting | One OS, one confusing step and a proposed guide correction |
+| [Panel access and language #32](https://github.com/krapcys1-maker/nia-substack-agent/issues/32) | Accessibility, UI or English/Polish | A keyboard walkthrough or wording fix for one flow |
+| [Editorial preset #1](https://github.com/krapcys1-maker/nia-substack-agent/issues/1) | Knowledge of a subject, writing | An audience and a small source list; a full preset can follow |
+| [Voice evaluation #33](https://github.com/krapcys1-maker/nia-substack-agent/issues/33) | Writing, evaluation, optional Python | Source packets and a rubric that cover more than one mood |
+| [Repeated news #34](https://github.com/krapcys1-maker/nia-substack-agent/issues/34) | Python, information retrieval | Fixtures showing duplicates and useful follow-ups |
+| [Saved-draft view #35](https://github.com/krapcys1-maker/nia-substack-agent/issues/35) | Python and browser UI | A read-only list/detail view for one active instance |
+| [Provider timeouts #2](https://github.com/krapcys1-maker/nia-substack-agent/issues/2) | Python, API adapters | Offline cases for model changes and output-limit overrides |
+
+Comment on the issue with the part you would like to take and your proposed first
+step. Check existing comments and PRs before starting. A small contribution is
+easier to review; you do not need to deliver the whole roadmap. If you only have
+time to review sources or test a screen, say so.
+
+The installation and panel-review tasks are labelled **good first issue**.
+More involved runtime changes use **help wanted**. The issues include starting
+files, completion criteria and test boundaries. No paid generation or access to
+the project's live Substack session is needed for these first deliverables.
+
+## A free development check
+
+Use a fresh checkout and Python 3.11+. After creating and activating a virtual
+environment as described in [INSTALL.md](docs/INSTALL.md), run:
+
+```bash
+python -m pip install -r requirements-dev.txt
+python narzedzia/presety.py sprawdz nia-unfiltered
+python agent-v2/tests/test_personality.py
+```
+
+These commands install development dependencies, validate the public preset and
+run isolated tests. They do not generate content or publish. Missing account/key
+warnings from preset validation are expected in a clean development checkout.
+For a documentation or design report, running Python is optional.
+
+Paid comparisons are separate: agree on the model, number of calls and estimated
+cost before running them. Never make a paid benchmark a prerequisite for a source
+list, usability report or offline regression test.
+
 ## Add a preset
 
 Start from `presety/SZABLON/` or copy an existing public preset. A modern preset

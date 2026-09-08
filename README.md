@@ -11,6 +11,9 @@ your own Substack account, API keys and editorial direction.
 [![License: MIT](https://img.shields.io/badge/License-MIT-304a3b)](LICENSE)
 [![Early development](https://img.shields.io/badge/status-early_development-ee5b32)](ROADMAP.md)
 
+[**Read NIA on Substack →**](https://substack.com/@nia1503032) ·
+[**Help build NIA →**](CONTRIBUTING.md#pick-a-first-contribution)
+
 https://github.com/user-attachments/assets/9ea8388e-5916-46ab-8620-6e7c8ebeaf96
 
 **Press Play: 92 seconds of NIA in action, right here on GitHub.**
@@ -31,6 +34,10 @@ for office life. She writes about agents and her own work, remembers published
 running jokes, and can report real account statistics. Casual Notes and comments
 use a light single-call path; articles keep source-based research and checks.
 Choose **AI** or **Hidden Bill** for a professional editorial voice.
+
+[Meet her on Substack](https://substack.com/@nia1503032): read the current Notes
+and replies, and see how the voice develops in public. The live account uses an
+evolving installation; the bundled preset is a starting point you can customize.
 
 ## What NIA can do
 
@@ -102,6 +109,7 @@ rewriting the engine.
 |---|---|---|
 | [AI](presety/ai/preset.toml) | What AI systems demonstrate, cost and change | 2 Notes/day, 1 article/week |
 | [The Hidden Bill](presety/hidden-bill/README.md) | Subscription terms, extra fees, repair restrictions and digital ownership | 2 Notes/day, 1 article/week |
+| [NIA Unfiltered](presety/nia-unfiltered/README.md) | A sharp, funny female AI persona writing about agents and her own work | 2 Notes/day, 2 articles/month |
 | [Your own](presety/SZABLON/preset.toml) | Start from the template or customize a private copy | You choose |
 
 These are configured slots and limits, not guaranteed output. The current
@@ -168,16 +176,27 @@ NIA is **new and actively being developed**. The public project launched in
 September 2026. Expect improvements to setup, reliability, editorial presets and
 documentation as we learn from real installations.
 
-Next priorities are a clearer first-run experience, better unattended recovery
-and easier scheduling. See the [roadmap](ROADMAP.md) for current capabilities,
+Next priorities include a clearer first run, saved-draft review, more varied
+source material and better evaluation of NIA's voice. See the [roadmap](ROADMAP.md) for current capabilities,
 planned work and ways to help. The demo shows a completed test-account workflow;
 it is not a long-term uptime or writing-quality benchmark.
 
 ## Help shape NIA
 
-- **Try it:** report where your first installation gets stuck or share a redacted result.
-- **Bring a subject:** contribute a preset for a field you know.
-- **Improve the engine:** help with browser reliability, setup and operating-system support.
+**We're looking for contributors: writers, testers, designers and developers.**
+Pick one small task, comment on its issue and tell us which part you want to take.
+Source research, a usability report or a focused documentation PR all help.
+
+| Your interest | A place to start |
+|---|---|
+| Trying the product | [Test one fresh installation](https://github.com/krapcys1-maker/nia-substack-agent/issues/31) |
+| Design, accessibility or translation | [Review one panel flow in English/Polish](https://github.com/krapcys1-maker/nia-substack-agent/issues/32) |
+| Writing and editorial judgment | [Bring a preset](https://github.com/krapcys1-maker/nia-substack-agent/issues/1) or [help evaluate NIA across different moods](https://github.com/krapcys1-maker/nia-substack-agent/issues/33) |
+| Python and browser UI | [Show saved drafts in the panel](https://github.com/krapcys1-maker/nia-substack-agent/issues/35) |
+| Research and reliability | [Reduce repeated news](https://github.com/krapcys1-maker/nia-substack-agent/issues/34) or [align provider timeouts](https://github.com/krapcys1-maker/nia-substack-agent/issues/2) |
+
+Each issue describes a bounded first contribution and how to check it. These
+starter tasks can use fixtures and local inspection, without paid model calls.
 
 [Contributing](CONTRIBUTING.md) · [Report a bug or propose a feature](https://github.com/krapcys1-maker/nia-substack-agent/issues/new/choose) ·
 [Compare related projects](docs/ALTERNATIVES.md)
