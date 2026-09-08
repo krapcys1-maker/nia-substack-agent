@@ -338,7 +338,11 @@ class PersonaTests(unittest.TestCase):
         self.assertFalse(personality.small_account({"subscriberCountNumber": True}, 1000))
 
     def test_article_still_requires_factcheck_in_persona_mode(self):
-        with patch.object(stages, "zweryfikuj", return_value={"safe_to_post": False, "nie_sprawdzone": True}) as verify:
+        # KONTROLA WLACZONA JAWNIE. Ten test bada sciezke ZE sprawdzaniem, a od
+        # 8 wrzesnia 2026 kartridz moze ja wylaczyc (`tresc.sprawdzaj_fakty_artykulu`).
+        # Bez tej linii wynik zalezal od tego, ktory preset jest akurat
+        # podlaczony — czyli test mowilby o konfiguracji, nie o kodzie.
+        with patch.object(config, "SPRAWDZAJ_FAKTY", True),              patch.object(stages, "zweryfikuj", return_value={"safe_to_post": False, "nie_sprawdzone": True}) as verify:
             _, audit = stages.przygotuj_artykul_do_publikacji(self.conn, self.rid, {"body": "An article about my work."}, {}, {})
         verify.assert_called_once()
         self.assertFalse(audit["safe_to_post"])

@@ -3492,6 +3492,28 @@ INSTANCJA = ""             # identyfikator instancji; pusty = brak presetu
 PRESET_BLOKI: dict[str, str] = {}
 
 
+# USTAWIONE PRZED `_aktywacja_przy_starcie()` I TO JEST WARUNEK, NIE STYL.
+# Preset stosuje sie w linii ponizej; stala zapisana PO niej nadpisalaby
+# wartosc z kartridza wartoscia domyslna i pole byloby martwe. Zmierzone:
+# przy `sprawdzaj_fakty = false` w presecie `config` oddawal True.
+# CZY ARTYKUL PRZECHODZI KONTROLE FAKTOW PRZED PUBLIKACJA.
+#
+# DOMYSLNIE TAK i tak ma zostac dla kazdego kartridza, ktory tego nie
+# przestawi. Wylaczenie jest decyzja WLASCICIELA publikacji i musi byc
+# widoczne w jego presecie, a nie schowane w silniku.
+#
+# Co konkretnie odpada przy `False`: `zweryfikuj` (sprawdzenie twierdzen
+# wyszukiwaniem) i `napraw_obalone` (przepisanie zgloszonych zdan). Artykul
+# idzie na konto tak, jak go napisal pisarz.
+#
+# CENA TEJ DECYZJI, ZAPISANA WPROST: pod nazwiskiem wlasciciela pojda
+# twierdzenia o prawdziwych firmach i ludziach z nazwiska, ktorych nikt nie
+# sprawdzil. 8 wrzesnia 2026 kontrola zlapala w jednym artykule osiem
+# twierdzen do poprawy — i w tym samym artykule przepuscila zla date
+# wydania poprawki, wiec nie jest to tez siatka bez dziur.
+SPRAWDZAJ_FAKTY = True
+
+
 def _aktywacja_przy_starcie():
     if _BEZ_KONFIGURACJI:
         return None
@@ -3623,3 +3645,4 @@ MIN_CALL_OUTPUT_TOKENS = 512
 CLAUDE_PROMPT_CACHE = False  # enable only after measuring same-model cache hits
 CACHE_MAX_AGE_S = 6 * 3600
 FACTCHECK_CACHE_MAX_AGE_S = 3600
+

@@ -4586,9 +4586,33 @@ def _status_twierdzenia(c: dict[str, Any]) -> str:
 
 
 def przygotuj_artykul_do_publikacji(conn, run_id, draft, card, review_report):
-    """Repair a factual problem within the existing quota; defer only this article."""
+    """Repair a factual problem within the existing quota; defer only this article.
+
+    KONTROLE DA SIE WYLACZYC W KARTRIDZU (`tresc.sprawdzaj_fakty`).
+    Domyslnie jest wlaczona i tak zostaje dla kazdego presetu, ktory nie powie
+    inaczej — wylaczenie jest decyzja wlasciciela publikacji i ma byc widoczne
+    w JEGO pliku, nie schowane w silniku.
+
+    Przy `False` nie wolamy ani `zweryfikuj`, ani `napraw_obalone`, i oddajemy
+    `safe_to_post: True` z jawnym powodem. To ostatnie NIE JEST kosmetyka:
+    `artykul_z_puli` (~1537) odklada artykul bez publikacji, gdy to pole jest
+    falszywe, wiec samo wyciecie kontroli dawaloby ZERO ARTYKULOW zamiast
+    artykulow niesprawdzonych. Wylaczenie ma znaczyc „publikuj bez sprawdzania",
+    a nie „nie publikuj".
+
+    Zapis w audycie mowi wprost, ze nikt tego tekstu nie sprawdzil — zeby za
+    pol roku nie dalo sie pomylic artykulu bez zarzutow z artykulem, ktorego
+    nie badano.
+    """
     import gates
     body = draft['body']
+    if not getattr(config, "SPRAWDZAJ_FAKTY", True):
+        print("  [factcheck] WYLACZONA W KARTRIDZU — publikuje bez sprawdzania"
+              " twierdzen", flush=True)
+        return draft, {"safe_to_post": True, "zarzuty": [],
+                       "bez_kontroli": True,
+                       "powod": "kontrola faktow wylaczona w kartridzu"
+                                " (tresc.sprawdzaj_fakty = false)"}
     with db.kanal('artykul'):
         audit = zweryfikuj(conn, run_id, body, draft.get('title', ''))
         if audit.get('nie_sprawdzone'):
@@ -4624,10 +4648,33 @@ def przygotuj_artykul_do_publikacji(conn, run_id, draft, card, review_report):
         return draft, audit
 
 
+BEZ_KONTROLI = {"safe_to_post": True, "zarzuty": [], "claims": [],
+                "nie_sprawdzone": False, "bez_kontroli": True,
+                "powod": "kontrola faktow wylaczona w kartridzu"
+                         " (tresc.sprawdzaj_fakty = false)"}
+
+
 def zweryfikuj(
     conn: sqlite3.Connection, run_id: int, tekst: str, kontekst: str = "",
 ) -> dict[str, Any]:
     """Sprawdza to, co model NAPISAŁ — nie to, czego szukał przed pisaniem.
+
+    WYLACZALNE W KARTRIDZU (`tresc.sprawdzaj_fakty`). Domyslnie wlaczone i tak
+    zostaje dla kazdego presetu, ktory nie powie inaczej — wylaczenie jest
+    decyzja wlasciciela publikacji i ma byc widoczne w JEGO pliku, nie schowane
+    w silniku.
+
+    Przy `False` oddajemy czyste przejscie i to zalatwia CALA sprawe naraz:
+    nie ma zarzutow, wiec zadna z trzech sciezek (notka, komentarz, artykul)
+    nie wola naprawy, i nic nie zostaje odlozone.
+
+    `safe_to_post: True` jest tu konieczne, nie kosmetyczne. Bramki notki,
+    komentarza i artykulu odkladaja tekst, gdy to pole jest falszywe — wiec
+    samo wyciecie kontroli dawaloby ZERO PUBLIKACJI zamiast publikacji
+    niesprawdzonych, czyli odwrotnosc tego, o co prosil wlasciciel.
+
+    `bez_kontroli` zostaje w zapisie, zeby za pol roku nie dalo sie pomylic
+    tekstu BEZ ZARZUTOW z tekstem, ktorego nikt nie badal.
 
     Sprawdzanie faktów przed pisaniem nie przewidzi, jakiego faktu model użyje.
     Dowód z życia: wszystkie trzy kandydatury oparły się na jednym twierdzeniu
@@ -4635,6 +4682,8 @@ def zweryfikuj(
     nieobecnym na liście wcześniej zweryfikowanych faktów. Model wziął je
     z pamięci i tym razem trafił. Nie ma powodu zakładać, że trafi zawsze.
     """
+    if not getattr(config, "SPRAWDZAJ_FAKTY", True):
+        return dict(BEZ_KONTROLI)
     # DZIEN Z ZEGARA, nie z pamieci modelu. Bez tego weryfikacja nie ma
     # jak zauwazyc, ze zrodlo sprzed dwoch lat opisuje inny swiat.
     from datetime import datetime as _dt, timezone as _tz
@@ -4862,7 +4911,15 @@ def napraw_obalone(
     """Try one bounded repair, then validate the replacement independently.
     Unsupported claims may be narrowed or removed; new facts need evidence.
     Returning None preserves the draft but does not make it publishable.
+
+    PRZY WYLACZONEJ KONTROLI NIE ROBI NIC. Druga bramka na tej samej decyzji:
+    `zweryfikuj` nie odda juz zadnych zarzutow, wiec tutaj i tak nikt nie
+    zajrzy — ale poprawiacz, ktorego DA SIE wywolac mimo wylaczonej kontroli,
+    jest dokladnie tym, co wlasciciel kazal usunac. Zero sciezek, a nie „zero
+    w praktyce".
     """
+    if not getattr(config, "SPRAWDZAJ_FAKTY", True):
+        return None
     if not config.NAPRAWA_OBALONYCH:
         return None
     do_naprawy = [c for c in (audyt.get("zarzuty") or [])

@@ -56,6 +56,14 @@ data_przestawienia = ""
 # -----------------------------------------------------------------------------
 # TEMAT — o czym jest to konto
 # -----------------------------------------------------------------------------
+[tresc]
+# Czy artykul przechodzi kontrole faktow przed publikacja. `true` (domyslnie)
+# sprawdza twierdzenia wyszukiwaniem i przepisuje te, ktore nie przezyly.
+# `false` publikuje tekst tak, jak napisal go pisarz — bez sprawdzania
+# i bez przepisywania. Wtedy pod nazwiskiem wlasciciela ida twierdzenia
+# o prawdziwych firmach i ludziach, ktorych nikt nie zweryfikowal.
+sprawdzaj_fakty = true
+
 [temat]
 # Jedno zdanie, podawane modelowi doslownie. Wchodzi w komunikat systemowy
 # skauta: „a publication about {nisza}". SILNIK NIE MA WARTOSCI DOMYSLNEJ:

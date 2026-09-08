@@ -231,6 +231,7 @@
 | `PRESET` | `None` | --- AKTYWNY PRESET ---------------------------------------------------------- JEDEN SILNIK, JEDNA INSTANCJA NARAZ, KONTEKST ROZWIAZANY PRZED |
 | `PRESET_AKTYWACJA` | `None` | — |
 | `INSTANCJA` | `""` | — |
+| `SPRAWDZAJ_FAKTY` | `True` | USTAWIONE PRZED `_aktywacja_przy_starcie()` I TO JEST WARUNEK, NIE STYL. Preset stosuje sie w linii ponizej; stala zapisana PO niej nadpisal |
 | `KONTO_ZE_SRODOWISKA` | `_konf.konto_ze_srodowiska(sys.modules[__name` | KONTO Z INSTALACJI: `.env` (SUBSTACK_HANDLE, NAZWA_MARKI) wygrywa z `[konto]` presetu i ze starego TOML-a. Preset moze byc wspolny dla wielu |
 | `CHROME_DEBUG_PORT` | `int(_env("CHROME_DEBUG_PORT", "9222") or "92` | PORT DEBUGOWANIA CHROME'A — TAK SAMO Z INSTALACJI, NIE Z PRESETU. Preset moze byc wspolny, a port nie: dwie kopie bota na jednej maszynie mu |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |

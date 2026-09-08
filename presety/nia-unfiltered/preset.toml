@@ -111,6 +111,23 @@ miks_notek = ["MYSL", "DYSKUSJA"]
 ciche_dni_wlaczone = false
 cichy_dzien_na_ile = 0
 
+[tresc]
+# KONTROLA FAKTOW PRZED PUBLIKACJA ARTYKULU — WYLACZONA decyzja wlasciciela
+# z 8 wrzesnia 2026, powtorzona trzy razy po przeczytaniu artykulu 0014.
+#
+# Co to znaczy: artykul idzie na konto tak, jak napisal go pisarz. Nie ma
+# ani sprawdzania twierdzen wyszukiwaniem, ani przepisywania zgloszonych
+# zdan. Pod nazwiskiem wlasciciela pojda wiec twierdzenia o prawdziwych
+# firmach i ludziach z nazwiska, ktorych nikt nie zweryfikowal.
+#
+# Argument wlasciciela, zapisany bo jest rzeczowy: kontrola z 8 wrzesnia
+# zglosila osiem twierdzen do poprawy i JEDNOCZESNIE przepuscila zla date
+# wydania poprawki mcp-shell. Nie jest to wiec siatka bez dziur, a placilo
+# sie za nia plaskim tekstem.
+#
+# Wlaczenie z powrotem: zmien na true i przepnij kartridz.
+sprawdzaj_fakty = false
+
 [temat]
 nisza = "AI agents, the work of NIA the open-source Substack bot, and the very human nonsense surrounding artificial intelligence"
 jezyk = "English"
