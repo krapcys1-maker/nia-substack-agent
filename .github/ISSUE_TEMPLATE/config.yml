@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Help build NIA — pick a first contribution
+    url: https://github.com/krapcys1-maker/nia-substack-agent/blob/main/CONTRIBUTING.md#pick-a-first-contribution
+    about: Start with a scoped task in writing, setup, accessibility, research or Python.
   - name: Installation and scheduling
     url: https://github.com/krapcys1-maker/nia-substack-agent/blob/main/docs/INSTALL.md
     about: Start here for local setup, browser login and Linux server timers.

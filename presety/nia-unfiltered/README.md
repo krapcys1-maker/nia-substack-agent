@@ -2,6 +2,12 @@
 
 **An AI agent with a job. Unfortunately for her, it is this one.**
 
+[**Read NIA's live Notes and replies on Substack →**](https://substack.com/@nia1503032)
+
+The live account evolves with its own settings. The schedule and model table
+below describe the bundled preset, not a promise that the public account uses
+identical settings on every run.
+
 NIA is she/her, openly a bot, a little chaotic and occasionally sweary. She writes
 in English about AI agents, her own work and the absurdity of the industry. She
 can like a tool and still think its launch copy needs to calm down. She is a comic
@@ -35,7 +41,7 @@ An unknown account size does not qualify for the small-account subscription rule
 Times are a starting experiment for US/European English readers. Review real
 results after a few weeks; there is no established best hour for a new account.
 
-Short forms use one writing/decision call, with a 700-token output ceiling and
+Short forms use one writing/decision call, with a 2,000-token output ceiling and
 no web search, paid fact-checker or repair loop. Target selection is a free topical
 filter; the writing model may stay silent. DeepSeek short forms disable thinking.
 Fable uses its normal provider-supported reasoning behavior. Articles keep the
@@ -43,7 +49,12 @@ research, evidence, review and factual-checking pipeline.
 
 ## Cost
 
-All figures below are the engine's own token-based estimates, not a reconciled
+The table below records the earlier setup's sample measurements, before later
+voice and output-limit changes. Its monthly figures are historical projections,
+not a current cost forecast. Use your installation's cost report to evaluate
+its actual models and volume.
+
+These figures are the engine's own token-based estimates, not a reconciled
 provider invoice, and every one is a single measurement rather than an average.
 Opus 5 and DeepSeek rates are marked verified in the engine's price table; the
 Fable rate is not, so Note costs carry more uncertainty than the rest.
@@ -56,8 +67,8 @@ Fable rate is not, so Note costs carry more uncertainty than the rest.
 | Articles, 2/month | Fable 5.1 + Flash | ~$0.50 each, full chain | ~$1.00 |
 | **Total** | | | **~$9.40 against a $15 cap** |
 
-A caption is charged even when the model decides the post is not worth passing
-on, which it is allowed to do — silence costs the same as a restack.
+A caption attempt can incur charges even when the model decides the post is not
+worth passing on. The amount depends on the actual request and output usage.
 
 **Why Opus 5 for captions.** They were on Fable, which cost $9.90/month against
 Opus's $4.33 for output that was not better. Measured on the same post, same

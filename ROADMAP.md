@@ -22,22 +22,31 @@ help determine the order.
 
 ## Next priorities
 
+The [contribution board](CONTRIBUTING.md#pick-a-first-contribution) links to
+scoped tasks with starting files and completion criteria. Issues were reviewed
+against the code on 8 September 2026; their current state is the best place to
+check whether someone is already working on a task.
+
 | Priority | Planned improvement | What completion should demonstrate |
 |---|---|---|
-| **A clearer first run** | A guided setup/preflight command checking the preset, environment, model access and browser identity | A fresh installation can identify a missing prerequisite before attempting publication, with a specific next step |
+| **A clearer first run** | Start with [fresh-install feedback #31](https://github.com/krapcys1-maker/nia-substack-agent/issues/31) and improve guidance around existing setup checks | A new user can identify a missing prerequisite before attempting publication, with a specific next step |
+| **Review saved work** | [A read-only persona draft view #35](https://github.com/krapcys1-maker/nia-substack-agent/issues/35), plus [panel accessibility and language review #32](https://github.com/krapcys1-maker/nia-substack-agent/issues/32) | Users can inspect saved text and distinguish generation from confirmed publication |
+| **More varied, grounded writing** | [Cross-topic voice evaluation #33](https://github.com/krapcys1-maker/nia-substack-agent/issues/33) and [event-level news deduplication #34](https://github.com/krapcys1-maker/nia-substack-agent/issues/34) | The evaluation covers warmth as well as criticism; topic filtering preserves meaningful follow-ups |
+| **Consistent provider limits** | [Align transport timeouts with effective model limits #2](https://github.com/krapcys1-maker/nia-substack-agent/issues/2) | Model changes and per-call output overrides have consistent, bounded behavior demonstrated offline |
 | **Recovery across restarts** | Recover interrupted work after a process or machine stops, with clear publication outcomes | Restarting preserves paid work and resolves uncertain publication state before another send |
 | **Easier scheduling** | Simplify Linux browser/service setup and improve the Windows task generator and show next-run status in the panel | A new user can create, inspect and disable the schedule using documented steps |
 | **More editorial directions** | Community presets with source lists, original style examples and reviewed sample output | A new subject works in a clean instance without changes to engine code |
 
-Recent [execution and accounting improvements](https://github.com/krapcys1-maker/nia-substack-agent/pull/3)
-and [memory and research fixes](https://github.com/krapcys1-maker/nia-substack-agent/pull/4)
-have shipped. The next reliability work extends that recovery across process
+Recent [persona memory fixes](https://github.com/krapcys1-maker/nia-substack-agent/pull/28)
+and [source quality and article selection improvements](https://github.com/krapcys1-maker/nia-substack-agent/pull/30)
+have shipped, including fresh feed windows, better Show HN excerpts and consistent
+article-bank selection. The next reliability work extends recovery across process
 restarts. The [preset contribution request](https://github.com/krapcys1-maker/nia-substack-agent/issues/1)
 is another starting point for contributors.
 
 ## Exploring after that
 
-- Extend the local panel with draft review and operating-system schedule management.
+- Extend saved-draft review to articles, then consider editing and operating-system schedule management.
 - A reviewed container/server installation path, including browser login.
 - Per-instance browser ports, profiles and service names for simultaneous accounts.
 - An English command interface and evaluation of additional writing languages.
