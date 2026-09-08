@@ -852,10 +852,19 @@ def wstaw_date_zrodel(tekst: str, card: dict[str, Any]) -> str:
         # Bez dat nie ma stopki, ale nie zostawiamy po niej dziury: akapit,
         # w ktorym stalo tylko to zdanie, znika w calosci.
         return "\n\n".join(czesci)
-    # „One datestamp, at the top" — tak jak zamawial prompt, tylko bez
-    # proszenia o to modelu.
-    i = 1 if (czesci and czesci[0].lstrip().startswith("#")) else 0
-    czesci.insert(i, "Figures checked against sources to %s." % najnowsza)
+    # NA DOLE, NIE NA GORZE — i cala reszta tego pliku nazywa to ZDANIE
+    # „stopka". Stalo jednak na pozycji zero, wiec KAZDY artykul otwieral sie
+    # notka zgodnosci zamiast pierwszym zdaniem autorki.
+    #
+    # Zmierzone na artykule 0014 z 8 wrzesnia 2026: czytelnik dostawal
+    # „Figures checked against sources to 2026-08-01." i dopiero pod tym
+    # tekst. Wlasciciel przeczytal to jako „brzmi jak gowno, o niczym" i mial
+    # racje co do pierwszego wrazenia: pierwsze zdanie artykulu bylo
+    # adnotacja procesu, a nie wypowiedzia.
+    #
+    # Data zostaje, bo mowi prawde o tym, do kiedy sprawdzono liczby. Zmienia
+    # sie tylko miejsce: stopka ma stac tam, gdzie stoi stopka.
+    czesci.append("Figures checked against sources to %s." % najnowsza)
     return "\n\n".join(czesci)
 
 

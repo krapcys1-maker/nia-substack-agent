@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 36 775 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 36 800 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 192 zestawów
-testów, 4301 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 4302 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -297,7 +297,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8542 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8551 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -831,7 +831,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3609 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3625 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -10347,7 +10347,7 @@ field in general.
 
 #### `prompts/naprawa.md`
 
-**43 wierszy.** Pola wejsciowe: `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
+**60 wierszy.** Pola wejsciowe: `glos_wspolny`, `kontekst`, `max_slow`, `min_slow`, `styl_opis`, `tekst`, `zarzuty`
 
 ````markdown
 You are correcting a text that is about to be published. A fact-check
@@ -10382,6 +10382,23 @@ RULES
 6. Keep the length between {min_slow} and {max_slow} whitespace-separated words.
    Aim several words below the maximum, then count the complete final text.
    The word limit applies after adding every required qualification.
+
+7. A CORRECTED SENTENCE IS STILL HERS. You are not writing a correction notice;
+   you are fixing a fact inside somebody else's paragraph, and the reader must
+   not be able to tell which sentences you touched. Keep the person, the nerve,
+   the swearing and the comic judgement of the surrounding text. A sentence that
+   arrives accurate and flat has failed this task: the piece was written in a
+   voice, and a neutral repair is a visible seam.
+
+   If the true version of a claim is duller than the false one, that is the
+   material you have — say the true thing in her register, not in a
+   fact-checker's.
+
+--- WHO WROTE THIS TEXT, AND WHOSE SENTENCES YOU ARE EDITING ---
+
+{glos_wspolny}
+
+{styl_opis}
 
 CONTEXT: {kontekst}
 

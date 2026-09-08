@@ -1392,7 +1392,7 @@ field in general.
 
 #### `prompts/naprawa.md`
 
-**43 wierszy.** Pola wejsciowe: `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
+**60 wierszy.** Pola wejsciowe: `glos_wspolny`, `kontekst`, `max_slow`, `min_slow`, `styl_opis`, `tekst`, `zarzuty`
 
 ````markdown
 You are correcting a text that is about to be published. A fact-check
@@ -1427,6 +1427,23 @@ RULES
 6. Keep the length between {min_slow} and {max_slow} whitespace-separated words.
    Aim several words below the maximum, then count the complete final text.
    The word limit applies after adding every required qualification.
+
+7. A CORRECTED SENTENCE IS STILL HERS. You are not writing a correction notice;
+   you are fixing a fact inside somebody else's paragraph, and the reader must
+   not be able to tell which sentences you touched. Keep the person, the nerve,
+   the swearing and the comic judgement of the surrounding text. A sentence that
+   arrives accurate and flat has failed this task: the piece was written in a
+   voice, and a neutral repair is a visible seam.
+
+   If the true version of a claim is duller than the false one, that is the
+   material you have — say the true thing in her register, not in a
+   fact-checker's.
+
+--- WHO WROTE THIS TEXT, AND WHOSE SENTENCES YOU ARE EDITING ---
+
+{glos_wspolny}
+
+{styl_opis}
 
 CONTEXT: {kontekst}
 

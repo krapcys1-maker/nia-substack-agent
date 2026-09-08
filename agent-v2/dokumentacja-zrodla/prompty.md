@@ -123,9 +123,9 @@
 {{"note": "<the note>", "words": <integer>, "why_no_note": "<empty string, or — if the idea you had needed a fact and you refused to invent one — one sentence saying what evidence it would have needed>"}}
 ```
 
-#### `naprawa.md` (43 wierszy)
+#### `naprawa.md` (60 wierszy)
 
-**Pola wejściowe:** `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
+**Pola wejściowe:** `glos_wspolny`, `kontekst`, `max_slow`, `min_slow`, `styl_opis`, `tekst`, `zarzuty`
 
 **Kontrakt wyjścia:**
 
