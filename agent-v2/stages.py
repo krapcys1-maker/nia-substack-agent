@@ -6375,7 +6375,30 @@ def pick_topic(
 
 @_na_kanal("artykul")
 def scout(conn: sqlite3.Connection, run_id: int, count: int = 6) -> list[dict[str, Any]]:
-    """Etap 1 — skaut tematow (DeepSeek V4 Pro)."""
+    """Etap 1 — skaut tematow.
+
+    SKROTY WLACZONE, I TO JEST ZMIANA Z 8 WRZESNIA 2026. Skaut wolal
+    `zaczyn_z_kanalow()` bez argumentow, czyli dostawal DWADZIESCIA SZESC
+    SAMYCH TYTULOW. Wybieral z nich temat artykulu — najdrozszej formy, jaka
+    to konto produkuje — nie widzac ani jednego zdania o tym, czego kazda
+    pozycja dotyczy.
+
+    Ten sam plik pisze o tytulach dwa razy i za kazdym razem to samo:
+    `tematy_do_porownania` mowi wprost, ze tytul „potrafi nie miec ANI JEDNEGO
+    slowa wspolnego z tym, o czym artykul naprawde jest", a `oczysc` zdejmuje
+    z niego obietnice, bo naglowek sprzedaje, a nie opisuje. Skaut mial wiec
+    material, ktory reszta silnika uznaje za niewiarygodny.
+
+    CENA, POLICZONA PRZED WLACZENIEM. Skrot to 300 znakow na pozycje, czyli
+    okolo 2100 tokenow doklejonych do wejscia. Skaut chodzi na
+    `deepseek-v4-flash` po 0,22 USD za milion tokenow wejscia — dodatek
+    kosztuje wiec **okolo pol tysiecznej dolara** przy wywolaniu, ktore
+    zmierzone kosztuje 0,0136 USD. To trzy procent ceny etapu.
+
+    Rachunek byl inny tam, gdzie ten domyslny wylacznik powstal: przy pisarce
+    notek, wolanej wielokrotnie w przebiegu i wtedy na drozszym modelu, te same
+    dwa tysiace tokenow podwajaly cene formy. Skaut idzie RAZ na artykul.
+    """
     history = recent_angles(conn)
     # Pytania czytelnikow sa jedynym POZYTYWNYM sygnalem, jaki skaut dostaje.
     # Dotad mial wylacznie liste tematow, ktorych ma NIE powtarzac — czyli
@@ -6386,7 +6409,7 @@ def scout(conn: sqlite3.Connection, run_id: int, count: int = 6) -> list[dict[st
     prompt = _prompt(
         "skaut.md",
         count=count,
-        zaczyn_kanalow=zaczyn_z_kanalow(),
+        zaczyn_kanalow=zaczyn_z_kanalow(ze_skrotem=True, run_id=run_id),
         history_json=json.dumps(history, ensure_ascii=False, indent=2),
         pytania_czytelnikow=(
             "\n".join("- " + p for p in pytania) if pytania

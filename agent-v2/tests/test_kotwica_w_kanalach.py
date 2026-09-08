@@ -154,7 +154,7 @@ def uruchom_skauta(tematy, korpus=KORPUS):
             korpus_kanalow.korpus_kanalow)
     stages.recent_angles = lambda conn, limit=None: []
     stages.pytania_dla_skauta = lambda ile=6: []
-    stages.zaczyn_z_kanalow = lambda ile=26: "(atrapa)"
+    stages.zaczyn_z_kanalow = lambda ile=26, **reszta: "(atrapa)"
     korpus_kanalow.korpus_kanalow = lambda ile=200: [dict(w) for w in korpus]
     stages.llm.call = lambda *a, **k: json.dumps(
         {"topics": [dict(t) for t in tematy],
