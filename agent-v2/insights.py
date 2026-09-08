@@ -180,7 +180,10 @@ def collect(directory, days=7, now=None):
         kind = channel(row.get('rodzaj'))
         if kind == 'shared' or row.get('udane') is not True or row.get('pominiete') or not in_period(row.get('kiedy')):
             continue
-        identity = (kind, str(row.get('nasz_id') or ''), str(row.get('gdzie') or row.get('tekst') or row.get('tytul') or ''))
+        # Notes are published with `id`; replies use `nasz_id`. For interactions,
+        # an unqualified `id` may identify somebody else's post, not our reply.
+        own_id = row.get('nasz_id') or (row.get('id') if kind in ('notka', 'artykul') else None)
+        identity = (kind, str(own_id or ''), str(row.get('gdzie') or row.get('tekst') or row.get('tytul') or ''))
         # Confirmed IDs are unique even if the recorded title/text later changes.
         if identity[1]:
             identity = identity[:2]
@@ -188,13 +191,13 @@ def collect(directory, days=7, now=None):
             continue
         seen.add(identity)
         measured_kind = 'notka' if kind == 'restack' else kind
-        observations = per_id[measured_kind, str(row.get('nasz_id'))] if row.get('nasz_id') else []
+        observations = per_id[measured_kind, str(own_id)] if own_id else []
         dates = {moment(r.get('wystawione')) for r in observations if moment(r.get('wystawione'))}
         published = next(iter(dates)) if len(dates) == 1 else None
         # Legacy records can count publications, but not pretend to know their age.
         if not dates:
             published = moment(row.get('kiedy'))
-        item = dict(kind=kind, id=row.get('nasz_id'), published_at=published.isoformat() if published else None,
+        item = dict(kind=kind, id=own_id, published_at=published.isoformat() if published else None,
                     text=str(row.get('tekst') or row.get('tytul') or '')[:240])
         groups[kind]['publications'] += 1
         for hours in (24, 48):
