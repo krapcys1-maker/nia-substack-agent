@@ -31,7 +31,7 @@ Constant `config.NAZWA_MARKI`, set by `konto.nazwa_marki`
 | `README.md` | 3 | comment — harmless, but stale | `**Your autonomous Substack editor. Your publication, your rules.**` |
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 1 | GENERATED — rebuilds itself | `# Your Publication — dokumentacja odtworzeniowa agenta` |
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 46 | GENERATED — rebuilds itself | `Agent prowadzi anglojęzycznego Substacka **„Your Publication"**, który` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12093 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12101 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
 | `agent-v2/alarm.py` | 146 | **BY HAND** | `uruchamialby bota pod marka „Your Publication". To ma byc alarm.` |
 | `agent-v2/config.py` | 139 | **FIELD** | `NAZWA_MARKI = "Your Publication"` |
 | `agent-v2/konfiguracja.py` | 723 | **BY HAND** | `Placeholder marki („Your Publication", „Your AI Publication") trafialby` |
@@ -79,8 +79,8 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 | file | line | how | context |
 |---|---|---|---|
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 736 | GENERATED — rebuilds itself | `\| `konto_placeholder()` \| Konto instalacji nadal jest placeholderem — bot sprawdzalby pr` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2318 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12094 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2326 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12102 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
 | `agent-v2/alarm.py` | 140 | **BY HAND** | `"""Konto instalacji nadal jest placeholderem — bot sprawdzalby profil „your-handle".` |
 | `agent-v2/browser.py` | 592 | comment — harmless, but stale | `# (your-handle.substack.com), a /api/v1/reader/* i /api/v1/user/*` |
 | `agent-v2/browser.py` | 1346 | comment — harmless, but stale | `# `substack.com/@your-handle/following` oddaje 26 uchwytow, a` |
