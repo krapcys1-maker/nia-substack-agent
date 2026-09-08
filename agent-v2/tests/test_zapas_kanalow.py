@@ -26,6 +26,7 @@ BEZ PYTESTA. Uruchamiac z korzenia repozytorium.
 """
 import sys
 import types
+from httpx import Timeout
 
 sys.path.insert(0, "agent-v2")
 import korpus_kanalow   # noqa: E402
@@ -69,6 +70,7 @@ class _Klient:
 
 _atrapa = types.ModuleType("httpx")
 _atrapa.Client = _Klient
+_atrapa.Timeout = Timeout
 sys.modules["httpx"] = _atrapa
 
 # Wpisy udajace przetworzony korpus. Ksztalt jak z `przetworz`.

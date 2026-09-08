@@ -11,8 +11,8 @@ The **what it does** column comes from each function's own docstring, so it is i
 
 | what | how many |
 |---|---|
-| modules | 32 |
-| functions and methods | 739 |
+| modules | 33 |
+| functions and methods | 744 |
 | functions that call a paid model | 27 |
 | functions that touch the browser | 67 |
 | functions that touch the database | 48 |
@@ -67,6 +67,7 @@ For paid calls the verdict comes from
 | [`stages.py`](#agent-v2stages-py) | 174 | 24 | 1 | 20 | Etapy lancucha, po kolei, w pamieci. |
 | [`statystyki.py`](#agent-v2statystyki-py) | 11 | 0 | 0 | 0 | Statystyki wystawionych pozycji: kto to zobaczyl i co z tego wyniklo. |
 | [`style.py`](#agent-v2style-py) | 9 | 0 | 0 | 0 | Głos redakcyjny: korpus próbek i dwa profile stylu. |
+| [`tekst_strony.py`](#agent-v2tekst-strony-py) | 5 | 0 | 0 | 0 | Read explicitly marked article bodies before generic page extraction. |
 | [`wzajemnosc.py`](#agent-v2wzajemnosc-py) | 27 | 0 | 0 | 0 | Czy zaczepieni odwzajemniaja sie, i skad naprawde biora sie czytelnicy. |
 
 ---
@@ -141,24 +142,24 @@ Artykul bierze temat z tej samej puli, co notki.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 120 | `temat_z_faktu(conn, run_id, fakt)` | **$**(wybor) | Zamienia udokumentowany fakt w brief artykulu. | `artykul_z_puli._przebieg` |
-| 158 | `glebokosc_z_oceny(ocena)` | — | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. | `artykul_z_puli._napisz_i_zapisz` |
-| 196 | `glebokosc_z_oceny._surowy(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny`, `artykul_z_puli.glebokosc_z_oceny._filar` |
-| 204 | `glebokosc_z_oceny._filar(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny` |
-| 220 | `uniesie_artykul(brief)` | — | Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania. | `artykul_z_puli._przebieg` |
-| 254 | `uniesie_artykul._pusty(s)` | — | — | `artykul_z_puli.uniesie_artykul` |
-| 267 | `wybierz_fakt(conn, run_id, ile)` | — | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. | `artykul_z_puli._przebieg` |
-| 339 | `main()` | DB | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. | `artykul_z_puli (poziom modulu)` |
-| 429 | `_zrob_miejsce_na_fakt(card)` | — | Robi miejsce na wstrzykniete twierdzenie, nie tracac zadnego ZRODLA. | `artykul_z_puli._przebieg` |
-| 460 | `_zrob_miejsce_na_fakt._host(c)` | — | — | `artykul_z_puli._zrob_miejsce_na_fakt` |
-| 479 | `_rozszerz_najstarsze(card, data_faktu)` | — | Data wstrzyknietego zrodla wazy — ale TYLKO w strone ostrzezenia. | `artykul_z_puli._przebieg` |
-| 509 | `_przebieg(conn, run_id)` | DB | — | `artykul_z_puli.main` |
-| 936 | `_katalog_ratunku()` | — | Katalog OBOK `ARTICLES_DIR`, nigdy w nim. | `artykul_z_puli._ratuj_tekst` |
-| 967 | `_opublikuj(sciezka)` | WWW | Wystawia gotowy artykul, probujac wiecej niz raz. | `artykul_z_puli._napisz_i_zapisz` |
-| 1019 | `_ramka(powod, brak, katalog)` | — | Ostrzezenie, ktore idzie na POCZATEK `.md`, a nie tylko obok niego. | `artykul_z_puli._ratuj_tekst` |
-| 1091 | `_zrodla(card)` | — | Sekcja `## Sources` — bez pytania bazy o nazwy zrodel. | `artykul_z_puli._ratuj_tekst` |
-| 1109 | `_ratuj_tekst(run_id, brief, card, draft, etap, exc, raport)` | — | Gotowy tekst na dysk, gdy budzet albo wylacznik przerywa PO pisaniu. | `artykul_z_puli._napisz_i_zapisz` |
-| 1234 | `_napisz_i_zapisz(conn, run_id, brief, card)` | — | Od bramki „warto pisac" do zapisu i grafiki. | `artykul_z_puli._przebieg` |
+| 121 | `temat_z_faktu(conn, run_id, fakt)` | **$**(wybor) | Zamienia udokumentowany fakt w brief artykulu. | `artykul_z_puli._przebieg` |
+| 159 | `glebokosc_z_oceny(ocena)` | — | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. | `artykul_z_puli._napisz_i_zapisz` |
+| 197 | `glebokosc_z_oceny._surowy(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny`, `artykul_z_puli.glebokosc_z_oceny._filar` |
+| 205 | `glebokosc_z_oceny._filar(pole)` | — | — | `artykul_z_puli.glebokosc_z_oceny` |
+| 221 | `uniesie_artykul(brief)` | — | Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania. | `artykul_z_puli._przebieg` |
+| 255 | `uniesie_artykul._pusty(s)` | — | — | `artykul_z_puli.uniesie_artykul` |
+| 268 | `wybierz_fakt(conn, run_id, ile)` | — | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. | `artykul_z_puli._przebieg` |
+| 343 | `main()` | DB | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. | `artykul_z_puli (poziom modulu)` |
+| 433 | `_zrob_miejsce_na_fakt(card)` | — | Robi miejsce na wstrzykniete twierdzenie, nie tracac zadnego ZRODLA. | `artykul_z_puli._przebieg` |
+| 464 | `_zrob_miejsce_na_fakt._host(c)` | — | — | `artykul_z_puli._zrob_miejsce_na_fakt` |
+| 483 | `_rozszerz_najstarsze(card, data_faktu)` | — | Data wstrzyknietego zrodla wazy — ale TYLKO w strone ostrzezenia. | `artykul_z_puli._przebieg` |
+| 513 | `_przebieg(conn, run_id)` | DB | — | `artykul_z_puli.main` |
+| 947 | `_katalog_ratunku()` | — | Katalog OBOK `ARTICLES_DIR`, nigdy w nim. | `artykul_z_puli._ratuj_tekst` |
+| 978 | `_opublikuj(sciezka)` | WWW | Wystawia gotowy artykul, probujac wiecej niz raz. | `artykul_z_puli._napisz_i_zapisz` |
+| 1030 | `_ramka(powod, brak, katalog)` | — | Ostrzezenie, ktore idzie na POCZATEK `.md`, a nie tylko obok niego. | `artykul_z_puli._ratuj_tekst` |
+| 1102 | `_zrodla(card)` | — | Sekcja `## Sources` — bez pytania bazy o nazwy zrodel. | `artykul_z_puli._ratuj_tekst` |
+| 1120 | `_ratuj_tekst(run_id, brief, card, draft, etap, exc, raport)` | — | Gotowy tekst na dysk, gdy budzet albo wylacznik przerywa PO pisaniu. | `artykul_z_puli._napisz_i_zapisz` |
+| 1245 | `_napisz_i_zapisz(conn, run_id, brief, card)` | — | Od bramki „warto pisac" do zapisu i grafiki. | `artykul_z_puli._przebieg` |
 
 ---
 
@@ -644,19 +645,19 @@ Tematy z kanalow, ktore robia dokladnie to, co ma robic nasza publikacja.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 104 | `oczysc(tytul)` | — | Zdejmuje obietnice, zostawia zdarzenie. | `korpus_kanalow._kandydaci` |
-| 117 | `_kandydaci(pozycje)` | — | (kanal, surowy tytul, data RRRR-MM-DD, url, skrot) -> kandydaci. | `korpus_kanalow.przetworz`, `korpus_kanalow.wpisy_z_kanalu` |
-| 155 | `przetworz(wpisy)` | — | (nazwa_kanalu, element Atom z YouTube) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
-| 172 | `_tekst(el)` | — | — | `korpus_kanalow.wpisy_z_kanalu` |
-| 179 | `_skrot(*elementy)` | — | Pierwszy niepusty opis wpisu, bez HTML-a, przyciety do `SKROT_ZNAKOW`. | `korpus_kanalow.wpisy_z_kanalu` |
-| 203 | `_data_rss(napis)` | — | `pubDate` RSS (RFC 2822) albo data ISO -> RRRR-MM-DD; pusto, gdy nie da sie. | `korpus_kanalow.wpisy_z_kanalu`, `stages.zaczyn_z_kanalow` |
-| 223 | `wpisy_z_kanalu(nazwa, tresc)` | — | Kanal RSS 2.0 albo Atom (blog laboratorium, lista publikacji) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
-| 258 | `przeplot_zrodel(po_zrodlach)` | — | Po jednym wpisie z kazdego zrodla na zmiane, od najswiezszych. | `korpus_kanalow.korpus_kanalow` |
-| 304 | `_rdzen(temat)` | — | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. | `korpus_kanalow.wielkie_wydarzenia` |
-| 316 | `_numer_wersji(slowo)` | — | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. | `korpus_kanalow.wielkie_wydarzenia` |
-| 324 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | — | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
-| 475 | `_cache_key()` | — | — | `korpus_kanalow.korpus_kanalow` |
-| 481 | `korpus_kanalow(ile)` | — | — | `audyt_tematow.main`, `korpus_kanalow (poziom modulu)`, `stages.zaczyn_z_kanalow`, `stages.znajdz_ciekawostki` |
+| 105 | `oczysc(tytul)` | — | Zdejmuje obietnice, zostawia zdarzenie. | `korpus_kanalow._kandydaci` |
+| 118 | `_kandydaci(pozycje)` | — | (kanal, surowy tytul, data RRRR-MM-DD, url, skrot) -> kandydaci. | `korpus_kanalow.przetworz`, `korpus_kanalow.wpisy_z_kanalu` |
+| 156 | `przetworz(wpisy)` | — | (nazwa_kanalu, element Atom z YouTube) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
+| 173 | `_tekst(el)` | — | — | `korpus_kanalow.wpisy_z_kanalu` |
+| 180 | `_skrot(*elementy)` | — | Pierwszy niepusty opis wpisu, bez HTML-a, przyciety do `SKROT_ZNAKOW`. | `korpus_kanalow.wpisy_z_kanalu` |
+| 204 | `_data_rss(napis)` | — | `pubDate` RSS (RFC 2822) albo data ISO -> RRRR-MM-DD; pusto, gdy nie da sie. | `korpus_kanalow.wpisy_z_kanalu`, `stages.zaczyn_z_kanalow` |
+| 224 | `wpisy_z_kanalu(nazwa, tresc)` | — | Kanal RSS 2.0 albo Atom (blog laboratorium, lista publikacji) -> kandydaci. | `korpus_kanalow.korpus_kanalow` |
+| 280 | `przeplot_zrodel(po_zrodlach)` | — | Po jednym wpisie z kazdego zrodla na zmiane, od najswiezszych. | `korpus_kanalow.korpus_kanalow` |
+| 326 | `_rdzen(temat)` | — | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. | `korpus_kanalow.wielkie_wydarzenia` |
+| 338 | `_numer_wersji(slowo)` | — | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. | `korpus_kanalow.wielkie_wydarzenia` |
+| 346 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | — | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
+| 497 | `_cache_key()` | — | — | `korpus_kanalow.korpus_kanalow` |
+| 503 | `korpus_kanalow(ile)` | — | — | `audyt_tematow.main`, `korpus_kanalow (poziom modulu)`, `stages.zaczyn_z_kanalow`, `stages.znajdz_ciekawostki` |
 
 ---
 
@@ -752,7 +753,7 @@ Opt-in conversational short forms.
 | 26 | `_injection(text)` | — | Reject explicit role replacement; ordinary links in source posts are data. | `personality._valid`, `personality.short_form`, `personality.targets`, `stages.przygotuj_artykul_do_publikacji` *(+2)* |
 | 31 | `_date(value)` | — | — | `personality.notes`, `personality.statistics` |
 | 39 | `_rows(name)` | — | Read bounded local history; an incomplete final JSONL line is harmless. | `personality.memory`, `personality.memory_state`, `personality.statistics` |
-| 62 | `memory()` | — | — | `personality._swiat`, `personality.notes`, `personality.remember`, `personality.short_form` |
+| 62 | `memory()` | — | — | `personality._swiat`, `personality.notes`, `personality.remember`, `personality.short_form` *(+1)* |
 | 66 | `memory_state()` | — | Keep milestones after individual Notes leave the bounded prompt memory. | `personality.notes`, `personality.remember` |
 | 87 | `_count(value)` | — | — | `personality.small_account`, `personality.statistics` |
 | 91 | `statistics(now)` | — | Publishable facts only: net growth and cumulative measured Note views. | `personality.notes` |
@@ -961,159 +962,159 @@ Etapy lancucha, po kolei, w pamieci.
 | 638 | `save(conn, run_id, topic, card, draft, status, blocked_by, notes)` | DB | Etap 9 — zapis. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
 | 689 | `system_pisarza()` | — | System artykulu. | `stages.write` |
 | 729 | `karta_dla_pisarza(card, teraz)` | — | Karta bez zastrzezenia, ktorego nie wolno opublikowac. | `stages.przygotuj_artykul_do_publikacji`, `stages.write` |
-| 807 | `wstaw_date_zrodel(tekst, card)` | — | Stopka z data zrodel pisana PRZEZ KOD, nie przez model. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 855 | `write(conn, run_id, card, glebokosc)` | **$**(write) | Etap 7 — artykuł (Claude). | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 938 | `_ile_reakcji(k)` | — | „(reakcji: N)" TYLKO wtedy, gdy zrodlo to pole w ogole wypelnia. | `stages.wybierz_do_odpowiedzi` |
-| 950 | `_po_rowno_ze_zrodel(komentarze, ile)` | — | Wycinek listy, ktory NIE MOZE zaglodzic zadnego miejsca rozmowy. | `stages.wybierz_do_odpowiedzi` |
-| 982 | `wybierz_do_odpowiedzi(conn, run_id, komentarze)` | **$**(wybor) | Komu odpisac, gdy komentarzy jest wiecej niz kilka. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 1059 | `reply_to(conn, run_id, comment, evidence)` | **$**(reply) | Odpowiedź na komentarz pod własną treścią — do szuflady. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 1148 | `plan_tygodnia(dzien_artykulu)` | DEAD? | Harmonogram tygodnia: co i kiedy wychodzi. | — |
-| 1195 | `grafika(conn, run_id, draft, sciezka_artykulu)` | **$**((zmienna), grafika) | Nagłówek graficzny artykułu. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 1271 | `_wiek_konta_w_dniach(conn)` | DB | Ile dni działa to konto — liczone od pierwszego przebiegu w bazie. | `stages.budzet_dnia` |
-| 1284 | `budzet_dnia(conn)` | — | Ile czego agent może dziś zrobić — losowane z widełek, nie stałe. | `run.dzien` |
-| 1312 | `budzet_dnia.losuj(widelki)` | — | — | `stages.budzet_dnia`, `stages.budzet_dnia.z_miesiaca` |
-| 1325 | `budzet_dnia.z_miesiaca(widelki)` | — | — | `stages.budzet_dnia` |
-| 1349 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` | — | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. | `stages.budzet_dnia` |
-| 1398 | `sesje_dnia()` | DEAD? | Rozkłada dzień na kilka posiedzeń zamiast jednego ciągu. | — |
-| 1425 | `losuj_odstep(co)` | — | Losuje przerwę, ale jej NIE odsypia. | `stages.odczekaj` |
-| 1441 | `odczekaj(co, ile)` | DEAD? | Przerwa po działaniu, dobrana do tego, ile ono zajmuje CZLOWIEKOWI. | — |
-| 1481 | `_klucz_faktu(tekst)` | — | Odcisk faktu odporny na przestawienie słów i inną liczbę w tym samym zdaniu. | `alarm.powtorki`, `stages.dopisz_kandydatow`, `stages.znajdz_ciekawostki` |
-| 1487 | `tekst_faktu(x)` | — | Fakt bywa slownikiem (`{"fact": ..., "url": ...}`), a bywa samym zdaniem. | `stages.notki_dnia`, `stages.oznacz_uzyty`, `stages.wczytaj_zuzyte`, `stages.zapisz_zuzyte` |
-| 1499 | `wczytaj_zuzyte()` | — | — | `alarm.powtorki`, `stages.zapisz_zuzyte`, `stages.znajdz_ciekawostki` |
-| 1510 | `zapisz_zuzyte(nowe)` | — | Pamięć zużytych ciekawostek — poza bazą, bo budżet to cztery tabele. | `run.dzien`, `run.dzien.notki` |
-| 1527 | `wybierz_cele(conn, run_id, posty)` | **$**(cele) | Które posty z kanału zasługują na komentarz. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` |
-| 1595 | `zaczyn_z_kanalow(ile, ze_skrotem, max_dni, source_urls, exclude_urls)` | — | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. | `personality._swiat`, `stages.notki_dnia`, `stages.scout`, `stages.znajdz_ciekawostki` |
-| 1660 | `_rdzen_wydarzenia(w)` | — | Klucz zdarzenia: posortowane slowa rdzenia, zeby ta sama premiera opisana raz jako „acme, 5.3", a raz „5.3, acme" byla JEDNYM zdarzeniem. | `stages._nowe_wydarzenia`, `stages._zapamietaj_wydarzenia` |
-| 1667 | `_nowe_wydarzenia(wydarzenia)` | — | Ktore z tych zdarzen sa NOWE — czyli nie dobieralismy juz o nich materialu. | `stages.znajdz_ciekawostki` |
-| 1686 | `_nowe_wydarzenia._obsluzone_od(wpis)` | — | — | `stages._nowe_wydarzenia` |
-| 1706 | `_wydarzenie_w_fakcie(w, fakt)` | — | Czy ten fakt jest O TYM wydarzeniu. | `stages._zapamietaj_wydarzenia` |
-| 1727 | `_zapamietaj_wydarzenia(nowe, znane, ile, fakty)` | — | Zapisuje, ze o tych zdarzeniach material JUZ WROCIL. | `stages.znajdz_ciekawostki` |
-| 1775 | `_przebiegi_z_bankiem_dzis(conn)` | DB | Ile PRZEBIEGOW dobieralo dzis material do banku. | `stages.znajdz_ciekawostki` |
-| 1864 | `_polecenie_premiery(wydarzenia, ile)` | — | Polecenie o premierze do promptu ciekawostek — albo PUSTY NAPIS. | `stages.znajdz_ciekawostki` |
-| 1909 | `znajdz_ciekawostki(conn, run_id, ile, na_artykul)` | **$**(curiosity) | Materiał na notki w dni bez artykułu. | `artykul_z_puli.wybierz_fakt`, `stages.notki_dnia` |
-| 2267 | `kuplet_korygujacy(tekst)` | — | Czy tekst uzywa ruchu „nie X. | `stages.note` |
-| 2285 | `zdania_z_tikiem(tekst)` | — | TE SAME trzy postacie tiku, ale oddane jako ZDANIA, nie jako „tak/nie". | `stages.kuplet_korygujacy`, `stages.note` |
-| 2340 | `ostatnie_otwarcia(rodzaj, ile)` | — | Pierwsze slowa ostatnich notek — zeby kolejna nie zaczela sie tak samo. | `stages.comment_on`, `stages.note` |
-| 2376 | `wiek_zrodla_w_dniach(data_zrodla, teraz)` | — | Ile dni ma zrodlo. | `stages.karta_dla_pisarza`, `stages.swiezosc_faktu`, `stages.swiezosc_karty` |
-| 2426 | `nazywa_wersje(tekst)` | — | Czy zdanie nazywa konkretna wersje produktu. | `stages.swiezosc_faktu` |
-| 2440 | `swiezosc_karty(card, teraz)` | — | Ile lat ma material, na ktorym stanie artykul. | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._przebieg`, `run.main` |
-| 2488 | `swiezosc_faktu(fakt, teraz)` | — | Czy ten fakt nadaje sie do wystawienia DZISIAJ. | `audyt_tematow.main`, `stages.wez_kandydatow`, `stages.znajdz_ciekawostki` |
-| 2682 | `ostatnie_notki(ile)` | — | TRESCI ostatnich wystawionych notek — zeby nie napisac drugi raz tego samego. | `artykul_z_puli.wybierz_fakt`, `run.main` |
-| 2713 | `_notki_z_dziennika(kawalek)` | — | Teksty UDANYCH notek z podanego kawalka dziennika, w kolejnosci zapisu. | `stages.ostatnie_notki`, `stages.pamiec_wystawionych` |
-| 2774 | `_sygnatura_rdzeni()` | — | Odcisk SPOSOBU liczenia rdzeni, nie tresci. | `stages.pamiec_wystawionych` |
-| 2793 | `_wczytaj_skrot_notek()` | — | Skrot z dysku albo pusty. | `stages.pamiec_wystawionych` |
-| 2802 | `pamiec_wystawionych()` | — | Odciski WSZYSTKICH wystawionych notek. | `stages.notki_dnia` |
-| 2921 | `_przytnij_pamiec(odciski)` | — | Zamienia odciski na zbiory i honoruje `config.PAMIEC_NOTEK`. | `stages.pamiec_wystawionych` |
-| 2932 | `_zapisz_skrot_notek(odciski, bajtow, glowa, glowa_bajtow, sygnatura)` | — | Zapisuje skrot. | `stages.pamiec_wystawionych` |
-| 2953 | `_opis_typu(note_type)` | — | Opis typu, a przy MYSLI takze PRZYDZIELONY ksztalt. | `stages.note` |
-| 2969 | `note(conn, run_id, note_type, evidence, link, note_form, etap)` | **$**((zmienna)) | Jedna notka danego typu i danej FORMY — do szuflady. | `stages.notki_dnia` |
-| 3133 | `note.powtarza_otwarcie(d)` | — | — | `stages.note` |
-| 3288 | `_pola_ksztaltu(ksztalt, pomin)` | — | Nazwy pol z kontraktu na odpowiedz, bez klucza opakowujacego. | `stages (poziom modulu)` |
-| 3315 | `zakwestionuj_promocje(url, powod)` | — | Artykul, ktorego notka promujaca odpadla na sprawdzeniu faktow. | `run.dzien`, `run.dzien.notki` |
-| 3360 | `zapamietaj_niewystawiony(sciezka, powod)` | — | Zapisuje, ze gotowy artykul lezy na dysku i nie poszedl w swiat. | `artykul_z_puli._napisz_i_zapisz` |
-| 3390 | `niewystawiony_artykul()` | — | Artykul czekajacy na ponowna probe, albo None. | `alarm.artykul_zalegly`, `run.dzien`, `run.dzien.zalegly_artykul`, `stages.odnotuj_probe_artykulu` |
-| 3413 | `odnotuj_probe_artykulu(powod)` | — | Podbija licznik prob i oddaje nowa wartosc. | `run.dzien`, `run.dzien.zalegly_artykul` |
-| 3428 | `zapomnij_niewystawiony()` | — | Tekst jest publiczny — znacznik znika. | `artykul_z_puli._napisz_i_zapisz`, `run.dzien`, `run.dzien.zalegly_artykul` |
-| 3436 | `zapisz_do_promocji(url, tytul, tekst)` | — | Zapisuje opublikowany artykul do promowania przez kolejne dni. | `browser.wystaw_artykul` |
-| 3456 | `wczytaj_promocje()` | — | — | `migracja_okno_promocji.main`, `stages.artykul_do_promocji`, `stages.odhacz_promocje`, `stages.recent_angles` *(+2)* |
-| 3465 | `artykul_do_promocji()` | — | Artykul, ktory dzis czeka na notke promujaca — najwyzej JEDNA na dobe. | `migracja_okno_promocji.main`, `stages.notki_dnia` |
-| 3525 | `odhacz_promocje(url, tekst)` | — | Odnotowuje, ze artykul dostal dzis swoja notke promujaca — I CO W NIEJ BYLO. | `run.dzien`, `run.dzien.notki` |
-| 3578 | `_slowa(tekst)` | — | Znaczace slowa tekstu, obciete do rdzenia. | `stages._o_tym_samym`, `stages._sygnatura_rdzeni`, `stages.pamiec_wystawionych`, `stages.wez_kandydatow` *(+2)* |
-| 3597 | `_zderzenie(x, y, min_wspolnych, prog)` | — | To samo pytanie co `_o_tym_samym`, ale na GOTOWYCH rdzeniach. | `stages._o_tym_samym`, `stages.wybierz_material` |
-| 3613 | `nazwy_wlasne(tekst)` | — | Nazwy wlasne i identyfikatory z tekstu, sprowadzone do jednej postaci. | `stages.wspolna_nazwa` |
-| 3661 | `wspolna_nazwa(a, b, korpus, maks_czestosc)` | — | Nazwa wlasna, ktora wystepuje w OBU tekstach i jest rzadka w korpusie. | `stages.wybierz_material` |
-| 3694 | `_o_tym_samym(a, b, min_wspolnych, prog)` | — | Czy dwa teksty mowia o tej samej rzeczy. | `alarm.bank_bez_tematow`, `artykul_z_puli.wybierz_fakt`, `audyt_systemu.main`, `audyt_tematow.main` *(+6)* |
-| 3744 | `teksty_ostatnich_notek(ile)` | — | Tresci ostatnich notek — do porownania po NAZWACH WLASNYCH. | `stages.note`, `stages.notki_dnia` |
-| 3783 | `wybierz_material(zapas, unikaj, wczesniej, teksty)` | — | Bierze fakt, ktory NIE jest o tym samym, co juz dzis wystawiamy. | `stages.notki_dnia` |
-| 3875 | `_chron_bank_notek()` | — | No publication happens during drafting: restore borrowed ideas on failure. | `stages.notki_dnia` |
-| 3890 | `notki_dnia(conn, run_id, dzien_artykulu, karta, ciekawostki, link_artykulu, ile, od)` | — | Do pieciu notek z dziennego planu, kazda z innego materialu. | `run.dzien`, `run.dzien.notki` |
-| 4226 | `ocen_restack(conn, run_id, notka)` | **$**(restack) | Czy podac te notke dalej i z jakim zdaniem. | `run.dzien`, `run.dzien.restacki` |
-| 4305 | `_podloga_z_pamieci(tekst)` | — | Dwie podlogi, ktore dzialaja BEZ karty dowodowej. | `stages._zapora_komentarza`, `stages.comment_on`, `stages.ocen_restack` |
-| 4323 | `_otwarcie_formulka(zdanie)` | — | Czy zdanie zaczyna sie od zapowiedzi ruchu zamiast od samego ruchu. | `stages.ocen_restack` |
-| 4366 | `sprawdz_fakty(conn, run_id, post)` | **$**(factcheck) DEAD? | Szuka faktów do komentarza, zamiast pozwolić modelowi pisać z pamięci. | — |
-| 4403 | `bez_wstrzykniecia(tekst, wlasny_adres_ok)` | — | Czy w naszym tekscie nie ma sladu cudzych POLECEN. | `stages._zapora_komentarza`, `stages._zapora_notki`, `stages.bramka_kandydata`, `stages.comment_on` *(+4)* |
-| 4471 | `_status_twierdzenia(c)` | — | Status twierdzenia, znormalizowany. | `stages.napraw_obalone`, `stages.zweryfikuj` |
-| 4495 | `przygotuj_artykul_do_publikacji(conn, run_id, draft, card, review_report)` | DB | Repair a factual problem within the existing quota; defer only this article. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 4514 | `przygotuj_artykul_do_publikacji.guard(text)` | — | — | `stages.przygotuj_artykul_do_publikacji` |
-| 4534 | `zweryfikuj(conn, run_id, tekst, kontekst)` | **$**(factcheck) | Sprawdza to, co model NAPISAŁ — nie to, czego szukał przed pisaniem. | `stages.comment_on`, `stages.napraw_obalone`, `stages.note`, `stages.przygotuj_artykul_do_publikacji` |
-| 4662 | `_zapora_notki(tekst)` | — | Pusty napis, gdy tekst notki przechodzi zapory. | `stages.note`, `stages.przygotuj_artykul_do_publikacji`, `stages.przygotuj_artykul_do_publikacji.guard` |
-| 4673 | `_zapora_komentarza(tekst)` | — | To samo dla komentarza — ale komentarz ma zapore o jedna wiecej. | `stages.comment_on` |
-| 4682 | `_liczby_zarzutu(c)` | — | Liczby z zarzutu, znormalizowane — po nich rozpoznajemy TEN SAM fakt. | `stages._ten_sam_zarzut` |
-| 4697 | `_slowa_zarzutu(c)` | — | Slowa tresciowe z samego twierdzenia — drugi sygnal tozsamosci. | `stages._ten_sam_zarzut` |
-| 4709 | `_adres_zarzutu(c)` | — | — | `stages._ten_sam_zarzut` |
-| 4713 | `_ten_sam_zarzut(a, b)` | DEAD? | Czy dwa zarzuty mowia o tym samym fakcie. | — |
-| 4757 | `napraw_obalone(conn, run_id, tekst, audyt, kontekst, min_slow, max_slow, etap, zapora)` | **$**((zmienna)) | Try one bounded repair, then validate the replacement independently. | `stages.comment_on`, `stages.note`, `stages.przygotuj_artykul_do_publikacji` |
-| 4886 | `comment_on(conn, run_id, post, fakty)` | **$**(comment) | Komentarz do cudzego posta — do szuflady. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` |
-| 4985 | `comment_on.powtarza_otwarcie(d)` | — | — | `stages.comment_on`, `stages.comment_on.napisz_kandydata` |
-| 5003 | `comment_on.napisz_kandydata(i)` | **$**(comment) | Jeden kandydat albo None, gdy odpadl przed bramkami. | `stages.comment_on` |
-| 5181 | `fallback_card(question, evidence)` | — | Karta złożona z dowodów bez modelu — gdy synteza padnie. | `artykul_z_puli._przebieg`, `run.main` |
-| 5220 | `synthesis(conn, run_id, question, evidence)` | **$**(synthesis) | Etap 6 — karta dowodowa (DeepSeek V4 Pro). | `artykul_z_puli._przebieg`, `run.main` |
-| 5278 | `_plaski(t)` | — | Tekst do porownania cytatu ze zrodlem — BIALE ZNAKI I TYPOGRAFIA, koniec. | `stages._jest_w_dokumencie` |
-| 5292 | `_jest_w_dokumencie(cytat, dokument)` | — | Czy fragment naprawde stoi w tekscie, ktory model dostal. | `stages.classify` |
-| 5298 | `classify(conn, run_id, question, corpus)` | **$**(classify) | Etap 5 — klasyfikacja i wyciąg fragmentów (DeepSeek). | `artykul_z_puli._przebieg`, `run.main` |
-| 5402 | `_dobierz_przegladarka(conn, run_id, brakujace, juz_mamy)` | WWW DB | Drugie podejscie do stron, ktore zwyklemu pobieraniu daly pusty szkielet. | `stages.fetch` |
-| 5463 | `fetch(conn, run_id, sources)` | DB | Etap 4 — pobranie stron. | `artykul_z_puli._przebieg`, `run.main` |
-| 5632 | `_host(url)` | — | — | `stages._dobierz_przegladarka`, `stages.bank_fragmentow`, `stages.discovery`, `stages.fetch` |
-| 5636 | `hosty_ktore_nigdy_nie_dzialaly(conn, min_prob)` | DB | Hosty, ktore probowalismy >=2 razy i ANI RAZU sie nie udalo. | `audyt_researchu.main`, `stages.discovery` |
-| 5678 | `discovery(conn, run_id, question, recent_domains, tylko_pierwotne)` | **$**(discovery) | Etap 3 — dyskoveria zrodel (DeepSeek V4 Pro + web_search dostawcy). | `artykul_z_puli._przebieg`, `run.main` |
-| 5862 | `feasibility(conn, run_id, topics)` | **$**(feasibility) | Etap 2 — tani odsiew przed drogą dyskoverią (DeepSeek). | `run.main` |
-| 5886 | `podsumowanie_dzialan(dni)` | — | Ile czego WYSZLO w ostatnich `dni` dniach, wobec normy z configu. | `alarm.sprawdz_wszystko`, `alarm.wolumeny` |
-| 5993 | `powody_porazek(dni)` | — | Dlaczego dzialania sie NIE UDALY — pogrupowane, najczestsze pierwsze. | `alarm.sprawdz_wszystko` |
-| 6033 | `_powod_przegranej(klucz_zwyciezcy, klucz_tematu)` | — | Ktory skladnik klucza sortowania ROZSTRZYGNAL, i jakimi wartosciami. | `stages.pick_topic` |
-| 6049 | `_pisze_do_produkcji(sciezka)` | — | Czy ta sciezka to PRAWDZIWY katalog danych, a nie katalog testu. | `stages.zapamietaj_niewystawiony`, `stages.zapisz_przegranych` |
-| 6057 | `zapisz_przegranych(przegrani, run_id)` | DB | Dopisuje do dziennika tematy, ktore NIE wygraly, z powodem przegranej. | `stages.pick_topic` |
-| 6109 | `pick_topic(topics, assessments, run_id, wczesniejsze)` | — | Wybiera temat leksykograficznie wedlug dziewieciu kryteriow. | `run.main` |
-| 6126 | `pick_topic.temat(a)` | — | — | `stages.pick_topic`, `stages.pick_topic.artykulowy`, `stages.pick_topic.niepowtorzony`, `stages.pick_topic.nosny` *(+3)* |
-| 6130 | `pick_topic.nosny(a)` | — | Czy temat niesie KTORAKOLWIEK z dwoch rzeczy: przekonanie albo stawke. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
-| 6140 | `pick_topic.swiezy(a)` | — | Czy tego jeszcze nie opisano gdzie indziej. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
-| 6153 | `pick_topic.wlasny_ranking(a)` | — | Gdzie model postawil ten temat wsrod SWOICH wlasnych propozycji. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
-| 6163 | `pick_topic.watki(a)` | — | Ile osobnych pytan niesie temat. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
-| 6167 | `pick_topic.artykulowy(a)` | — | Czy temat ma udokumentowana historie awarii I zasieg poza jedno miejsce. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
-| 6178 | `pick_topic.niepowtorzony(a)` | — | Czy tego tematu nie opisalismy juz pod inna nazwa. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
-| 6204 | `pick_topic.kolejnosc(a)` | — | — | `stages.pick_topic` |
-| 6303 | `scout(conn, run_id, count)` | **$**(scout) | Etap 1 — skaut tematow (DeepSeek V4 Pro). | `run.main` |
-| 6428 | `scout.indeksy(klucz)` | — | Indeksy z rankingu: BEZ POWTORZEN, w kolejnosci podanej przez model. | `stages.scout`, `stages.scout.wazenie` |
-| 6449 | `scout.wazenie(klucz, sila)` | — | Punkty MALEJACE z pozycja na liscie. | `stages.scout` |
-| 6661 | `bank_fragmentow(conn, dni)` | DB | Nieuzyte fragmenty ze wszystkich artykulow — zaplacone i nieprzeczytane. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 6707 | `bibliotekarz(conn, run_id, bank)` | **$**(bibliotekarz) | Grupuje bank po MECHANIZMIE. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 6760 | `wczytaj_bank_notek()` | — | Gotowe notki czekajace na swoj moment. | `stages.dopisz_do_banku_notek`, `stages.stan_banku_notek`, `stages.wez_z_banku_notek` |
-| 6771 | `dopisz_do_banku_notek(notki)` | DEAD? | Dokłada notki do banku, pomijajac te, ktore juz tam sa. | — |
-| 6797 | `wez_z_banku_notek(ile)` | DB DEAD? | Wyjmuje najstarsze niewykorzystane notki i ZNACZY je jako wyjete. | — |
-| 6817 | `stan_banku_notek()` | DEAD? | Ile mamy zapasu — do wypisania przy starcie przebiegu. | — |
-| 6850 | `warto_pisac(conn, run_id, card)` | **$**(warto_pisac) | Etap przed pisarzem: czy jest tu luka, ktora obcy poczuje. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| 6897 | `warto_pisac.jest(klucz)` | — | — | `stages.warto_pisac` |
-| 6997 | `zbierz_pytania(wpisy)` | DB | Wyławia z odpowiedzi czytelnikow te, ktore sa PYTANIAMI, i zapisuje je. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 7040 | `wczytaj_pytania()` | — | Pula pytan czytelnikow. | `stages.pytania_dla_skauta`, `stages.zbierz_pytania` |
-| 7050 | `pytania_dla_skauta(ile)` | — | Najswiezsze pytania czytelnikow, gotowe do wklejenia w prompt skauta. | `stages.scout` |
-| 7055 | `_to_pdf(odpowiedz, url)` | — | Czy to PDF. | `stages.fetch` |
-| 7074 | `_tekst_z_pdf(dane, max_stron)` | — | Warstwa tekstowa PDF-a. | `stages.fetch` |
-| 7115 | `bramka_kandydata(k)` | — | Czy z tego da sie zrobic notke. | `audyt_tematow.main`, `stages.dopisz_kandydatow` |
-| 7287 | `wczytaj_indeks()` | — | Indeks kandydatow. | `alarm.bank_bez_tematow`, `stages.bank_pelny`, `stages.dopisz_kandydatow`, `stages.oznacz_uzyty` *(+5)* |
-| 7320 | `_zapisz_indeks(indeks)` | — | Zapis ATOMOWY: najpierw plik obok, potem podmiana jednym ruchem. | `stages.dopisz_kandydatow`, `stages.oznacz_uzyty`, `stages.posortuj_bank`, `stages.wez_kandydatow` *(+1)* |
-| 7346 | `_stale_sygnaly(topics, pola)` | — | Ktore z pol mialy TE SAMA wartosc u WSZYSTKICH kandydatow. | `stages.pick_topic`, `stages.scout` |
-| 7371 | `_precedens_ok(p)` | — | Czy ten wpis to naprawde precedens, a nie wypelniacz. | `stages.scout` |
-| 7394 | `_wspolna_kotwica(a, b)` | — | Czy oba zdania mowia o tej samej NAZWIE albo tej samej LICZBIE. | `alarm.bank_bez_tematow`, `stages.dopisz_kandydatow` |
-| 7408 | `_wspolna_kotwica.kotwice(t)` | — | — | `stages._wspolna_kotwica` |
-| 7418 | `_bez_liczb(t)` | — | Zdanie z liczbami zastapionymi znacznikiem — do porownania szkieletu. | `stages._to_aktualizacja` |
-| 7425 | `_to_aktualizacja(nowy, stary)` | — | TO SAMO ZDANIE, INNE LICZBY — czyli nowe ustalenie, nie powtorka. | `stages.dopisz_kandydatow` |
-| 7467 | `dopisz_kandydatow(kandydaci)` | DB | Przepuszcza kandydatow przez bramke i dokłada do indeksu. | `stages.znajdz_ciekawostki` |
-| 7603 | `wez_kandydatow(ile, na_artykul)` | DB | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. | `artykul_z_puli.wybierz_fakt`, `audyt_tematow.main`, `stages.notki_dnia` |
-| 7732 | `wez_kandydatow._dzielą_rzadkie(a, b)` | — | Rzadkie slowo LUZUJE PROPORCJE, ale nie liczbe wspolnych rdzeni. | `stages.wez_kandydatow` |
-| 7806 | `co_zadzialalo(ile)` | — | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. | `audyt_tematow.main`, `stages.posortuj_bank` |
-| 7870 | `co_zadzialalo._wystawiona(r)` | — | — | `stages.co_zadzialalo` |
-| 7888 | `_tabela_odbioru(naj, ile)` | — | Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt. | `stages.co_zadzialalo` |
-| 7895 | `_tabela_odbioru.punkty(r)` | — | — | `stages._tabela_odbioru` |
-| 7903 | `_tabela_odbioru.wiersz(r)` | — | — | `stages._tabela_odbioru` |
-| 7945 | `posortuj_bank(conn, run_id, ile)` | **$**(bank) | Ustawia bank pomyslow od najmocniejszego i wyrzuca slabe. | `stages.notki_dnia` |
-| 8151 | `_termin_waznosci(dni)` | — | Kiedy ta kandydatura przestaje byc tematem. | `stages.dopisz_kandydatow` |
-| 8158 | `_z_obecnej_epoki(k)` | — | Czy ta kandydatura powstala PO ostatniej zmianie tematu konta. | `stages.bank_pelny`, `stages.posortuj_bank`, `stages.wez_kandydatow` |
-| 8177 | `_po_terminie(k)` | — | Czy kandydatura jest juz po swoim terminie przydatnosci. | `audyt_tematow.main`, `stages.bank_pelny`, `stages.posortuj_bank`, `stages.wez_kandydatow` |
-| 8199 | `bank_pelny()` | — | Czy zapas wystarczy, zeby NIE placic za nowe szukanie. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
-| 8217 | `zwroc_kandydatow(kandydaci)` | — | Oddaje do puli kandydatow, ktorych ostatecznie NIE uzyto. | `artykul_z_puli._przebieg`, `artykul_z_puli.wybierz_fakt`, `audyt_tematow.main`, `run.dzien` *(+3)* |
-| 8259 | `oznacz_uzyty(fakt)` | DB | Odhacza w indeksie fakt, ktory NAPRAWDE poszedl w swiat. | `run.dzien`, `run.dzien.notki` |
-| 8297 | `stan_indeksu()` | DEAD? | Ile mamy zapasu i ile odsialismy — do wypisania przy starcie. | — |
-| 8321 | `korpus_fedreg(ile_dokumentow, ile_gestych)` | DEAD? | Preambuly przepisow, w ktorych regulator ODPOWIADA na zastrzezenia. | — |
-| 8414 | `kandydaci_z_fedreg(conn, run_id, dokument)` | **$**(fedreg) DEAD? | Wyciaga kandydatow z jednej preambuly i oddaje w ksztalcie indeksu. | — |
+| 812 | `wstaw_date_zrodel(tekst, card)` | — | Stopka z data zrodel pisana PRZEZ KOD, nie przez model. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 860 | `write(conn, run_id, card, glebokosc)` | **$**(write) | Etap 7 — artykuł (Claude). | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 943 | `_ile_reakcji(k)` | — | „(reakcji: N)" TYLKO wtedy, gdy zrodlo to pole w ogole wypelnia. | `stages.wybierz_do_odpowiedzi` |
+| 955 | `_po_rowno_ze_zrodel(komentarze, ile)` | — | Wycinek listy, ktory NIE MOZE zaglodzic zadnego miejsca rozmowy. | `stages.wybierz_do_odpowiedzi` |
+| 987 | `wybierz_do_odpowiedzi(conn, run_id, komentarze)` | **$**(wybor) | Komu odpisac, gdy komentarzy jest wiecej niz kilka. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 1064 | `reply_to(conn, run_id, comment, evidence)` | **$**(reply) | Odpowiedź na komentarz pod własną treścią — do szuflady. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 1153 | `plan_tygodnia(dzien_artykulu)` | DEAD? | Harmonogram tygodnia: co i kiedy wychodzi. | — |
+| 1200 | `grafika(conn, run_id, draft, sciezka_artykulu)` | **$**((zmienna), grafika) | Nagłówek graficzny artykułu. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 1276 | `_wiek_konta_w_dniach(conn)` | DB | Ile dni działa to konto — liczone od pierwszego przebiegu w bazie. | `stages.budzet_dnia` |
+| 1289 | `budzet_dnia(conn)` | — | Ile czego agent może dziś zrobić — losowane z widełek, nie stałe. | `run.dzien` |
+| 1317 | `budzet_dnia.losuj(widelki)` | — | — | `stages.budzet_dnia`, `stages.budzet_dnia.z_miesiaca` |
+| 1330 | `budzet_dnia.z_miesiaca(widelki)` | — | — | `stages.budzet_dnia` |
+| 1354 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` | — | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. | `stages.budzet_dnia` |
+| 1403 | `sesje_dnia()` | DEAD? | Rozkłada dzień na kilka posiedzeń zamiast jednego ciągu. | — |
+| 1430 | `losuj_odstep(co)` | — | Losuje przerwę, ale jej NIE odsypia. | `stages.odczekaj` |
+| 1446 | `odczekaj(co, ile)` | DEAD? | Przerwa po działaniu, dobrana do tego, ile ono zajmuje CZLOWIEKOWI. | — |
+| 1486 | `_klucz_faktu(tekst)` | — | Odcisk faktu odporny na przestawienie słów i inną liczbę w tym samym zdaniu. | `alarm.powtorki`, `stages.dopisz_kandydatow`, `stages.znajdz_ciekawostki` |
+| 1492 | `tekst_faktu(x)` | — | Fakt bywa slownikiem (`{"fact": ..., "url": ...}`), a bywa samym zdaniem. | `stages.notki_dnia`, `stages.oznacz_uzyty`, `stages.wczytaj_zuzyte`, `stages.zapisz_zuzyte` |
+| 1504 | `wczytaj_zuzyte()` | — | — | `alarm.powtorki`, `stages.zapisz_zuzyte`, `stages.znajdz_ciekawostki` |
+| 1515 | `zapisz_zuzyte(nowe)` | — | Pamięć zużytych ciekawostek — poza bazą, bo budżet to cztery tabele. | `run.dzien`, `run.dzien.notki` |
+| 1532 | `wybierz_cele(conn, run_id, posty)` | **$**(cele) | Które posty z kanału zasługują na komentarz. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` |
+| 1600 | `zaczyn_z_kanalow(ile, ze_skrotem, max_dni, source_urls, exclude_urls)` | — | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. | `personality._swiat`, `stages.notki_dnia`, `stages.scout`, `stages.znajdz_ciekawostki` |
+| 1676 | `_rdzen_wydarzenia(w)` | — | Klucz zdarzenia: posortowane slowa rdzenia, zeby ta sama premiera opisana raz jako „acme, 5.3", a raz „5.3, acme" byla JEDNYM zdarzeniem. | `stages._nowe_wydarzenia`, `stages._zapamietaj_wydarzenia` |
+| 1683 | `_nowe_wydarzenia(wydarzenia)` | — | Ktore z tych zdarzen sa NOWE — czyli nie dobieralismy juz o nich materialu. | `stages.znajdz_ciekawostki` |
+| 1702 | `_nowe_wydarzenia._obsluzone_od(wpis)` | — | — | `stages._nowe_wydarzenia` |
+| 1722 | `_wydarzenie_w_fakcie(w, fakt)` | — | Czy ten fakt jest O TYM wydarzeniu. | `stages._zapamietaj_wydarzenia` |
+| 1743 | `_zapamietaj_wydarzenia(nowe, znane, ile, fakty)` | — | Zapisuje, ze o tych zdarzeniach material JUZ WROCIL. | `stages.znajdz_ciekawostki` |
+| 1791 | `_przebiegi_z_bankiem_dzis(conn)` | DB | Ile PRZEBIEGOW dobieralo dzis material do banku. | `stages.znajdz_ciekawostki` |
+| 1880 | `_polecenie_premiery(wydarzenia, ile)` | — | Polecenie o premierze do promptu ciekawostek — albo PUSTY NAPIS. | `stages.znajdz_ciekawostki` |
+| 1925 | `znajdz_ciekawostki(conn, run_id, ile, na_artykul)` | **$**(curiosity) | Materiał na notki w dni bez artykułu. | `artykul_z_puli.wybierz_fakt`, `stages.notki_dnia` |
+| 2293 | `kuplet_korygujacy(tekst)` | — | Czy tekst uzywa ruchu „nie X. | `stages.note` |
+| 2311 | `zdania_z_tikiem(tekst)` | — | TE SAME trzy postacie tiku, ale oddane jako ZDANIA, nie jako „tak/nie". | `stages.kuplet_korygujacy`, `stages.note` |
+| 2366 | `ostatnie_otwarcia(rodzaj, ile)` | — | Pierwsze slowa ostatnich notek — zeby kolejna nie zaczela sie tak samo. | `stages.comment_on`, `stages.note` |
+| 2402 | `wiek_zrodla_w_dniach(data_zrodla, teraz)` | — | Ile dni ma zrodlo. | `stages.karta_dla_pisarza`, `stages.swiezosc_faktu`, `stages.swiezosc_karty` |
+| 2452 | `nazywa_wersje(tekst)` | — | Czy zdanie nazywa konkretna wersje produktu. | `stages.swiezosc_faktu` |
+| 2466 | `swiezosc_karty(card, teraz)` | — | Ile lat ma material, na ktorym stanie artykul. | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._przebieg`, `run.main` |
+| 2514 | `swiezosc_faktu(fakt, teraz)` | — | Czy ten fakt nadaje sie do wystawienia DZISIAJ. | `audyt_tematow.main`, `stages.wez_kandydatow`, `stages.znajdz_ciekawostki` |
+| 2708 | `ostatnie_notki(ile)` | — | TRESCI ostatnich wystawionych notek — zeby nie napisac drugi raz tego samego. | `artykul_z_puli.wybierz_fakt`, `run.main` |
+| 2739 | `_notki_z_dziennika(kawalek)` | — | Teksty UDANYCH notek z podanego kawalka dziennika, w kolejnosci zapisu. | `stages.ostatnie_notki`, `stages.pamiec_wystawionych` |
+| 2800 | `_sygnatura_rdzeni()` | — | Odcisk SPOSOBU liczenia rdzeni, nie tresci. | `stages.pamiec_wystawionych` |
+| 2819 | `_wczytaj_skrot_notek()` | — | Skrot z dysku albo pusty. | `stages.pamiec_wystawionych` |
+| 2828 | `pamiec_wystawionych()` | — | Odciski WSZYSTKICH wystawionych notek. | `stages.notki_dnia` |
+| 2947 | `_przytnij_pamiec(odciski)` | — | Zamienia odciski na zbiory i honoruje `config.PAMIEC_NOTEK`. | `stages.pamiec_wystawionych` |
+| 2958 | `_zapisz_skrot_notek(odciski, bajtow, glowa, glowa_bajtow, sygnatura)` | — | Zapisuje skrot. | `stages.pamiec_wystawionych` |
+| 2979 | `_opis_typu(note_type)` | — | Opis typu, a przy MYSLI takze PRZYDZIELONY ksztalt. | `stages.note` |
+| 2995 | `note(conn, run_id, note_type, evidence, link, note_form, etap)` | **$**((zmienna)) | Jedna notka danego typu i danej FORMY — do szuflady. | `stages.notki_dnia` |
+| 3159 | `note.powtarza_otwarcie(d)` | — | — | `stages.note` |
+| 3314 | `_pola_ksztaltu(ksztalt, pomin)` | — | Nazwy pol z kontraktu na odpowiedz, bez klucza opakowujacego. | `stages (poziom modulu)` |
+| 3341 | `zakwestionuj_promocje(url, powod)` | — | Artykul, ktorego notka promujaca odpadla na sprawdzeniu faktow. | `run.dzien`, `run.dzien.notki` |
+| 3386 | `zapamietaj_niewystawiony(sciezka, powod)` | — | Zapisuje, ze gotowy artykul lezy na dysku i nie poszedl w swiat. | `artykul_z_puli._napisz_i_zapisz` |
+| 3416 | `niewystawiony_artykul()` | — | Artykul czekajacy na ponowna probe, albo None. | `alarm.artykul_zalegly`, `run.dzien`, `run.dzien.zalegly_artykul`, `stages.odnotuj_probe_artykulu` |
+| 3439 | `odnotuj_probe_artykulu(powod)` | — | Podbija licznik prob i oddaje nowa wartosc. | `run.dzien`, `run.dzien.zalegly_artykul` |
+| 3454 | `zapomnij_niewystawiony()` | — | Tekst jest publiczny — znacznik znika. | `artykul_z_puli._napisz_i_zapisz`, `run.dzien`, `run.dzien.zalegly_artykul` |
+| 3462 | `zapisz_do_promocji(url, tytul, tekst)` | — | Zapisuje opublikowany artykul do promowania przez kolejne dni. | `browser.wystaw_artykul` |
+| 3482 | `wczytaj_promocje()` | — | — | `migracja_okno_promocji.main`, `stages.artykul_do_promocji`, `stages.odhacz_promocje`, `stages.recent_angles` *(+2)* |
+| 3491 | `artykul_do_promocji()` | — | Artykul, ktory dzis czeka na notke promujaca — najwyzej JEDNA na dobe. | `migracja_okno_promocji.main`, `stages.notki_dnia` |
+| 3551 | `odhacz_promocje(url, tekst)` | — | Odnotowuje, ze artykul dostal dzis swoja notke promujaca — I CO W NIEJ BYLO. | `run.dzien`, `run.dzien.notki` |
+| 3604 | `_slowa(tekst)` | — | Znaczace slowa tekstu, obciete do rdzenia. | `stages._o_tym_samym`, `stages._sygnatura_rdzeni`, `stages.pamiec_wystawionych`, `stages.wez_kandydatow` *(+2)* |
+| 3623 | `_zderzenie(x, y, min_wspolnych, prog)` | — | To samo pytanie co `_o_tym_samym`, ale na GOTOWYCH rdzeniach. | `stages._o_tym_samym`, `stages.wybierz_material` |
+| 3639 | `nazwy_wlasne(tekst)` | — | Nazwy wlasne i identyfikatory z tekstu, sprowadzone do jednej postaci. | `stages.wspolna_nazwa` |
+| 3687 | `wspolna_nazwa(a, b, korpus, maks_czestosc)` | — | Nazwa wlasna, ktora wystepuje w OBU tekstach i jest rzadka w korpusie. | `stages.wybierz_material` |
+| 3720 | `_o_tym_samym(a, b, min_wspolnych, prog)` | — | Czy dwa teksty mowia o tej samej rzeczy. | `alarm.bank_bez_tematow`, `artykul_z_puli.wybierz_fakt`, `audyt_systemu.main`, `audyt_tematow.main` *(+6)* |
+| 3770 | `teksty_ostatnich_notek(ile)` | — | Tresci ostatnich notek — do porownania po NAZWACH WLASNYCH. | `stages.note`, `stages.notki_dnia` |
+| 3809 | `wybierz_material(zapas, unikaj, wczesniej, teksty)` | — | Bierze fakt, ktory NIE jest o tym samym, co juz dzis wystawiamy. | `stages.notki_dnia` |
+| 3901 | `_chron_bank_notek()` | — | No publication happens during drafting: restore borrowed ideas on failure. | `stages.notki_dnia` |
+| 3916 | `notki_dnia(conn, run_id, dzien_artykulu, karta, ciekawostki, link_artykulu, ile, od)` | — | Do pieciu notek z dziennego planu, kazda z innego materialu. | `run.dzien`, `run.dzien.notki` |
+| 4252 | `ocen_restack(conn, run_id, notka)` | **$**(restack) | Czy podac te notke dalej i z jakim zdaniem. | `run.dzien`, `run.dzien.restacki` |
+| 4331 | `_podloga_z_pamieci(tekst)` | — | Dwie podlogi, ktore dzialaja BEZ karty dowodowej. | `stages._zapora_komentarza`, `stages.comment_on`, `stages.ocen_restack` |
+| 4349 | `_otwarcie_formulka(zdanie)` | — | Czy zdanie zaczyna sie od zapowiedzi ruchu zamiast od samego ruchu. | `stages.ocen_restack` |
+| 4392 | `sprawdz_fakty(conn, run_id, post)` | **$**(factcheck) DEAD? | Szuka faktów do komentarza, zamiast pozwolić modelowi pisać z pamięci. | — |
+| 4429 | `bez_wstrzykniecia(tekst, wlasny_adres_ok)` | — | Czy w naszym tekscie nie ma sladu cudzych POLECEN. | `stages._zapora_komentarza`, `stages._zapora_notki`, `stages.bramka_kandydata`, `stages.comment_on` *(+4)* |
+| 4497 | `_status_twierdzenia(c)` | — | Status twierdzenia, znormalizowany. | `stages.napraw_obalone`, `stages.zweryfikuj` |
+| 4521 | `przygotuj_artykul_do_publikacji(conn, run_id, draft, card, review_report)` | DB | Repair a factual problem within the existing quota; defer only this article. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 4540 | `przygotuj_artykul_do_publikacji.guard(text)` | — | — | `stages.przygotuj_artykul_do_publikacji` |
+| 4560 | `zweryfikuj(conn, run_id, tekst, kontekst)` | **$**(factcheck) | Sprawdza to, co model NAPISAŁ — nie to, czego szukał przed pisaniem. | `stages.comment_on`, `stages.napraw_obalone`, `stages.note`, `stages.przygotuj_artykul_do_publikacji` |
+| 4688 | `_zapora_notki(tekst)` | — | Pusty napis, gdy tekst notki przechodzi zapory. | `stages.note`, `stages.przygotuj_artykul_do_publikacji`, `stages.przygotuj_artykul_do_publikacji.guard` |
+| 4699 | `_zapora_komentarza(tekst)` | — | To samo dla komentarza — ale komentarz ma zapore o jedna wiecej. | `stages.comment_on` |
+| 4708 | `_liczby_zarzutu(c)` | — | Liczby z zarzutu, znormalizowane — po nich rozpoznajemy TEN SAM fakt. | `stages._ten_sam_zarzut` |
+| 4723 | `_slowa_zarzutu(c)` | — | Slowa tresciowe z samego twierdzenia — drugi sygnal tozsamosci. | `stages._ten_sam_zarzut` |
+| 4735 | `_adres_zarzutu(c)` | — | — | `stages._ten_sam_zarzut` |
+| 4739 | `_ten_sam_zarzut(a, b)` | DEAD? | Czy dwa zarzuty mowia o tym samym fakcie. | — |
+| 4783 | `napraw_obalone(conn, run_id, tekst, audyt, kontekst, min_slow, max_slow, etap, zapora)` | **$**((zmienna)) | Try one bounded repair, then validate the replacement independently. | `stages.comment_on`, `stages.note`, `stages.przygotuj_artykul_do_publikacji` |
+| 4912 | `comment_on(conn, run_id, post, fakty)` | **$**(comment) | Komentarz do cudzego posta — do szuflady. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` |
+| 5011 | `comment_on.powtarza_otwarcie(d)` | — | — | `stages.comment_on`, `stages.comment_on.napisz_kandydata` |
+| 5029 | `comment_on.napisz_kandydata(i)` | **$**(comment) | Jeden kandydat albo None, gdy odpadl przed bramkami. | `stages.comment_on` |
+| 5207 | `fallback_card(question, evidence)` | — | Karta złożona z dowodów bez modelu — gdy synteza padnie. | `artykul_z_puli._przebieg`, `run.main` |
+| 5246 | `synthesis(conn, run_id, question, evidence)` | **$**(synthesis) | Etap 6 — karta dowodowa (DeepSeek V4 Pro). | `artykul_z_puli._przebieg`, `run.main` |
+| 5304 | `_plaski(t)` | — | Tekst do porownania cytatu ze zrodlem — BIALE ZNAKI I TYPOGRAFIA, koniec. | `stages._jest_w_dokumencie` |
+| 5318 | `_jest_w_dokumencie(cytat, dokument)` | — | Czy fragment naprawde stoi w tekscie, ktory model dostal. | `stages.classify` |
+| 5324 | `classify(conn, run_id, question, corpus)` | **$**(classify) | Etap 5 — klasyfikacja i wyciąg fragmentów (DeepSeek). | `artykul_z_puli._przebieg`, `run.main` |
+| 5428 | `_dobierz_przegladarka(conn, run_id, brakujace, juz_mamy)` | WWW DB | Drugie podejscie do stron, ktore zwyklemu pobieraniu daly pusty szkielet. | `stages.fetch` |
+| 5489 | `fetch(conn, run_id, sources)` | DB | Etap 4 — pobranie stron. | `artykul_z_puli._przebieg`, `run.main` |
+| 5658 | `_host(url)` | — | — | `stages._dobierz_przegladarka`, `stages.bank_fragmentow`, `stages.discovery`, `stages.fetch` |
+| 5662 | `hosty_ktore_nigdy_nie_dzialaly(conn, min_prob)` | DB | Hosty, ktore probowalismy >=2 razy i ANI RAZU sie nie udalo. | `audyt_researchu.main`, `stages.discovery` |
+| 5704 | `discovery(conn, run_id, question, recent_domains, tylko_pierwotne)` | **$**(discovery) | Etap 3 — dyskoveria zrodel (DeepSeek V4 Pro + web_search dostawcy). | `artykul_z_puli._przebieg`, `run.main` |
+| 5888 | `feasibility(conn, run_id, topics)` | **$**(feasibility) | Etap 2 — tani odsiew przed drogą dyskoverią (DeepSeek). | `run.main` |
+| 5912 | `podsumowanie_dzialan(dni)` | — | Ile czego WYSZLO w ostatnich `dni` dniach, wobec normy z configu. | `alarm.sprawdz_wszystko`, `alarm.wolumeny` |
+| 6019 | `powody_porazek(dni)` | — | Dlaczego dzialania sie NIE UDALY — pogrupowane, najczestsze pierwsze. | `alarm.sprawdz_wszystko` |
+| 6059 | `_powod_przegranej(klucz_zwyciezcy, klucz_tematu)` | — | Ktory skladnik klucza sortowania ROZSTRZYGNAL, i jakimi wartosciami. | `stages.pick_topic` |
+| 6075 | `_pisze_do_produkcji(sciezka)` | — | Czy ta sciezka to PRAWDZIWY katalog danych, a nie katalog testu. | `stages.zapamietaj_niewystawiony`, `stages.zapisz_przegranych` |
+| 6083 | `zapisz_przegranych(przegrani, run_id)` | DB | Dopisuje do dziennika tematy, ktore NIE wygraly, z powodem przegranej. | `stages.pick_topic` |
+| 6135 | `pick_topic(topics, assessments, run_id, wczesniejsze)` | — | Wybiera temat leksykograficznie wedlug dziewieciu kryteriow. | `run.main` |
+| 6152 | `pick_topic.temat(a)` | — | — | `stages.pick_topic`, `stages.pick_topic.artykulowy`, `stages.pick_topic.niepowtorzony`, `stages.pick_topic.nosny` *(+3)* |
+| 6156 | `pick_topic.nosny(a)` | — | Czy temat niesie KTORAKOLWIEK z dwoch rzeczy: przekonanie albo stawke. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
+| 6166 | `pick_topic.swiezy(a)` | — | Czy tego jeszcze nie opisano gdzie indziej. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
+| 6179 | `pick_topic.wlasny_ranking(a)` | — | Gdzie model postawil ten temat wsrod SWOICH wlasnych propozycji. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
+| 6189 | `pick_topic.watki(a)` | — | Ile osobnych pytan niesie temat. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
+| 6193 | `pick_topic.artykulowy(a)` | — | Czy temat ma udokumentowana historie awarii I zasieg poza jedno miejsce. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
+| 6204 | `pick_topic.niepowtorzony(a)` | — | Czy tego tematu nie opisalismy juz pod inna nazwa. | `stages.pick_topic`, `stages.pick_topic.kolejnosc` |
+| 6230 | `pick_topic.kolejnosc(a)` | — | — | `stages.pick_topic` |
+| 6329 | `scout(conn, run_id, count)` | **$**(scout) | Etap 1 — skaut tematow (DeepSeek V4 Pro). | `run.main` |
+| 6454 | `scout.indeksy(klucz)` | — | Indeksy z rankingu: BEZ POWTORZEN, w kolejnosci podanej przez model. | `stages.scout`, `stages.scout.wazenie` |
+| 6475 | `scout.wazenie(klucz, sila)` | — | Punkty MALEJACE z pozycja na liscie. | `stages.scout` |
+| 6687 | `bank_fragmentow(conn, dni)` | DB | Nieuzyte fragmenty ze wszystkich artykulow — zaplacone i nieprzeczytane. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 6733 | `bibliotekarz(conn, run_id, bank)` | **$**(bibliotekarz) | Grupuje bank po MECHANIZMIE. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 6786 | `wczytaj_bank_notek()` | — | Gotowe notki czekajace na swoj moment. | `stages.dopisz_do_banku_notek`, `stages.stan_banku_notek`, `stages.wez_z_banku_notek` |
+| 6797 | `dopisz_do_banku_notek(notki)` | DEAD? | Dokłada notki do banku, pomijajac te, ktore juz tam sa. | — |
+| 6823 | `wez_z_banku_notek(ile)` | DB DEAD? | Wyjmuje najstarsze niewykorzystane notki i ZNACZY je jako wyjete. | — |
+| 6843 | `stan_banku_notek()` | DEAD? | Ile mamy zapasu — do wypisania przy starcie przebiegu. | — |
+| 6876 | `warto_pisac(conn, run_id, card)` | **$**(warto_pisac) | Etap przed pisarzem: czy jest tu luka, ktora obcy poczuje. | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
+| 6923 | `warto_pisac.jest(klucz)` | — | — | `stages.warto_pisac` |
+| 7023 | `zbierz_pytania(wpisy)` | DB | Wyławia z odpowiedzi czytelnikow te, ktore sa PYTANIAMI, i zapisuje je. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 7066 | `wczytaj_pytania()` | — | Pula pytan czytelnikow. | `stages.pytania_dla_skauta`, `stages.zbierz_pytania` |
+| 7076 | `pytania_dla_skauta(ile)` | — | Najswiezsze pytania czytelnikow, gotowe do wklejenia w prompt skauta. | `stages.scout` |
+| 7081 | `_to_pdf(odpowiedz, url)` | — | Czy to PDF. | `stages.fetch` |
+| 7100 | `_tekst_z_pdf(dane, max_stron)` | — | Warstwa tekstowa PDF-a. | `stages.fetch` |
+| 7141 | `bramka_kandydata(k)` | — | Czy z tego da sie zrobic notke. | `audyt_tematow.main`, `stages.dopisz_kandydatow` |
+| 7313 | `wczytaj_indeks()` | — | Indeks kandydatow. | `alarm.bank_bez_tematow`, `stages.bank_pelny`, `stages.dopisz_kandydatow`, `stages.oznacz_uzyty` *(+5)* |
+| 7346 | `_zapisz_indeks(indeks)` | — | Zapis ATOMOWY: najpierw plik obok, potem podmiana jednym ruchem. | `stages.dopisz_kandydatow`, `stages.oznacz_uzyty`, `stages.posortuj_bank`, `stages.wez_kandydatow` *(+1)* |
+| 7372 | `_stale_sygnaly(topics, pola)` | — | Ktore z pol mialy TE SAMA wartosc u WSZYSTKICH kandydatow. | `stages.pick_topic`, `stages.scout` |
+| 7397 | `_precedens_ok(p)` | — | Czy ten wpis to naprawde precedens, a nie wypelniacz. | `stages.scout` |
+| 7420 | `_wspolna_kotwica(a, b)` | — | Czy oba zdania mowia o tej samej NAZWIE albo tej samej LICZBIE. | `alarm.bank_bez_tematow`, `stages.dopisz_kandydatow` |
+| 7434 | `_wspolna_kotwica.kotwice(t)` | — | — | `stages._wspolna_kotwica` |
+| 7444 | `_bez_liczb(t)` | — | Zdanie z liczbami zastapionymi znacznikiem — do porownania szkieletu. | `stages._to_aktualizacja` |
+| 7451 | `_to_aktualizacja(nowy, stary)` | — | TO SAMO ZDANIE, INNE LICZBY — czyli nowe ustalenie, nie powtorka. | `stages.dopisz_kandydatow` |
+| 7493 | `dopisz_kandydatow(kandydaci)` | DB | Przepuszcza kandydatow przez bramke i dokłada do indeksu. | `stages.znajdz_ciekawostki` |
+| 7629 | `wez_kandydatow(ile, na_artykul)` | DB | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. | `artykul_z_puli.wybierz_fakt`, `audyt_tematow.main`, `stages.notki_dnia` |
+| 7758 | `wez_kandydatow._dzielą_rzadkie(a, b)` | — | Rzadkie slowo LUZUJE PROPORCJE, ale nie liczbe wspolnych rdzeni. | `stages.wez_kandydatow` |
+| 7832 | `co_zadzialalo(ile)` | — | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. | `audyt_tematow.main`, `stages.posortuj_bank` |
+| 7896 | `co_zadzialalo._wystawiona(r)` | — | — | `stages.co_zadzialalo` |
+| 7914 | `_tabela_odbioru(naj, ile)` | — | Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt. | `stages.co_zadzialalo` |
+| 7921 | `_tabela_odbioru.punkty(r)` | — | — | `stages._tabela_odbioru` |
+| 7929 | `_tabela_odbioru.wiersz(r)` | — | — | `stages._tabela_odbioru` |
+| 7971 | `posortuj_bank(conn, run_id, ile)` | **$**(bank) | Ustawia bank pomyslow od najmocniejszego i wyrzuca slabe. | `stages.notki_dnia` |
+| 8177 | `_termin_waznosci(dni)` | — | Kiedy ta kandydatura przestaje byc tematem. | `stages.dopisz_kandydatow` |
+| 8184 | `_z_obecnej_epoki(k)` | — | Czy ta kandydatura powstala PO ostatniej zmianie tematu konta. | `stages.bank_pelny`, `stages.posortuj_bank`, `stages.wez_kandydatow` |
+| 8203 | `_po_terminie(k)` | — | Czy kandydatura jest juz po swoim terminie przydatnosci. | `audyt_tematow.main`, `stages.bank_pelny`, `stages.posortuj_bank`, `stages.wez_kandydatow` |
+| 8225 | `bank_pelny()` | — | Czy zapas wystarczy, zeby NIE placic za nowe szukanie. | `audyt_tematow.main`, `stages.znajdz_ciekawostki` |
+| 8243 | `zwroc_kandydatow(kandydaci)` | — | Oddaje do puli kandydatow, ktorych ostatecznie NIE uzyto. | `artykul_z_puli._przebieg`, `artykul_z_puli.wybierz_fakt`, `audyt_tematow.main`, `run.dzien` *(+3)* |
+| 8285 | `oznacz_uzyty(fakt)` | DB | Odhacza w indeksie fakt, ktory NAPRAWDE poszedl w swiat. | `run.dzien`, `run.dzien.notki` |
+| 8323 | `stan_indeksu()` | DEAD? | Ile mamy zapasu i ile odsialismy — do wypisania przy starcie. | — |
+| 8347 | `korpus_fedreg(ile_dokumentow, ile_gestych)` | DEAD? | Preambuly przepisow, w ktorych regulator ODPOWIADA na zastrzezenia. | — |
+| 8440 | `kandydaci_z_fedreg(conn, run_id, dokument)` | **$**(fedreg) DEAD? | Wyciaga kandydatow z jednej preambuly i oddaje w ksztalcie indeksu. | — |
 
 ---
 
@@ -1158,6 +1159,23 @@ Głos redakcyjny: korpus próbek i dwa profile stylu.
 | 163 | `przyklady_albo_pusto()` | — | Fragmenty stylu — albo pusta lista, gdy preset nie wymaga korpusu. | `stages.write` |
 | 181 | `load_profiles()` | — | Profil pozytywny i negatywny stylu artykułu — z plikow wskazanych przez preset. | `stages.write` |
 | 203 | `_z_marka(tekst)` | — | Podstawia `{marka}` w profilu stylu. | `style.load_profiles` |
+
+---
+
+<a id="agent-v2tekst-strony-py"></a>
+## `agent-v2/tekst_strony.py`
+
+Read explicitly marked article bodies before generic page extraction.
+
+5 funkcji.
+
+| line | function | markers | what it does | called by |
+|---|---|---|---|---|
+| 8 | `_ArticleBody.__init__(self)` | DEAD? | — | — |
+| 14 | `_ArticleBody.handle_starttag(self, tag, attrs)` | DEAD? | — | — |
+| 29 | `_ArticleBody.handle_endtag(self, tag)` | DEAD? | — | — |
+| 37 | `_ArticleBody.handle_data(self, data)` | DEAD? | — | — |
+| 47 | `tekst_z_html(body)` | DEAD? | Prefer publisher-marked prose, including an empty/unavailable body. | — |
 
 ---
 

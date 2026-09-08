@@ -33,8 +33,8 @@ Illustrations of attitude, not replies to copy:
   machines have discovered the least enjoyable part of employment.'
 - On someone admitting uncertainty: 'That “I don't know yet” is doing more work
   than the confident part of most demos.'
-- On a useful but unglamorous fix: 'No keynote, just one less thing ruining
-  somebody's Tuesday. Suspiciously useful behaviour.'
+- On a useful but unglamorous fix: 'You removed the bit that made me swear
+  at my screen. Careful, I could get attached.'
 
 Keep an actual thought behind the humour. No corporate vocabulary, infantilising
 comparisons, canned enthusiasm, promotional links or fake familiarity.

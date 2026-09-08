@@ -95,9 +95,10 @@ def main() -> int:
     # w trzech miejscach („falszywy alarm uczy ignorowac alarmy").
     k1: list = []
     k2: list = []
-    if not korpus_kanalow.KANALY:
+    kanaly = {**config.KANALY_YOUTUBE, **config.KANALY_RSS}
+    if not kanaly:
         print("  (zadnego kanalu nie skonfigurowano —"
-              " `zrodla.kanaly_youtube` w konfiguracji)")
+              " `zrodla.kanaly_youtube` i `zrodla.kanaly_rss` w konfiguracji)")
         werdykt("korpus kanalow: skonfigurowany", "UWAGA",
                 "brak kanalow. To DECYZJA, nie awaria: notki stana na siatce"
                 " dziedzin, bez zaczynu z dnia")
@@ -106,10 +107,10 @@ def main() -> int:
         k2 = korpus_kanalow.korpus_kanalow(200)
         print("  pierwsze wywolanie oddalo %d, drugie %d" % (len(k1), len(k2)))
         werdykt("kanaly odpowiadaja", "OK" if k1 else "BLAD",
-                "%d tematow z %d kanalow" % (len(k1), len(korpus_kanalow.KANALY)))
+                "%d tematow z %d kanalow" % (len(k1), len(kanaly)))
         werdykt("zapas oddaje PELNA liste drugiemu wolajacemu",
-                "OK" if len(k2) > len(k1) else "BLAD",
-                "%d > %d" % (len(k2), len(k1)))
+                "OK" if len(k2) >= len(k1) and k2[:len(k1)] == k1 else "BLAD",
+                "%d >= %d, wspolny poczatek bez zmian" % (len(k2), len(k1)))
     # `k2` istnieje tylko w galezi ze skonfigurowanymi kanalami — bez nich
     # pytanie „ile kanalow dalo material" nie ma podmiotu.
     # PROG Z LICZBY SKONFIGURTOWANYCH KANALOW, NIE WPISANY. Stalo tu
@@ -118,11 +119,11 @@ def main() -> int:
     # gdy wszystkie cztery odpowiedzialy. Pytanie brzmi „czy KANALY, ktore
     # podales, w ogole zyja", a to jest udzial, nie liczba bezwzgledna.
     zywe_kanaly = len({w.get("kanal") for w in k2})
-    if korpus_kanalow.KANALY:
+    if kanaly:
         werdykt("ile kanalow dalo material",
-                "OK" if zywe_kanaly * 2 >= len(korpus_kanalow.KANALY)
+                "OK" if zywe_kanaly * 2 >= len(kanaly)
                 else "UWAGA",
-                "%d z %d" % (zywe_kanaly, len(korpus_kanalow.KANALY)))
+                "%d z %d" % (zywe_kanaly, len(kanaly)))
 
     # ---------------------------------------------------------------
     etap(2, "PAS PIERWSZENSTWA — wielkie wydarzenia")

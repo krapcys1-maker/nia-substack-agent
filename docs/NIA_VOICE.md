@@ -68,6 +68,27 @@ These controls use no extra model calls. Voice previews now finalize their run c
 from recorded calls on success and failure. Paid previews require explicit approval
 of the model, call count and estimated cost before anyone runs the command.
 
+Mixed news feeds prioritize the preset's subject terms before filling the short
+Note input. Explicitly sponsored feed categories are excluded. Show HN supplies
+small-builder stories, but link/vote metadata is not a description: an empty
+excerpt is marked as headline-only. When a submission contains the author's
+own account, its source is the HN discussion, not the project interface. This
+does not independently verify the author's claims or guarantee a warm Note.
+
+The RSS pool is not the article bank. If the bank is empty, the scheduled article
+run searches for candidates and leases an admitted candidate through the same
+path as an existing bank. Its topic is not selected before that run. Recent
+persona Notes inform topic avoidance. Feed leads have a 14-day window and carry
+their original URLs into research; the chosen lead is fetched even if discovery
+omits it. Unfetched claims remain in the private archive but are excluded from
+the writer's evidence. Explicit article-body markup takes precedence over generic
+page extraction so navigation cannot substitute for an empty article body.
+
+Warmth has a repetition failure of its own: praise can repeatedly start with
+"no keynote" or "no grand prophecy". The Note prompt now names that pattern and
+asks for humour from the actual work. This instruction is not a measured claim
+that the tic has disappeared; an offline contract test cannot assess comic quality.
+
 ## Scoring a run, so "the voice is uneven" becomes a number
 
 `proba_glosu.py` scores every sample it generates. Reading three Notes and

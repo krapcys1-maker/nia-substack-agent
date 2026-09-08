@@ -70,7 +70,8 @@ PYTANIE = """Today is {dzis}.
 
 {linia_redakcyjna}
 
-Here is a documented fact this publication has verified, with its source:
+Here is a research lead returned by the source search, with its reported source.
+It still needs to be fetched and checked before the article asserts it:
 
   FACT: {fact}
   WHAT PEOPLE ASSUME INSTEAD: {mit}
@@ -296,7 +297,10 @@ def wybierz_fakt(conn, run_id, ile: int = 8) -> dict:
         # szukania. Limit jest dla notek; tutaj kosztowal caly tygodniowy
         # artykul, bo dwa przebiegi notek chodza przed wtorkowym 14:00 i mogly
         # zuzyc jedyne dobowe szukanie, zanim artykul w ogole ruszyl.
-        fakty = stages.znajdz_ciekawostki(conn, run_id, ile=ile, na_artykul=True)
+        stages.znajdz_ciekawostki(conn, run_id, ile=ile, na_artykul=True)
+        # Fresh results must pass the same bank admission and borrowing path.
+        # Otherwise the rejected first lead stays new and gets chosen again.
+        fakty = stages.wez_kandydatow(ile, na_artykul=True)
     if not fakty:
         raise ValueError("pula ciekawostek pusta")
 
@@ -630,6 +634,13 @@ def _przebieg(conn, run_id: int) -> int:
             + "\n\nThe article must also answer:\n"
             + "\n".join("- %s" % q for q in pod))
     sources = stages.discovery(conn, run_id, pytanie_do_researchu, recent)
+
+    # Discovery can omit the very document the article was chosen for.
+    from urllib.parse import urlparse
+    lead_url = str(brief.get("zrodlo_faktu") or "").strip()
+    if urlparse(lead_url).scheme in ("http", "https") and not any(s.get("url") == lead_url for s in sources):
+        sources.insert(0, {"url": lead_url, "title": brief.get("title", ""),
+                           "class": "UNCLASSIFIED", "why": "Original research lead; verify its claims"})
 
     print()
     print("-- pobieranie --", flush=True)

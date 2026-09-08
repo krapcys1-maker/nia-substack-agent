@@ -37,16 +37,18 @@ that clears the bar, drop it and work the grid.
 {premiera}
 ## What the field is talking about this week
 
-Real video titles from the channels this publication follows, with the dates
-they went up. Hype wrapping stripped; what is left is roughly the event.
+Recent RSS and video headlines from the channels this publication follows,
+with dates and lead URLs. Hype wrapping stripped; what is left is roughly the event.
 
 {zaczyn_kanalow}
 
-Use this list for what is live, never as a source. A video title is not
-evidence of anything. Take a subject from here, then go and find the document:
+Use this list to locate a subject, not as verified evidence. A headline alone
+establishes no supporting detail. Open the supplied lead and find the document:
 the filing, the paper, the pricing page, the court record, the changelog, the
 maker's own technical note. Your `url` and `source_date` must point at that
-document, never at a video. If you cannot find a document, drop the subject.
+document, never at a video. A maker's Show HN submission supports what the maker
+reports, not an independent performance verdict. If you cannot find a document,
+drop the subject.
 
 **Three quarters of what you return must start here, and this is counted by
 code:** your facts are compared against this list after you return them. Take
