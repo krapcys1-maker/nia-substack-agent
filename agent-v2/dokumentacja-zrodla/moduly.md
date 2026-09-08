@@ -155,7 +155,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8509 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8532 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -272,7 +272,7 @@
 | `_pisze_do_produkcji(sciezka)` *(wewn.)* | Czy ta sciezka to PRAWDZIWY katalog danych, a nie katalog testu. |
 | `zapisz_przegranych(przegrani, run_id)` | Dopisuje do dziennika tematy, ktore NIE wygraly, z powodem przegranej. |
 | `pick_topic(topics, assessments, run_id, wczesniejsze)` | Wybiera temat leksykograficznie wedlug dziewieciu kryteriow. |
-| `scout(conn, run_id, count)` | Etap 1 — skaut tematow (DeepSeek V4 Pro). |
+| `scout(conn, run_id, count)` | Etap 1 — skaut tematow. |
 | `bank_fragmentow(conn, dni)` | Nieuzyte fragmenty ze wszystkich artykulow — zaplacone i nieprzeczytane. |
 | `bibliotekarz(conn, run_id, bank)` | Grupuje bank po MECHANIZMIE. Model proponuje, KOD weryfikuje. |
 | `wczytaj_bank_notek()` | Gotowe notki czekajace na swoj moment. Plik, nie tabela — limit czterech |

@@ -525,7 +525,7 @@ def _log_skauta(ile=4):
              _stages.zaczyn_z_kanalow, _stages.llm.call, _kk.korpus_kanalow)
     _stages.recent_angles = lambda conn, limit=None: []
     _stages.pytania_dla_skauta = lambda ile=6: []
-    _stages.zaczyn_z_kanalow = lambda ile=26: "(atrapa)"
+    _stages.zaczyn_z_kanalow = lambda ile=26, **reszta: "(atrapa)"
     _kk.korpus_kanalow = lambda ile=200: []
     _stages.llm.call = lambda *a, **k: _json.dumps(
         {"topics": tematy, "ranking": {"least_written_about": [0]}})
