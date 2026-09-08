@@ -28,6 +28,8 @@ private publication metadata and source excerpts; review them before sharing.
 | Measured at 24h | Coverage: the number of publications with a comparable measurement divided by all confirmed publications. The mean uses only that measured subset. |
 
 A dash means unavailable, including immature posts and absent reach cards.
+An absent or unreadable idea bank is also marked unavailable; only a readable
+empty bank is counted as zero entries.
 A measured zero remains zero. Older records without sufficient timing data
 cannot be backfilled by guessing. Existing collection schedules are unchanged;
 missing measurements do not trigger extra scraping. Concurrent reads may omit

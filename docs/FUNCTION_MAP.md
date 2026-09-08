@@ -560,8 +560,8 @@ Read-only cost, outcome and research report.
 | 121 | `collect(directory, days, now)` | DB | — | `insights.main` |
 | 146 | `collect.in_period(value)` | — | — | `insights.collect` |
 | 150 | `collect.group()` | — | — | `insights.collect` |
-| 217 | `collect.modified(path)` | — | — | `insights.collect` |
-| 265 | `main()` | — | — | `insights (poziom modulu)` |
+| 221 | `collect.modified(path)` | — | — | `insights.collect` |
+| 269 | `main()` | — | — | `insights (poziom modulu)` |
 
 ---
 

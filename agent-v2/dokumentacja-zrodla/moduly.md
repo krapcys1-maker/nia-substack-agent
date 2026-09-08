@@ -84,7 +84,7 @@
 
 ### `insights.py` — raport kosztow, porownywalnych pomiarow i decyzji researchu; tylko odczyt
 
-277 wierszy, 9 funkcji na poziomie modułu, 0 klas
+281 wierszy, 9 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

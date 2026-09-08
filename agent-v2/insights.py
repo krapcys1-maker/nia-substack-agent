@@ -211,7 +211,11 @@ def collect(directory, days=7, now=None):
         if g['publications'] and g['attempts'] and not g['unknown_attempts']:
             g['period_usd_per_publication'] = round(g['recorded_usd'] / g['publications'], 6)
 
-    bank = read_json(directory / 'indeks_kandydatow.json', [])
+    bank_path = directory / 'indeks_kandydatow.json'
+    bank = read_json(bank_path)
+    bank_available = isinstance(bank, list)
+    if not bank_available:
+        warnings.add('unreadable_idea_bank' if bank_path.exists() else 'no_idea_bank')
     bank = [r for r in bank if isinstance(r, dict)] if isinstance(bank, list) else []
     draft_choices = []
     def modified(path):
@@ -253,7 +257,7 @@ def collect(directory, days=7, now=None):
                 warnings.add('invalid_source_url')
     return dict(since=since.isoformat(), until=now.isoformat(), days=days,
                 groups=dict(groups), test_recorded_usd=round(test_cost, 6), publications=publications[-100:],
-                bank=dict(total=len(bank), statuses=dict(Counter(str(x.get('status', 'unknown')) for x in bank)),
+                bank=dict(total=len(bank) if bank_available else None, statuses=dict(Counter(str(x.get('status', 'unknown')) for x in bank)),
                           candidates=[{k: x.get(k) for k in ('fact', 'url', 'source_date', 'status', 'ranga', 'na_artykul', 'powod', 'wazny_do')} for x in bank][-100:]),
                 sources=dict(total=sum(in_period(s.get('at')) for s in sources),
                              failures=dict(Counter(str(s.get('fail_reason') or 'unknown') for s in sources if in_period(s.get('at')) and not s.get('fetched_ok')))),

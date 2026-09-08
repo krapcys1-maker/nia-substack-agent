@@ -125,8 +125,16 @@ class AuditPorts(unittest.TestCase):
     def test_missing_database_report_is_read_only_and_returns_unknown_cost(self):
         report=insights.collect(self.directory,now=NOW)
         self.assertIn('no_database',report['warnings'])
+        self.assertIn('no_idea_bank',report['warnings'])
+        self.assertIsNone(report['bank']['total'])
         self.assertFalse((self.directory/'agent-v2.db').exists())
         self.assertEqual(list(self.directory.iterdir()),[])
+        path=self.directory/'indeks_kandydatow.json'
+        path.write_text('[]')
+        self.assertEqual(insights.collect(self.directory,now=NOW)['bank']['total'],0)
+        path.write_text('[unfinished')
+        self.assertIn('unreadable_idea_bank',insights.collect(self.directory,now=NOW)['warnings'])
+        self.assertEqual(path.read_text(),'[unfinished')
 
     def test_one_hour_graph_cannot_become_a_day_and_late_first_snapshot_is_unknown(self):
         published=NOW-timedelta(hours=48)
