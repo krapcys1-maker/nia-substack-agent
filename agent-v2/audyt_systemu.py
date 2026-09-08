@@ -207,6 +207,60 @@ def dzien(w: dict) -> str:
     return str(w.get("kiedy") or "")[:10]
 
 
+def ocen_pomiary(pomiary: list[dict], wpisy: list[dict]) -> list[tuple[str, str, str]]:
+    """Czy cokolwiek UMKNELO pomiarowi. Nie to samo, co „nie ma jeszcze pomiaru".
+
+    Statystyki zbiera sie na POCZATKU przebiegu, wiec tresc wystawiona miedzy
+    przebiegami z definicji pomiaru nie ma. Etap 4 krzyczal na to BLADEM
+    8 wrzesnia 2026 — komentarze wyszly w nocnym przebiegu, nastepny byl za
+    siedem godzin, a zbieracz wolany bez sieci oddawal je poprawnie co do
+    numeru. Wady nie bylo; byl falszywy alarm, a ten uczy ignorowac etap,
+    ktorego jedynym zadaniem jest zauwazyc dzien, gdy naprawde przestaniemy
+    mierzyc.
+
+    Wada jest wiec zdefiniowana czasem, nie zerem: pozycja PRZETRWALA
+    zakonczony pomiar i nadal jej nie ma. Restack liczy sie jak notka, bo
+    Substack nadaje mu wlasny numer notki — tak samo klasyfikuje go
+    browser.nasze_pozycje_do_pomiaru.
+    """
+    zmierzone: Counter = Counter()
+    zmierzone_id: set[str] = set()
+    for w in pomiary:
+        zmierzone[str(w.get("rodzaj"))] += 1
+        zmierzone_id.add(str(w.get("id")))
+    ostatni = max((str(w.get("kiedy") or "") for w in pomiary), default="")
+
+    def rodzaj_pomiaru(r):
+        if r in ("notka", "restack"):
+            return "notka"
+        return r if r in ("komentarz", "odpowiedz") else None
+
+    wystawione, pominiete = Counter(), Counter()
+    for w in wpisy:
+        r = rodzaj_pomiaru(w.get("rodzaj"))
+        if not r or not w.get("udane") or not w.get("nasz_id"):
+            continue
+        wystawione[r] += 1
+        if str(w["nasz_id"]) in zmierzone_id:
+            continue
+        if ostatni and str(w.get("kiedy") or "") < ostatni:
+            pominiete[r] += 1
+
+    wynik = []
+    for rodzaj in ("notka", "komentarz", "artykul"):
+        if pominiete.get(rodzaj):
+            wynik.append((rodzaj, "BLAD", "%d pominietych mimo zakonczonego pomiaru"
+                          % pominiete[rodzaj]))
+        elif zmierzone.get(rodzaj):
+            wynik.append((rodzaj, "OK", "%d pomiarow" % zmierzone[rodzaj]))
+        elif wystawione.get(rodzaj):
+            wynik.append((rodzaj, "OK", "%d wystawionych po ostatnim pomiarze, w kolejce"
+                          % wystawione[rodzaj]))
+        else:
+            wynik.append((rodzaj, "OK", "nic takiego jeszcze nie wyszlo"))
+    return wynik
+
+
 def main() -> int:
     wpisy = dziennik()
     # Pusty PIVOT — konto, ktore nie zmienialo tematu — bierze wszystko.
@@ -429,12 +483,10 @@ def main() -> int:
 
     # ---------------------------------------------------------------
     etap(4, "STATYSTYKI — czy mierzymy wszystko, co wystawiamy")
-    zmierzone = Counter()
     # SCIEZKA Z MODULU, NIE ZGADNIETA. Pierwsza wersja tego audytu pytala
-    # o `statystyki.PLIK`, ktorego nie ma — `getattr` oddawal None, plik
+    # o statystyki.PLIK, ktorego nie ma — getattr oddawal None, plik
     # „nie istnial" i audyt zglaszal ZERO pomiarow przy 369 prawdziwych.
-    # Audyt, ktory myli sie w nazwie, produkuje falszywy alarm; a falszywy
-    # alarm uczy ignorowac alarmy.
+    pomiary = []
     plik = statystyki._plik()
     if plik.exists():
         for linia in plik.read_text(encoding="utf-8").splitlines():
@@ -443,15 +495,12 @@ def main() -> int:
             except ValueError:
                 continue
             if isinstance(w, dict):
-                zmierzone[str(w.get("rodzaj"))] += 1
-    print("  pomiarow w pliku: %s"
-          % ", ".join("%s %d" % (r, i) for r, i in sorted(zmierzone.items())))
-    # ARTYKUL BYL JEDYNYM RODZAJEM Z ZEREM POMIAROW przy 369 komentarzach
-    # i 365 notkach — i to najdrozszy, jaki produkujemy.
-    for rodzaj in ("notka", "komentarz", "artykul"):
-        werdykt("mierzymy: %s" % rodzaj,
-                "OK" if zmierzone.get(rodzaj) else "BLAD",
-                "%d pomiarow" % zmierzone.get(rodzaj, 0))
+                pomiary.append(w)
+    print("  pomiarow w pliku: %s" % ", ".join(
+        "%s %d" % (r, i) for r, i in sorted(
+            Counter(str(w.get("rodzaj")) for w in pomiary).items())))
+    for rodzaj, stan, szczegol in ocen_pomiary(pomiary, dziennik()):
+        werdykt("mierzymy: %s" % rodzaj, stan, szczegol)
     zrodlo = (KATALOG / "browser.py").read_text(encoding="utf-8")
     werdykt("artykul czytany z panelu wydawcy, nie z koncowki notek",
             "OK" if "post_management/published" in zrodlo else "BLAD")

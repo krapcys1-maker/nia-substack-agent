@@ -849,7 +849,7 @@
 
 ### `audyt_systemu.py` — audyt CALEGO systemu na zywych danych: publikowanie, normy, komentarze, statystyki, artykul, pieniadze, pamiec
 
-674 wierszy, 7 funkcji na poziomie modułu, 0 klas
+723 wierszy, 8 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -859,6 +859,7 @@
 | `werdykt(nazwa, stan, szczegol)` | — |
 | `dziennik()` | — |
 | `dzien(w)` | — |
+| `ocen_pomiary(pomiary, wpisy)` | Czy cokolwiek UMKNELO pomiarowi. Nie to samo, co „nie ma jeszcze pomiaru". |
 | `main()` | — |
 
 ### `wzajemnosc.py` — czy zaczepieni sie odwzajemniaja: liczy PO naszej akcji, osobno stan nieorzekalny

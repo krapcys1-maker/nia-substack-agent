@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 33 |
-| functions and methods | 745 |
+| functions and methods | 747 |
 | functions that call a paid model | 27 |
 | functions that touch the browser | 67 |
 | functions that touch the database | 48 |
@@ -41,7 +41,7 @@ For paid calls the verdict comes from
 | [`artykul_z_puli.py`](#agent-v2artykul-z-puli-py) | 18 | 1 | 1 | 2 | Artykul bierze temat z tej samej puli, co notki. |
 | [`audyt_kosztow.py`](#agent-v2audyt-kosztow-py) | 4 | 0 | 0 | 1 | Read-only audit of the API ledger, research sources and editorial memory. |
 | [`audyt_researchu.py`](#agent-v2audyt-researchu-py) | 3 | 0 | 0 | 0 | Audyt segmentu researchu na ZYWYCH danych, jednym poleceniem. |
-| [`audyt_systemu.py`](#agent-v2audyt-systemu-py) | 7 | 0 | 1 | 0 | Audyt CALEGO systemu na zywych danych, jednym poleceniem. |
+| [`audyt_systemu.py`](#agent-v2audyt-systemu-py) | 9 | 0 | 1 | 0 | Audyt CALEGO systemu na zywych danych, jednym poleceniem. |
 | [`audyt_tematow.py`](#agent-v2audyt-tematow-py) | 4 | 0 | 0 | 0 | Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem. |
 | [`bramki.py`](#agent-v2bramki-py) | 9 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
 | [`browser.py`](#agent-v2browser-py) | 103 | 0 | 47 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
@@ -199,7 +199,7 @@ Audyt segmentu researchu na ZYWYCH danych, jednym poleceniem.
 
 Audyt CALEGO systemu na zywych danych, jednym poleceniem.
 
-7 funkcji.
+9 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -209,7 +209,9 @@ Audyt CALEGO systemu na zywych danych, jednym poleceniem.
 | 184 | `werdykt(nazwa, stan, szczegol)` | — | — | `audyt_systemu.main` |
 | 189 | `dziennik()` | — | — | `audyt_systemu.main` |
 | 206 | `dzien(w)` | — | — | `audyt_systemu.main` |
-| 210 | `main()` | WWW | — | `audyt_systemu (poziom modulu)` |
+| 210 | `ocen_pomiary(pomiary, wpisy)` | — | Czy cokolwiek UMKNELO pomiarowi. | `audyt_systemu.main` |
+| 233 | `ocen_pomiary.rodzaj_pomiaru(r)` | — | — | `audyt_systemu.ocen_pomiary` |
+| 264 | `main()` | WWW | — | `audyt_systemu (poziom modulu)` |
 
 ---
 

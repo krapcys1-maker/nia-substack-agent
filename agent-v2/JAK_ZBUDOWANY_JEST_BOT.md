@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **33 plików**, 35 919 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **33 plików**, 35 968 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 186 zestawów
-testów, 4246 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 187 zestawów
+testów, 4256 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -991,7 +991,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `audyt_systemu.py` — audyt CALEGO systemu na zywych danych: publikowanie, normy, komentarze, statystyki, artykul, pieniadze, pamiec
 
-674 wierszy, 7 funkcji na poziomie modułu, 0 klas
+723 wierszy, 8 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1001,6 +1001,7 @@ wiec nie da sie go rozjechac z kodem.
 | `werdykt(nazwa, stan, szczegol)` | — |
 | `dziennik()` | — |
 | `dzien(w)` | — |
+| `ocen_pomiary(pomiary, wpisy)` | Czy cokolwiek UMKNELO pomiarowi. Nie to samo, co „nie ma jeszcze pomiaru". |
 | `main()` | — |
 
 ### `wzajemnosc.py` — czy zaczepieni sie odwzajemniaja: liczy PO naszej akcji, osobno stan nieorzekalny
