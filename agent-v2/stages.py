@@ -181,8 +181,8 @@ POLA_WSPOLNE = frozenset({
     # BLOKI Z KATALOGU PRESETU (`prompty/*.md`) — patrz `preset.BLOKI`
     # i `_blok_presetu`. Silnik trzyma metode, preset trzyma linie redakcyjna,
     # glos kazdej formy, tozsamosc okladki i to, kogo szukamy.
-    "linia_redakcyjna", "glos_artykulu", "glos_notki", "glos_komentarza",
-    "okladka", "kogo_szukamy",
+    "linia_redakcyjna", "glos_wspolny", "glos_artykulu", "glos_notki",
+    "glos_komentarza", "okladka", "kogo_szukamy",
     # Hosty dokumentow pierwotnych — podpowiedz dla dyskoverii (`zrodla.domeny_preferowane`).
     "domeny_preferowane",
 })
@@ -207,6 +207,16 @@ def _blok_stylu() -> str:
 _ZASTEPCZE_BLOKI = {
     "linia_redakcyjna": ("(the preset supplies no editorial line beyond the subject "
                          "sentence above — judge topics by that sentence alone)"),
+    # BEZ TEGO BLOKU KAZDA FORMA MOWI INNYM GLOSEM, i tak bylo do 8 wrzesnia
+    # 2026. Dzien strojenia glosu wyladowal w `glos_notki`, a `glos_komentarza`
+    # i `glos_artykulu` nie mialy z niego ANI JEDNEJ reguly: zmierzone
+    # `grep -ic` na trzech plikach kartridza produkcyjnego — „fuck" 3/0/0,
+    # „angry" 2/0/0, „punchline" 2/0/0, „at somebody" 1/0/0. Notka klela,
+    # komentarz i artykul nie, bo tamte dwa pliki nadal mowily „swearing is
+    # allowed" — czyli POZWOLENIEM, ktore na trzech modelach dalo zero.
+    "glos_wspolny": ("(the preset supplies no shared voice block — each form's own "
+                     "voice notes are the whole instruction, and the forms may "
+                     "therefore not sound like one another)"),
     "glos_artykulu": ("(no article-specific voice notes from the preset — the two style "
                       "profiles and the rules above are the whole instruction)"),
     "glos_notki": ("(no note-specific voice notes from the preset — the rules above are "
@@ -355,6 +365,7 @@ def _pola_wspolne() -> dict[str, Any]:
         "styl_opis": _blok_stylu(),
         # BLOKI Z KATALOGU PRESETU — patrz `_blok_presetu` i `preset.BLOKI`.
         "linia_redakcyjna": _blok_presetu("linia_redakcyjna"),
+        "glos_wspolny": _blok_presetu("glos_wspolny"),
         "glos_artykulu": _blok_presetu("glos_artykulu"),
         "glos_notki": _blok_presetu("glos_notki"),
         "glos_komentarza": _blok_presetu("glos_komentarza"),

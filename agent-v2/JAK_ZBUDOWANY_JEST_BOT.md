@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 36 497 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 36 530 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-539 wierszy, 20 funkcji na poziomie modułu, 0 klas
+558 wierszy, 20 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -166,7 +166,7 @@ wiec nie da sie go rozjechac z kodem.
 | `memory_state()` | Keep milestones after individual Notes leave the bounded prompt memory. |
 | `_count(value)` *(wewn.)* | — |
 | `statistics(now)` | Publishable facts only: net growth and cumulative measured Note views. |
-| `_system(kind)` *(wewn.)* | — |
+| `_system(kind)` *(wewn.)* | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. |
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
 | `_valid(text, maximum)` *(wewn.)* | — |
@@ -297,7 +297,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8498 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8509 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -701,7 +701,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1111 wierszy, 40 funkcji na poziomie modułu, 4 klas
+1114 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -10710,7 +10710,7 @@ Author of the comment: {commenter}
 
 #### `prompts/pisarz.md`
 
-**308 wierszy.** Pola wejsciowe: `card_json`, `glos_artykulu`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+**312 wierszy.** Pola wejsciowe: `card_json`, `glos_artykulu`, `glos_wspolny`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
 ````markdown
 You write for the anonymous editorial brand {marka}, a publication about
@@ -10773,7 +10773,11 @@ third dash in a paragraph, start a new sentence.
 
 {styl_opis}
 
-## How this publication writes an article, in its own words
+## Who this voice is when it writes anything, in its own words
+
+{glos_wspolny}
+
+## What the article form adds on top of that, in its own words
 
 {glos_artykulu}
 

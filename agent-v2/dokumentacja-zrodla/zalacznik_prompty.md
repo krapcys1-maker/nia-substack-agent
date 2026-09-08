@@ -1758,7 +1758,7 @@ Author of the comment: {commenter}
 
 #### `prompts/pisarz.md`
 
-**308 wierszy.** Pola wejsciowe: `card_json`, `glos_artykulu`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+**312 wierszy.** Pola wejsciowe: `card_json`, `glos_artykulu`, `glos_wspolny`, `ile_paraleli`, `kat_redakcyjny`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `ruch_koncowy`, `ruch_koncowy_nazwa`, `styl_opis`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
 ````markdown
 You write for the anonymous editorial brand {marka}, a publication about
@@ -1821,7 +1821,11 @@ third dash in a paragraph, start a new sentence.
 
 {styl_opis}
 
-## How this publication writes an article, in its own words
+## Who this voice is when it writes anything, in its own words
+
+{glos_wspolny}
+
+## What the article form adds on top of that, in its own words
 
 {glos_artykulu}
 
