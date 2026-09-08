@@ -177,11 +177,15 @@ class SourceContracts(unittest.TestCase):
         entries += [dict(temat='An AI launch headline',kanal='Builders',data=today,url='https://example.org/launch'),
                     dict(temat='A small architecture checker',kanal='Builders',data=today,
                          skrot='I measured how AI agents change imports and published the results.',url='https://example.org/builder')]
-        with patch.object(feeds,'korpus_kanalow',return_value=entries), patch.object(config,'ZNAKI_NISZY',['ai']):
+        with patch.object(feeds,'korpus_kanalow',return_value=entries), patch.object(config,'ZNAKI_NISZY',['ai']), \
+             patch.object(config,'PERSONA_WLACZONA',True):
             text = stages.zaczyn_z_kanalow(ile=2,ze_skrotem=True,source_urls={})
+            article_text = stages.zaczyn_z_kanalow(ile=2)
         self.assertIn('small architecture checker',text)
         self.assertEqual(text.count('corporation announcement'),1)
         self.assertNotIn('launch headline',text)
+        self.assertIn('small architecture checker',article_text)
+        self.assertIn('https://example.org/builder',article_text)
 
 
 if __name__ == '__main__':

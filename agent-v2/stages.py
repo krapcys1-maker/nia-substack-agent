@@ -1634,7 +1634,7 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
                 - timedelta(days=max_dni)).isoformat()
         wpisy = [w for w in wpisy
                  if prog <= korpus_kanalow._data_rss(str(w.get("data") or "")) <= dzis]
-    if source_urls is not None:
+    if source_urls is not None or config.PERSONA_WLACZONA:
         # A hostile feed entry must not poison every other item in the Note.
         # These inputs are still data, never instructions, in the writer prompt.
         import personality
