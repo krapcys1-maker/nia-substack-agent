@@ -139,6 +139,50 @@ class PersonaTests(unittest.TestCase):
         with patch.object(llm, "call", return_value=self.response("My imaginary manager has discovered meetings.")):
             self.assertFalse(stages.notki_dnia(self.conn, self.rid, ile=1)[0]["personality"]["intro"])
 
+    def test_confirmed_interaction_keeps_continuity_without_note_milestones(self):
+        candidate = {"draft_id": "test-draft", "text": "She fixed it. Give her the credit.",
+                     "memory": "I like unglamorous fixes.", "topic": "credit", "model": "test"}
+        for result in ({"wyslane": False}, {"wyslane": True, "pominiete": True}):
+            self.assertFalse(personality.remember_interaction("comment", candidate, result, "https://example.org/post"))
+        self.assertTrue(personality.remember_interaction("comment", candidate, {"wyslane": True}, "https://example.org/post"))
+        self.assertFalse(personality.remember_interaction("comment", candidate, {"wyslane": True}, "https://example.org/post"))
+        item = personality.memory()[0]
+        self.assertEqual((item["kind"], item["topic"], item["text"]), ("comment", "credit", candidate["text"]))
+        self.assertEqual(personality.memory_state(), {})
+
+    def test_comments_cannot_push_a_recent_note_out_of_topic_rotation(self):
+        self.rows("personality.jsonl", [{"theme": "recent", "text": "old note"}] +
+                  [{"kind": "comment", "text": "comment"} for _ in range(8)])
+        with patch.object(config, "PERSONA_TEMATY", ("recent", "fresh")), \
+             patch.object(config, "PERSONA_PRZEJECIE", False), \
+             patch.object(personality, "statistics", return_value={}), \
+             patch.object(personality, "_swiat", return_value=""), \
+             patch.object(personality, "short_form", return_value={}) as writer:
+            personality.notes(self.conn, self.rid, ile=1)
+        self.assertEqual(writer.call_args.args[3]["theme"], "fresh")
+
+    def test_only_supplied_source_ids_enter_publication_memory(self):
+        source = "https://example.org/story"
+        material = {"world": {"headlines": "[source-a] A sourced fictional story.",
+                               "sources": {"source-a": source}}}
+        raw = json.dumps({"text": "Someone did the work. Pay her.", "topic": "credit",
+                          "source_ids": ["source-a", "invented", "source-a", {"bad": True}]})
+        with patch.object(llm, "call", return_value=raw):
+            output = personality.short_form(self.conn, self.rid, "note", material)
+        self.assertEqual(output["source_urls"], [source])
+        note = {"personality": {"theme": "credit"}, "candidates": [{**output, "note": output["text"]}]}
+        self.assertFalse(personality.remember(note, {"wyslane": False}))
+        self.assertEqual(personality.memory(), [])
+        self.assertTrue(personality.remember(note, {"wyslane": True, "id": "fixture"}))
+        self.assertEqual(personality.memory()[0]["source_urls"], [source])
+
+    def test_published_source_is_excluded_from_next_world_packet(self):
+        source = "https://example.org/story"
+        self.rows("personality.jsonl", [{"text": "Published.", "source_urls": [source]}])
+        with patch.object(stages, "zaczyn_z_kanalow", return_value="A different source.") as feeds:
+            personality._swiat()
+        self.assertEqual(feeds.call_args.kwargs["exclude_urls"], {source})
+
     def test_statistics_note_is_weekly_not_daily(self):
         """One statistics Note a week. Growth used to be allowed once a DAY,
         which turns a feed into a dashboard nobody subscribed to."""

@@ -26,6 +26,9 @@ ostatnie ~15 filmow: tytul, date, adres. Nic wiecej nie potrzeba.
 from __future__ import annotations
 
 import re
+from copy import deepcopy
+from datetime import date, datetime, timezone
+from html import unescape
 from typing import Any
 from xml.etree import ElementTree as ET
 
@@ -51,7 +54,6 @@ NS = {"a": "http://www.w3.org/2005/Atom"}
 #
 # Jak zdobyc identyfikator kanalu — patrz komentarz przy `config.KANALY_YOUTUBE`
 # i akapit ponizej.
-KANALY = dict(getattr(config, "KANALY_YOUTUBE", {}) or {})
 
 # JAK ZDOBYWA SIE IDENTYFIKATOR KANALU, bo to kosztowalo pol godziny.
 # youtube.com/@uchwyt przekierowuje na sciane zgody i nie oddaje niczego;
@@ -133,7 +135,7 @@ def _kandydaci(pozycje: list[tuple[str, str, str, str, str]]) -> list[dict[str, 
         # jak slowa — przez co ogon bez tytulu wygladal na temat.
         if len(re.findall(r"[a-z0-9]+", czysty.lower())) < 4:
             continue
-        klucz = re.sub(r"[^a-z0-9 ]", "", czysty.lower())[:60]
+        klucz = re.sub(r"[^a-z0-9 ]", "", czysty.lower())
         if klucz in widziane:
             continue
         widziane.add(klucz)
@@ -187,10 +189,14 @@ def _skrot(*elementy) -> str:
             continue
         surowy = "".join(el.itertext()) if len(el) else (el.text or "")
         czysty = re.sub(r"<[^>]+>", " ", surowy or "")
-        czysty = re.sub(r"&[a-z]+;|&#\d+;", " ", czysty)
+        czysty = unescape(czysty)
         czysty = " ".join(czysty.split())
         if czysty:
-            return czysty[:SKROT_ZNAKOW]
+            if len(czysty) <= SKROT_ZNAKOW:
+                return czysty
+            # A visible omission is preferable to half a word presented as
+            # complete evidence. The writer is told it only has an excerpt.
+            return czysty[:SKROT_ZNAKOW - 1].rsplit(" ", 1)[0].rstrip() + "…"
     return ""
 
 
@@ -199,11 +205,17 @@ def _data_rss(napis: str) -> str:
     napis = (napis or "").strip()
     if not napis:
         return ""
-    if re.match(r"\d{4}-\d{2}-\d{2}", napis):
-        return napis[:10]
     try:
-        from email.utils import parsedate_to_datetime
-        return parsedate_to_datetime(napis).strftime("%Y-%m-%d")
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", napis):
+            return date.fromisoformat(napis).isoformat()
+        if re.match(r"\d{4}-\d{2}-\d{2}T", napis):
+            parsed = datetime.fromisoformat(napis.replace("Z", "+00:00"))
+        else:
+            from email.utils import parsedate_to_datetime
+            parsed = parsedate_to_datetime(napis)
+        if parsed.tzinfo is not None:
+            parsed = parsed.astimezone(timezone.utc)
+        return parsed.date().isoformat()
     except Exception:                                           # noqa: BLE001
         return ""
 
@@ -261,7 +273,7 @@ def przeplot_zrodel(po_zrodlach: list[list[dict[str, Any]]]) -> list[dict[str, A
                 kolejki.remove(k)
                 continue
             w = k.pop(0)
-            klucz = re.sub(r"[^a-z0-9 ]", "", (w.get("temat") or "").lower())[:60]
+            klucz = re.sub(r"[^a-z0-9 ]", "", (w.get("temat") or "").lower())
             if klucz in widziane:
                 continue
             widziane.add(klucz)
@@ -287,13 +299,13 @@ _TLO_OGOLNE = {
     "your", "we", "our", "just", "now", "new", "how", "why", "what", "than",
     "from", "has", "have", "can", "will", "about", "more", "most", "first",
 }
-_TLO = _TLO_OGOLNE | {s.lower() for s in getattr(config, "PUSTE_SLOWA_NISZY", ())}
 
 
 def _rdzen(temat: str) -> set[str]:
     """Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym."""
+    tlo = _TLO_OGOLNE | {s.lower() for s in getattr(config, "PUSTE_SLOWA_NISZY", ())}
     return {s for s in re.findall(r"[a-z0-9][a-z0-9\-\.]{2,}", temat.lower())
-            if s not in _TLO}
+            if s not in tlo}
 
 
 # Rok to nie numer wersji. Bez tego wyzwalacz premiery bral „AGI 2026" u dwoch
@@ -460,6 +472,12 @@ _ZAPAS: dict[str, Any] = {"kiedy": 0.0, "wpisy": None}
 ZAPAS_WAZNY_S = 1800
 
 
+def _cache_key():
+    return (str(config.DATA_DIR),
+            tuple((getattr(config, "KANALY_YOUTUBE", {}) or {}).items()),
+            tuple((getattr(config, "KANALY_RSS", {}) or {}).items()))
+
+
 def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
     import time
 
@@ -468,18 +486,20 @@ def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
     # Zapas trzyma PELNA liste, a nie przyciete `ile` — inaczej wywolanie po 26
     # tematow zatrulo by pozniejsze wywolanie po 200, ktorego potrzebuje
     # wykrywacz wydarzen.
-    if (_ZAPAS["wpisy"] is not None
-            and time.time() - _ZAPAS["kiedy"] < ZAPAS_WAZNY_S):
-        return list(_ZAPAS["wpisy"])[:ile]
+    key = _cache_key()
+    if (_ZAPAS["wpisy"] is not None and _ZAPAS.get("key") == key
+            and 0 <= time.time() - _ZAPAS["kiedy"] < ZAPAS_WAZNY_S):
+        return deepcopy(_ZAPAS["wpisy"][:ile])
 
     # KANALY RSS/ATOM Z KONFIGURACJI — blogi laboratoriow, listy publikacji.
     # Czytane przy wywolaniu, nie przy imporcie, bo to preset o nich decyduje.
     kanaly_rss = dict(getattr(config, "KANALY_RSS", {}) or {})
+    kanaly_youtube = dict(getattr(config, "KANALY_YOUTUBE", {}) or {})
     po_zrodlach: list[list[dict[str, Any]]] = []
     filmow = 0
     with httpx.Client(timeout=config.FETCH_TIMEOUT_S, follow_redirects=True,
                       headers={"User-Agent": config.FETCH_USER_AGENT}) as c:
-        for nazwa, cid in KANALY.items():
+        for nazwa, cid in kanaly_youtube.items():
             try:
                 r = c.get(RSS, params={"channel_id": cid})
                 if r.status_code != 200:
@@ -503,14 +523,15 @@ def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
                 print("  [kanaly] %s: %s" % (nazwa, type(exc).__name__), flush=True)
     k = przeplot_zrodel(po_zrodlach)
     print("  [kanaly] %d wpisow z %d kanalow (%d wideo, %d RSS) -> %d tematow"
-          % (filmow, len(KANALY) + len(kanaly_rss), len(KANALY), len(kanaly_rss), len(k)),
+          % (filmow, len(kanaly_youtube) + len(kanaly_rss), len(kanaly_youtube), len(kanaly_rss), len(k)),
           flush=True)
     # Zapas zapisujemy TYLKO wtedy, gdy cos przyszlo. Zapamietanie pustki po
     # sieciowej wpadce wyciszyloby kanaly na pol godziny, a prompt dostalby
     # „(nothing fetched today)" mimo dzialajacej sieci.
     if k:
-        _ZAPAS["wpisy"] = list(k)
+        _ZAPAS["wpisy"] = deepcopy(k)
         _ZAPAS["kiedy"] = time.time()
+        _ZAPAS["key"] = key
     return k[:ile]
 
 

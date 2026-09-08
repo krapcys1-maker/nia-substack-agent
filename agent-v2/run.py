@@ -1248,6 +1248,10 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 else:
                     wynik = browser.wystaw_odpowiedz(c["pod_id"], tekst,
                                                      wyslij=True)
+                if config.PERSONA_WLACZONA:
+                    import personality
+                    personality.remember_interaction("reply", kandydaci[0], wynik,
+                                                     c.get("url") or "note/c-" + str(c.get("pod_id", "")))
                 # Rytm odmierza sie NIEZALEZNIE od wyniku: przegladarka byla
                 # otwarta, watek wczytany, tekst wpisany.
                 rytm_stanu["odpowiedz"] = True
@@ -1585,6 +1589,9 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                     kontekst={**opis_celu(cel),
                               "otwarcie": (out.get("otwarcie") or "")[:60],
                               "postawa": out.get("postawa") or ""})
+                if config.PERSONA_WLACZONA:
+                    import personality
+                    personality.remember_interaction("comment", dobre[0], wynik, cel["url"])
                 # Rytm odmierza sie NIEZALEZNIE od wyniku: przegladarka byla
                 # otwarta, strona wczytana, tekst wpisany — nastepne dzialanie
                 # ma czekac tyle samo, co po komentarzu udanym.
@@ -1732,6 +1739,10 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                               "otwarcie": (out.get("otwarcie") or "")[:60],
                               "postawa": out.get("postawa") or ""},
                     rodzaj="komentarz")
+                if config.PERSONA_WLACZONA:
+                    import personality
+                    personality.remember_interaction("comment", dobre[0], wynik,
+                                                     cel.get("url") or "note/c-" + str(cel["id"]))
                 rytm_stanu["komentarz"] = True
                 # Jak przy komentarzu pod artykulem: `wyslane` ustawia
                 # `potwierdz_odpowiedz`, czyli sprawdzenie w watku, a nie samo

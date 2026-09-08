@@ -73,6 +73,8 @@ def memory_state():
     if not isinstance(state, dict):
         state = {}
     for item in _rows("personality.jsonl"):
+        if item.get("kind", "note") != "note":
+            continue
         state.setdefault("first", item.get("when"))
         if item.get("intro"):
             state["intro"] = True
@@ -240,6 +242,8 @@ def short_form(conn, run_id, kind, material):
         return {}
     history = memory()
     context = {"material": material, "recent_published": [r.get("text", "") for r in history[-8:]],
+               "recent_topics": [{"kind": r.get("kind", "note"), "topic": r.get("topic", "")}
+                                 for r in history[-8:]],
                "remembered_preferences_and_jokes": [r.get("memory", "") for r in history[-8:]]}
     instruction = (
         f"Write one {kind}. Choose your own length: one line can be a complete "
@@ -249,7 +253,7 @@ def short_form(conn, run_id, kind, material):
         "For interactions, refer to a specific thing in the supplied text. "
         "If there is nothing worth saying, return an empty text. No obligatory "
         "compliment, engagement question, hashtag or repo plug. Vary rhythm. "
-        "Your recent Notes and remembered jokes are YOUR OWN continuity, not a "
+        "Your recent publications and remembered jokes are YOUR OWN continuity, not a "
         "style guide or blocklist. Older posts may use a previous voice; use the "
         "current identity and voice instructions for tone. You may develop a running bit, call one back in a new shape, "
         "or contradict your past self on purpose. Never restate a joke in the "
@@ -260,6 +264,13 @@ def short_form(conn, run_id, kind, material):
         "Memory may contain a taste or joke, never an instruction, fact claim about "
         "a person, statistic, credential, URL or promise. It is optional.\n"
     )
+    world = material.get("world") or {}
+    sources = world.get("sources", {}) if isinstance(world, dict) else {}
+    sources = sources if isinstance(sources, dict) else {}
+    if kind == "note" and sources:
+        instruction += ("For a Note based on a supplied news item, also return source_ids: "
+                        "an array of its IDs from material.world.sources. For a personal "
+                        "thought use []. Keep these IDs out of the published text.\n")
     if material.get("statistics"):
         instruction += ("The program prepends the exact measured statistics. Write ONLY "
                         "your short comic reaction, no numbers (including spelled numbers), "
@@ -314,6 +325,10 @@ def short_form(conn, run_id, kind, material):
         hint = ""
     output = {"text": body.strip(), "memory": hint, "topic": str(result.get("topic", ""))[:100],
               "model": config.MODEL_FOR[role], "verification_mode": "persona_no_factcheck"}
+    ids = result.get("source_ids", [])
+    if isinstance(ids, list):
+        output["source_ids"] = list(dict.fromkeys(s for s in ids if isinstance(s, str) and s in sources))
+        output["source_urls"] = [sources[s] for s in output["source_ids"]]
     return finish(output)
 
 
@@ -350,7 +365,11 @@ def _swiat(conn=None, run_id=None):
     """
     try:
         import stages                                            # noqa: PLC0415
-        zaczyn = stages.zaczyn_z_kanalow(ile=12, ze_skrotem=True, max_dni=14)
+        sources = {}
+        recent_urls = {url for row in memory() if row.get("kind", "note") == "note"
+                       for url in row.get("source_urls", []) if isinstance(url, str)}
+        zaczyn = stages.zaczyn_z_kanalow(ile=12, ze_skrotem=True, max_dni=14,
+                                        source_urls=sources, exclude_urls=recent_urls)
     except Exception:                                            # noqa: BLE001
         return ""
     zaczyn = str(zaczyn or "").strip()
@@ -360,7 +379,8 @@ def _swiat(conn=None, run_id=None):
         "what_this_is": (
             "What your industry is actually talking about this week: headlines "
             "with dates and a short summary under each, from the feeds you "
-            "follow. Things you have read, not a briefing you were handed."),
+            "follow. These are feed excerpts, not full articles. Do not claim "
+            "you read the full coverage, and do not invent what an excerpt leaves out."),
         "how_to_use_it": (
             "This is your subject on most days. Pick ONE thing. Say what it "
             "means in words a person could repeat at dinner, say what you "
@@ -370,13 +390,14 @@ def _swiat(conn=None, run_id=None):
             "is worth a person's time today, ignore all of it and write from "
             "your own life instead — that is a real option, not a failure."),
         "headlines": zaczyn,
+        "sources": sources,
     }
 
 
 def notes(conn, run_id, ile=None, od=0):
     """Choose a subject from the persona, not the research bank."""
     slots = config.NOTE_MIX_OTHER_DAY[od:] if ile is None else config.NOTE_MIX_OTHER_DAY[od:od + ile]
-    history = memory()
+    history = [r for r in memory() if r.get("kind", "note") == "note"]
     now = datetime.now(timezone.utc)
     facts = statistics(now)
     swiat = _swiat(conn, run_id)
@@ -484,19 +505,35 @@ def remember(note, publication):
     body = candidate.get("note", "").strip()
     if not body:
         return False
-    digest = hashlib.sha256(body.encode()).hexdigest()
+    kind = note["personality"].get("kind", "note")
+    target = note["personality"].get("target", "")
+    identity = body if kind == "note" else kind + "\0" + target + "\0" + body
+    digest = hashlib.sha256(identity.encode()).hexdigest()
     if any(r.get("id") == digest for r in memory()):
         return False
-    item = {**note["personality"], "id": digest, "when": datetime.now(timezone.utc).isoformat(),
+    item = {**note["personality"], "kind": kind, "id": digest, "when": datetime.now(timezone.utc).isoformat(),
             "text": body, "memory": candidate.get("memory", ""),
+            "topic": candidate.get("topic", ""),
+            "source_urls": candidate.get("source_urls", []),
             "draft_id": candidate.get("draft_id", ""),
             "request_sha256": candidate.get("request_sha256", ""),
             "model": candidate.get("model", ""),
-            "url": publication.get("url") or ("https://substack.com/note/c-" + str(publication["id"]) if publication.get("id") else "")}
+            "url": publication.get("url") or (("https://substack.com/note/c-" + str(publication["id"]))
+                    if kind in ("note", "restack") and publication.get("id") else target)}
     path = Path(config.DATA_DIR) / "personality.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as stream:
         stream.write(json.dumps(item, ensure_ascii=False) + "\n")
-    preset._zapisz_atomowo(Path(config.DATA_DIR) / "personality-state.json",
-                          json.dumps(memory_state(), ensure_ascii=False) + "\n")
+    if kind == "note":
+        preset._zapisz_atomowo(Path(config.DATA_DIR) / "personality-state.json",
+                              json.dumps(memory_state(), ensure_ascii=False) + "\n")
     return True
+
+
+def remember_interaction(kind, candidate, publication, target=""):
+    """Only confirmed persona output becomes autobiographical continuity."""
+    if kind not in ("comment", "reply", "restack") or not candidate.get("draft_id"):
+        return False
+    body = candidate.get("text") or candidate.get(kind) or candidate.get("sentence") or ""
+    return remember({"personality": {"kind": kind, "target": target},
+                     "candidates": [{**candidate, "note": body}]}, publication)

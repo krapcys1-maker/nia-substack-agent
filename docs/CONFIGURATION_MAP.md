@@ -314,7 +314,7 @@ Brak sesji Substacka.
 
 ## 4.1 The proportions
 
-Measured across 737 functions in 32 modules:
+Measured across 739 functions in 32 modules:
 
 | layer | functions | portable? |
 |---|---|---|

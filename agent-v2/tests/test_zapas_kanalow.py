@@ -80,6 +80,7 @@ FALSZYWE = [{"temat": "topic number %d about model training" % i,
 def _ustaw_zapas(kiedy):
     korpus_kanalow._ZAPAS["wpisy"] = list(FALSZYWE)
     korpus_kanalow._ZAPAS["kiedy"] = kiedy
+    korpus_kanalow._ZAPAS["key"] = korpus_kanalow._cache_key()
 
 
 # KANALY SA ATRAPA, NIE PRODUKCYJNE. Ten test mierzy WAZNOSC ZAPASU: ile razy
@@ -87,9 +88,9 @@ def _ustaw_zapas(kiedy):
 # zapytan rowna sie liczbie kanalow, wiec przy pustym `KANALY` w konfiguracji
 # wychodzila zawsze zero i dwie sekcje oblewaly sie z powodu KONFIGURACJI,
 # a nie kodu. Test podstawia wiec wlasne kanaly i oddaje produkcyjne na koniec.
-_KANALY_PRODUKCYJNE = dict(korpus_kanalow.KANALY)
-korpus_kanalow.KANALY.clear()
-korpus_kanalow.KANALY.update({
+_KANALY_PRODUKCYJNE = dict(korpus_kanalow.config.KANALY_YOUTUBE)
+korpus_kanalow.config.KANALY_YOUTUBE.clear()
+korpus_kanalow.config.KANALY_YOUTUBE.update({
     "Atrapa A": "UC00000000000000000000A",
     "Atrapa B": "UC00000000000000000000B",
 })
@@ -122,9 +123,9 @@ siegniecia["ile"] = 0
 korpus_kanalow._ZAPAS["wpisy"] = None
 korpus_kanalow._ZAPAS["kiedy"] = 0.0
 korpus_kanalow.korpus_kanalow(5)
-sprawdz("odpytal kazdy kanal", siegniecia["ile"] == len(korpus_kanalow.KANALY),
+sprawdz("odpytal kazdy kanal", siegniecia["ile"] == len(korpus_kanalow.config.KANALY_YOUTUBE),
         "%d zapytan przy %d kanalach"
-        % (siegniecia["ile"], len(korpus_kanalow.KANALY)))
+        % (siegniecia["ile"], len(korpus_kanalow.config.KANALY_YOUTUBE)))
 
 print()
 print("=== 4. PRZETERMINOWANY ZAPAS NIE JEST UZYWANY ===")
@@ -157,8 +158,8 @@ sprawdz("zapas wazny miedzy 5 a 60 minut",
         korpus_kanalow.ZAPAS_WAZNY_S)
 
 print()
-korpus_kanalow.KANALY.clear()
-korpus_kanalow.KANALY.update(_KANALY_PRODUKCYJNE)
+korpus_kanalow.config.KANALY_YOUTUBE.clear()
+korpus_kanalow.config.KANALY_YOUTUBE.update(_KANALY_PRODUKCYJNE)
 
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 sys.exit(1 if oblane else 0)
