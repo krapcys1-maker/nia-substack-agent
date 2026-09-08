@@ -106,8 +106,7 @@ def main():
                               "text": candidate.get("text", ""),
                               "rubric": (notes[0].get("personality") or {}).get("rubryka") if notes else None},
                              ensure_ascii=False), flush=True)
-        conn.execute("UPDATE runs SET finished_at=?, status='DONE' WHERE id=?", (db.now(), run_id))
-        conn.commit()
+        db.finish_run(conn, run_id, "DONE", "voice-preview")
         rows = conn.execute("SELECT count(*), sum(cost_usd), min(price_verified) FROM calls WHERE run_id=?", (run_id,)).fetchone()
         summary = {k: sum(1 for s in scores if s[k]) for k in
                    ("addressed", "no_review", "strong_word", "length")}
@@ -122,8 +121,7 @@ def main():
                           "recorded_cost_usd": rows[1] or 0,
                           "price_verified": bool(rows[2]), "published": 0}), flush=True)
     except BaseException:
-        conn.execute("UPDATE runs SET finished_at=?, status='FAILED' WHERE id=?", (db.now(), run_id))
-        conn.commit()
+        db.finish_run(conn, run_id, "FAILED", "voice-preview")
         raise
     finally:
         conn.close()

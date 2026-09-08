@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-502 wierszy, 19 funkcji na poziomie modułu, 0 klas
+539 wierszy, 20 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -36,6 +36,7 @@
 | `community_candidates()` | Relevant new people need not have received a comment first. No LLM call. |
 | `small_account(profile, maximum)` | Unknown size is not evidence of a small account. No paid research. |
 | `remember(note, publication)` | Commit once, only after the browser confirms a new publication. |
+| `remember_interaction(kind, candidate, publication, target)` | Only confirmed persona output becomes autobiographical continuity. |
 
 ### `call_runtime.py` — terminy operacji i zuzycie; worker nie zapisuje do bazy
 
@@ -75,7 +76,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-2978 wierszy, 27 funkcji na poziomie modułu, 1 klas
+2989 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -109,7 +110,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8428 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8435 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -264,7 +265,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5544 wierszy, 102 funkcji na poziomie modułu, 3 klas
+5549 wierszy, 102 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -736,7 +737,7 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-522 wierszy, 12 funkcji na poziomie modułu, 0 klas
+543 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -751,6 +752,7 @@
 | `_rdzen(temat)` *(wewn.)* | Slowa nosne tytulu — do porownywania, czy dwa kanaly mowia o tym samym. |
 | `_numer_wersji(slowo)` *(wewn.)* | Czy token wyglada na numer wydania: ma cyfre i nie jest rokiem. |
 | `wielkie_wydarzenia(korpus, min_kanalow, min_wspolnych, swiezosc_dni, min_kanalow_premiery)` | Rzeczy, o ktorych mowi NARAZ kilka roznych kanalow. |
+| `_cache_key()` *(wewn.)* | — |
 | `korpus_kanalow(ile)` | — |
 
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci

@@ -45,6 +45,29 @@ diagnosis and does not trigger another paid attempt. Articles retain their
 separate evidence checks. Unit tests verify text and draft integrity; judging
 whether the voice is good still requires reading real outputs.
 
+## Memory and news inputs
+
+Confirmed Notes, comments, replies and restacks enter the private persona
+memory with their text, topic and originating draft. Failed or skipped actions
+do not. Restacks need a detected publication ID. Conversation memories do not
+advance Note milestones or displace Notes from the recent-theme rotation.
+Older publications provide continuity; the current preset defines her voice.
+
+News Notes receive dated RSS excerpts, not full articles. The feed window
+excludes old, future and invalid dates; an empty window leaves NIA free to write
+a personal thought. Feed caches are isolated by instance and configured sources.
+Changing a preset also changes YouTube sources and topic-comparison stopwords.
+
+The writer can identify a chosen supplied source using its private `source_ids`
+field. Only IDs from the actual input resolve to URLs. After confirmed publication,
+these URLs enter memory and are excluded from subsequent news inputs while retained
+there. This tracks exact URLs, not every article about the same event. Missing IDs
+do not invent provenance or trigger an extra paid call. IDs stay out of public text.
+
+These controls use no extra model calls. Voice previews now finalize their run cost
+from recorded calls on success and failure. Paid previews require explicit approval
+of the model, call count and estimated cost before anyone runs the command.
+
 ## Scoring a run, so "the voice is uneven" becomes a number
 
 `proba_glosu.py` scores every sample it generates. Reading three Notes and

@@ -1593,7 +1593,8 @@ CURIOSITY_SYSTEM = (
 
 
 def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
-                     max_dni: int | None = None) -> str:
+                     max_dni: int | None = None, *, source_urls: dict | None = None,
+                     exclude_urls: set[str] | None = None) -> str:
     """Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania.
 
     NIGDY NIE ZABIJA PRZEBIEGU. Gdy kanaly nie odpowiadaja, oddajemy jawny
@@ -1623,22 +1624,28 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
         return "(could not be fetched today)"
     if max_dni:
         from datetime import datetime, timedelta, timezone      # noqa: PLC0415
+        dzis = datetime.now(timezone.utc).date().isoformat()
         prog = (datetime.now(timezone.utc).date()
                 - timedelta(days=max_dni)).isoformat()
-        swieze = [w for w in wpisy if str(w.get("data") or "")[:10] >= prog]
-        # PUSTY WYNIK FILTRA NIE MOZE ZABIC NOTKI. Cisza w kanalach przez dwa
-        # tygodnie jest mniej prawdopodobna niz nasz wlasny blad w datach,
-        # a stary temat jest lepszy niz brak tematu.
-        if not swieze:
-            print("  [kanaly] nic swiezszego niz %d dni — biore co jest" % max_dni,
-                  flush=True)
-        wpisy = swieze or wpisy
+        wpisy = [w for w in wpisy
+                 if prog <= korpus_kanalow._data_rss(str(w.get("data") or "")) <= dzis]
+    if source_urls is not None:
+        # A hostile feed entry must not poison every other item in the Note.
+        # These inputs are still data, never instructions, in the writer prompt.
+        import personality
+        wpisy = [w for w in wpisy if w.get("url") not in (exclude_urls or set())
+                 and not personality._injection(json.dumps(w, ensure_ascii=False))]
     wpisy = wpisy[:ile]
     if not wpisy:
         return "(nothing fetched today)"
     linie = []
     for w in wpisy:
-        linie.append("- [%s] %s — %s" % (str(w.get("data"))[:10],
+        prefix = ""
+        if source_urls is not None and urlparse(str(w.get("url") or "")).scheme in ("https", "http"):
+            source_id = hashlib.sha256(w["url"].encode()).hexdigest()[:12]
+            source_urls[source_id] = w["url"]
+            prefix = "[" + source_id + "] "
+        linie.append(prefix + "- [%s] %s — %s" % (str(w.get("data"))[:10],
                                          w.get("kanal") or "?",
                                          w.get("temat") or ""))
         skrot = (w.get("skrot") or "").strip() if ze_skrotem else ""

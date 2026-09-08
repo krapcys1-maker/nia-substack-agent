@@ -2188,6 +2188,11 @@ def restackuj_w_kanale(
                                    komu=notka.get("autor", ""),
                                    slow=len(zdanie.split()),
                                    tekst=zdanie[:300], id=numer_restacka)
+                if config.PERSONA_WLACZONA and numer_restacka:
+                    import personality
+                    personality.remember_interaction("restack", ocena,
+                                                     {"wyslane": True, "id": numer_restacka},
+                                                     notka.get("url", ""))
                 print(f"    podane dalej {wynik['restackowane']}/{ile}", flush=True)
             except Exception as exc:
                 # Tak samo jak przy polubieniach: porazka szla do logu i nigdzie
