@@ -49,14 +49,14 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **32 plików**, 35 781 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **33 plików**, 35 919 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 32 plików zamiast dziesięciu.** Najbliższe usunięciu:
+**WADA — 33 plików zamiast dziesięciu.** Najbliższe usunięciu:
 `style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
@@ -113,7 +113,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 185 zestawów
+się testować bez przeglądarki i bez pieniędzy**. 186 zestawów
 testów, 4246 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
@@ -252,7 +252,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8435 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8476 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -879,7 +879,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-543 wierszy, 13 funkcji na poziomie modułu, 0 klas
+568 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -897,6 +897,14 @@ wiec nie da sie go rozjechac z kodem.
 | `_cache_key()` *(wewn.)* | — |
 | `korpus_kanalow(ile)` | — |
 
+### `tekst_strony.py` — treść wskazanego artykułu zamiast menu strony — odczyt bez modelu
+
+60 wierszy, 1 funkcji na poziomie modułu, 1 klas
+
+| funkcja | co robi |
+|---|---|
+| `tekst_z_html(body)` | Prefer publisher-marked prose, including an empty/unavailable body. |
+
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci
 
 244 wierszy, 4 funkcji na poziomie modułu, 0 klas
@@ -910,7 +918,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1597 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1608 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -951,7 +959,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `audyt_tematow.py` — audyt segmentu tematow na zywych danych: jedenascie etapow, od kanalow po zwrot do puli
 
-368 wierszy, 4 funkcji na poziomie modułu, 0 klas
+369 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -9227,7 +9235,7 @@ is visible either way:
 
 #### `prompts/ciekawostki.md`
 
-**255 wierszy.** Pola wejsciowe: `domeny_preferowane`, `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
+**257 wierszy.** Pola wejsciowe: `domeny_preferowane`, `dziedziny`, `dzis`, `generatory`, `ile`, `kat_redakcyjny`, `linia_redakcyjna`, `marka`, `miesiac`, `nisza`, `premiera`, `stan_modeli`, `uzyte`, `w_reku`, `wydarzenia`, `zaczyn_kanalow`
 
 ````markdown
 Find {ile} documented facts worth stopping a stranger mid-scroll.
@@ -9269,16 +9277,18 @@ that clears the bar, drop it and work the grid.
 {premiera}
 ## What the field is talking about this week
 
-Real video titles from the channels this publication follows, with the dates
-they went up. Hype wrapping stripped; what is left is roughly the event.
+Recent RSS and video headlines from the channels this publication follows,
+with dates and lead URLs. Hype wrapping stripped; what is left is roughly the event.
 
 {zaczyn_kanalow}
 
-Use this list for what is live, never as a source. A video title is not
-evidence of anything. Take a subject from here, then go and find the document:
+Use this list to locate a subject, not as verified evidence. A headline alone
+establishes no supporting detail. Open the supplied lead and find the document:
 the filing, the paper, the pricing page, the court record, the changelog, the
 maker's own technical note. Your `url` and `source_date` must point at that
-document, never at a video. If you cannot find a document, drop the subject.
+document, never at a video. A maker's Show HN submission supports what the maker
+reports, not an independent performance verdict. If you cannot find a document,
+drop the subject.
 
 **Three quarters of what you return must start here, and this is counted by
 code:** your facts are compared against this list after you return them. Take

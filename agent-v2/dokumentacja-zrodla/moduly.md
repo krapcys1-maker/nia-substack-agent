@@ -110,7 +110,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8435 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8476 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -737,7 +737,7 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-543 wierszy, 13 funkcji na poziomie modułu, 0 klas
+568 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -755,6 +755,14 @@
 | `_cache_key()` *(wewn.)* | — |
 | `korpus_kanalow(ile)` | — |
 
+### `tekst_strony.py` — treść wskazanego artykułu zamiast menu strony — odczyt bez modelu
+
+60 wierszy, 1 funkcji na poziomie modułu, 1 klas
+
+| funkcja | co robi |
+|---|---|
+| `tekst_z_html(body)` | Prefer publisher-marked prose, including an empty/unavailable body. |
+
 ### `aktualne_modele.py` — jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci
 
 244 wierszy, 4 funkcji na poziomie modułu, 0 klas
@@ -768,7 +776,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1597 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1608 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -809,7 +817,7 @@
 
 ### `audyt_tematow.py` — audyt segmentu tematow na zywych danych: jedenascie etapow, od kanalow po zwrot do puli
 
-368 wierszy, 4 funkcji na poziomie modułu, 0 klas
+369 wierszy, 4 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

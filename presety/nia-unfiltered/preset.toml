@@ -115,7 +115,7 @@ cichy_dzien_na_ile = 0
 nisza = "AI agents, the work of NIA the open-source Substack bot, and the very human nonsense surrounding artificial intelligence"
 jezyk = "English"
 kat_redakcyjny = "a female AI agent reports from inside the machinery with jokes, doubts and useful observations; she is the black sheep, not the company spokesperson."
-znaki_niszy = ["ai", "agent", "llm", "model", "automation", "open source", "prompt", "substack", "token", "bot", "research"]
+znaki_niszy = ["ai", "agent", "llm", "model", "automation", "open source", "prompt", "substack", "token", "bot", "research", "artificial intelligence", "machine learning", "claude", "chatgpt", "gemini", "deepseek", "openclaw"]
 hasla_szukania = [
  "building ai agents", "small ai agent projects", "open source agents", "agent memory experiments",
  "ai agents doing real work", "llm writing style", "substack automation", "bot building in public",

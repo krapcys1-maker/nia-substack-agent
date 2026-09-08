@@ -29,6 +29,7 @@ import re
 from copy import deepcopy
 from datetime import date, datetime, timezone
 from html import unescape
+from urllib.parse import urlparse
 from typing import Any
 from xml.etree import ElementTree as ET
 
@@ -234,6 +235,9 @@ def wpisy_z_kanalu(nazwa: str, tresc: bytes) -> list[dict[str, Any]]:
     pozycje: list[tuple[str, str, str, str]] = []
     if root.tag == _ATOM + "feed":
         for e in root.iter(_ATOM + "entry"):
+            if any(c.get("term", "").strip().lower() in {"sponsored", "advertisement", "advertorial"}
+                   for c in e.findall(_ATOM + "category")):
+                continue
             link = e.find(_ATOM + "link")
             for alt in e.findall(_ATOM + "link"):
                 if alt.get("rel") in (None, "alternate"):
@@ -246,11 +250,29 @@ def wpisy_z_kanalu(nazwa: str, tresc: bytes) -> list[dict[str, Any]]:
                             _skrot(e.find(_ATOM + "summary"), e.find(_ATOM + "content"))))
     else:
         for it in root.iter("item"):
+            if any(_tekst(c).lower() in {"sponsored", "advertisement", "advertorial"}
+                   for c in it.findall("category")):
+                continue
+            url = _tekst(it.find("link"))
+            description = it.find("description")
+            discussion = _tekst(it.find("comments"))
+            if urlparse(discussion).hostname == "news.ycombinator.com":
+                # HNRSS often supplies only URLs and vote counts, not a summary.
+                # Self-post text belongs to the HN submission, not the linked site.
+                raw = description.text if description is not None else ""
+                raw = re.split(r"<p>\s*(?:Article URL:|Comments URL:|Points:|# Comments:)",
+                               raw or "", maxsplit=1, flags=re.I)[0]
+                if re.fullmatch(r"\s*<a\b[^>]*>Comments</a>\s*", raw, re.I):
+                    raw = ""
+                description = ET.Element("description")
+                description.text = raw
+                if _skrot(description):
+                    url = discussion
             pozycje.append((nazwa, _tekst(it.find("title")),
                             _data_rss(_tekst(it.find("pubDate"))
                                       or _tekst(it.find("{http://purl.org/dc/elements/1.1/}date"))),
-                            _tekst(it.find("link")),
-                            _skrot(it.find("description"),
+                            url,
+                            _skrot(description,
                                    it.find("{http://purl.org/rss/1.0/modules/content/}encoded"))))
     return _kandydaci(pozycje)
 
@@ -497,7 +519,10 @@ def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
     kanaly_youtube = dict(getattr(config, "KANALY_YOUTUBE", {}) or {})
     po_zrodlach: list[list[dict[str, Any]]] = []
     filmow = 0
-    with httpx.Client(timeout=config.FETCH_TIMEOUT_S, follow_redirects=True,
+    # Feeds are small; an unavailable channel must not consume the page/PDF
+    # timeout before the writer even starts. A later scheduled run can retry.
+    feed_timeout = min(config.FETCH_TIMEOUT_S, 15)
+    with httpx.Client(timeout=httpx.Timeout(feed_timeout, connect=min(feed_timeout, 5)), follow_redirects=True,
                       headers={"User-Agent": config.FETCH_USER_AGENT}) as c:
         for nazwa, cid in kanaly_youtube.items():
             try:

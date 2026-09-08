@@ -789,6 +789,11 @@ def karta_dla_pisarza(card: dict[str, Any],
     # tekst wobec materialu i ma widziec wszystko, co o materiale wiemy.
     czysta = {k: v for k, v in card.items()
               if k not in ("unused_evidence", "ocena_ciekawosci")}
+    # The archive may retain an unfetched lead so the topic is not lost.
+    # It is not evidence the writer or a factual repair may assert.
+    if isinstance(czysta.get("confirmed_claims"), list):
+        czysta["confirmed_claims"] = [c for c in czysta["confirmed_claims"]
+                                     if not (isinstance(c, dict) and c.get("not_fetched"))]
 
     daty = czysta.get("source_dates")
     if not isinstance(daty, dict) or not str(daty.get("note") or "").strip():
@@ -1593,7 +1598,7 @@ CURIOSITY_SYSTEM = (
 
 
 def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
-                     max_dni: int | None = None, *, source_urls: dict | None = None,
+                     max_dni: int | None = 14, *, source_urls: dict | None = None,
                      exclude_urls: set[str] | None = None) -> str:
     """Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania.
 
@@ -1629,12 +1634,34 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
                 - timedelta(days=max_dni)).isoformat()
         wpisy = [w for w in wpisy
                  if prog <= korpus_kanalow._data_rss(str(w.get("data") or "")) <= dzis]
-    if source_urls is not None:
+    if source_urls is not None or config.PERSONA_WLACZONA:
         # A hostile feed entry must not poison every other item in the Note.
         # These inputs are still data, never instructions, in the writer prompt.
         import personality
         wpisy = [w for w in wpisy if w.get("url") not in (exclude_urls or set())
                  and not personality._injection(json.dumps(w, ensure_ascii=False))]
+        # Mixed feeds cover more than the preset's subject. Put relevant items
+        # first without discarding unusual stories or changing the niche in code.
+        terms = [str(t).strip() for t in config.ZNAKI_NISZY if str(t).strip()]
+        if terms:
+            pattern = re.compile(r"\b(?:" + "|".join(re.escape(t) for t in terms) + r")s?\b", re.I)
+            def priority(w):
+                relevant = bool(pattern.search(str(w.get("temat", "")) + " " + str(w.get("skrot", ""))))
+                return (not relevant, not bool(str(w.get("skrot", "")).strip()))
+            # Relevance alone still let prolific newsrooms crowd out a builder
+            # with a real story. Within each tier, take turns across channels.
+            ordered = []
+            for tier in sorted({priority(w) for w in wpisy}):
+                channels = {}
+                for w in wpisy:
+                    if priority(w) == tier:
+                        channels.setdefault(w.get("kanal", ""), []).append(w)
+                while channels:
+                    for channel in list(channels):
+                        ordered.append(channels[channel].pop(0))
+                        if not channels[channel]:
+                            del channels[channel]
+            wpisy = ordered
     wpisy = wpisy[:ile]
     if not wpisy:
         return "(nothing fetched today)"
@@ -1651,6 +1678,10 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
         skrot = (w.get("skrot") or "").strip() if ze_skrotem else ""
         if skrot:
             linie.append("    %s" % skrot)
+        elif ze_skrotem:
+            linie.append("    (headline only; no description supplied — do not invent the missing story)")
+        if source_urls is None and w.get("url"):
+            linie.append("    Lead URL (not verified evidence): %s" % w["url"])
     return NOWA_LINIA.join(linie)
 
 
@@ -2028,6 +2059,10 @@ def znajdz_ciekawostki(
         return []
 
     zuzyte = wczytaj_zuzyte()
+    if config.PERSONA_WLACZONA:
+        import personality
+        zuzyte += [r.get("text", "")[:400] for r in personality.memory()
+                   if r.get("kind", "note") == "note"][-12:]
     import random
 
     # DZIEDZINY LOSOWANE NA KAZDY PRZEBIEG. Bez tego model dostawal te same
@@ -2094,6 +2129,12 @@ def znajdz_ciekawostki(
     # powiedziec o nich choc slowo. Proba jest wtedy, gdy ODPOWIEDZ WROCILA,
     # chocby pusta; ponowienia awarii transportu ogranicza `llm.call`
     # (`config.PONOWIENIA`), a liczbe szukan na dobe — limit dobowy wyzej.
+    if na_artykul:
+        prompt += ("\nThis batch is for an article. Put the strongest documented lead "
+                   "first: a specific question a reader would care about, with enough "
+                   "source material to explain it beyond the announcement. Vary the "
+                   "subjects; do not return eight versions of one incident. Do not "
+                   "invent consequences, beliefs or a second case to make a lead look deeper.\n")
     try:
         raw = llm.call("curiosity", CURIOSITY_SYSTEM, prompt,
                        conn=conn, run_id=run_id, web_search=True)
@@ -5469,7 +5510,7 @@ def fetch(
     korpus. Blokada hosta jest zapisywana jako blokada, nie obchodzona.
     """
     import httpx
-    import trafilatura
+    from tekst_strony import tekst_z_html
 
     fetched: list[dict[str, Any]] = []
     do_przegladarki: list[dict[str, Any]] = []
@@ -5531,7 +5572,7 @@ def fetch(
                     if not text:
                         reason = "PDF bez warstwy tekstowej (skan?)"
                 else:
-                    text = trafilatura.extract(body, include_comments=False) or ""
+                    text = tekst_z_html(body)
                     # Frazy odmowy sprawdzamy w WYDOBYTYM TEKŚCIE, nie w surowym
                     # HTML-u. Surowy HTML zawiera skrypty i konfigurację: każda
                     # strona Substacka niesie klucz "captcha_site_key" formularza
