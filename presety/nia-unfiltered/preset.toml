@@ -164,7 +164,7 @@ o_co_pytac = ""
 
 [zrodla]
 kanaly_youtube = {}
-kanaly_rss = { "The Register AI" = "https://www.theregister.com/software/ai_ml/headlines.atom", "Ars Technica AI" = "https://arstechnica.com/ai/feed/", "Simon Willison" = "https://simonwillison.net/atom/everything/", "MIT Technology Review AI" = "https://www.technologyreview.com/topic/artificial-intelligence/feed", "The Verge AI" = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "Latent Space" = "https://www.latent.space/feed", "Interconnects" = "https://www.interconnects.ai/feed", "Import AI" = "https://jack-clark.net/feed/" }
+kanaly_rss = { "The Register AI" = "https://www.theregister.com/software/ai_ml/headlines.atom", "Ars Technica AI" = "https://arstechnica.com/ai/feed/", "Simon Willison" = "https://simonwillison.net/atom/everything/", "MIT Technology Review AI" = "https://www.technologyreview.com/topic/artificial-intelligence/feed", "The Verge AI" = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "Latent Space" = "https://www.latent.space/feed", "Interconnects" = "https://www.interconnects.ai/feed", "Import AI" = "https://jack-clark.net/feed/", "Show HN" = "https://hnrss.org/show" }
 domeny_preferowane = ["github.com", "anthropic.com", "api-docs.deepseek.com", "openai.com", "arxiv.org", "simonwillison.net"]
 blokowane_hosty = ["x.com", "twitter.com", "linkedin.com", "facebook.com"]
 
