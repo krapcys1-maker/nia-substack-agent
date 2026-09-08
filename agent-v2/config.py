@@ -227,6 +227,22 @@ MODEL_FOR = {
     # nie zauważył. Kosztuje 3,5x więcej, co przy 4 artykułach miesięcznie
     # znaczy $2,12 zamiast $0,61.
     "write": FABLE,
+    # NAPRAWA DOMYSLNIE TYM SAMYM MODELEM, CO PISANIE.
+    #
+    # Tego klucza nie bylo tu wcale, wiec preset bez wlasnego wpisu spadal na
+    # model najtanszy. Zmierzone na artykule 0014 z 8 wrzesnia 2026: tekst
+    # pisal model za $10/$50, a potem OSIEM jego zdan przepisywal model za
+    # $0,22/$0,66 i oddawal je w rejestrze poprawiacza. Stad w opublikowanym
+    # tekscie „isn't shown", „a confusing pair rather than a proven
+    # contradiction", „I don't know whether" — akapit zastrzezen tam, gdzie
+    # miala byc teza. Nikt tego nie wybral; po prostu nie bylo wpisu.
+    #
+    # Kroku nie da sie po prostu usunac: `artykul_z_puli` (~1537) odklada
+    # artykul BEZ PUBLIKACJI, gdy `safe_to_post` jest falszywe. Bez naprawy
+    # artykul z jednym zgloszonym twierdzeniem nie wychodzi wcale — a ten
+    # mial ich osiem. Wiec nie kasujemy, tylko oddajemy krok temu, kto ten
+    # tekst napisal: zdania autorki poprawia autorka.
+    "naprawa": FABLE,
     "review": DEEPSEEK_PRO,
     # Obserwacja formy: beaty, eskalacja, moment przylapania, znajomosc
     # otwarcia. Osobne wywolanie od recenzji CELOWO — recenzent ma wprost
@@ -3476,6 +3492,28 @@ INSTANCJA = ""             # identyfikator instancji; pusty = brak presetu
 PRESET_BLOKI: dict[str, str] = {}
 
 
+# USTAWIONE PRZED `_aktywacja_przy_starcie()` I TO JEST WARUNEK, NIE STYL.
+# Preset stosuje sie w linii ponizej; stala zapisana PO niej nadpisalaby
+# wartosc z kartridza wartoscia domyslna i pole byloby martwe. Zmierzone:
+# przy `sprawdzaj_fakty = false` w presecie `config` oddawal True.
+# CZY ARTYKUL PRZECHODZI KONTROLE FAKTOW PRZED PUBLIKACJA.
+#
+# DOMYSLNIE TAK i tak ma zostac dla kazdego kartridza, ktory tego nie
+# przestawi. Wylaczenie jest decyzja WLASCICIELA publikacji i musi byc
+# widoczne w jego presecie, a nie schowane w silniku.
+#
+# Co konkretnie odpada przy `False`: `zweryfikuj` (sprawdzenie twierdzen
+# wyszukiwaniem) i `napraw_obalone` (przepisanie zgloszonych zdan). Artykul
+# idzie na konto tak, jak go napisal pisarz.
+#
+# CENA TEJ DECYZJI, ZAPISANA WPROST: pod nazwiskiem wlasciciela pojda
+# twierdzenia o prawdziwych firmach i ludziach z nazwiska, ktorych nikt nie
+# sprawdzil. 8 wrzesnia 2026 kontrola zlapala w jednym artykule osiem
+# twierdzen do poprawy — i w tym samym artykule przepuscila zla date
+# wydania poprawki, wiec nie jest to tez siatka bez dziur.
+SPRAWDZAJ_FAKTY = True
+
+
 def _aktywacja_przy_starcie():
     if _BEZ_KONFIGURACJI:
         return None
@@ -3607,3 +3645,4 @@ MIN_CALL_OUTPUT_TOKENS = 512
 CLAUDE_PROMPT_CACHE = False  # enable only after measuring same-model cache hits
 CACHE_MAX_AGE_S = 6 * 3600
 FACTCHECK_CACHE_MAX_AGE_S = 3600
+

@@ -59,11 +59,18 @@ different scene. This is a rule of the engine, not of the publication: end
 the prompt with "no lettering, no logos, no watermarks" whatever the style
 block says.
 
-**No recognisable faces.** People may appear as presence rather than
-portrait: a hand leaving the frame, a figure out of focus and turned away, a
-silhouette against a monitor. Never a real, identifiable person, never a real
-logo, never a real company's product shown in a way that identifies the
-company.
+**Recognisable fictional faces follow the publication's style block.**
+When that block defines a recurring fictional character, show the character's
+face clearly and preserve the appearance specified there and in any supplied
+image reference. Vary the expression and pose to fit the scene without
+changing the character's identity. Do not hide the face, turn it away or blur
+it merely because it is recognisable.
+
+If the style block does not define a recurring character, people may remain
+incidental to the scene: a hand leaving the frame, a background figure or a
+silhouette. Do not introduce another publication's character. Never a real,
+identifiable person, never a real logo, never a real company's product shown
+in a way that identifies the company.
 
 ## Output
 

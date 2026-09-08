@@ -132,8 +132,22 @@ _zla = stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "unknown"}})
 sprawdz("slowo unknown nie daje stopki", "Figures checked" not in _zla, _zla[:80])
 sprawdz("i tekst zostaje nietkniety", _zla == _tekst)
 _dobra = stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "2026-09-01"}})
-sprawdz("prawdziwa data daje stopke pod tytulem",
-        "Figures checked against sources to 2026-09-01." in _dobra.split("\n\n")[1], _dobra[:120])
+# STOPKA NA DOLE, NIE POD TYTULEM — zmiana z 8 wrzesnia 2026.
+#
+# Ten test pilnowal wczesniej, zeby zdanie o zrodlach stalo na pozycji zaraz
+# pod naglowkiem. Skutek widac bylo na artykule 0014: czytelnik dostawal
+# „Figures checked against sources to 2026-08-01." jako PIERWSZE zdanie
+# artykulu, przed jakimkolwiek zdaniem autorki. Wlasciciel przeczytal to
+# jako tekst „o niczym" i pierwsze wrazenie mial sluszne — otwarciem byla
+# adnotacja procesu.
+#
+# Data zostaje, bo mowi prawde o tym, do kiedy sprawdzono liczby. Caly plik
+# nazywa to zdanie „stopka" i teraz stoi tam, gdzie stoi stopka.
+sprawdz("prawdziwa data daje stopke NA KONCU",
+        _dobra.split("\n\n")[-1].strip()
+        == "Figures checked against sources to 2026-09-01.", _dobra[-120:])
+sprawdz("i nie zabiera pierwszego zdania autorce",
+        "Figures checked" not in _dobra.split("\n\n")[1], _dobra[:120])
 sprawdz("sam rok tez jest data", "to 2026." in stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "2026"}}))
 sprawdz("kontrdowod: napis z literami odpada", "Figures checked" not in
         stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "n/a"}}))

@@ -489,6 +489,7 @@ POLA: dict[str, tuple[str | None, Any]] = {
     # zawsze), czy pisac z samych profili i opisu. Preset, ktory dopiero
     # zaczyna, moze uczciwie wybrac drugie — patrz `style.przyklady_albo_pusto`.
     "styl.wymagaj_korpusu": ("STYL_WYMAGAJ_KORPUSU", _prawda),
+    "tresc.sprawdzaj_fakty": ("SPRAWDZAJ_FAKTY", _prawda),
 
     # --- modele --------------------------------------------------------
     "modele.role": (None, _slownik_napisow),

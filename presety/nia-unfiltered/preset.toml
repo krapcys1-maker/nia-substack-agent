@@ -87,7 +87,7 @@ godzina_artykulu_utc = "17:00"
 [modele]
 # Per-role models are configurable. Compare repeated drafts from the actual
 # production path; a single example is not a stable quality or cost estimate.
-role = { aktualne_modele = "deepseek-v4-flash", bank = "deepseek-v4-flash", bibliotekarz = "deepseek-v4-flash", cele = "deepseek-v4-flash", classify = "deepseek-v4-flash", curiosity = "deepseek-v4-flash", discovery = "deepseek-v4-flash", factcheck = "deepseek-v4-flash", feasibility = "deepseek-v4-flash", fedreg = "deepseek-v4-flash", forma = "deepseek-v4-flash", grafika = "deepseek-v4-flash", naprawa = "deepseek-v4-flash", naprawa_komentarza = "deepseek-v4-flash", review = "deepseek-v4-flash", scout = "deepseek-v4-flash", synthesis = "deepseek-v4-flash", warto_pisac = "deepseek-v4-flash", wybor = "deepseek-v4-flash", write = "claude-fable-5-1", note = "claude-fable-5-1", note_tani = "claude-fable-5-1", comment = "deepseek-v4-pro", reply = "deepseek-v4-pro", restack = "claude-opus-5" }
+role = { aktualne_modele = "deepseek-v4-flash", bank = "deepseek-v4-flash", bibliotekarz = "deepseek-v4-flash", cele = "deepseek-v4-flash", classify = "deepseek-v4-flash", curiosity = "deepseek-v4-flash", discovery = "deepseek-v4-flash", factcheck = "deepseek-v4-flash", feasibility = "deepseek-v4-flash", fedreg = "deepseek-v4-flash", forma = "deepseek-v4-flash", grafika = "deepseek-v4-flash", naprawa = "gpt-6-astra", naprawa_komentarza = "deepseek-v4-flash", review = "deepseek-v4-flash", scout = "deepseek-v4-flash", synthesis = "deepseek-v4-flash", warto_pisac = "deepseek-v4-flash", wybor = "deepseek-v4-flash", write = "gpt-6-astra", note = "claude-fable-5-1", note_tani = "claude-fable-5-1", comment = "deepseek-v4-pro", reply = "deepseek-v4-pro", restack = "claude-opus-5" }
 # Glebokosc rozumowania na role. Krotkie formy nie potrzebuja "high":
 # pomiar z 7 wrzesnia 2026 dal na Opusie lepszy podpis przy 139 tokenach
 # wyjscia zamiast 531, czyli za czwarta czesc ceny. Myslenie liczy sie po
@@ -110,6 +110,23 @@ okno_promocji_dni = 0
 miks_notek = ["MYSL", "DYSKUSJA"]
 ciche_dni_wlaczone = false
 cichy_dzien_na_ile = 0
+
+[tresc]
+# KONTROLA FAKTOW PRZED PUBLIKACJA ARTYKULU — WYLACZONA decyzja wlasciciela
+# z 8 wrzesnia 2026, powtorzona trzy razy po przeczytaniu artykulu 0014.
+#
+# Co to znaczy: artykul idzie na konto tak, jak napisal go pisarz. Nie ma
+# ani sprawdzania twierdzen wyszukiwaniem, ani przepisywania zgloszonych
+# zdan. Pod nazwiskiem wlasciciela pojda wiec twierdzenia o prawdziwych
+# firmach i ludziach z nazwiska, ktorych nikt nie zweryfikowal.
+#
+# Argument wlasciciela, zapisany bo jest rzeczowy: kontrola z 8 wrzesnia
+# zglosila osiem twierdzen do poprawy i JEDNOCZESNIE przepuscila zla date
+# wydania poprawki mcp-shell. Nie jest to wiec siatka bez dziur, a placilo
+# sie za nia plaskim tekstem.
+#
+# Wlaczenie z powrotem: zmien na true i przepnij kartridz.
+sprawdzaj_fakty = false
 
 [temat]
 nisza = "AI agents, the work of NIA the open-source Substack bot, and the very human nonsense surrounding artificial intelligence"

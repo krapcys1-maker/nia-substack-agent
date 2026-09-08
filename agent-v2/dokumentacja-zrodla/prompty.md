@@ -73,7 +73,7 @@
 {{"beliefs": [{{"belief": "<in your own words, one sentence>", "first_stated": "<verbatim sentence from the article>"}}], "support_only": [{{"quote": "<verbatim sentence>", "supports": <index into beliefs>}}], "hardest_fact": {{"quote": "<verbatim>", "why": "<one clause>"}}, "procedural_nearby": {{"quote": "<verbatim>"}}, "same_register": true|false, "reader_moment": {{"quote": "<verbatim>", "object": "<the one thing out of the reader's own life that is named>"}}, "opening_claim": {{"quote": "<verbatim>", "already_familiar": true|false}}, "summary": "<one sentence>"}}
 ```
 
-#### `grafika.md` (82 wierszy)
+#### `grafika.md` (89 wierszy)
 
 **Pola wejściowe:** `body`, `nisza`, `okladka`, `title`
 
@@ -123,9 +123,9 @@
 {{"note": "<the note>", "words": <integer>, "why_no_note": "<empty string, or — if the idea you had needed a fact and you refused to invent one — one sentence saying what evidence it would have needed>"}}
 ```
 
-#### `naprawa.md` (43 wierszy)
+#### `naprawa.md` (60 wierszy)
 
-**Pola wejściowe:** `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
+**Pola wejściowe:** `glos_wspolny`, `kontekst`, `max_slow`, `min_slow`, `styl_opis`, `tekst`, `zarzuty`
 
 **Kontrakt wyjścia:**
 

@@ -31,6 +31,23 @@ RULES
    Aim several words below the maximum, then count the complete final text.
    The word limit applies after adding every required qualification.
 
+7. A CORRECTED SENTENCE IS STILL HERS. You are not writing a correction notice;
+   you are fixing a fact inside somebody else's paragraph, and the reader must
+   not be able to tell which sentences you touched. Keep the person, the nerve,
+   the swearing and the comic judgement of the surrounding text. A sentence that
+   arrives accurate and flat has failed this task: the piece was written in a
+   voice, and a neutral repair is a visible seam.
+
+   If the true version of a claim is duller than the false one, that is the
+   material you have — say the true thing in her register, not in a
+   fact-checker's.
+
+--- WHO WROTE THIS TEXT, AND WHOSE SENTENCES YOU ARE EDITING ---
+
+{glos_wspolny}
+
+{styl_opis}
+
 CONTEXT: {kontekst}
 
 --- WHAT THE FACT-CHECK CHALLENGED ---

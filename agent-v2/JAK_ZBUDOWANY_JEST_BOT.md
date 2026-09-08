@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 36 775 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 36 881 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 192 zestawów
-testów, 4301 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 193 zestawów
+testów, 4313 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -297,7 +297,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8542 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8608 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -651,7 +651,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-1039 wierszy, 45 funkcji na poziomie modułu, 1 klas
+1040 wierszy, 45 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -831,7 +831,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3609 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3648 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -9834,7 +9834,7 @@ point at an entry in `beliefs`.
 
 #### `prompts/grafika.md`
 
-**82 wierszy.** Pola wejsciowe: `body`, `nisza`, `okladka`, `title`
+**89 wierszy.** Pola wejsciowe: `body`, `nisza`, `okladka`, `title`
 
 ````markdown
 Write the image brief for the header illustration of this article. You are
@@ -9898,11 +9898,18 @@ different scene. This is a rule of the engine, not of the publication: end
 the prompt with "no lettering, no logos, no watermarks" whatever the style
 block says.
 
-**No recognisable faces.** People may appear as presence rather than
-portrait: a hand leaving the frame, a figure out of focus and turned away, a
-silhouette against a monitor. Never a real, identifiable person, never a real
-logo, never a real company's product shown in a way that identifies the
-company.
+**Recognisable fictional faces follow the publication's style block.**
+When that block defines a recurring fictional character, show the character's
+face clearly and preserve the appearance specified there and in any supplied
+image reference. Vary the expression and pose to fit the scene without
+changing the character's identity. Do not hide the face, turn it away or blur
+it merely because it is recognisable.
+
+If the style block does not define a recurring character, people may remain
+incidental to the scene: a hand leaving the frame, a background figure or a
+silhouette. Do not introduce another publication's character. Never a real,
+identifiable person, never a real logo, never a real company's product shown
+in a way that identifies the company.
 
 ## Output
 
@@ -10347,7 +10354,7 @@ field in general.
 
 #### `prompts/naprawa.md`
 
-**43 wierszy.** Pola wejsciowe: `kontekst`, `max_slow`, `min_slow`, `tekst`, `zarzuty`
+**60 wierszy.** Pola wejsciowe: `glos_wspolny`, `kontekst`, `max_slow`, `min_slow`, `styl_opis`, `tekst`, `zarzuty`
 
 ````markdown
 You are correcting a text that is about to be published. A fact-check
@@ -10382,6 +10389,23 @@ RULES
 6. Keep the length between {min_slow} and {max_slow} whitespace-separated words.
    Aim several words below the maximum, then count the complete final text.
    The word limit applies after adding every required qualification.
+
+7. A CORRECTED SENTENCE IS STILL HERS. You are not writing a correction notice;
+   you are fixing a fact inside somebody else's paragraph, and the reader must
+   not be able to tell which sentences you touched. Keep the person, the nerve,
+   the swearing and the comic judgement of the surrounding text. A sentence that
+   arrives accurate and flat has failed this task: the piece was written in a
+   voice, and a neutral repair is a visible seam.
+
+   If the true version of a claim is duller than the false one, that is the
+   material you have — say the true thing in her register, not in a
+   fact-checker's.
+
+--- WHO WROTE THIS TEXT, AND WHOSE SENTENCES YOU ARE EDITING ---
+
+{glos_wspolny}
+
+{styl_opis}
 
 CONTEXT: {kontekst}
 
@@ -12358,6 +12382,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `PRESET` | `None` | --- AKTYWNY PRESET ---------------------------------------------------------- JEDEN SILNIK, JEDNA INSTANCJA NARAZ, KONTEKST ROZWIAZANY PRZED |
 | `PRESET_AKTYWACJA` | `None` | — |
 | `INSTANCJA` | `""` | — |
+| `SPRAWDZAJ_FAKTY` | `True` | USTAWIONE PRZED `_aktywacja_przy_starcie()` I TO JEST WARUNEK, NIE STYL. Preset stosuje sie w linii ponizej; stala zapisana PO niej nadpisal |
 | `KONTO_ZE_SRODOWISKA` | `_konf.konto_ze_srodowiska(sys.modules[__name` | KONTO Z INSTALACJI: `.env` (SUBSTACK_HANDLE, NAZWA_MARKI) wygrywa z `[konto]` presetu i ze starego TOML-a. Preset moze byc wspolny dla wielu |
 | `CHROME_DEBUG_PORT` | `int(_env("CHROME_DEBUG_PORT", "9222") or "92` | PORT DEBUGOWANIA CHROME'A — TAK SAMO Z INSTALACJI, NIE Z PRESETU. Preset moze byc wspolny, a port nie: dwie kopie bota na jednej maszynie mu |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
