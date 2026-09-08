@@ -1539,6 +1539,10 @@ def wybierz_cele(
     agent komentowałby wszystko, czyli zachowywałby się jak farma komentarzy,
     a nie jak ktoś, kto czyta.
     """
+    import interaction_history
+    posty = interaction_history.unhandled(posty, config.DATA_DIR)
+    if not posty:
+        return []
     if config.PERSONA_WLACZONA:
         import personality
         return personality.targets(posty)
@@ -1599,7 +1603,7 @@ CURIOSITY_SYSTEM = (
 
 def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
                      max_dni: int | None = 14, *, source_urls: dict | None = None,
-                     exclude_urls: set[str] | None = None) -> str:
+                     exclude_urls: set[str] | None = None, run_id: int | None = None) -> str:
     """Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania.
 
     NIGDY NIE ZABIJA PRZEBIEGU. Gdy kanaly nie odpowiadaja, oddajemy jawny
@@ -1627,17 +1631,27 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
         print("  [kanaly] nie zebralem zaczynu (%s)" % type(exc).__name__,
               flush=True)
         return "(could not be fetched today)"
+    supplied = list(wpisy)
+    reasons = {}
     if max_dni:
         from datetime import datetime, timedelta, timezone      # noqa: PLC0415
         dzis = datetime.now(timezone.utc).date().isoformat()
         prog = (datetime.now(timezone.utc).date()
                 - timedelta(days=max_dni)).isoformat()
+        for w in wpisy:
+            if not prog <= korpus_kanalow._data_rss(str(w.get('data') or '')) <= dzis:
+                reasons[id(w)] = 'outside_date_window'
         wpisy = [w for w in wpisy
                  if prog <= korpus_kanalow._data_rss(str(w.get("data") or "")) <= dzis]
     if source_urls is not None or config.PERSONA_WLACZONA:
         # A hostile feed entry must not poison every other item in the Note.
         # These inputs are still data, never instructions, in the writer prompt.
         import personality
+        for w in wpisy:
+            if w.get('url') in (exclude_urls or set()):
+                reasons[id(w)] = 'already_used_source'
+            elif personality._injection(json.dumps(w, ensure_ascii=False)):
+                reasons[id(w)] = 'unsafe_source_content'
         wpisy = [w for w in wpisy if w.get("url") not in (exclude_urls or set())
                  and not personality._injection(json.dumps(w, ensure_ascii=False))]
         # Mixed feeds cover more than the preset's subject. Put relevant items
@@ -1663,6 +1677,14 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
                             del channels[channel]
             wpisy = ordered
     wpisy = wpisy[:ile]
+    if run_id is not None:
+        import research_tasks
+        chosen = {id(w) for w in wpisy}
+        research_tasks.decision(config.DATA_DIR, run_id, 'feed_selection',
+            items=[dict(title=str(w.get('temat') or '')[:180], url=w.get('url'),
+                        date=w.get('data'), channel=w.get('kanal'),
+                        reason='offered_to_writer' if id(w) in chosen else reasons.get(id(w), 'outside_ranked_limit'))
+                   for w in supplied[:200]])
     if not wpisy:
         return "(nothing fetched today)"
     linie = []

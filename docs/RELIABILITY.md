@@ -53,6 +53,13 @@ and otherwise reports an estimate for the requested size and quality.
 
 ## Publication decisions
 
+The [Results & research report](INSIGHTS.md) exposes recorded costs and unknown
+usage beside confirmed publications, comparable reach measurements and source
+decisions. Feed recovery persists across process restarts without clearing server
+failure counts when a cached copy is used. Confirmed comment targets are filtered
+before writing, and an article's existing second search uses the material already
+retrieved to target its missing evidence.
+
 Immediately before an account action, NIA checks the logged-in user against
 the configured public account, including its stable identifier. Its brief
 identity cache is tied to the browser context and session cookie fingerprint.

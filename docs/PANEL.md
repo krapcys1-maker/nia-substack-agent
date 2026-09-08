@@ -173,7 +173,26 @@ the launcher or changing presets. The panel refuses edits while it or the
 instance lock indicates a running operation. The raw engine log and some
 validation messages currently remain in Polish in both interface languages.
 
-## 7. Later changes and recovery
+## 7. Results and research
+
+Open **Results & research**, select **Last 7 days** or **Last 30 days**, and
+click **Refresh report**. This reads the active instance, including while a
+workflow runs, without calling models or starting another workflow.
+
+![Results and research panel, with fictional demonstration data](media/panel-results-en.png)
+
+The report separates recorded costs, unresolved reservations and test costs.
+Expand **Publication measurements** for 24/48-hour coverage, **Latest feed
+selection and exclusions** for topic decisions, and **Article selection history**
+for the chosen bank candidate. **Article evidence gaps** lists missing evidence
+and the sources already retrieved. These sections fill as new workflows run.
+Screenshot values are fictional demonstration data.
+
+A dash means a measurement is unavailable. Cost per publication is a ratio for
+the selected period, not the invoice price of one post. See
+[report definitions and recovery behavior](INSIGHTS.md).
+
+## 8. Later changes and recovery
 
 Load your **private** preset, change its settings and save it. Editing the active
 private preset validates and reactivates it for the same instance, preserving

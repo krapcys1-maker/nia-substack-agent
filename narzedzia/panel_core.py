@@ -353,6 +353,18 @@ class Panel:
                 temp.unlink(missing_ok=True)
         return {'saved': True}
 
+    def insights(self, days=7):
+        """Read the active instance without starting a worker or taking its run lock."""
+        if days not in (7, 30):
+            raise PanelError('Choose 7 or 30 days.')
+        import insights
+        with self.mutex:
+            act = self.active()
+            if not act:
+                return {'active': None, 'report': None}
+            return {'active': act.preset.nazwa, 'instance': act.instancja,
+                    'report': insights.collect(act.katalog_danych, days)}
+
     def status(self):
         env = self.env()
         error = ''

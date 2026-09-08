@@ -49,14 +49,14 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **33 plików**, 35 968 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 36 490 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 33 plików zamiast dziesięciu.** Najbliższe usunięciu:
+**WADA — 37 plików zamiast dziesięciu.** Najbliższe usunięciu:
 `style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 187 zestawów
-testów, 4256 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 188 zestawów
+testów, 4258 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -205,6 +205,51 @@ wiec nie da sie go rozjechac z kodem.
 | `write_json(path, value)` | Replace a JSON document atomically, keeping the prior file on failure. |
 | `code_fingerprint(root)` | — |
 
+### `feed_cache.py` — trwaly zapas RSS/Atom i przerwy po awarii osobno dla kazdego URL i instancji
+
+75 wierszy, 2 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `_valid(body)` *(wewn.)* | — |
+| `fetch(directory, url, request, now)` | Return validated XML and provenance; never refresh cache age on failure. |
+
+### `interaction_history.py` — odrzuca potwierdzone cele komentarzy przed pisaniem
+
+53 wierszy, 3 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `target_key(value)` | — |
+| `confirmed_targets(directory)` | — |
+| `unhandled(posts, directory)` | Only confirmed target IDs are excluded; failed attempts remain eligible. |
+
+### `insights.py` — raport kosztow, porownywalnych pomiarow i decyzji researchu; tylko odczyt
+
+277 wierszy, 9 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `moment(value)` | — |
+| `number(value)` | — |
+| `read_json(path, default)` | — |
+| `rows(path, warnings)` | — |
+| `at_window(records, published, hours, now, field)` | Latest measured value at/before the horizon, no more than 2h earlier. |
+| `graph_windows(card, published, measured)` | Extract mature primary curves only; no invented values for missing windows. |
+| `channel(value)` | — |
+| `collect(directory, days, now)` | — |
+| `main()` | — |
+
+### `research_tasks.py` — slad wyboru tematu i brakow w dowodach; ukierunkowuje istniejaca druga probe researchu
+
+60 wierszy, 3 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `decision(directory, run_id, stage, **details)` | Operational trace only. It never becomes a writer instruction. |
+| `snapshot(directory, run_id, brief, corpus, missing)` | Keep exact source URLs and short excerpts, separate from confirmed evidence. |
+| `followup(directory, run_id, brief, corpus, min_sources, min_primary)` | Refine the already-budgeted retry, without adding an LLM call or a loop. |
+
 ### `retry_policy.py` — Retry-After i trwale przerwy przed kolejnym zapytaniem do serwera
 
 46 wierszy, 4 funkcji na poziomie modułu, 0 klas
@@ -252,7 +297,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8476 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8498 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -834,7 +879,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `statystyki.py` — co przyniosła każda pozycja: wejścia, reakcje, subskrypcje
 
-530 wierszy, 10 funkcji na poziomie modułu, 0 klas
+532 wierszy, 10 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -879,7 +924,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-568 wierszy, 13 funkcji na poziomie modułu, 0 klas
+574 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -918,7 +963,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1608 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1635 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

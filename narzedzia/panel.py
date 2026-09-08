@@ -53,6 +53,8 @@ def make_server(port=8765, panel=None):
             try:
                 if route.path == '/api/status':
                     return self.respond(200, panel.status())
+                if route.path == '/api/insights':
+                    return self.respond(200, panel.insights(int(parse_qs(route.query).get('days', ['7'])[0])))
                 if route.path == '/api/preset':
                     return self.respond(200, panel.read(parse_qs(route.query).get('id', [''])[0]))
                 files = {'/': ('index.html', 'text/html; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'), '/style.css': ('style.css', 'text/css; charset=utf-8')}

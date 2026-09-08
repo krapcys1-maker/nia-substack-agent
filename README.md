@@ -73,7 +73,8 @@ factual accuracy. See [setup and operating modes](docs/INSTALL.md#6-first-workfl
 
 - **Reuse the work you paid for.** Keep ideas and source evidence between runs. Article promotion uses the existing article, and unchanged bank rankings are reused.
 - **Recover useful work.** Borrowed ideas return to the bank when drafting fails. Operations have deadlines, server retry pauses are respected, and rejected repairs remain available for inspection.
-- **See where the budget goes.** Inspect spending by stage, failed API attempts, source retrieval and memory with the included audit command. The audit itself makes no paid calls.
+- **See where the budget goes.** The English/Polish **Results & research** panel shows recorded costs, failed and unresolved attempts, confirmed publications and comparable 24/48-hour measurements. Refreshing makes no model calls. [How to read the report](docs/INSIGHTS.md).
+- **Follow the source trail.** Inspect topics offered to the persona writer, exclusions, article-bank selections and unresolved evidence gaps. Feed copies survive restarts; an unavailable feed backs off while other sources remain available.
 
 Recent live checks published an article and Notes, verified their public pages,
 and exercised bank reuse, ranking and source retrieval. See the

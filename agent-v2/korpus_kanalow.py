@@ -504,6 +504,7 @@ def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
     import time
 
     import httpx
+    import feed_cache
 
     # Zapas trzyma PELNA liste, a nie przyciete `ile` — inaczej wywolanie po 26
     # tematow zatrulo by pozniejsze wywolanie po 200, ktorego potrzebuje
@@ -526,22 +527,27 @@ def korpus_kanalow(ile: int = 30) -> list[dict[str, Any]]:
                       headers={"User-Agent": config.FETCH_USER_AGENT}) as c:
         for nazwa, cid in kanaly_youtube.items():
             try:
-                r = c.get(RSS, params={"channel_id": cid})
-                if r.status_code != 200:
-                    print("  [kanaly] %s: HTTP %s" % (nazwa, r.status_code), flush=True)
+                body, origin = feed_cache.fetch(config.DATA_DIR, RSS + '?channel_id=' + cid,
+                    lambda: c.get(RSS, params={"channel_id": cid}))
+                if not body:
+                    print("  [kanaly] %s: %s" % (nazwa, origin), flush=True)
                     continue
-                wpisy = [(nazwa, e) for e in ET.fromstring(r.content).findall("a:entry", NS)]
+                if origin == 'stale':
+                    print('  [kanaly] %s: cached feed during outage' % nazwa, flush=True)
+                wpisy = [(nazwa, e) for e in ET.fromstring(body).findall("a:entry", NS)]
                 filmow += len(wpisy)
                 po_zrodlach.append(przetworz(wpisy))
             except Exception as exc:
                 print("  [kanaly] %s: %s" % (nazwa, type(exc).__name__), flush=True)
         for nazwa, adres in kanaly_rss.items():
             try:
-                r = c.get(adres)
-                if r.status_code != 200:
-                    print("  [kanaly] %s: HTTP %s" % (nazwa, r.status_code), flush=True)
+                body, origin = feed_cache.fetch(config.DATA_DIR, adres, lambda: c.get(adres))
+                if not body:
+                    print("  [kanaly] %s: %s" % (nazwa, origin), flush=True)
                     continue
-                z_kanalu = wpisy_z_kanalu(nazwa, r.content)
+                if origin == 'stale':
+                    print('  [kanaly] %s: cached feed during outage' % nazwa, flush=True)
+                z_kanalu = wpisy_z_kanalu(nazwa, body)
                 filmow += len(z_kanalu)
                 po_zrodlach.append(z_kanalu)
             except Exception as exc:

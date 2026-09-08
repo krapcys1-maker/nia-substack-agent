@@ -13,8 +13,8 @@ CO PILNUJEMY, poza samym zapasem:
   - zapas trzyma PELNA liste, nie przycieta do `ile` — inaczej wywolanie po 26
     tematow zatrulo by pozniejsze wywolanie po 200, ktorego potrzebuje
     wykrywacz wydarzen;
-  - PUSTKI NIE ZAPAMIETUJEMY — sieciowa wpadka wyciszylaby kanaly na pol
-    godziny, a prompt dostalby „(nothing fetched today)" mimo dzialajacej sieci;
+  - PUSTKI NIE ZAPAMIETUJEMY w pamieci procesu; osobny zapas dyskowy
+    respektuje przerwe po bledzie HTTP i ponawia pobranie po jej uplywie;
   - zapas ma TERMIN — proces dnia trwa ponad godzine i nie ma patrzec na
     kanaly sprzed calego cyklu.
 
@@ -26,6 +26,9 @@ BEZ PYTESTA. Uruchamiac z korzenia repozytorium.
 """
 import sys
 import types
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
 from httpx import Timeout
 
 sys.path.insert(0, "agent-v2")
@@ -91,6 +94,9 @@ def _ustaw_zapas(kiedy):
 # wychodzila zawsze zero i dwie sekcje oblewaly sie z powodu KONFIGURACJI,
 # a nie kodu. Test podstawia wiec wlasne kanaly i oddaje produkcyjne na koniec.
 _KANALY_PRODUKCYJNE = dict(korpus_kanalow.config.KANALY_YOUTUBE)
+_DANE_PRODUKCYJNE = korpus_kanalow.config.DATA_DIR
+_DANE_TESTU = tempfile.TemporaryDirectory()
+korpus_kanalow.config.DATA_DIR = Path(_DANE_TESTU.name)
 korpus_kanalow.config.KANALY_YOUTUBE.clear()
 korpus_kanalow.config.KANALY_YOUTUBE.update({
     "Atrapa A": "UC00000000000000000000A",
@@ -133,15 +139,17 @@ print()
 print("=== 4. PRZETERMINOWANY ZAPAS NIE JEST UZYWANY ===")
 siegniecia["ile"] = 0
 _ustaw_zapas(time.time() - korpus_kanalow.ZAPAS_WAZNY_S - 60)
-korpus_kanalow.korpus_kanalow(5)
+# Pierwszy blad wyznaczyl 5 minut przerwy; uplyw TTL oznacza tez jej koniec.
+pozniej = time.time() + korpus_kanalow.ZAPAS_WAZNY_S + 60
+with patch('feed_cache.time.time', return_value=pozniej):
+    korpus_kanalow.korpus_kanalow(5)
 sprawdz("stary zapas pominiety, siec dotknieta", siegniecia["ile"] > 0,
         siegniecia["ile"])
 
 print()
 print("=== 5. PUSTKI NIE ZAPAMIETUJEMY ===")
-# Wszystkie kanaly oddaja 404, wiec `przetworz` da pusta liste. Gdyby zapas
-# zapisal pustke, nastepne wywolanie oddaloby zero BEZ proby pobrania — i
-# kanaly milczalyby przez pol godziny mimo dzialajacej sieci.
+# Pusta lista nie zastepuje korpusu. Ponowne HTTP respektuje jednak backoff,
+# zeby kolejne etapy nie odpytywaly tego samego niedzialajacego serwera.
 korpus_kanalow._ZAPAS["wpisy"] = None
 korpus_kanalow._ZAPAS["kiedy"] = 0.0
 korpus_kanalow.korpus_kanalow(5)
@@ -150,8 +158,12 @@ sprawdz("pusty wynik nie trafil do zapasu",
         korpus_kanalow._ZAPAS["wpisy"])
 siegniecia["ile"] = 0
 korpus_kanalow.korpus_kanalow(5)
-sprawdz("wiec nastepne wywolanie znowu probuje", siegniecia["ile"] > 0,
+sprawdz("kolejne wywolanie respektuje przerwe po HTTP 404", siegniecia["ile"] == 0,
         siegniecia["ile"])
+with patch('feed_cache.time.time', return_value=pozniej + 3600):
+    korpus_kanalow.korpus_kanalow(5)
+sprawdz("po przerwie znowu probuje kazdego kanalu",
+        siegniecia["ile"] == len(korpus_kanalow.config.KANALY_YOUTUBE), siegniecia["ile"])
 
 print()
 print("=== 6. TERMIN JEST ROZSADNY ===")
@@ -162,6 +174,8 @@ sprawdz("zapas wazny miedzy 5 a 60 minut",
 print()
 korpus_kanalow.config.KANALY_YOUTUBE.clear()
 korpus_kanalow.config.KANALY_YOUTUBE.update(_KANALY_PRODUKCYJNE)
+korpus_kanalow.config.DATA_DIR = _DANE_PRODUKCYJNE
+_DANE_TESTU.cleanup()
 
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 sys.exit(1 if oblane else 0)

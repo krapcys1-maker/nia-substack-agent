@@ -63,6 +63,51 @@
 | `write_json(path, value)` | Replace a JSON document atomically, keeping the prior file on failure. |
 | `code_fingerprint(root)` | — |
 
+### `feed_cache.py` — trwaly zapas RSS/Atom i przerwy po awarii osobno dla kazdego URL i instancji
+
+75 wierszy, 2 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `_valid(body)` *(wewn.)* | — |
+| `fetch(directory, url, request, now)` | Return validated XML and provenance; never refresh cache age on failure. |
+
+### `interaction_history.py` — odrzuca potwierdzone cele komentarzy przed pisaniem
+
+53 wierszy, 3 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `target_key(value)` | — |
+| `confirmed_targets(directory)` | — |
+| `unhandled(posts, directory)` | Only confirmed target IDs are excluded; failed attempts remain eligible. |
+
+### `insights.py` — raport kosztow, porownywalnych pomiarow i decyzji researchu; tylko odczyt
+
+277 wierszy, 9 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `moment(value)` | — |
+| `number(value)` | — |
+| `read_json(path, default)` | — |
+| `rows(path, warnings)` | — |
+| `at_window(records, published, hours, now, field)` | Latest measured value at/before the horizon, no more than 2h earlier. |
+| `graph_windows(card, published, measured)` | Extract mature primary curves only; no invented values for missing windows. |
+| `channel(value)` | — |
+| `collect(directory, days, now)` | — |
+| `main()` | — |
+
+### `research_tasks.py` — slad wyboru tematu i brakow w dowodach; ukierunkowuje istniejaca druga probe researchu
+
+60 wierszy, 3 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `decision(directory, run_id, stage, **details)` | Operational trace only. It never becomes a writer instruction. |
+| `snapshot(directory, run_id, brief, corpus, missing)` | Keep exact source URLs and short excerpts, separate from confirmed evidence. |
+| `followup(directory, run_id, brief, corpus, min_sources, min_primary)` | Refine the already-budgeted retry, without adding an LLM call or a loop. |
+
 ### `retry_policy.py` — Retry-After i trwale przerwy przed kolejnym zapytaniem do serwera
 
 46 wierszy, 4 funkcji na poziomie modułu, 0 klas
@@ -110,7 +155,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8476 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8498 wierszy, 148 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -692,7 +737,7 @@
 
 ### `statystyki.py` — co przyniosła każda pozycja: wejścia, reakcje, subskrypcje
 
-530 wierszy, 10 funkcji na poziomie modułu, 0 klas
+532 wierszy, 10 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -737,7 +782,7 @@
 
 ### `korpus_kanalow.py` — o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło
 
-568 wierszy, 13 funkcji na poziomie modułu, 0 klas
+574 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -776,7 +821,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1608 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1635 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
