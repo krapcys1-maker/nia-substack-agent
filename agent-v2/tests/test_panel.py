@@ -85,6 +85,19 @@ class PanelTests(unittest.TestCase):
         with self.assertRaises(PanelError):
             self.panel.account({'SUBSTACK_HANDLE': 'another-account'})
 
+    def test_insights_is_read_only_and_available_while_instance_runs(self):
+        self.panel.save(self.payload())
+        self.panel.activate('my-preset', 'example')
+        directory = self.panel.active().katalog_danych
+        with file_lock(directory / 'agent.lock'), patch('panel_core.subprocess.Popen') as spawn:
+            report = self.panel.insights()
+        spawn.assert_not_called()
+        self.assertEqual(report['instance'], 'example')
+        self.assertIn('no_database', report['report']['warnings'])
+        self.assertFalse((directory / 'agent-v2.db').exists())
+        with self.assertRaises(PanelError):
+            self.panel.insights(999)
+
     def test_running_instance_blocks_edits(self):
         self.panel.save(self.payload())
         self.panel.activate('my-preset', 'example')
@@ -188,7 +201,12 @@ class PanelTests(unittest.TestCase):
                 self.assertIn(token.encode(), result.read())
             with request('/api/status', {'X-NIA-Token': token}) as result:
                 self.assertEqual(json.load(result)['account']['NAZWA_MARKI'], 'Example publication')
+            with request('/api/insights?days=7', {'X-NIA-Token': token}) as result:
+                self.assertIsNone(json.load(result)['report'])
             for path, headers, code in [('/api/status', {}, 403),
+                ('/api/insights', {}, 403),
+                ('/api/insights?days=1000', {'X-NIA-Token': token}, 400),
+                ('/api/insights', {'X-NIA-Token': token, 'Origin': 'https://example.com'}, 403),
                 ('/api/status', {'X-NIA-Token': token, 'Origin': 'https://example.com'}, 403),
                 ('/', {'Host': 'example.com'}, 403), ('/agent-v2/.env', {}, 404)]:
                 with self.assertRaises(HTTPError) as error:

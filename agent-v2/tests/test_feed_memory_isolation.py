@@ -38,7 +38,7 @@ class FeedIsolation(unittest.TestCase):
                 "data": datetime.now(timezone.utc).date().isoformat(), "skrot": "A short excerpt.", **fields}
 
     def test_changed_sources_and_instance_do_not_reuse_another_cache(self):
-        response = Mock(status_code=200, content=b"fixture")
+        response = Mock(status_code=200, content=b"<rss><channel/></rss>")
         with patch("httpx.Client.get", return_value=response) as get, \
              patch.object(feeds, "wpisy_z_kanalu", side_effect=lambda name, _: [self.item(name + " supplied source title")]):
             first = feeds.korpus_kanalow()

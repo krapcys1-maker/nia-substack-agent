@@ -322,6 +322,8 @@ def z_kart(dane: dict) -> dict:
             break
         wystawione = wystawione.get(klucz)
     rekord["wystawione"] = wystawione if isinstance(wystawione, str) else ""
+    from insights import graph_windows
+    rekord['windows'] = graph_windows(karty.get('impressions'), rekord['wystawione'], rekord['zmierzone'])
     return rekord
 
 

@@ -324,6 +324,9 @@ def wybierz_fakt(conn, run_id, ile: int = 8) -> dict:
         kolizja = next((w for w in wczesniej if w and stages._o_tym_samym(
             opis, w, **stages.POWTORKA_TEMATU)), None)
         if kolizja:
+            import research_tasks
+            research_tasks.decision(config.DATA_DIR, run_id, 'article_candidate',
+                fact=f.get('fact'), url=f.get('url'), reason='covered_topic')
             print("  [temat] pomijam, juz o tym bylo: %s"
                   % (f.get("fact") or "")[:60], flush=True)
             print("          zderza sie z: %s"
@@ -333,9 +336,15 @@ def wybierz_fakt(conn, run_id, ile: int = 8) -> dict:
         # `wez_kandydatow` oznaczylo jako zuzyte wszystkie osiem. Bez tego
         # kazdy przebieg artykulu palil siedem oplaconych kandydatur.
         stages.zwroc_kandydatow([x for x in fakty if x is not f])
+        import research_tasks
+        research_tasks.decision(config.DATA_DIR, run_id, 'article_candidate',
+            fact=f.get('fact'), url=f.get('url'), reason='selected_from_ranked_bank')
         return f
     print("  [temat] wszystko koliduje — biore pierwszy", flush=True)
     stages.zwroc_kandydatow(fakty[1:])
+    import research_tasks
+    research_tasks.decision(config.DATA_DIR, run_id, 'article_candidate',
+        fact=fakty[0].get('fact'), url=fakty[0].get('url'), reason='all_candidates_overlap_fallback')
     return fakty[0]
 
 
@@ -571,6 +580,9 @@ def _przebieg(conn, run_id: int) -> int:
     # jest oddawane dwa razy.
     odrzucone: list[dict] = []
     while not unosi and proby < 4:
+        import research_tasks
+        research_tasks.decision(config.DATA_DIR, run_id, 'article_feasibility',
+            title=brief.get('title'), url=fakt.get('url'), reason=powod, accepted=False)
         print("  ODPADA: %s" % powod, flush=True)
         print("  (fakt zostaje w puli jako material na notke)", flush=True)
         print("   — wroci do niej po zakonczeniu prob, zeby petla siegnela"
@@ -593,6 +605,9 @@ def _przebieg(conn, run_id: int) -> int:
         print("  PYTANIE: %s" % brief.get("question"), flush=True)
         unosi, powod = uniesie_artykul(brief)
     if not unosi:
+        import research_tasks
+        research_tasks.decision(config.DATA_DIR, run_id, 'article_feasibility',
+            title=brief.get('title'), url=fakt.get('url'), reason=powod, accepted=False)
         print("  ODPADA: %s" % powod, flush=True)
         # Ostatni odrzucony wraca tak samo jak trzy poprzednie — inaczej zdanie
         # ponizej („pula zostaje na notki") byloby nieprawda o tym wlasnie
@@ -605,6 +620,9 @@ def _przebieg(conn, run_id: int) -> int:
               " Pula zostaje na notki." % proby, flush=True)
         return 1
     print("  UNIESIE: %s" % powod, flush=True)
+    import research_tasks
+    research_tasks.decision(config.DATA_DIR, run_id, 'article_feasibility',
+        title=brief.get('title'), url=fakt.get('url'), reason=powod, accepted=True)
 
     pod = [q for q in (brief.get("sub_questions") or []) if str(q).strip()]
     if pod:
@@ -662,7 +680,7 @@ def _przebieg(conn, run_id: int) -> int:
     # Przy okazji: `4` bylo wpisane obok stalej, ktora znaczy dokladnie to samo
     # (`MIN_ZRODEL_DO_PISANIA`). Dwie kopie jednej liczby zawsze sie rozjezdzaja.
     pobrane = [c for c in corpus if c.get("text")]
-    pierwotnych = sum(1 for s in corpus if s.get("class") == "PRIMARY")
+    pierwotnych = sum(1 for s in pobrane if s.get("class") == "PRIMARY")
     za_chudo = len(pobrane) < config.MIN_ZRODEL_DO_PISANIA
     bez_rekordow = pierwotnych < config.MIN_PRIMARY_SOURCES
     if za_chudo or bez_rekordow:
@@ -671,8 +689,11 @@ def _przebieg(conn, run_id: int) -> int:
               % (len(pobrane), config.MIN_ZRODEL_DO_PISANIA,
                  pierwotnych, config.MIN_PRIMARY_SOURCES), flush=True)
         juz = {c.get("url") for c in corpus}
+        import research_tasks
+        followup = research_tasks.followup(config.DATA_DIR, run_id, brief, corpus,
+                                           config.MIN_ZRODEL_DO_PISANIA, config.MIN_PRIMARY_SOURCES)
         dodatkowe = [s for s in stages.discovery(conn, run_id,
-                                                 pytanie_do_researchu, recent,
+                                                 pytanie_do_researchu + followup, recent,
                                                  tylko_pierwotne=bez_rekordow)
                      if s.get("url") not in juz]
         if dodatkowe:
@@ -824,6 +845,12 @@ def _przebieg(conn, run_id: int) -> int:
     #
     # 3,04 USD na pisanie, z ktorego nic nie wynikalo poza tym, ze wada byla
     # gdzie indziej.
+    import research_tasks
+    research_tasks.snapshot(config.DATA_DIR, run_id, brief, corpus, card.get('not_established') or [])
+    research_tasks.decision(config.DATA_DIR, run_id, 'article_evidence',
+        title=brief.get('title'), lead_url=brief.get('zrodlo_faktu'),
+        source_urls=[s.get('url') for s in corpus if s.get('text')],
+        missing=card.get('not_established') or [])
     if "--do-karty" in sys.argv:
         print()
         print("=" * 72)

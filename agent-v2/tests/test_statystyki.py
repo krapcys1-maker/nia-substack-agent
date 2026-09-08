@@ -87,7 +87,7 @@ PROBKA = {
 KLUCZE = {"wyswietlenia", "powierzchnie", "odbiorcy", "interakcje",
           "interakcje_razem", "polubienia", "odpowiedzi", "restacki",
           "subskrypcje", "obserwacje", "klikniecia_w_link", "zmierzone",
-          "wystawione", "ma_karty_zasiegu"}
+          "wystawione", "ma_karty_zasiegu", "windows"}
 
 
 def _w_pustym_katalogu(funkcja):
@@ -246,6 +246,8 @@ for nazwa, dane in kalekie:
 sprawdz("a pelna probka nadal daje 17", statystyki.z_kart(PROBKA)["wyswietlenia"] == 17)
 sprawdz("brak lastUpdatedAt daje pusty napis, nie None",
         statystyki.z_kart({})["zmierzone"] == "")
+sprawdz("brak dojrzalego wykresu daje brak okien, nie zero wyswietlen",
+        statystyki.z_kart(PROBKA)["windows"] == statystyki.z_kart({})["windows"] == {})
 
 print()
 print("=== 4. ZAPIS I ODCZYT HISTORII ===")

@@ -369,7 +369,7 @@ def _swiat(conn=None, run_id=None):
         recent_urls = {url for row in memory() if row.get("kind", "note") == "note"
                        for url in row.get("source_urls", []) if isinstance(url, str)}
         zaczyn = stages.zaczyn_z_kanalow(ile=12, ze_skrotem=True, max_dni=14,
-                                        source_urls=sources, exclude_urls=recent_urls)
+                                        source_urls=sources, exclude_urls=recent_urls, run_id=run_id)
     except Exception:                                            # noqa: BLE001
         return ""
     zaczyn = str(zaczyn or "").strip()

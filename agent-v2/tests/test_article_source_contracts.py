@@ -96,6 +96,36 @@ class SourceContracts(unittest.TestCase):
         self.assertEqual(len(archive['confirmed_claims']), 2)
         self.assertNotIn('Unverified', json.dumps(written))
 
+    def test_article_retry_targets_the_gap_and_does_not_add_another_search(self):
+        lead = self.fact('A source with an unresolved question.')
+        brief = dict(title='A concrete question', question='What did the test show?',
+                     second_act='A second measurement followed the first.', zrodlo_faktu=lead['url'])
+        sources = [dict(url='https://example.net/failed', **{'class':'PRIMARY'})]
+        extra = dict(url='https://example.net/record', **{'class':'PRIMARY'})
+        def fetch(conn, rid, items):
+            return [dict(s, text='' if s['url'].endswith('/failed') else 'Retrieved document content.') for s in items]
+        with patch.object(article, 'wybierz_fakt', return_value=lead), \
+             patch.object(article, 'temat_z_faktu', return_value=brief), \
+             patch.object(stages, 'discovery', side_effect=[sources,[extra]]) as search, \
+             patch.object(stages, 'fetch', side_effect=fetch), \
+             patch.object(stages, 'classify', return_value=[]) as classify, \
+             patch.object(stages, 'synthesis', return_value={'not_established':['An independent comparison.']}), \
+             patch.object(article, '_napisz_i_zapisz', return_value=0) as writer, \
+             patch.multiple(config, MIN_ZRODEL_DO_PISANIA=2, MIN_PRIMARY_SOURCES=1), \
+             patch.object(sys, 'argv', ['offline-test']):
+            self.assertEqual(article._przebieg(self.conn, 1), 0)
+        self.assertEqual(search.call_count,2)
+        self.assertEqual(search.call_args_list[0].args[2], brief['question'])
+        retry = search.call_args_list[1]
+        self.assertIn('Need 1 additional primary',retry.args[2])
+        self.assertIn('Retrieved document content.',retry.args[2])
+        self.assertIn('https://example.net/failed',retry.args[2])
+        self.assertTrue(retry.kwargs['tylko_pierwotne'])
+        self.assertEqual(len(classify.call_args.args[3]),3)
+        self.assertEqual(writer.call_args.args[2],brief)
+        trace=json.loads(next((config.DATA_DIR/'research-tasks').glob('*.json')).read_text())
+        self.assertEqual(trace['missing'],['An independent comparison.'])
+
     def test_marked_article_prose_wins_over_long_irrelevant_page_menus(self):
         prose = 'The release changes setup but leaves security decisions with the operator.'
         for marker in ('class="bodytext large-12"', 'itemprop="articleBody"'):

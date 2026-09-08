@@ -161,7 +161,26 @@ zamknięciem okna uruchamiania. Panel blokuje zmianę konfiguracji podczas pracy
 Surowy log silnika i część komunikatów walidatora są obecnie po polsku również
 w angielskiej wersji interfejsu.
 
-## 7. Zmiany później i harmonogram
+## 7. Wyniki i research
+
+Otwórz **Wyniki i research**, wybierz **Ostatnie 7 dni** albo **Ostatnie 30 dni**
+i kliknij **Odśwież raport**. Odczyt dotyczy aktywnej instancji i działa także
+podczas jej pracy. Nie uruchamia modeli ani kolejnego przebiegu.
+
+![Panel wyników i researchu — fikcyjne dane demonstracyjne](media/panel-results-pl.png)
+
+Zobaczysz zapisane koszty, nierozliczone rezerwacje, koszty testów i potwierdzone
+publikacje. Rozwiń **Pomiary publikacji**, żeby sprawdzić dostępność wyników
+po 24/48 godzinach. **Ostatni wybór z kanałów i powody odrzucenia** oraz
+**Historia wyboru artykułów** pokazują decyzje o tematach. **Braki w materiale
+do artykułu** wskazują nierozstrzygnięte pytania i pobrane źródła. Nowe zapisy
+pojawią się wraz z kolejnymi przebiegami. Zrzut pokazuje dane demonstracyjne.
+
+Kreska oznacza brak porównywalnego pomiaru. Koszt na publikację to iloraz
+kosztu i liczby publikacji w wybranym okresie, a nie faktura za konkretny post.
+[Szczegółowe definicje raportu](INSIGHTS.md) są opisane po angielsku.
+
+## 8. Zmiany później i harmonogram
 
 Wczytaj swój prywatny preset, zmień ustawienia i zapisz. Aktywny preset zostanie
 sprawdzony i ponownie aktywowany w tej samej instancji, bez kasowania pamięci.
