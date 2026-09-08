@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 36 763 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 36 775 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -831,7 +831,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3597 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3609 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -12365,7 +12365,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
 | `PRICING_VERSION` | `"rates-2026-09-06"` | Published rates checked 2026-09-06; invoice verification is separate. |
 | `PRICING_SOURCES` | `{ "deepseek": "https://api-docs.deepseek.com` | — |
-| `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. |
+| `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. CIEKAWOSTKI DOSTALY 600 s, NIE 300 — z awarii, nie z ostroznosci. 8 wrz |
 | `ROLE_DEADLINE_S` | `{"write": 480, "scout": 300, "synthesis": 30` | — |
 | `SEARCH_INPUT_RESERVE_TOKENS` | `200000` | — |
 | `MIN_CALL_OUTPUT_TOKENS` | `512` | — |

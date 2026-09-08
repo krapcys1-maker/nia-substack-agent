@@ -238,7 +238,7 @@
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
 | `PRICING_VERSION` | `"rates-2026-09-06"` | Published rates checked 2026-09-06; invoice verification is separate. |
 | `PRICING_SOURCES` | `{ "deepseek": "https://api-docs.deepseek.com` | — |
-| `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. |
+| `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. CIEKAWOSTKI DOSTALY 600 s, NIE 300 — z awarii, nie z ostroznosci. 8 wrz |
 | `ROLE_DEADLINE_S` | `{"write": 480, "scout": 300, "synthesis": 30` | — |
 | `SEARCH_INPUT_RESERVE_TOKENS` | `200000` | — |
 | `MIN_CALL_OUTPUT_TOKENS` | `512` | — |

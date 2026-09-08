@@ -3587,9 +3587,21 @@ PRICING_SOURCES = {
     "openai": "https://developers.openai.com/api/docs/models/gpt-image-1.5",
 }
 # Whole operation, including retries, distinct from socket inactivity.
+#
+# CIEKAWOSTKI DOSTALY 600 s, NIE 300 — z awarii, nie z ostroznosci. 8 wrzesnia
+# 2026 pierwszy w historii tego konta przebieg artykulowy przewrocil sie na
+# `ValueError: pula ciekawostek pusta`, bo etap napelniajacy bank oddal
+# `operation deadline exceeded` po pieciu minutach: `wej=0, wyj=0, ok=0`,
+# czyli odpowiedz nie wrocila wcale. Ten etap generuje PARTIE osmiu faktow,
+# kazdy z przekonaniem, sprostowaniem i konsekwencja, i robi przy tym
+# wyszukiwania — wiecej pracy niz `write`, ktory ma 480 s. Limit 300 s byl
+# przepisany z etapow jednostkowych i nigdy nie zmierzony na tym.
+# Artykul jest formą najdrozsza i najrzadsza: cztery razy w miesiacu. Limit,
+# ktory ucina go w pierwszym kroku, kosztuje caly artykul.
+#
 CALL_DEADLINE_S = 180
 ROLE_DEADLINE_S = {"write": 480, "scout": 300, "synthesis": 300, "review": 240,
-                   "discovery": 300, "curiosity": 300, "factcheck": 240}
+                   "discovery": 300, "curiosity": 600, "factcheck": 240}
 SEARCH_INPUT_RESERVE_TOKENS = 200000
 MIN_CALL_OUTPUT_TOKENS = 512
 CLAUDE_PROMPT_CACHE = False  # enable only after measuring same-model cache hits
