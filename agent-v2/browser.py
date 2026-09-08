@@ -67,6 +67,51 @@ class OdczytNieudany(RuntimeError):
 _KONTO_SPRAWDZONE = False  # retained for diagnostic compatibility, never a bypass
 _POTWIERDZENIE_KONTA = None
 
+DLUGOSC_OPISU_BLEDU = 400
+
+
+def opis_bledu(exc: BaseException, limit: int = DLUGOSC_OPISU_BLEDU) -> str:
+    """Nazwa wyjatku i POWOD — nie sam naglowek.
+
+    ZMIERZONE NA PRAWDZIWEJ AWARII, 8 wrzesnia 2026. Odpowiedzi przestaly sie
+    publikowac: trzy porazki jednego dnia, zero w trzech poprzednich. W logu
+    zostawalo dokladnie tyle:
+
+        TimeoutError: Locator.click: Timeout 30000ms exceeded.
+        Call log:
+          - waiting for get_by_role("button", name="Post").first
+            - locator resolved to <button tabindex="0" type="button" data-testid="comp
+
+    i urwane w polowie atrybutu. Bo obcinalismy `[:200]` OD POCZATKU, a
+    Playwright pisze diagnoze na KONCU: „element is not stable", „element
+    intercepts pointer events", „element is not enabled", „waiting for element
+    to be visible, enabled and stable". Naglowek mowi, ZE nie kliknelo. Ogon
+    mowi, DLACZEGO — i wlasnie ogon wyrzucalismy.
+
+    Skutek: kazda taka awaria wymaga wejscia czlowieka do przegladarki, zeby
+    zobaczyc rzecz, ktora biblioteka i tak nam powiedziala.
+
+    Bierzemy wiec pierwsza linie (co padlo) i tyle KONCOWYCH linii, ile zmiesci
+    sie w limicie (dlaczego). Gdy caly komunikat jest krotszy od limitu, nie
+    zmieniamy niczego.
+    """
+    tekst = "%s: %s" % (type(exc).__name__, exc)
+    linie = [" ".join(l.split()) for l in tekst.replace("\r", "").splitlines()
+             if l.strip()]
+    if not linie:
+        return tekst[:limit]
+    if len(tekst) <= limit:
+        return " ".join(linie)
+    glowa = linie[0][:limit]
+    ogon: list[str] = []
+    zostalo = limit - len(glowa) - 3          # 3 znaki na wielokropek
+    for l in reversed(linie[1:]):
+        if len(l) + 3 > zostalo:
+            break
+        ogon.insert(0, l)
+        zostalo -= len(l) + 3
+    return glowa + (" … " + " … ".join(ogon) if ogon else "")
+
 
 def wymagaj_wlasciwego_konta(page) -> None:
     """Verify the logged-in principal, independently of the public profile.
@@ -1262,7 +1307,7 @@ def kto_nas_czyta(page=None) -> dict[str, Any]:
             wynik["blad"] = "nie ma zakladki Subscribers"
             print("  [czytelnicy] %s" % wynik["blad"], flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print("  [czytelnicy] %s" % wynik["blad"], flush=True)
     finally:
         if wlasny:
@@ -1839,7 +1884,7 @@ def zapisz_zrodla_ruchu(page=None, dni: int = 30) -> dict[str, Any] | None:
             except Exception as exc:
                 # Jedna polowa, ktorej nie da sie odczytac, NIE zabiera drugiej
                 # — tak samo jak pojedyncza pozycja w `statystyki_pozycji`.
-                bledy[nazwa] = f"{type(exc).__name__}: {exc}"[:200]
+                bledy[nazwa] = opis_bledu(exc)
                 print("  [zrodla] %s: %s" % (nazwa, bledy[nazwa]), flush=True)
                 continue
             if dane is None:
@@ -2908,7 +2953,7 @@ def polub_w_kanale(ile: int, wyslij: bool = False, *,
             print(f"  (nie klikam — tryb sprawdzenia; kliknalbym"
                   f" {wynik['polubione']})", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         page.close()
@@ -3060,7 +3105,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         wynik["blad"] = f"nie ma przycisku {rodzaj} u {handle}"
         print(f"  {wynik['blad']} — nie klikam nic innego", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         # BRAK PRZYCISKU TO TEZ WYNIK i musi zostawic slad. Bez tego blok
@@ -3165,7 +3210,7 @@ def pobierz_subskrybentow() -> dict[str, Any]:
                               "uklad strony albo wygasla sesja")
     except Exception as exc:
         wynik["kompletna"] = False
-        wynik["powod"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["powod"] = opis_bledu(exc)
     finally:
         page.close()
         browser.close()
@@ -3517,7 +3562,7 @@ def obserwuj_profil(handle: str, wyslij: bool = False) -> dict[str, Any]:
                     if wynik["potwierdzone"] is False
                     else "  KLIKNIETE, BEZ POTWIERDZENIA"), flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         # BRAK POZYCJI TO TEZ WYNIK i musi zostawic slad — to jest dokladnie
@@ -3687,7 +3732,7 @@ def polec_publikacje(fraza: str, powod: str,
         print("  REKOMENDACJA DODANA" if wynik["zrobione"]
               else "  KLIKNIETE, ALE LISTA SIE NIE ZMIENILA", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  [rekomendacja] {wynik['blad']}", flush=True)
     finally:
         page.close()
@@ -3973,7 +4018,7 @@ def ustaw_oswiadczenie_ai(wyslij: bool = False) -> dict[str, Any]:
         elif not wyslij:
             print("  (nie zapisuję — tryb sprawdzenia)", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         page.close()
@@ -4079,7 +4124,7 @@ def wystaw_odpowiedz_pod_artykulem(
         elif not wyslij:
             print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         # TA SAMA DZIURA, CO W `wystaw_komentarz` — patrz komentarz przy jej
@@ -4248,7 +4293,7 @@ def wystaw_artykul(
         else:
             wynik["blad"] = "Nie znaleziono przycisku publikacji; szkic zachowany."
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         if wyslij and not wynik.get("pominiete"):
@@ -4475,7 +4520,7 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
         elif not wyslij:
             print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         # TA SAMA DZIURA, CO W `wystaw_komentarz` — patrz komentarz przy jej
@@ -4625,7 +4670,7 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
         elif not wyslij:
             print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         # DOMKNIECIE: jesli sciezka sukcesu nie zdazyla zapisac — bo wyjatek
@@ -5245,7 +5290,7 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
         elif not wyslij:
             print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         # PORAZKA TEZ MUSI ZOSTAWIC SLAD. Zapis stal wylacznie w galezi
@@ -5543,7 +5588,7 @@ def restackuj_w_kanale(
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         page.close()

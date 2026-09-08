@@ -310,10 +310,11 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5600 wierszy, 103 funkcji na poziomie modułu, 3 klas
+5645 wierszy, 104 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
+| `opis_bledu(exc, limit)` | Nazwa wyjatku i POWOD — nie sam naglowek. |
 | `wymagaj_wlasciwego_konta(page)` | Verify the logged-in principal, independently of the public profile. |
 | `wlasciwe_konto(page)` | — |
 | `pod_rzad_nieudanych(rodzaj)` | Ile porazek tego rodzaju poszlo BEZPOSREDNIO po sobie w tym przebiegu. |
