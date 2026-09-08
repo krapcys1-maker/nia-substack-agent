@@ -1645,8 +1645,23 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
         terms = [str(t).strip() for t in config.ZNAKI_NISZY if str(t).strip()]
         if terms:
             pattern = re.compile(r"\b(?:" + "|".join(re.escape(t) for t in terms) + r")s?\b", re.I)
-            wpisy.sort(key=lambda w: not bool(pattern.search(
-                str(w.get("temat", "")) + " " + str(w.get("skrot", "")))))
+            def priority(w):
+                relevant = bool(pattern.search(str(w.get("temat", "")) + " " + str(w.get("skrot", ""))))
+                return (not relevant, not bool(str(w.get("skrot", "")).strip()))
+            # Relevance alone still let prolific newsrooms crowd out a builder
+            # with a real story. Within each tier, take turns across channels.
+            ordered = []
+            for tier in sorted({priority(w) for w in wpisy}):
+                channels = {}
+                for w in wpisy:
+                    if priority(w) == tier:
+                        channels.setdefault(w.get("kanal", ""), []).append(w)
+                while channels:
+                    for channel in list(channels):
+                        ordered.append(channels[channel].pop(0))
+                        if not channels[channel]:
+                            del channels[channel]
+            wpisy = ordered
     wpisy = wpisy[:ile]
     if not wpisy:
         return "(nothing fetched today)"

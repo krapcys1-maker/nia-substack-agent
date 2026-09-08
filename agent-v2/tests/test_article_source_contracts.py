@@ -170,6 +170,19 @@ class SourceContracts(unittest.TestCase):
         self.assertEqual(len(checks), 3)
         self.assertTrue(all(status=='OK' for _,status in checks), checks)
 
+    def test_prolific_feeds_do_not_crowd_out_a_builder_with_actual_source_text(self):
+        today = datetime.now(timezone.utc).date().isoformat()
+        entries = [dict(temat='AI corporation announcement '+str(i),kanal='Newsroom',data=today,
+                        skrot='A company introduces an agent.',url='https://example.org/news/'+str(i)) for i in range(20)]
+        entries += [dict(temat='An AI launch headline',kanal='Builders',data=today,url='https://example.org/launch'),
+                    dict(temat='A small architecture checker',kanal='Builders',data=today,
+                         skrot='I measured how AI agents change imports and published the results.',url='https://example.org/builder')]
+        with patch.object(feeds,'korpus_kanalow',return_value=entries), patch.object(config,'ZNAKI_NISZY',['ai']):
+            text = stages.zaczyn_z_kanalow(ile=2,ze_skrotem=True,source_urls={})
+        self.assertIn('small architecture checker',text)
+        self.assertEqual(text.count('corporation announcement'),1)
+        self.assertNotIn('launch headline',text)
+
 
 if __name__ == '__main__':
     unittest.main()

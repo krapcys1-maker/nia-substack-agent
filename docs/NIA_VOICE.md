@@ -68,8 +68,9 @@ These controls use no extra model calls. Voice previews now finalize their run c
 from recorded calls on success and failure. Paid previews require explicit approval
 of the model, call count and estimated cost before anyone runs the command.
 
-Mixed news feeds prioritize the preset's subject terms before filling the short
-Note input. Explicitly sponsored feed categories are excluded. Show HN supplies
+Mixed news feeds prioritize the preset's subject terms and actual excerpts before
+filling the short Note input, taking turns across channels within each tier.
+Explicitly sponsored feed categories are excluded. Show HN supplies
 small-builder stories, but link/vote metadata is not a description: an empty
 excerpt is marked as headline-only. When a submission contains the author's
 own account, its source is the HN discussion, not the project interface. This
