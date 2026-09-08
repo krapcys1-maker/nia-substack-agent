@@ -2013,7 +2013,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         wynik["blad"] = f"nie ma przycisku {rodzaj} u {handle}"
         print(f"  {wynik['blad']} — nie klikam nic innego", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         # BRAK PRZYCISKU TO TEZ WYNIK i musi zostawic slad. Bez tego blok
@@ -2213,7 +2213,7 @@ def restackuj_w_kanale(
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         page.close()

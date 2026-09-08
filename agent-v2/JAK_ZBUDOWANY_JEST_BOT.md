@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 36 642 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 36 687 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 190 zestawów
-testów, 4279 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 191 zestawów
+testów, 4292 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -452,10 +452,11 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5549 wierszy, 102 funkcji na poziomie modułu, 3 klas
+5594 wierszy, 103 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
+| `opis_bledu(exc, limit)` | Nazwa wyjatku i POWOD — nie sam naglowek. |
 | `wymagaj_wlasciwego_konta(page)` | Verify the logged-in principal, independently of the public profile. |
 | `wlasciwe_konto(page)` | — |
 | `pod_rzad_nieudanych(rodzaj)` | Ile porazek tego rodzaju poszlo BEZPOSREDNIO po sobie w tym przebiegu. |
@@ -8602,7 +8603,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         wynik["blad"] = f"nie ma przycisku {rodzaj} u {handle}"
         print(f"  {wynik['blad']} — nie klikam nic innego", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         # BRAK PRZYCISKU TO TEZ WYNIK i musi zostawic slad. Bez tego blok
@@ -8802,7 +8803,7 @@ def restackuj_w_kanale(
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)
     except Exception as exc:
-        wynik["blad"] = f"{type(exc).__name__}: {exc}"[:200]
+        wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
     finally:
         page.close()
