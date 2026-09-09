@@ -80,7 +80,8 @@ class SourceContracts(unittest.TestCase):
     def test_original_lead_reaches_fetch_without_being_assumed_primary(self):
         lead = self.fact('One supported research lead with a public source.')
         brief = dict(title='A concrete question', question='What did the test show?',
-                     second_act='A second measurement followed the first.', zrodlo_faktu=lead['url'])
+                     second_act='A second measurement followed the first.', zrodlo_faktu=lead['url'],
+                     the_moment='An invented scene from a preliminary brief.')
         seen = []
         def fetch(conn, rid, sources):
             seen.extend(copy.deepcopy(sources))
@@ -91,13 +92,18 @@ class SourceContracts(unittest.TestCase):
              patch.object(stages, 'fetch', side_effect=fetch), \
              patch.object(stages, 'classify', return_value=[{'url': lead['url'], 'class': 'PRIMARY', 'excerpts': ['x'], 'numbers': [], 'relevance': 0.9}]), \
              patch.object(stages, 'synthesis', return_value={}), \
-             patch.object(article, '_napisz_i_zapisz', return_value=0), \
+             patch.object(article, '_napisz_i_zapisz', return_value=0) as writer, \
              patch.multiple(config, MIN_ZRODEL_DO_PISANIA=1, MIN_PRIMARY_SOURCES=1), \
              patch.object(sys, 'argv', ['offline-test']):
             self.assertEqual(article._przebieg(self.conn, 1), 0)
         self.assertEqual(seen[0]['url'], lead['url'])
         self.assertEqual(seen[0]['class'], 'UNCLASSIFIED')
         self.assertEqual(len([s for s in seen if s['url']==lead['url']]), 1)
+        card = writer.call_args.args[3]
+        self.assertNotIn('the_scene', card)
+        self.assertEqual(card['scene_sources'][0]['url'], lead['url'])
+        self.assertEqual(card['scene_sources'][0]['excerpts'], ['x'])
+        self.assertNotIn('An invented scene', json.dumps(card))
 
     def test_unfetched_claim_is_retained_in_archive_but_not_writer_evidence(self):
         archive = {'confirmed_claims':[{'claim':'An actual supported claim','url':'https://example.org/a'},

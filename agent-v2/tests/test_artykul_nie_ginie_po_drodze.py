@@ -547,11 +547,11 @@ try:
     # LICZYMY ROZNE FAKTY, NIE WYWOLANIA — i to jest poprawka pomiaru
     # z 9 wrzesnia 2026, nie zluzowanie wymagania.
     #
-    # Od tego dnia `_przebieg` pyta o brief DRUGI RAZ, gdy model zostawil oba
-    # pola glebi puste (patrz `test_puste_pole_to_nie_odmowa.py`). Ta atrapa
-    # zwraca puste pola ZAWSZE, wiec kazdy fakt jest tu pytany dwukrotnie
-    # i lista wywolan ma osiem pozycji na cztery tematy. Wymaganie zostaje
-    # to samo: cztery ROZNE fakty, w kolejnosci rangi.
+    # Od tego dnia `_przebieg` pyta o brief DRUGI RAZ, gdy model zostawil
+    # wszystkie pola glebi puste (patrz `test_puste_pole_to_nie_odmowa.py`).
+    # Ta atrapa zwraca puste pola ZAWSZE, wiec kazdy fakt jest tu pytany
+    # dwukrotnie i lista wywolan ma osiem pozycji na cztery tematy. Wymaganie
+    # zostaje to samo: cztery ROZNE fakty, w kolejnosci rangi.
     rozne = list(dict.fromkeys(wziete))
     sprawdz("cztery proby wzialy CZTERY ROZNE fakty",
             len(rozne) == 4, [f[:40] for f in rozne])

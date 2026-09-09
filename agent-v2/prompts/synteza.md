@@ -77,8 +77,11 @@ or where the evidence cuts against the question's premise. If the premise is
 wrong, say so plainly. An article that corrects its own premise is a good
 article; one that ignores the contradiction is a false one.
 
-**not_established**: what a reader might reasonably expect this article to
-answer, that the evidence does not. The writer will state these limits once.
+**not_established**: missing evidence that would materially change the meaning
+of a claim the article can support. Explain which claim each limit affects.
+These are boundaries for accurate writing, not a list of paragraphs to include.
+Do not list every unanswered question from the research. The writer preserves
+relevant limits beside the claims they qualify, in the publication's voice.
 
 ## Where else this same shape appears
 

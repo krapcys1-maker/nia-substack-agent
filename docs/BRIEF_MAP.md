@@ -28,7 +28,7 @@ through a variable this scan cannot see. Check before cutting.
 | `fedreg.md` | 82 | `stages.kandydaci_z_fedreg` | `fedreg` | 6 | 5 | 1 | 0 |
 | `forma.md` | 93 | `stages.ocen_forme` | `forma` | 14 | 8 | 6 | 0 |
 | `grafika.md` | 126 | `stages.grafika` *(+1)* | `grafika` | 3 | 0 | 3 | 0 |
-| `klasyfikacja.md` | 55 | `stages._sklasyfikuj_jedno` | `classify` | 5 | 1 | 4 | 0 |
+| `klasyfikacja.md` | 59 | `stages._sklasyfikuj_jedno` | `classify` | 5 | 1 | 4 | 0 |
 | `kogo_odpowiedziec.md` | 48 | `stages.wybierz_do_odpowiedzi` | `wybor` | 5 | 0 | 5 | 0 |
 | `komentarz.md` | 148 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
 | `mysl.md` | 135 | `stages.note` | `—` | 3 | 1 | 2 | 0 |
@@ -37,13 +37,14 @@ through a variable this scan cannot see. Check before cutting.
 | `odpowiedz.md` | 131 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
 | `OSWIADCZENIE_AUTORSTWA.md` | 56 | **nothing** | — | 0 | — | — | — |
 | `pisarz.md` | 312 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
-| `pisarz_persona.md` | 130 | `stages.write` | `write` | 4 | 1 | 3 | 0 |
+| `pisarz_persona.md` | 124 | `stages.write` | `write` | 4 | 1 | 3 | 0 |
 | `po_ludzku.md` | 53 | **nothing** | — | 0 | — | — | — |
 | `recenzent.md` | 39 | `stages.review` | `review` | 0 | 0 | 0 | 0 |
 | `restack.md` | 79 | `stages.ocen_restack` | `restack` | 4 | 3 | 1 | 0 |
 | `skaut.md` | 392 | `stages.scout` | `scout` | 5 | 0 | 5 | 0 |
-| `synteza.md` | 126 | `stages.synthesis` | `synthesis` | 17 | 6 | 11 | 0 |
+| `synteza.md` | 129 | `stages.synthesis` | `synthesis` | 17 | 6 | 11 | 0 |
 | `warto_pisac.md` | 110 | `stages.warto_pisac` | `warto_pisac` | 13 | 0 | 13 | 0 |
+| `warto_pisac_persona.md` | 32 | `stages.warto_pisac` | `warto_pisac` | 0 | 0 | 0 | 0 |
 | `weryfikacja.md` | 152 | `stages.zweryfikuj` | `factcheck` | 7 | 6 | 1 | 0 |
 | `wykonalnosc.md` | 86 | `stages.feasibility` | `feasibility` | 7 | 1 | 6 | 0 |
 
@@ -238,7 +239,7 @@ through a variable this scan cannot see. Check before cutting.
 | `claim` | **gate** | `stages.napraw_obalone`, `stages.zweryfikuj` |
 | `contradictions` | used (by name) | `run (para klucz-etykieta)` |
 | `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._odleglosc`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main` |
-| `evidence` | used | `audyt_kosztow.collect`, `audyt_researchu.main` |
+| `evidence` | used | `audyt_kosztow.collect`, `audyt_researchu.main`, `stages._ocena_historii_persony` |
 | `how_it_matches` | unread, on purpose | `uzasadnienie paraleli — bez niego model dokleja dowolna dziedzine` |
 | `main_mechanism` | used | `run.main` |
 | `means` | used | `run.main` |
@@ -257,7 +258,7 @@ through a variable this scan cannot see. Check before cutting.
 | field | verdict | read by |
 |---|---|---|
 | `contradicted_belief` | used | `run.main`, `stages.warto_pisac` |
-| `evidence` | used | `audyt_kosztow.collect`, `audyt_researchu.main` |
+| `evidence` | used | `audyt_kosztow.collect`, `audyt_researchu.main`, `stages._ocena_historii_persony` |
 | `felt_number` | used (by name) | `artykul_z_puli.glebokosc_z_oceny`, `stages.warto_pisac` |
 | `governed_by` | used | `stages.warto_pisac` |
 | `named_decider` | used | `stages.warto_pisac` |
@@ -287,7 +288,7 @@ through a variable this scan cannot see. Check before cutting.
 | field | verdict | read by |
 |---|---|---|
 | `confidence` | used | `run.main`, `stages.kolejnosc`, `stages.pick_topic` |
-| `depth` | used | `run.main`, `stages.kolejnosc`, `stages.pick_topic` |
+| `depth` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli.glebokosc_z_oceny`, `run.main`, `stages.kolejnosc` |
 | `expected_primary_sources` | used | `run.main`, `stages.kolejnosc`, `stages.pick_topic` |
 | `feasible` | used | `run.main`, `stages.pick_topic` |
 | `index` | used | `run.main`, `stages.pick_topic`, `stages.review`, `stages.temat` |

@@ -615,10 +615,20 @@ def ostatnie_uwagi(ile: int = 2) -> str:
             # i wlasnie dlatego wciaga. `OTWARCIE_ZNANE` uznaloby je za wade.
             #
             # `FAKT_BEZ_POKRYCIA` przechodzi dalej, bo pokrycie faktow zostaje.
-            # Recenzent dostaje jednak od dzis oswiadczenie autorki (patrz
-            # `review`), zeby nie zglaszal jej wlasnego zawodu jako twierdzenia
-            # bez zrodla — i zeby taki falszywy alarm nie uczyl kolejnych
-            # tekstow milczenia o sobie.
+            # Recenzent dostaje jednak oswiadczenie autorki (patrz `review`),
+            # zeby nie zglaszal jej wlasnego zawodu jako twierdzenia bez
+            # zrodla — i zeby taki falszywy alarm nie uczyl kolejnych tekstow
+            # milczenia o sobie. Od 9 wrzesnia 2026 to samo mowi tez system
+            # pisarza (`system_pisarza`: tozsamosc ustala, kim jest autorka,
+            # karta ustala fakty o temacie), wiec falszywy alarm ma dwie
+            # zapory PRZED tym miejscem.
+            #
+            # Wyciszenie tego zarzutu TUTAJ bylo rozwazone tego samego dnia
+            # i odrzucone: `test_forma_artykulu_bramka` („wyciszono za duzo")
+            # pilnuje, ze zarzuty merytoryczne wracaja, a brief pisarza sam
+            # prosi o „factual gaps" z poprzednich tekstow. Zarzut o zdanie
+            # bez pokrycia jest jedyna uwaga o FAKTACH, jaka ta petla niesie;
+            # bez niej zostalyby same uwagi o ksztalcie.
             if m.group(1) in ("DLUGOSC", "RECENZJA", "GESTOSC_BEATOW",
                               "BRAK_ESKALACJI", "CZYTELNIK_NIEPRZYLAPANY",
                               "OTWARCIE_ZNANE", "ODCISK_FORMY"):
@@ -776,7 +786,10 @@ def system_pisarza() -> str:
         f"You write for {config.NAZWA_MARKI}. An article is your long form: the "
         f"same person as your Notes, with room to build and an evidence pipeline "
         f"behind every claim. The jokes stay; the sourcing is not optional.",
-        "You assert only what the supplied evidence card establishes. Return "
+        "For factual claims about the subject, assert only what the supplied evidence card establishes. "
+        "The supplied identity establishes who the author is. Opinions, clearly "
+        "hypothetical comparisons and the declared comic persona are allowed; "
+        "their real-world factual premises still need evidence. Return "
         "exactly one JSON object, with no Markdown fence and no prose around it.",
     ])
 
@@ -843,7 +856,7 @@ def karta_dla_pisarza(card: dict[str, Any],
     # KARTA ZAPISANA ZOSTAJE PELNA. Recenzent tez dostaje pelna — on sprawdza
     # tekst wobec materialu i ma widziec wszystko, co o materiale wiemy.
     czysta = {k: v for k, v in card.items()
-              if k not in ("unused_evidence", "ocena_ciekawosci")}
+              if k not in ("unused_evidence", "ocena_ciekawosci", "the_scene")}
     # The archive may retain an unfetched lead so the topic is not lost.
     # It is not evidence the writer or a factual repair may assert.
     if isinstance(czysta.get("confirmed_claims"), list):
@@ -965,7 +978,8 @@ def write(
         prompt = _prompt(
             "pisarz_persona.md",
             target_words=dl["cel"], min_words=dl["min"], max_words=dl["max"],
-            kotwica_dlugosci=config.kotwica_dlugosci(glebokosc),
+            # KOTWICA BEZ DRUGIEJ DZIEDZINY — patrz `config.KOTWICE_DLUGOSCI_PERSONA`.
+            kotwica_dlugosci=config.kotwica_dlugosci(glebokosc, persona=True),
             style_examples=rendered, style_positive=positive, style_negative=negative,
             poprzednie_uwagi=ostatnie_uwagi() or "(brak — to pierwszy artykul)",
             card_json=json.dumps(karta_dla_pisarza(card), ensure_ascii=False, indent=2),
@@ -7383,6 +7397,48 @@ WYMAGANE_ZLAMANE_PRZEKONANIE = True
 MIN_FILAROW_POZA_PRZEKONANIEM = 2      # z trzech: decydent, liczba, druga dziedzina
 
 
+def _ocena_historii_persony(result: dict[str, Any], card: dict[str, Any]) -> dict[str, Any]:
+    """Measure supported story threads without imposing an institutional essay."""
+    if not isinstance(result, dict):
+        raise ValueError("ocena historii nie jest obiektem")
+    claims = card.get("confirmed_claims") or []
+    questions = result.get("answerable_questions")
+    if not isinstance(questions, list):
+        raise ValueError("ocena historii bez pytan")
+    supported, seen_questions, seen_support = [], set(), set()
+    for item in questions[:4]:
+        if not isinstance(item, dict):
+            continue
+        question, answer = item.get("question"), item.get("answer")
+        indices = item.get("claim_indices")
+        if (not isinstance(question, str) or not question.strip()
+                or not isinstance(answer, str) or not answer.strip()
+                or not isinstance(indices, list) or not indices):
+            continue
+        if any(type(i) is not int or not 0 <= i < len(claims)
+               or not isinstance(claims[i], dict) or claims[i].get("not_fetched")
+               or not claims[i].get("evidence") or not claims[i].get("url")
+               for i in indices):
+            continue
+        key = " ".join(question.casefold().split())
+        support = frozenset(indices)
+        if key in seen_questions or support in seen_support:
+            continue
+        seen_questions.add(key)
+        seen_support.add(support)
+        supported.append({"question": question.strip(), "answer": answer.strip(),
+                          "claim_indices": sorted(support)})
+    count = len(supported)
+    distinct_claims = set().union(*seen_support) if seen_support else set()
+    return {
+        "persona_story": True,
+        "depth": "RICH" if count >= 3 and len(distinct_claims) >= 3 else "SINGLE" if count else "THIN",
+        "werdykt": "PISZ" if count else "ODLOZ",
+        "powod": str(result.get("reader_interest") or "brak uzasadnienia")[:500],
+        "answerable_questions": supported,
+    }
+
+
 @_na_kanal("artykul")
 def warto_pisac(
     conn: sqlite3.Connection, run_id: int, card: dict[str, Any],
@@ -7399,6 +7455,16 @@ def warto_pisac(
       DOLOZ  — jest zlamane przekonanie, ale materialu za malo: szukamy pary
       ODLOZ  — nie ma zlamanego przekonania, czyli nie ma luki
     """
+    if pisarz_z_persona():
+        evidence_card = karta_dla_pisarza(card)
+        raw = llm.call(
+            "warto_pisac", "Assess supported story material. Return only valid JSON.",
+            _prompt("warto_pisac_persona.md",
+                    card_json=json.dumps(evidence_card, ensure_ascii=False)),
+            conn=conn, run_id=run_id,
+        )
+        return _ocena_historii_persony(llm.parse_json(raw), evidence_card)
+
     # KARTA SZLA TU UCIETA W POLOWIE ZDANIA. Limit 14000 znakow nie mial przy
     # sobie zadnego pomiaru, a audyt policzyl, ze ucinal 7 z 8 kart — model
     # dostawal skladniowo zepsuty JSON bez zadnego znacznika, ze czegos brakuje,
