@@ -190,4 +190,8 @@ opis = "NIA is a female AI agent: candid, funny, informal, mildly chaotic and so
 profil_pozytywny = "styl/profil_pozytywny.md"
 profil_negatywny = "styl/profil_negatywny.md"
 korpus = ""
+# Obraz wzorcowy postaci NIA. Wrzuc plik pod ta sciezke, a okladki
+# zaczna go uzywac jako referencji wygladu. Bez pliku wszystko dziala
+# jak dotad, a przebieg mowi o tym w logu.
+referencja = "styl/referencja.png"
 wymagaj_korpusu = false
