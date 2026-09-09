@@ -296,6 +296,19 @@ def short_form(conn, run_id, kind, material):
         instruction += ("For a Note based on a supplied news item, also return source_ids: "
                         "an array of its IDs from material.world.sources. For a personal "
                         "thought use []. Keep these IDs out of the published text.\n")
+    if material.get("fact"):
+        # RUBRYKA TO KAT, FAKT TO MATERIAL. Bez tego zdania model dostaje
+        # sprawdzony fakt i pisze o nim depesze, a rubryka idzie do kosza —
+        # czyli placimy za bank po to, zeby stracic glos.
+        instruction += (
+            "material.fact is a checked fact from the research bank, with its "
+            "source. Build this Note on it: it is your material, and "
+            "material.theme is still your angle on it. Say the concrete thing "
+            "that happened before you say what you think of it — a reader who "
+            "cannot picture it cannot care about it. Use only what is in the "
+            "fact; do not add figures, dates or causes from memory, and do not "
+            "restate the whole entry. One thing, said your way. Name the source "
+            "in passing when it earns a mention; the URL may go in the text.\n")
     if material.get("statistics"):
         instruction += ("The program prepends the exact measured statistics. Write ONLY "
                         "your short comic reaction, no numbers (including spelled numbers), "
@@ -434,8 +447,35 @@ def _swiat(conn=None, run_id=None):
     }
 
 
+def _fakt_z_banku():
+    """Jeden fakt z banku dla tej notki, albo `None`.
+
+    Osobno, zeby `notes` dalo sie czytac, i zeby test mogl to podstawic bez
+    dotykania pliku indeksu.
+    """
+    try:
+        import stages
+        return stages.fakt_na_notke()
+    except Exception:                    # noqa: BLE001
+        # BANK NIGDY NIE ZABIJA NOTKI: brak faktu znaczy notka z samej rubryki.
+        return None
+
+
 def notes(conn, run_id, ile=None, od=0):
-    """Choose a subject from the persona, not the research bank."""
+    """Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka.
+
+    Do 9 wrzesnia 2026 stalo tu „Choose a subject from the persona, not the
+    research bank" i tak bylo naprawde: notka nie ogladala banku ani razu.
+    Bank widzial wylacznie artykul, czyli raz w tygodniu, a notki ida dwa razy
+    dziennie — wiec czternascie tekstow tygodniowo pisalo sie z naglowkow,
+    podczas gdy w banku lezal pierwszy dopuszczony przez FDA robot pobierajacy
+    krew i petabajtowy zbior danych genomowych, oba tracace waznosc po
+    siedmiu dniach.
+
+    Rubryka ZOSTAJE i to jest cala ostroznosc tej zmiany. Fakt bez kata daje
+    depesze; kat bez faktu daje felieton o niczym. `stages.fakt_na_notke`
+    pilnuje przy tym, zeby notki nie zabraly artykulowi materialu.
+    """
     slots = config.NOTE_MIX_OTHER_DAY[od:] if ile is None else config.NOTE_MIX_OTHER_DAY[od:od + ile]
     history = [r for r in memory() if r.get("kind", "note") == "note"]
     now = datetime.now(timezone.utc)
@@ -472,14 +512,34 @@ def notes(conn, run_id, ile=None, od=0):
             stat, stats_kind = facts["growth"], "growth"
             views_due = growth_due = False
         etykieta, polecenie = _rozdziel_rubryke(theme)
-        output = short_form(conn, run_id, "note", {"theme": polecenie, "statistics": stat,
-                            "world": swiat,
-                            "choice": "Choose your own angle. Write an observation, bit or opinion, not a news report."})
+        # FAKT Z BANKU — tylko dla zwyklej notki. Notka powitalna ma wlasny
+        # temat, a statystyczna ma podana liczbe; doklejanie im faktu z banku
+        # zmarnowaloby go na tekst, ktory i tak jest o czym innym.
+        fakt = None if (takeover or stat) else _fakt_z_banku()
+        material = {"theme": polecenie, "statistics": stat, "world": swiat,
+                    "choice": "Choose your own angle. Write an observation, bit "
+                              "or opinion, not a news report."}
+        if fakt:
+            material["fact"] = {
+                "fact": str(fakt.get("fact") or "")[:700],
+                "wrong_belief": str(fakt.get("wrong_belief") or "")[:300],
+                "actually": str(fakt.get("actually") or "")[:300],
+                "decision": str(fakt.get("decision") or "")[:300],
+                "consequence": str(fakt.get("consequence") or "")[:300],
+                "url": str(fakt.get("url") or "")[:300],
+                "source_date": str(fakt.get("source_date") or "")[:20],
+            }
+        output = short_form(conn, run_id, "note", material)
         candidate = {**output, "note": output.get("text", ""), "safe_to_post": bool(output), "length_ok": bool(output)}
         result.append({"type": typ, "forma": "persona", "candidates": [candidate] if output else [],
                        "personality": {"theme": theme, "rubryka": etykieta,
                                        "intro": takeover, "stats": bool(stat),
-                                       "stats_kind": stats_kind}})
+                                       "stats_kind": stats_kind,
+                                       # Bez tego nie da sie po tygodniu
+                                       # odpowiedziec, ile notek naprawde
+                                       # stanelo na banku, a ile na naglowkach.
+                                       "z_banku": bool(fakt),
+                                       "zrodlo_faktu": (fakt or {}).get("url", "")}})
     return result
 
 

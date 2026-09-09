@@ -139,6 +139,7 @@
 | `DATA_PRZESTAWIENIA` | `""` | DZIEN, W KTORYM TO KONTO OSTATNI RAZ ZMIENILO TEMAT. Nie jest to data historyczna dla ozdoby — czyta ja `stages.wez_kandydatow` i odrzuca ka |
 | `BANK_UDZIAL_ARTYKULOW` | `0.33` | Jaka czesc banku moze niesc znacznik „na artykul". Pytany po kolei „czy to unioslo by artykul", model mowi tak prawie zawsze — ta sama degen |
 | `BANK_MAKS_WOLNYCH` | `20` | --- BANK POMYSLOW: BUFOR, NIE MAGAZYN -------------------------------------- Wlasciciel, 30 sierpnia: „nie moze byc tak, ze mamy za duzo tem |
+| `BANK_REZERWA_NA_ARTYKUL` | `3` | ILE KANDYDATUR ZOSTAJE DLA ARTYKULU, gdy notki tez siegaja do banku. Od 9 wrzesnia 2026 notka bierze fakt z banku, jesli tam lezy. Bez rezer |
 | `SZUKANIE_BANKU_NA_DOBE` | `1` | ILE RAZY NA DOBE WOLNO DOBIERAC MATERIAL DO BANKU. Bylo: przy kazdym z pieciu przebiegow. Zmierzone 1 wrzesnia 2026 na produkcji: srednio 26 |
 | `WYDARZENIE_WAZNE_DNI` | `2` | JAK DLUGO TO SAMO WYDARZENIE NIE OTWIERA FURTKI DRUGI RAZ. Wlasciciel: „chce napisac o tym w tym samym dniu, max dzien po". Dwie doby pokryw |
 | `WYDARZENIE_PROB_MAKS` | `3` | ILE RAZY PROBUJEMY DOBRAC MATERIAL DO JEDNEGO WYDARZENIA, zanim uznamy je za zamkniete mimo braku materialu. Od 2 wrzesnia 2026 furtke zamyk |
