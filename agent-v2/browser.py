@@ -680,7 +680,23 @@ def podlacz_sie():
     # nie powstaje. Cloudflare rozpoznaje tryb bezgłowy po odcisku przeglądarki.
     if config.TRYB_SERWERA and _chrome_odpowiada():
         p = sync_playwright().start()
-        browser = p.chromium.connect_over_cdp(f"http://localhost:{CDP_PORT}")
+        # OSLONA TAKA SAMA JAK W GALEZI LOKALNEJ (patrz nizej).
+        #
+        # Bez niej `start()` zostawal w procesie, gdy `connect_over_cdp`
+        # rzucilo. A rzuca latwo: `_chrome_odpowiada()` sprawdza tylko, czy
+        # port cokolwiek odpowiada — Chrome moze odpowiedziec na sprawdzenie
+        # i odmowic polaczenia sekunde pozniej.
+        #
+        # Skutek nie konczyl sie na jednym bloku. Instancja Playwrighta zostaje
+        # w tym samym procesie, wiec KAZDY nastepny blok dnia pada tym samym
+        # bledem: „Playwright Sync API inside the asyncio loop". Dokladnie tak
+        # 9 wrzesnia o 00:30 padly po kolei subskrypcje, komentarze, dyskusje
+        # i restacki — jedna nieudana proba polaczenia zabrala reszte doby.
+        try:
+            browser = p.chromium.connect_over_cdp(f"http://localhost:{CDP_PORT}")
+        except Exception:                              # noqa: BLE001
+            p.stop()
+            raise
         context = browser.contexts[0] if browser.contexts else browser.new_context()
         return p, browser, context
 
@@ -723,16 +739,28 @@ def podlacz_sie():
                 "w tym kodzie odradzone. Patrz docs/INSTALL.md, krok 5."
             )
         p = sync_playwright().start()
-        browser = p.chromium.launch(
-            headless=True,
-            args=["--no-sandbox", "--disable-dev-shm-usage"],
-        )
-        context = browser.new_context(
-            storage_state=str(SESSION_FILE),
-            user_agent=config.FETCH_USER_AGENT,
-            viewport={"width": 1440, "height": 900},
-            locale="en-US",   # interfejs po angielsku, niezależnie od serwera
-        )
+        # TRZECIA GALAZ, TA SAMA OSLONA. Znaleziona przez test, ktory liczy
+        # wywolania `start()` ze skladni — recznie widzialem dwie.
+        #
+        # Tutaj przeciec jest nawet wiecej niz przy podlaczeniu: `launch()`
+        # moze paść na brak przegladarki w systemie, a `new_context()` czyta
+        # PLIK SESJI, wiec uszkodzony albo obciety plik daje ten sam skutek.
+        # Za kazdym razem `start()` zostaje w procesie i kazdy nastepny blok
+        # dnia pada na „Playwright Sync API inside the asyncio loop".
+        try:
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-dev-shm-usage"],
+            )
+            context = browser.new_context(
+                storage_state=str(SESSION_FILE),
+                user_agent=config.FETCH_USER_AGENT,
+                viewport={"width": 1440, "height": 900},
+                locale="en-US",   # interfejs po angielsku, niezależnie od serwera
+            )
+        except Exception:                              # noqa: BLE001
+            p.stop()
+            raise
         rozgrzej(context)
         return p, browser, context
 
