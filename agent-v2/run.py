@@ -1948,13 +1948,29 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                       f" — nie wchodze na profil)", flush=True)
                 continue
             if not uchwyt:
-                # POMINIECIE TEZ JEST WYNIKIEM. Cichy `continue` to dokladnie
-                # ten mechanizm, przez ktory obserwacje tygodniami udawaly, ze
-                # ich nie ma: blok bez sladu w dzienniku wyglada na blok, ktory
-                # sie nie odbywa. Proba byla, wiec ma zostawic powod.
+                # POMINIECIE TEZ JEST WYNIKIEM — ALE NIE PORAZKA.
+                #
+                # Cichy `continue` to mechanizm, przez ktory obserwacje
+                # tygodniami udawaly, ze ich nie ma: blok bez sladu w dzienniku
+                # wyglada na blok, ktory sie nie odbywa. Slad zostaje.
+                #
+                # Zdanie „proba byla, wiec ma zostawic powod" bylo jednak
+                # bledne w drugiej polowie. Proby NIE BYLO: nie ustalilismy
+                # nawet uchwytu, wiec nie weszlismy na zaden profil i nikt nam
+                # nie odmowil. `dopisz_wynik(..., {})` z pustym wynikiem
+                # zapisywalo to jako NIEUDANA OBSERWACJE, czyli tak samo jak
+                # realna odmowe.
+                #
+                # ZNALEZIONE PRZY POPRAWCE SUBSKRYPCJI, ktora miala ten sam
+                # ksztalt — i przez test, ktory trafil w ten blok zamiast
+                # w tamten, bo oba niosa ten sam komunikat.
+                #
+                # `obserwacja_pominieta` stoi poza `norma.RODZAJE` i jest tu
+                # uzywane juz w dwoch innych miejscach (`run.py`, oraz
+                # `browser.py` przy sicie rozmiaru).
                 if wyslij:
-                    browser.dopisz_wynik(
-                        "obserwacja", {}, komu=host,
+                    browser.zapisz_w_dzienniku(
+                        "obserwacja_pominieta", udane=True, komu=host,
                         powod=f"nie ustalilem konta autora dla {host}")
                     zostal_slad = True
                 print(f"  (nie ustalilem konta dla {host} — pomijam)", flush=True)
@@ -2127,8 +2143,21 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 # trzy proby zapisane w dzienniku jako `komu='www'` nie mialy
                 # w sobie ani slowa o tym, ktorego adresu dotyczyly.
                 if wyslij:
-                    browser.dopisz_wynik(
-                        "subskrypcja", {}, komu=host,
+                    # POMINIECIE, NIE PORAZKA. `dopisz_wynik("subskrypcja",
+                    # {})` z pustym wynikiem zapisuje NIEUDANA subskrypcje,
+                    # a my nigdzie nie weszlismy: nie znamy nawet uchwytu.
+                    #
+                    # Skutek byl podwojny i widac go w dzienniku: licznik
+                    # „porazek pod rzad" rosl do osmiu bez ani jednego
+                    # klikniecia, a alarm o wolumenach liczyl pominiecia jako
+                    # niewykonana norme. Tydzien zerowych subskrypcji zglaszal
+                    # sie wiec jako tydzien nieudanych prob.
+                    #
+                    # `subskrypcja_pominieta` stoi poza `norma.RODZAJE`, wiec
+                    # nie liczy sie ani do wykonanych, ani do nieudanych, i nie
+                    # zjada slotu — tak samo jak przy obserwacji i przy dublach.
+                    browser.zapisz_w_dzienniku(
+                        "subskrypcja_pominieta", udane=True, komu=host,
                         powod=f"nie ustalilem konta autora dla {host}")
                     zostal_slad = True
                 print(f"  (nie ustalilem konta dla {host} — pomijam)", flush=True)
@@ -2151,8 +2180,16 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             # cudza strone i dostalismy odpowiedz. Tutaj nie weszlismy
             # nigdzie: odczytalismy publiczna liczbe i odeszlismy.
             if wyslij and browser.konto_za_duze(uchwyt):
-                browser.dopisz_wynik(
-                    "subskrypcja", {}, komu=uchwyt,
+                # TA SAMA ZASADA. Komentarz wyzej mowi wprost: „POMINIECIE NIE
+                # JEST PROBA — odczytalismy publiczna liczbe i odeszlismy".
+                # Zapis szedl jednak jako nieudana subskrypcja, wiec kod
+                # przeczyl wlasnemu komentarzowi. 9 wrzesnia o 13:30 osiem
+                # takich pominiec dalo osiem „porazek" i zero prob.
+                #
+                # `browser.zasubskrybuj` ma juz to poprawnie (`browser.py`,
+                # `_klik_na_profilu`): to samo sito, ten sam rodzaj wpisu.
+                browser.zapisz_w_dzienniku(
+                    "subskrypcja_pominieta", udane=True, komu=uchwyt,
                     powod="account exceeds the size limit or its size is unknown")
                 zostal_slad = True
                 print(f"  (@{uchwyt} przekracza sufit odbiorcow — pomijam bez"
