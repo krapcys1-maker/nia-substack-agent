@@ -42,15 +42,40 @@ never the marking redrawn as a physical thing, and never the object the
 symbol depicts, standing on its own. An icon blown up to fill the frame is
 the same error.
 
+## An empty room is not a scene
+
+ZMIERZONE 9 wrzesnia 2026 na artykule 0028. Oba obrazy wyszly jako puste
+wnetrza: biurko, krzeslo, monitor, kabel, nikogo. Poprawne wobec palety
+i kompozycji, i martwe. Wlasciciel odrzucil drugi jako „generyczny".
+
+Every image contains **a person, or unmistakable evidence of an action in
+progress** — preferably both. Somebody's hands on the thing. A chair pushed
+back mid-turn with the coat still moving. A drawer half out. The moment after
+the cup went over, not the tidy aftermath an hour later.
+
+If you cannot name what somebody is doing in this frame, and what happens two
+seconds later, you have written a photograph of furniture. Start again.
+
+Empty architecture, an unoccupied desk, a corridor with nobody in it: these
+are backgrounds, never the subject.
+
+## Do not draw the same picture twice
+
+{juz_pokazane}
+
 ## Make it specific, and let it be a moment
 
 Vague scenes generate as stock photography, which is the other way to look
 like nothing. Push for one concrete detail that could only be this place on
 this day: a chair at the wrong angle, a coat still over the back of it,
 condensation on a pipe, one cable seated and one hanging loose, a cup gone
-cold, blinds half shut. Prefer the unglamorous side of the mechanism: the
-loading dock, the back of the rack, the desk after everyone left, the
-corridor the visitors do not see.
+cold, blinds half shut.
+
+WYCIETE 9 wrzesnia 2026: „Prefer the unglamorous side of the mechanism: the
+loading dock, the back of the rack, THE DESK AFTER EVERYONE LEFT, the corridor
+the visitors do not see." To zdanie doslownie zamawialo pusty kadr, i dokladnie
+to dostalismy — dwa obrazy artykulu 0028 byly nieumeblowanym biurem bez ludzi.
+Gdzie sceny sie rozgrywaja, rozstrzyga blok stylu publikacji, a nie ta zasada.
 
 **Never** put text, numbers, letters, logos or brand marks in the image.
 Generators render them badly, and a misspelled word on a header is the
@@ -71,6 +96,18 @@ incidental to the scene: a hand leaving the frame, a background figure or a
 silhouette. Do not introduce another publication's character. Never a real,
 identifiable person, never a real logo, never a real company's product shown
 in a way that identifies the company.
+
+## The joke has to be readable without the article
+
+Somebody who sees the image and never reads a word should get it. Name, before
+you write the prompt, the one physical action in the frame and the one visible
+consequence of it. If you cannot, you have described a place, not a scene.
+
+End your `prompt` with a plain sentence saying what the picture must make
+obvious — the way the owner's own briefs do: "The visual joke must be
+immediately clear: the candidates are collaborating to manipulate the test
+instead of solving it." That sentence is for the generator, not for the
+reader, and it is the difference between an illustration and wallpaper.
 
 ## Output
 

@@ -242,6 +242,12 @@ profil_negatywny = "style-profiles/ARTICLE_NEGATIVE_STYLE_PROFILE_V1.md"
 #   python narzedzia/przypnij_styl.py --pokaz
 korpus = ""
 
+# Obraz wzorcowy postaci: ta sama twarz na kazdej okladce. Sam opis slowny
+# oddaje za kazdym razem kogos innego. Gdy plik jest wskazany i istnieje,
+# generator dostaje go jako referencje; gdy go nie ma, okladka powstaje
+# z samego opisu, a przebieg mowi o tym w logu.
+referencja = ""
+
 # Czy pisarz artykulu ma ODMOWIC bez przypietego korpusu. `true` to
 # dotychczasowe zachowanie. `false` pozwala pisac z samych profili i opisu —
 # uczciwy start dla konta, ktore nie ma jeszcze wlasnych tekstow.

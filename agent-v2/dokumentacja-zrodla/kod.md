@@ -312,7 +312,8 @@ def _preflight(purpose: str, conn: sqlite3.Connection, run_id: int | None) -> No
 
 <!--KOD:llm.obraz-->
 ```python
-def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None) -> bytes:
+def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None,
+          referencja: str = "") -> bytes:
     _preflight('obraz', conn, run_id)
     if config.DRY_RUN:
         print('  [obraz] DRY_RUN — wywołanie pominięte', flush=True)
@@ -324,7 +325,28 @@ def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None) -> by
     if runtime.RUN_DEADLINE is not None:
         deadline = min(deadline, runtime.RUN_DEADLINE)
     state = runtime.Attempt(0, deadline)
+    # REFERENCJA ZMIENIA ENDPOINT. `/v1/images/generations` nie przyjmuje
+    # obrazu wzorcowego w ogole; od tego jest `/v1/images/edits`, ktore
+    # wymaga `multipart/form-data`. Brak pliku = stara droga, bez zmian.
+    _ref = Path(referencja) if referencja else None
+    if _ref is not None and not _ref.is_file():
+        print('  [obraz] referencja wskazana, ale pliku nie ma: %s — generuje '
+              'bez niej' % _ref, flush=True)
+        _ref = None
+
     def request():
+        if _ref is not None:
+            cialo, typ = _multipart(
+                {'model': config.IMAGE_MODEL, 'prompt': opis,
+                 'size': config.IMAGE_SIZE, 'quality': config.IMAGE_QUALITY, 'n': '1'},
+                {'image[]': (_ref.name, _ref.read_bytes())})
+            req = urllib.request.Request('https://api.openai.com/v1/images/edits',
+                data=cialo,
+                headers={'Authorization': f'Bearer {config.OPENAI_API_KEY}',
+                         'Content-Type': typ})
+            with urllib.request.urlopen(req, timeout=max(.1, deadline-time.monotonic())) as response:
+                runtime.watch(response)
+                return json.loads(response.read().decode('utf-8'))
         req = urllib.request.Request('https://api.openai.com/v1/images/generations',
             data=json.dumps({'model':config.IMAGE_MODEL, 'prompt':opis, 'size':config.IMAGE_SIZE,
                              'quality':config.IMAGE_QUALITY, 'n':1}).encode('utf-8'),
@@ -1328,6 +1350,8 @@ def grafika(
             "grafika.md",
             title=draft.get("title", ""),
             body=draft.get("body", "")[:6000],
+            juz_pokazane="This is the first illustration for this article; "
+                         "nothing has been drawn yet.",
         )
         brief = llm.parse_json(
             llm.call("grafika", IMAGE_SYSTEM, prompt, conn=conn, run_id=run_id)
@@ -1337,7 +1361,8 @@ def grafika(
             raise ValueError("brief graficzny bez promptu")
         print(f"  [grafika] przedmiot: {brief.get('subject', '')}", flush=True)
 
-        dane = llm.obraz(opis, conn=conn, run_id=run_id)
+        dane = llm.obraz(opis, conn=conn, run_id=run_id,
+                         referencja=str(getattr(config, "OBRAZ_REFERENCJA", "") or ""))
     except Exception as exc:
         # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu padła
         # na `IntegrityError`, log powiedział tylko tyle — a przyczyna („NOT NULL

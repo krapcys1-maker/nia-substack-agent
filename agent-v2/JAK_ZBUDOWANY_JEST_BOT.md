@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 37 771 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 37 864 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 201 zestawów
-testów, 4508 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 203 zestawów
+testów, 4556 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -299,7 +299,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9026 wierszy, 155 funkcji na poziomie modułu, 0 klas
+9052 wierszy, 155 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -332,7 +332,7 @@ wiec nie da sie go rozjechac z kodem.
 | `grafika(conn, run_id, draft, sciezka_artykulu)` | Nagłówek graficzny artykułu. |
 | `_akapity_tresci(body)` *(wewn.)* | Akapity artykulu BEZ naglowkow, listy zrodel i stopek. |
 | `_miejsce_na_drugi_obraz(akapity)` *(wewn.)* | Po ktorym akapicie stanie drugi obraz. `-1`, gdy tekst jest za krotki. |
-| `grafika_srodek(conn, run_id, draft, sciezka_artykulu)` | DRUGI obraz, w srodku tekstu. Decyzja wlasciciela z 9 wrzesnia 2026. |
+| `grafika_srodek(conn, run_id, draft, sciezka_artykulu, unikaj)` | DRUGI obraz, w srodku tekstu. Decyzja wlasciciela z 9 wrzesnia 2026. |
 | `_wiek_konta_w_dniach(conn)` *(wewn.)* | Ile dni działa to konto — liczone od pierwszego przebiegu w bazie. |
 | `budzet_dnia(conn)` | Ile czego agent może dziś zrobić — losowane z widełek, nie stałe. |
 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` *(wewn.)* | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. |
@@ -573,7 +573,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1170 wierszy, 21 funkcji na poziomie modułu, 4 klas
+1214 wierszy, 22 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -593,6 +593,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` *(wewn.)* | — |
 | `image_output_price()` | — |
 | `call(purpose, system, user)` | — |
+| `_multipart(pola, pliki)` *(wewn.)* | Cialo `multipart/form-data` — bez zewnetrznej biblioteki. |
 | `obraz(opis)` | — |
 | `_settle_image(conn, call_id, data, ok, error)` *(wewn.)* | — |
 | `_obiekty_json(tekst)` *(wewn.)* | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. |
@@ -661,7 +662,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-1040 wierszy, 45 funkcji na poziomie modułu, 1 klas
+1047 wierszy, 45 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -713,7 +714,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1114 wierszy, 40 funkcji na poziomie modułu, 4 klas
+1115 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -841,7 +842,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3689 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3702 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -976,7 +977,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1794 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1796 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6914,7 +6915,8 @@ def _preflight(purpose: str, conn: sqlite3.Connection, run_id: int | None) -> No
 
 <!--KOD:llm.obraz-->
 ```python
-def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None) -> bytes:
+def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None,
+          referencja: str = "") -> bytes:
     _preflight('obraz', conn, run_id)
     if config.DRY_RUN:
         print('  [obraz] DRY_RUN — wywołanie pominięte', flush=True)
@@ -6926,7 +6928,28 @@ def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None) -> by
     if runtime.RUN_DEADLINE is not None:
         deadline = min(deadline, runtime.RUN_DEADLINE)
     state = runtime.Attempt(0, deadline)
+    # REFERENCJA ZMIENIA ENDPOINT. `/v1/images/generations` nie przyjmuje
+    # obrazu wzorcowego w ogole; od tego jest `/v1/images/edits`, ktore
+    # wymaga `multipart/form-data`. Brak pliku = stara droga, bez zmian.
+    _ref = Path(referencja) if referencja else None
+    if _ref is not None and not _ref.is_file():
+        print('  [obraz] referencja wskazana, ale pliku nie ma: %s — generuje '
+              'bez niej' % _ref, flush=True)
+        _ref = None
+
     def request():
+        if _ref is not None:
+            cialo, typ = _multipart(
+                {'model': config.IMAGE_MODEL, 'prompt': opis,
+                 'size': config.IMAGE_SIZE, 'quality': config.IMAGE_QUALITY, 'n': '1'},
+                {'image[]': (_ref.name, _ref.read_bytes())})
+            req = urllib.request.Request('https://api.openai.com/v1/images/edits',
+                data=cialo,
+                headers={'Authorization': f'Bearer {config.OPENAI_API_KEY}',
+                         'Content-Type': typ})
+            with urllib.request.urlopen(req, timeout=max(.1, deadline-time.monotonic())) as response:
+                runtime.watch(response)
+                return json.loads(response.read().decode('utf-8'))
         req = urllib.request.Request('https://api.openai.com/v1/images/generations',
             data=json.dumps({'model':config.IMAGE_MODEL, 'prompt':opis, 'size':config.IMAGE_SIZE,
                              'quality':config.IMAGE_QUALITY, 'n':1}).encode('utf-8'),
@@ -7930,6 +7953,8 @@ def grafika(
             "grafika.md",
             title=draft.get("title", ""),
             body=draft.get("body", "")[:6000],
+            juz_pokazane="This is the first illustration for this article; "
+                         "nothing has been drawn yet.",
         )
         brief = llm.parse_json(
             llm.call("grafika", IMAGE_SYSTEM, prompt, conn=conn, run_id=run_id)
@@ -7939,7 +7964,8 @@ def grafika(
             raise ValueError("brief graficzny bez promptu")
         print(f"  [grafika] przedmiot: {brief.get('subject', '')}", flush=True)
 
-        dane = llm.obraz(opis, conn=conn, run_id=run_id)
+        dane = llm.obraz(opis, conn=conn, run_id=run_id,
+                         referencja=str(getattr(config, "OBRAZ_REFERENCJA", "") or ""))
     except Exception as exc:
         # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu padła
         # na `IntegrityError`, log powiedział tylko tyle — a przyczyna („NOT NULL
@@ -9892,7 +9918,7 @@ point at an entry in `beliefs`.
 
 #### `prompts/grafika.md`
 
-**89 wierszy.** Pola wejsciowe: `body`, `nisza`, `okladka`, `title`
+**126 wierszy.** Pola wejsciowe: `body`, `juz_pokazane`, `nisza`, `okladka`, `title`
 
 ````markdown
 Write the image brief for the header illustration of this article. You are
@@ -9939,15 +9965,40 @@ never the marking redrawn as a physical thing, and never the object the
 symbol depicts, standing on its own. An icon blown up to fill the frame is
 the same error.
 
+## An empty room is not a scene
+
+ZMIERZONE 9 wrzesnia 2026 na artykule 0028. Oba obrazy wyszly jako puste
+wnetrza: biurko, krzeslo, monitor, kabel, nikogo. Poprawne wobec palety
+i kompozycji, i martwe. Wlasciciel odrzucil drugi jako „generyczny".
+
+Every image contains **a person, or unmistakable evidence of an action in
+progress** — preferably both. Somebody's hands on the thing. A chair pushed
+back mid-turn with the coat still moving. A drawer half out. The moment after
+the cup went over, not the tidy aftermath an hour later.
+
+If you cannot name what somebody is doing in this frame, and what happens two
+seconds later, you have written a photograph of furniture. Start again.
+
+Empty architecture, an unoccupied desk, a corridor with nobody in it: these
+are backgrounds, never the subject.
+
+## Do not draw the same picture twice
+
+{juz_pokazane}
+
 ## Make it specific, and let it be a moment
 
 Vague scenes generate as stock photography, which is the other way to look
 like nothing. Push for one concrete detail that could only be this place on
 this day: a chair at the wrong angle, a coat still over the back of it,
 condensation on a pipe, one cable seated and one hanging loose, a cup gone
-cold, blinds half shut. Prefer the unglamorous side of the mechanism: the
-loading dock, the back of the rack, the desk after everyone left, the
-corridor the visitors do not see.
+cold, blinds half shut.
+
+WYCIETE 9 wrzesnia 2026: „Prefer the unglamorous side of the mechanism: the
+loading dock, the back of the rack, THE DESK AFTER EVERYONE LEFT, the corridor
+the visitors do not see." To zdanie doslownie zamawialo pusty kadr, i dokladnie
+to dostalismy — dwa obrazy artykulu 0028 byly nieumeblowanym biurem bez ludzi.
+Gdzie sceny sie rozgrywaja, rozstrzyga blok stylu publikacji, a nie ta zasada.
 
 **Never** put text, numbers, letters, logos or brand marks in the image.
 Generators render them badly, and a misspelled word on a header is the
@@ -9968,6 +10019,18 @@ incidental to the scene: a hand leaving the frame, a background figure or a
 silhouette. Do not introduce another publication's character. Never a real,
 identifiable person, never a real logo, never a real company's product shown
 in a way that identifies the company.
+
+## The joke has to be readable without the article
+
+Somebody who sees the image and never reads a word should get it. Name, before
+you write the prompt, the one physical action in the frame and the one visible
+consequence of it. If you cannot, you have described a place, not a scene.
+
+End your `prompt` with a plain sentence saying what the picture must make
+obvious — the way the owner's own briefs do: "The visual joke must be
+immediately clear: the candidates are collaborating to manipulate the test
+instead of solving it." That sentence is for the generator, not for the
+reader, and it is the difference between an illustration and wallpaper.
 
 ## Output
 
@@ -12420,6 +12483,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `BEZ_TOKENOW` | `{"obraz"}` | — |
 | `OBRAZ_WLACZONY` | `True` | CZY OKLADKA W OGOLE POWSTAJE. Preset wylacza ja pustym `modele.obraz`; `stages.grafika` wtedy nie wola ani briefu, ani OpenAI. Do 2026-09-05 |
 | `OBRAZY_NA_ARTYKUL` | `2` | ILE OBRAZOW NA ARTYKUL. Dwa — polecenie wlasciciela z 9 wrzesnia 2026: okladka na gorze i jeden w polowie tekstu. Miejsce drugiego wybiera k |
+| `OBRAZ_REFERENCJA` | `""` | OBRAZ REFERENCYJNY — zeby NIA wygladala tak samo na kazdej okladce. Opis slowny nie wystarcza. „Ciemne, krotkie, faliste wlosy, garnitur" od |
 | `ZAPASOWY_PISARZ` | `CLAUDE` | NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py` i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec zmia |
 | `PRICING` | `{ CLAUDE: {"in": 5.00, "out": 25.00, "verifi` | — |
 | `STAWKI_PRZED_PODWYZKA` | `{ DEEPSEEK: {"in": 0.14, "out": 0.28, "cache` | --- taryfa szczytowa DeepSeeka ----------------------------------------------- Od 2026-08-16 16:00 UTC DeepSeek wprowadza ceny szczytowe i p |

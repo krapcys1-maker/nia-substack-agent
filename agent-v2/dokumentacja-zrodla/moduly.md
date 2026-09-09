@@ -157,7 +157,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9026 wierszy, 155 funkcji na poziomie modułu, 0 klas
+9052 wierszy, 155 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -190,7 +190,7 @@
 | `grafika(conn, run_id, draft, sciezka_artykulu)` | Nagłówek graficzny artykułu. |
 | `_akapity_tresci(body)` *(wewn.)* | Akapity artykulu BEZ naglowkow, listy zrodel i stopek. |
 | `_miejsce_na_drugi_obraz(akapity)` *(wewn.)* | Po ktorym akapicie stanie drugi obraz. `-1`, gdy tekst jest za krotki. |
-| `grafika_srodek(conn, run_id, draft, sciezka_artykulu)` | DRUGI obraz, w srodku tekstu. Decyzja wlasciciela z 9 wrzesnia 2026. |
+| `grafika_srodek(conn, run_id, draft, sciezka_artykulu, unikaj)` | DRUGI obraz, w srodku tekstu. Decyzja wlasciciela z 9 wrzesnia 2026. |
 | `_wiek_konta_w_dniach(conn)` *(wewn.)* | Ile dni działa to konto — liczone od pierwszego przebiegu w bazie. |
 | `budzet_dnia(conn)` | Ile czego agent może dziś zrobić — losowane z widełek, nie stałe. |
 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` *(wewn.)* | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. |
@@ -431,7 +431,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1170 wierszy, 21 funkcji na poziomie modułu, 4 klas
+1214 wierszy, 22 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -451,6 +451,7 @@
 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` *(wewn.)* | — |
 | `image_output_price()` | — |
 | `call(purpose, system, user)` | — |
+| `_multipart(pola, pliki)` *(wewn.)* | Cialo `multipart/form-data` — bez zewnetrznej biblioteki. |
 | `obraz(opis)` | — |
 | `_settle_image(conn, call_id, data, ok, error)` *(wewn.)* | — |
 | `_obiekty_json(tekst)` *(wewn.)* | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. |
@@ -519,7 +520,7 @@
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-1040 wierszy, 45 funkcji na poziomie modułu, 1 klas
+1047 wierszy, 45 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -571,7 +572,7 @@
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1114 wierszy, 40 funkcji na poziomie modułu, 4 klas
+1115 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -699,7 +700,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3689 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3702 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -834,7 +835,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1794 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1796 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

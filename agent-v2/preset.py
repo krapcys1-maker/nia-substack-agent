@@ -280,7 +280,8 @@ def _wczytaj_bloki(katalog: Path | None) -> dict[str, str]:
     return bloki
 
 
-_POLA_SCIEZEK = ("styl.profil_pozytywny", "styl.profil_negatywny", "styl.korpus")
+_POLA_SCIEZEK = ("styl.profil_pozytywny", "styl.profil_negatywny",
+                 "styl.korpus", "styl.referencja")
 # `repo:style-profiles/X.md` = JAWNY wybor pliku wspolnego z korzenia repozytorium.
 # Zwykla sciezka wzgledna w kartridzu znaczy tylko jego katalog (audyt F05).
 PRZEDROSTEK_REPO = konfiguracja.PRZEDROSTEK_REPO

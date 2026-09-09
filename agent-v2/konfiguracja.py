@@ -485,6 +485,8 @@ POLA: dict[str, tuple[str | None, Any]] = {
     # Plik korpusu (`.txt`, akapity oddzielone pusta linia). Pusty = domyslny
     # katalog `agent-v2/prompts/styl/`.
     "styl.korpus": (None, _sciezka_moze_pusta),
+    # Obraz wzorcowy postaci. Pusty = okladka powstaje z samego opisu.
+    "styl.referencja": (None, _sciezka_moze_pusta),
     # Czy pisarz artykulow ma ODMOWIC bez przypietego korpusu (tak bylo
     # zawsze), czy pisac z samych profili i opisu. Preset, ktory dopiero
     # zaczyna, moze uczciwie wybrac drugie — patrz `style.przyklady_albo_pusto`.
@@ -899,6 +901,11 @@ def _plan(dane: dict[str, Any], cfg: Any) -> tuple[dict[str, Any], dict[str, dic
         if klucz in dane:
             ustaw[stala] = _sciezka_w_repo(cfg, dane[klucz])
             meldunki.append("%s -> %s" % (klucz, stala))
+    if "styl.referencja" in dane:
+        ustaw["OBRAZ_REFERENCJA"] = (
+            str(_sciezka_w_repo(cfg, dane["styl.referencja"]))
+            if dane["styl.referencja"] else "")
+        meldunki.append("styl.referencja -> OBRAZ_REFERENCJA")
     if "styl.korpus" in dane:
         if dane["styl.korpus"]:
             ustaw["STYLE_CORPUS"] = _sciezka_w_repo(cfg, dane["styl.korpus"])

@@ -7,6 +7,7 @@ import sqlite3
 import time
 import uuid
 import call_runtime as runtime
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any
 
@@ -963,7 +964,29 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         return text
 
 
-def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None) -> bytes:
+def _multipart(pola: dict, pliki: dict) -> tuple[bytes, str]:
+    """Cialo `multipart/form-data` — bez zewnetrznej biblioteki.
+
+    Endpoint `/v1/images/edits` nie przyjmuje JSON-a, a projekt nie ma
+    `requests`. Granica losowa, zeby nie trafic na nia w danych binarnych.
+    """
+    granica = "----nia" + uuid.uuid4().hex
+    czesci = []
+    for nazwa, wartosc in pola.items():
+        czesci.append(("--%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n"
+                       % (granica, nazwa, wartosc)).encode("utf-8"))
+    for nazwa, (plik, dane) in pliki.items():
+        czesci.append(("--%s\r\nContent-Disposition: form-data; name=\"%s\"; "
+                       "filename=\"%s\"\r\nContent-Type: image/png\r\n\r\n"
+                       % (granica, nazwa, plik)).encode("utf-8"))
+        czesci.append(dane)
+        czesci.append(b"\r\n")
+    czesci.append(("--%s--\r\n" % granica).encode("utf-8"))
+    return b"".join(czesci), "multipart/form-data; boundary=%s" % granica
+
+
+def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None,
+          referencja: str = "") -> bytes:
     _preflight('obraz', conn, run_id)
     if config.DRY_RUN:
         print('  [obraz] DRY_RUN — wywołanie pominięte', flush=True)
@@ -975,7 +998,28 @@ def obraz(opis: str, *, conn: sqlite3.Connection, run_id: int | None=None) -> by
     if runtime.RUN_DEADLINE is not None:
         deadline = min(deadline, runtime.RUN_DEADLINE)
     state = runtime.Attempt(0, deadline)
+    # REFERENCJA ZMIENIA ENDPOINT. `/v1/images/generations` nie przyjmuje
+    # obrazu wzorcowego w ogole; od tego jest `/v1/images/edits`, ktore
+    # wymaga `multipart/form-data`. Brak pliku = stara droga, bez zmian.
+    _ref = Path(referencja) if referencja else None
+    if _ref is not None and not _ref.is_file():
+        print('  [obraz] referencja wskazana, ale pliku nie ma: %s — generuje '
+              'bez niej' % _ref, flush=True)
+        _ref = None
+
     def request():
+        if _ref is not None:
+            cialo, typ = _multipart(
+                {'model': config.IMAGE_MODEL, 'prompt': opis,
+                 'size': config.IMAGE_SIZE, 'quality': config.IMAGE_QUALITY, 'n': '1'},
+                {'image[]': (_ref.name, _ref.read_bytes())})
+            req = urllib.request.Request('https://api.openai.com/v1/images/edits',
+                data=cialo,
+                headers={'Authorization': f'Bearer {config.OPENAI_API_KEY}',
+                         'Content-Type': typ})
+            with urllib.request.urlopen(req, timeout=max(.1, deadline-time.monotonic())) as response:
+                runtime.watch(response)
+                return json.loads(response.read().decode('utf-8'))
         req = urllib.request.Request('https://api.openai.com/v1/images/generations',
             data=json.dumps({'model':config.IMAGE_MODEL, 'prompt':opis, 'size':config.IMAGE_SIZE,
                              'quality':config.IMAGE_QUALITY, 'n':1}).encode('utf-8'),

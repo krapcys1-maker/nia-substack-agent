@@ -221,7 +221,9 @@ class AtrapaStages:
     # DRUGI OBRAZ, w srodku tekstu — od 9 wrzesnia 2026 sciezka artykulu wola
     # go zaraz po okladce. Atrapa bez tej metody dawala `AttributeError` PO
     # zapisaniu tekstu, czyli test oblewal na czyms, co artykulu nie dotyka.
-    def grafika_srodek(self, conn, run_id, draft, sciezka_artykulu=""):
+    def grafika_srodek(self, conn, run_id, draft, sciezka_artykulu="",
+                       unikaj=""):
+        # `unikaj` niesie temat okladki, zeby drugi obraz jej nie powtorzyl.
         self.slad.append("grafika_srodek")
 
     def zwroc_kandydatow(self, kandydaci):

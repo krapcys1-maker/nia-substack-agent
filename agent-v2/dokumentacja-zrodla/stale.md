@@ -50,6 +50,7 @@
 | `BEZ_TOKENOW` | `{"obraz"}` | — |
 | `OBRAZ_WLACZONY` | `True` | CZY OKLADKA W OGOLE POWSTAJE. Preset wylacza ja pustym `modele.obraz`; `stages.grafika` wtedy nie wola ani briefu, ani OpenAI. Do 2026-09-05 |
 | `OBRAZY_NA_ARTYKUL` | `2` | ILE OBRAZOW NA ARTYKUL. Dwa — polecenie wlasciciela z 9 wrzesnia 2026: okladka na gorze i jeden w polowie tekstu. Miejsce drugiego wybiera k |
+| `OBRAZ_REFERENCJA` | `""` | OBRAZ REFERENCYJNY — zeby NIA wygladala tak samo na kazdej okladce. Opis slowny nie wystarcza. „Ciemne, krotkie, faliste wlosy, garnitur" od |
 | `ZAPASOWY_PISARZ` | `CLAUDE` | NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py` i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec zmia |
 | `PRICING` | `{ CLAUDE: {"in": 5.00, "out": 25.00, "verifi` | — |
 | `STAWKI_PRZED_PODWYZKA` | `{ DEEPSEEK: {"in": 0.14, "out": 0.28, "cache` | --- taryfa szczytowa DeepSeeka ----------------------------------------------- Od 2026-08-16 16:00 UTC DeepSeek wprowadza ceny szczytowe i p |

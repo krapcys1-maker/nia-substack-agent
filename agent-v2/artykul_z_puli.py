@@ -1709,8 +1709,10 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     print()
     print(">> zapisano: %s" % sciezka, flush=True)
 
-    stages.grafika(conn, run_id, draft, sciezka_artykulu=sciezka)
-    stages.grafika_srodek(conn, run_id, draft, sciezka_artykulu=sciezka)
+    _okladka = stages.grafika(conn, run_id, draft, sciezka_artykulu=sciezka)
+    # OPIS OKLADKI IDZIE DALEJ — inaczej drugi obraz rysuje to samo.
+    stages.grafika_srodek(conn, run_id, draft, sciezka_artykulu=sciezka,
+                          unikaj=str((_okladka or {}).get("subject") or ""))
 
     # --- PUBLIKACJA -------------------------------------------------------
     #

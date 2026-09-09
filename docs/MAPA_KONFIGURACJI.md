@@ -19,7 +19,7 @@ Nie opisuje, z czego bot jest zbudowany — to robi `agent-v2/JAK_ZBUDOWANY_JEST
 generowany z kodu i pilnowany testem. Ten plik opisuje, **co się w nim rusza**.
 
 Pełny spis funkcji, z krawędziami wywołań i znacznikami kosztu, leży osobno:
-[FUNCTION_MAP.md](FUNCTION_MAP.md) — 783 funkcji w 37 modułach, generowana
+[FUNCTION_MAP.md](FUNCTION_MAP.md) — 784 funkcji w 37 modułach, generowana
 z drzewa składni. Problemy napotkane po drodze:
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
@@ -414,7 +414,7 @@ zdalnym) i się zalogować.
   pyta plik.
 * **Sama się przedłuża.** Po każdej pracy bot zapisuje `storage_state` na nowo:
   „Substack odświeża ciasteczko przy aktywności, więc regularne używanie konta
-  samo przesuwa datę ważności" (`browser.py:783-784`).
+  samo przesuwa datę ważności" (`browser.py:784-784`).
 * **Unieważnia ją**: wylogowanie się gdziekolwiek, zmiana hasła, wygaśnięcie
   ciasteczka, a przy drodze bezgłowej — rozpoznanie przez Cloudflare.
 
