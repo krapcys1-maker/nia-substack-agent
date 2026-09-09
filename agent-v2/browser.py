@@ -3170,7 +3170,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             if not wyslij:
                 print("  (nie klikam — tryb sprawdzenia)", flush=True)
                 return wynik
-            k.click(timeout=10_000)
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(k, rodzaj, timeout=10_000)
             page.wait_for_timeout(5000)
             if rodzaj == "subskrypcja":
                 _wybierz_darmowy_plan(page)
@@ -3215,7 +3215,7 @@ def _wybierz_darmowy_plan(page) -> bool:
                   "Kontynuuj za darmo", "Subskrybuj za darmo"):
         button = page.get_by_role("button", name=label, exact=True)
         if button.count() == 1 and button.is_visible():
-            button.click(timeout=10000)
+            klik_mimo_zaslony(button, "darmowy plan", timeout=10000)
             page.wait_for_timeout(4000)
             return True
     for label in ("Free", "Darmowy", "Bezpłatnie"):
@@ -3230,7 +3230,7 @@ def _wybierz_darmowy_plan(page) -> bool:
                 text = container.inner_text()
                 if re.search(r"[$€£]|\b(?:PLN|USD|EUR)\s*\d|\d\s*(?:/month|/year|/mies)", text, re.I):
                     break
-                select.click(timeout=10000)
+                klik_mimo_zaslony(select, "wybor darmowego planu", timeout=10000)
                 page.wait_for_timeout(4000)
                 return True
     return False
@@ -4002,13 +4002,13 @@ def wstaw_przycisk_subskrypcji(page) -> bool:
     for nazwa in ("Przycisk", "Button"):
         k = page.get_by_role("button", name=nazwa).first
         if k.count() > 0 and k.is_visible():
-            k.click()
+            klik_mimo_zaslony(k, "menu przyciskow")
             break
     page.wait_for_timeout(2500)
     for nazwa in ("Subskrybuj", "Subscribe"):
         opcja = page.get_by_text(nazwa, exact=True).first
         if opcja.count() > 0 and opcja.is_visible():
-            opcja.click()
+            klik_mimo_zaslony(opcja, "przycisk subskrypcji")
             page.wait_for_timeout(3000)
             print("  przycisk subskrypcji wstawiony", flush=True)
             return True
@@ -4099,7 +4099,7 @@ def ustaw_oswiadczenie_ai(wyslij: bool = False) -> dict[str, Any]:
                 break
         wynik["przycisk_widoczny"] = zapisz is not None
         if wyslij and zapisz is not None:
-            zapisz.click()
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(zapisz, "zapis oswiadczenia")
             page.wait_for_timeout(5000)
             wynik["zapisane"] = True
             print("  OŚWIADCZENIE ZAPISANE", flush=True)
@@ -4332,7 +4332,7 @@ def wystaw_artykul(
                 break
         if dalej is None:
             raise RuntimeError("nie znalazłem przycisku przejścia do ustawień")
-        dalej.click()
+        wynik["droga_klikniecia_dalej"] = klik_mimo_zaslony(dalej, "przejscie do ustawien")
         page.wait_for_timeout(8000)
 
         if config.WYLACZ_WYKRYWANIE_AI:
@@ -4355,7 +4355,7 @@ def wystaw_artykul(
         wynik["przycisk_widoczny"] = publikuj is not None
 
         if wyslij and publikuj is not None:
-            publikuj.click()
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(publikuj, "publikacja artykulu")
             page.wait_for_timeout(2500)
             _domknij_publikacje_artykulu(page)
             page.wait_for_timeout(15000)

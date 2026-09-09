@@ -16,9 +16,6 @@ Substacka wewnatrz `#entry`, a Playwright — slusznie — odmawia klikniecia
 w miejsce, gdzie zdarzenie dostanie kto inny. Ponawial przez trzydziesci
 sekund, wiec to nie bylo migniecie: zaslona stoi.
 
-Notki, komentarze i restacki wychodzily w tym czasie normalnie. Wada dotyczy
-jednego widoku.
-
 ## Czego ten test pilnuje
 
 TRZECH rzeczy, i kazda z nich jest osobnym sposobem, w jaki taka poprawka
@@ -37,9 +34,33 @@ psuje sie po cichu:
 i klika w te same wspolrzedne, czyli trafia dokladnie w zaslaniajacy panel.
 Dostalibysmy „klikniete" i zadnej odpowiedzi.
 
+## DLACZEGO SEKCJA 4 NIE SZUKA JUZ NAZW ZMIENNYCH
+
+Dwa razy z rzedu sprawdzenie po nazwie przepuscilo prawdziwe miejsce:
+
+  * restack klikal `page.get_by_role(...).last.click(timeout=8000)` w jednej
+    linii, bez zmiennej `przycisk` — testy byly zielone, restack padl na zywo;
+  * publikacja ARTYKULU klikala `publikuj.click()`, a wzorzec szukal nazw
+    `przycisk` i `wyslac` oraz lokatora `name="Post"`. Artykul uzywa „Send to
+    everyone now". Zielono, i jedna zaslona wystarczyla, zeby wyrzucic do kosza
+    caly oplacony research.
+
+Nazwa zmiennej to najslabsza rzecz, jaka mozna sprawdzac: autor poprawki ma
+pelna swobode jej wyboru, a test milczy. Wiec pytamy inaczej, ze SKLADNI:
+
+    kazda funkcja, ktora zna nazwe przycisku ZATWIERDZAJACEGO
+    (Post / Publish / Send / Reply / Restack / Save / Continue i polskie
+    odpowiedniki), musi wolac `klik_mimo_zaslony`.
+
+Nowe miejsce publikacji nie da sie dopisac bez tej nazwy — a z nazwa test
+oblewa, dopoki klikniecie nie przejdzie przez helper. To jedyna wersja tego
+sprawdzenia, ktorej nie da sie ominac przypadkiem.
+
 BEZ PYTESTA, bez sieci, bez przegladarki. Uruchamiac z korzenia repo:
     PYTHONIOENCODING=utf-8 python agent-v2/tests/test_klik_mimo_zaslony.py
 """
+import ast
+import io
 import sys
 
 sys.path.insert(0, "agent-v2")
@@ -131,49 +152,99 @@ except Exception as exc:
             str(exc)[:70])
 
 print()
-print("=== 4. SCIEZKA ODPOWIEDZI UZYWA TEJ DROGI ===")
-# Gdyby ktos przywrocil goly `przycisk.click()`, wszystkie testy wyzej nadal
-# przechodzilyby, a odpowiedzi znowu przestalyby wychodzic.
-# CZTERY MIEJSCA, NIE JEDNO. Pierwsza wersja tego sprawdzenia szukala jednego
-# wycinka po napisie „wpisane w pole odpowiedzi" — a ten napis pada w DWOCH
-# funkcjach (odpowiedz pod notka i odpowiedz pod naszym artykulem), wiec test
-# ogladal nie te sciezke, ktora poprawilem, i oblewal z niewlasciwego powodu.
-#
-# Liczymy wiec wszystkie klikniecia przycisku publikacji w pliku. Padalo tylko
-# jedno z nich, ale funkcja jest dowodnie bezczynna, gdy klik przechodzi
-# (sekcja 1), a ta sama zaslona przy notce albo komentarzu zabralaby kontu
-# chleb powszedni.
-import re as _re
-zrodlo = open("agent-v2/browser.py", encoding="utf-8").read()
-# CIALO SAMEGO HELPERA WYLACZONE Z LICZENIA. Jedno gole `przycisk.click()`
-# stoi w nim i ma stac: to jest ta normalna droga, ktora probujemy najpierw.
-_od = zrodlo.index("def klik_mimo_zaslony")
-_do = zrodlo.index("def konto_za_duze")
-poza_helperem = zrodlo[:_od] + zrodlo[_do:]
-# WZORZEC ZLAPAL CZTERY MIEJSCA I PRZEPUSCIL PIATE. Restack klikal
-# `page.get_by_role(...).last.click(timeout=8000)` w JEDNEJ linii, bez
-# zmiennej `przycisk` — wiec sprawdzenie po nazwie zmiennej go nie
-# widzialo, testy byly zielone, a restack padl przy pierwszej probie na
-# zywo. Szukamy teraz KAZDEGO klikniecia przycisku publikacji, po tresci
-# lokatora, nie po nazwie zmiennej.
-# KLIKNIECIE, KTORE OTWIERA, NIE JEST KLIKNIECIEM, KTORE WYSYLA. Jedno bare
-# `przycisk.click()` zostaje swiadomie: `wystaw_odpowiedz_pod_artykulem` klika
-# afordancje „Reply" tylko po to, zeby ROZWINAC pole. Gdyby ja cos zaslonilo,
-# nie opublikowalibysmy pustki — po prostu nie byloby gdzie pisac, i blad
-# wyjdzie od razu.
-DOZWOLONE_OTWARCIA = 1
-gole = _re.findall(r"^\s+(?:przycisk|wyslac)\.click\(", poza_helperem, _re.M)
-gole = gole[DOZWOLONE_OTWARCIA:]
-gole += [l for l in poza_helperem.splitlines()
-         if 'name="Post"' in l and ".click(" in l and not l.strip().startswith("#")]
-przez_helper = zrodlo.count("klik_mimo_zaslony(")
-sprawdz("zero golych klikniec przycisku publikacji", not gole,
-        "zostalo %d: %s" % (len(gole), gole))
-sprawdz("wszystkie ida przez helper (definicja + piec wywolan)",
-        przez_helper >= 6, "wystapien: %d" % przez_helper)
-sprawdz("droga trafia do dziennika",
-        zrodlo.count("droga_klikniecia") >= 4,
+print("=== 4. KAZDA FUNKCJA, KTORA ZNA PRZYCISK ZATWIERDZAJACY, IDZIE PRZEZ HELPER ===")
+# Pytanie zadane SKLADNI, nie nazwom zmiennych. Patrz naglowek pliku: dwie
+# wczesniejsze wersje tego sprawdzenia szukaly nazw i dwa razy przepuscily
+# prawdziwe miejsce.
+ZATWIERDZAJA = ("Post", "Publish", "Send", "Reply", "Restack", "Save",
+                "Continue", "Subscribe",
+                "Opublikuj", "Odpowiedz", "Zapisz", "Kontynuuj",
+                "Wyslij", "Wyślij", "Subskrybuj")
+
+zrodlo = io.open("agent-v2/browser.py", encoding="utf-8").read()
+drzewo = ast.parse(zrodlo)
+
+
+def zna_przycisk(fn):
+    """Czy w ciele funkcji pada nazwa przycisku, ktory cos ZATWIERDZA."""
+    for w in ast.walk(fn):
+        if isinstance(w, ast.Constant) and isinstance(w.value, str):
+            t = w.value
+            if any(t == s or t.startswith(s + " ") for s in ZATWIERDZAJA):
+                return t
+    return None
+
+
+def przez_helper(fn):
+    return any(isinstance(w, ast.Call) and isinstance(w.func, ast.Name)
+               and w.func.id == "klik_mimo_zaslony" for w in ast.walk(fn))
+
+
+# Sam helper zna slowo „Post" wylacznie z wlasnego opisu bledu i klika na goło
+# z definicji — to jest ta normalna droga, ktora probujemy najpierw.
+POZA_REGULA = {"klik_mimo_zaslony"}
+
+
+def klika(fn):
+    return any(isinstance(w, ast.Attribute) and w.attr == "click"
+               for w in ast.walk(fn))
+
+
+winne = []
+objete = []
+posrednicy = []
+for fn in [n for n in ast.walk(drzewo) if isinstance(n, ast.FunctionDef)]:
+    if fn.name in POZA_REGULA:
+        continue
+    etykieta = zna_przycisk(fn)
+    if etykieta is None:
+        continue
+    # FUNKCJA, KTORA ZNA ETYKIETE, ALE SAMA NIE KLIKA, tylko podaje ja dalej
+    # (`zasubskrybuj` → `_klik_na_profilu`). Zadanie helpera od niej byloby
+    # zadaniem czegos, czego nie robi. Klikacz, do ktorego deleguje, jest
+    # sprawdzany osobno nizej — po nazwie, bo etykiety dostaje ARGUMENTEM
+    # i ta regula sama z siebie nigdy by tam nie zajrzala.
+    if not klika(fn):
+        posrednicy.append(fn.name)
+        continue
+    objete.append(fn.name)
+    if not przez_helper(fn):
+        winne.append("%s (linia %d, %r)" % (fn.name, fn.lineno, etykieta))
+
+sprawdz("zadna funkcja z przyciskiem zatwierdzajacym nie klika na golo",
+        not winne, "; ".join(winne))
+# KONTRDOWOD DLA SAMEJ REGULY: gdyby wykaz nazw przestal cokolwiek lapac
+# (literowka, zmiana slownictwa Substacka), sprawdzenie wyzej przechodziloby
+# zawsze i nie pilnowaloby niczego.
+sprawdz("regula obejmuje wszystkie sciezki publikacji",
+        len(objete) >= 8, "objetych funkcji: %d — %s" % (len(objete), objete))
+for musi in ("wystaw_notke", "wystaw_komentarz", "wystaw_odpowiedz",
+             "wystaw_artykul", "restackuj_w_kanale"):
+    sprawdz("objeta: %s" % musi, musi in objete, str(objete))
+
+# KLIKACZ, KTORY DOSTAJE ETYKIETY ARGUMENTEM. `_klik_na_profilu` klika
+# „Subscribe" i „Follow", ale nie ma tych slow w swoim ciele — przychodza
+# z `zasubskrybuj` i `obserwuj`. Regula po etykiecie jest tu slepa z zalozenia,
+# wiec pytamy o niego wprost.
+z_argumentem = [n for n in ast.walk(drzewo)
+                if isinstance(n, ast.FunctionDef) and n.name == "_klik_na_profilu"]
+sprawdz("klikacz profilu istnieje", len(z_argumentem) == 1, str(len(z_argumentem)))
+sprawdz("klikacz profilu tez idzie przez helper",
+        bool(z_argumentem) and przez_helper(z_argumentem[0]),
+        "nie wola klik_mimo_zaslony")
+sprawdz("posrednicy rozpoznani, nie oskarzeni",
+        "zasubskrybuj" in posrednicy, str(posrednicy))
+
+print()
+print("=== 5. DROGA TRAFIA DO DZIENNIKA ===")
+# Bez tego nie da sie zauwazyc dnia, w ktorym Substack zdejmie zaslone — ani
+# dnia, w ktorym zaslona pojawi sie wszedzie.
+sprawdz("droga zapisywana przy publikacjach",
+        zrodlo.count("droga_klikniecia") >= 6,
         "wystapien: %d" % zrodlo.count("droga_klikniecia"))
+sprawdz("helper wolany co najmniej dziesiec razy",
+        zrodlo.count("klik_mimo_zaslony(") >= 10,
+        "wystapien: %d" % zrodlo.count("klik_mimo_zaslony("))
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
