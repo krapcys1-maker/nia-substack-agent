@@ -22,7 +22,7 @@ class ArticlePublicationContract(unittest.TestCase):
                 'review':{'sentences':[],'unsupported_facts':[],'summary':'ok'},'ocen_forme':{},
                 'poprzednie_teksty':[],'swiezosc_karty':[],'grafika':None,'zapomnij_niewystawiony':None}.items():
                 stack.enter_context(patch.object(stages,name,return_value=value))
-            stack.enter_context(patch.object(stages,'wstaw_date_zrodel',side_effect=lambda text,card:text))
+            stack.enter_context(patch.object(stages,'usun_stopke_o_zrodlach',side_effect=lambda text,card:text))
             stack.enter_context(patch.object(stages,'przygotuj_artykul_do_publikacji',
                 side_effect=lambda *a:(calls.append('check') or draft, {'safe_to_post':safe,'nie_sprawdzone':False})))
             saved=stack.enter_context(patch.object(stages,'save',side_effect=lambda *a:(calls.append('save') or Path('draft.md'))))
@@ -70,7 +70,7 @@ class ArticlePublicationContract(unittest.TestCase):
                     'swiezosc_karty':[],'przygotuj_artykul_do_publikacji':(draft,{'safe_to_post':True}),
                     'save':Path(directory)/'article.md','grafika':None}.items():
                     stack.enter_context(patch.object(stages,name,return_value=value))
-                stack.enter_context(patch.object(stages,'wstaw_date_zrodel',side_effect=lambda text,card:text))
+                stack.enter_context(patch.object(stages,'usun_stopke_o_zrodlach',side_effect=lambda text,card:text))
                 stack.enter_context(patch.object(browser,'wystaw_artykul',return_value={'wyslane':False,'blad':'not confirmed'}))
                 import gates
                 for name in ('deterministic_floors','uwagi_z_formy'):

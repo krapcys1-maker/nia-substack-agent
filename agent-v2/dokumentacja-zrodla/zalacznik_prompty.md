@@ -1918,12 +1918,12 @@ inside. So:
 - A rule, a price, a deadline or a policy is a fact with a date on it. If the
   card does not say when it held, say what held at that time, not what is the
   case now.
-- **Do not write a datestamp.** The line reading "Figures checked against
-  sources to [date]" is written by code, from the card, after you finish. If
-  you write one yourself it will be stripped, and "as of March" sprinkled
-  through the prose is documentation, not writing. Dates inside the argument
-  are still yours: when a rule or a price only holds as of some date, say so
-  where it matters.
+- **Do not write a datestamp.** A line reading "Figures checked against
+  sources to [date]" does not belong in the article at all; code strips it if
+  it appears. The sources are listed under the piece with their own dates,
+  which is where a reader looks. "As of March" sprinkled through the prose is
+  documentation, not writing. Dates inside the argument are still yours: when
+  a rule or a price only holds as of some date, say so where it matters.
 - If `source_dates.note` says the material is old, the reader is told once,
   plainly, in your own words. Hiding the caveat is worse than the age. This
   is not narrating the research; it is the reader's right to weigh what they
@@ -2103,7 +2103,7 @@ in a row. If one does not apply to this material, ignore it.
 
 #### `prompts/pisarz_persona.md`
 
-**85 wierszy.** Pola wejsciowe: `card_json`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+**109 wierszy.** Pola wejsciowe: `card_json`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
 ````markdown
 Write an article in {language} for {marka}, about {nisza}.
@@ -2112,11 +2112,35 @@ This brief adds the assignment and evidence; it does not give you another person
 
 ## The assignment
 
-Choose one worthwhile angle supported by the card. Make a reader care about
-what happened and understand it without having to work in this industry.
-Start with the thing that catches your attention: a concrete situation, a
-plain question, a revealing detail. Give enough of the actual story to make
-your reaction intelligible. No obligatory neutral news-summary opening.
+Choose one worthwhile angle supported by the card.
+
+### The scene comes first. This is the rule that outranks the others.
+
+Your reader has not read the sources. They have not read the card. They have
+never heard of this study, this tool or this company, and they are not going
+to look anything up. Everything they will ever know about this situation is in
+your article, in the order you put it there.
+
+So before any judgement, any joke and any figure, tell them **what actually
+happened**: who was involved, what they were doing, and the thing that
+occurred. `the_scene` in the card is that situation if it is filled in; the
+excerpts carry the rest. Concrete nouns, real actions, no field vocabulary
+that has not been explained yet.
+
+You are not writing a neutral news lead — open in your own voice, with the
+detail that caught you. But a stranger has to be able to picture the situation
+before you tell them what it means. A reader dropped into the middle of a
+scene they were never shown cannot care about your verdict on it, however
+sharp the verdict is.
+
+Test it on yourself before you answer: if somebody read only your first three
+paragraphs, could they describe the situation out loud to a friend? If not,
+you have written a comment on a story you never told.
+
+Every technical term is a promise. The first time you use one, the reader
+either already knows it from ordinary life or you explain it in the same
+sentence, in plain words. A term you have not explained is a term your reader
+skips, and after two of them they stop reading.
 
 Explain the hard part in ordinary language. Let the comparison do explanatory
 work inside the thought, instead of explaining everything formally and bolting
@@ -2850,10 +2874,10 @@ excerpt you are copying from is not the body that produced the figure, say so
 in `means`, so the check downstream knows to go and find the original.
 
 **source_dates**: when the sources were published, not when the events they
-describe happened. Code stamps the finished article with the newest date from
-here, so the dates must be real. If the newest thing you have is old, say so
-plainly in `note`: "nothing here is more recent than [month]" is a sentence
-the writer needs, and a reader deserves.
+describe happened. Code measures the material's age from here and refuses a
+card whose dates are missing, so the dates must be real. If the newest thing
+you have is old, say so plainly in `note`: "nothing here is more recent than
+[month]" is a sentence the writer needs, and a reader deserves.
 
 **main_mechanism**: the decision, constraint or trade-off that makes the thing
 work the way it does, in a few sentences. This is where you say how the pieces

@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 37 084 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 37 432 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 195 zestawów
-testów, 4343 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 197 zestawów
+testów, 4403 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -264,7 +264,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3014 wierszy, 27 funkcji na poziomie modułu, 1 klas
+3015 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -298,7 +298,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8682 wierszy, 150 funkcji na poziomie modułu, 0 klas
+8869 wierszy, 154 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -321,7 +321,7 @@ wiec nie da sie go rozjechac z kodem.
 | `pisarz_z_persona()` | Writing and prompt preview must choose the same persona route. |
 | `system_pisarza()` | System artykulu. Z wlaczona persona NIESIE TOZSAMOSC, a nie „anonimowa marke". |
 | `karta_dla_pisarza(card, teraz)` | Karta bez zastrzezenia, ktorego nie wolno opublikowac. |
-| `wstaw_date_zrodel(tekst, card)` | Stopka z data zrodel pisana PRZEZ KOD, nie przez model. |
+| `usun_stopke_o_zrodlach(tekst, card)` | Zdania „Figures checked against sources to <data>." NIE MA W ARTYKULE. |
 | `write(conn, run_id, card, glebokosc)` | Etap 7 — artykuł, modelem wybranym w presecie dla roli `write`. |
 | `_ile_reakcji(k)` *(wewn.)* | „(reakcji: N)" TYLKO wtedy, gdy zrodlo to pole w ogole wypelnia. |
 | `_po_rowno_ze_zrodel(komentarze, ile)` *(wewn.)* | Wycinek listy, ktory NIE MOZE zaglodzic zadnego miejsca rozmowy. |
@@ -329,6 +329,9 @@ wiec nie da sie go rozjechac z kodem.
 | `reply_to(conn, run_id, comment, evidence)` | Odpowiedź na komentarz pod własną treścią — do szuflady. |
 | `plan_tygodnia(dzien_artykulu)` | Harmonogram tygodnia: co i kiedy wychodzi. |
 | `grafika(conn, run_id, draft, sciezka_artykulu)` | Nagłówek graficzny artykułu. |
+| `_akapity_tresci(body)` *(wewn.)* | Akapity artykulu BEZ naglowkow, listy zrodel i stopek. |
+| `_miejsce_na_drugi_obraz(akapity)` *(wewn.)* | Po ktorym akapicie stanie drugi obraz. `-1`, gdy tekst jest za krotki. |
+| `grafika_srodek(conn, run_id, draft, sciezka_artykulu)` | DRUGI obraz, w srodku tekstu. Decyzja wlasciciela z 9 wrzesnia 2026. |
 | `_wiek_konta_w_dniach(conn)` *(wewn.)* | Ile dni działa to konto — liczone od pierwszego przebiegu w bazie. |
 | `budzet_dnia(conn)` | Ile czego agent może dziś zrobić — losowane z widełek, nie stałe. |
 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` *(wewn.)* | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. |
@@ -404,7 +407,8 @@ wiec nie da sie go rozjechac z kodem.
 | `synthesis(conn, run_id, question, evidence)` | Etap 6 — karta dowodowa (DeepSeek V4 Pro). |
 | `_plaski(t)` *(wewn.)* | Tekst do porownania cytatu ze zrodlem — BIALE ZNAKI I TYPOGRAFIA, koniec. |
 | `_jest_w_dokumencie(cytat, dokument)` *(wewn.)* | Czy fragment naprawde stoi w tekscie, ktory model dostal. |
-| `classify(conn, run_id, question, corpus)` | Etap 5 — klasyfikacja i wyciąg fragmentów (DeepSeek). |
+| `_sklasyfikuj_jedno(conn, run_id, question, source)` *(wewn.)* | Jedno źródło przez klasyfikator. `None`, gdy odpada. |
+| `classify(conn, run_id, question, corpus, wiodacy_url)` | Etap 5 — klasyfikacja i wyciąg fragmentów (DeepSeek). |
 | `_dobierz_przegladarka(conn, run_id, brakujace, juz_mamy)` *(wewn.)* | Drugie podejscie do stron, ktore zwyklemu pobieraniu daly pusty szkielet. |
 | `fetch(conn, run_id, sources)` | Etap 4 — pobranie stron. Zwykły HTTP, żadnego modelu, 0 USD. |
 | `_host(url)` *(wewn.)* | — |
@@ -455,7 +459,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5754 wierszy, 105 funkcji na poziomie modułu, 3 klas
+5819 wierszy, 105 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -536,7 +540,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_esc(t)` *(wewn.)* | — |
 | `_html_z_linkami(tekst)` *(wewn.)* | Render inline HTTP(S) Markdown links while escaping all source text. |
 | `rozbierz_artykul(sciezka)` | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. |
-| `wypelnij_artykul(page, artykul, obraz)` | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. |
+| `wypelnij_artykul(page, artykul, obraz, obraz2, kotwica2)` | Wkłada tytuł, podtytuł, grafiki i treść do otwartego edytora. |
 | `wstaw_przycisk_subskrypcji(page)` | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. |
 | `tresc_oswiadczenia()` | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. |
 | `ustaw_oswiadczenie_ai(wyslij)` | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. |
@@ -835,7 +839,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3648 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3677 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -970,7 +974,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1635 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1701 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -8585,7 +8589,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             if not wyslij:
                 print("  (nie klikam — tryb sprawdzenia)", flush=True)
                 return wynik
-            k.click(timeout=10_000)
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(k, rodzaj, timeout=10_000)
             page.wait_for_timeout(5000)
             if rodzaj == "subskrypcja":
                 _wybierz_darmowy_plan(page)
@@ -8834,12 +8838,23 @@ def restackuj_w_kanale(
 
 <!--KOD:browser.wypelnij_artykul-->
 ```python
-def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None) -> None:
-    """Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora.
+def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None,
+                    obraz2: Path | None = None, kotwica2: str = "") -> None:
+    """Wkłada tytuł, podtytuł, grafiki i treść do otwartego edytora.
 
     Grafika idzie W TREŚĆ, na samą górę — tak, jak robi to właściciel ręcznie.
     Szukałem osobnego slotu okładki i była to droga naokoło: obraz wklejony do
     treści edytor sam wysyła na swój serwer i sam robi z niego podgląd.
+
+    DRUGI OBRAZ, w połowie tekstu, wchodzi tą samą drogą — różni się tylko
+    tym, gdzie stoi karetka przed wklejeniem. Miejsce przychodzi jako KOTWICA
+    TEKSTOWA (początek akapitu, po którym ma stanąć), a nie jako numer:
+    edytor składa własne węzły i numer `<p>` po wklejeniu HTML-a nie musi się
+    zgadzać z numerem akapitu w pliku.
+
+    KOLEJNOŚĆ MA ZNACZENIE: najpierw środek, potem okładka. Wklejenie okładki
+    na górę dokłada węzeł przed całym tekstem; robiąc to na końcu, nie ruszamy
+    akapitów, wśród których dopiero co szukaliśmy kotwicy.
     """
     import base64
 
@@ -8863,18 +8878,39 @@ def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None) -> None:
     print(f"  wklejona treść: {len(edytor.inner_text().split())} słów, "
           f"{page.locator('.tiptap a').count()} węzłów linkowych", flush=True)
 
+    def _wklej_obraz(plik: Path, opis: str, bylo: int) -> bool:
+        """Jeden obraz w miejscu, w którym stoi karetka. `bylo` = ile już jest."""
+        page.evaluate(_JS_WKLEJ_OBRAZ,
+                      [base64.b64encode(plik.read_bytes()).decode()])
+        for _ in range(20):   # wysyłka na serwer Substacka trwa
+            page.wait_for_timeout(1500)
+            if page.locator(".tiptap img").count() > bylo:
+                break
+        wgrany = page.locator(".tiptap img").count() > bylo
+        print("  %s: %s" % (opis, "wgrana" if wgrany else "NIE WESZŁA"),
+              flush=True)
+        return wgrany
+
+    # ŚRODEK PRZED OKŁADKĄ — patrz docstring.
+    if obraz2 and obraz2.exists() and kotwica2:
+        edytor.click()
+        page.wait_for_timeout(300)
+        gdzie = page.evaluate(_JS_KARETKA_ZA_AKAPITEM, [kotwica2])
+        if gdzie == "ok":
+            page.wait_for_timeout(400)
+            _wklej_obraz(obraz2, "grafika w środku", 0)
+        else:
+            # NIE WKLEJAMY NA ŚLEPO. Karetka stoi wtedy tam, gdzie ją zostawił
+            # poprzedni klik — czyli obraz wylądowałby w losowym miejscu, a to
+            # gorsze niż jeden obraz.
+            print("  grafika w środku: pomijam (%s)" % gdzie, flush=True)
+
     if obraz and obraz.exists():
+        bylo = page.locator(".tiptap img").count()
         edytor.click()
         page.keyboard.press("Control+Home")
         page.wait_for_timeout(500)
-        page.evaluate(_JS_WKLEJ_OBRAZ,
-                      [base64.b64encode(obraz.read_bytes()).decode()])
-        for _ in range(20):   # wysyłka na serwer Substacka trwa
-            page.wait_for_timeout(1500)
-            if page.locator(".tiptap img").count():
-                break
-        wgrany = page.locator(".tiptap img").count() > 0
-        print(f"  grafika: {'wgrana' if wgrany else 'NIE WESZŁA'}", flush=True)
+        _wklej_obraz(obraz, "grafika", bylo)
 
     wstaw_przycisk_subskrypcji(page)
 ```
@@ -10892,12 +10928,12 @@ inside. So:
 - A rule, a price, a deadline or a policy is a fact with a date on it. If the
   card does not say when it held, say what held at that time, not what is the
   case now.
-- **Do not write a datestamp.** The line reading "Figures checked against
-  sources to [date]" is written by code, from the card, after you finish. If
-  you write one yourself it will be stripped, and "as of March" sprinkled
-  through the prose is documentation, not writing. Dates inside the argument
-  are still yours: when a rule or a price only holds as of some date, say so
-  where it matters.
+- **Do not write a datestamp.** A line reading "Figures checked against
+  sources to [date]" does not belong in the article at all; code strips it if
+  it appears. The sources are listed under the piece with their own dates,
+  which is where a reader looks. "As of March" sprinkled through the prose is
+  documentation, not writing. Dates inside the argument are still yours: when
+  a rule or a price only holds as of some date, say so where it matters.
 - If `source_dates.note` says the material is old, the reader is told once,
   plainly, in your own words. Hiding the caveat is worse than the age. This
   is not narrating the research; it is the reader's right to weigh what they
@@ -11077,7 +11113,7 @@ in a row. If one does not apply to this material, ignore it.
 
 #### `prompts/pisarz_persona.md`
 
-**85 wierszy.** Pola wejsciowe: `card_json`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+**109 wierszy.** Pola wejsciowe: `card_json`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
 ````markdown
 Write an article in {language} for {marka}, about {nisza}.
@@ -11086,11 +11122,35 @@ This brief adds the assignment and evidence; it does not give you another person
 
 ## The assignment
 
-Choose one worthwhile angle supported by the card. Make a reader care about
-what happened and understand it without having to work in this industry.
-Start with the thing that catches your attention: a concrete situation, a
-plain question, a revealing detail. Give enough of the actual story to make
-your reaction intelligible. No obligatory neutral news-summary opening.
+Choose one worthwhile angle supported by the card.
+
+### The scene comes first. This is the rule that outranks the others.
+
+Your reader has not read the sources. They have not read the card. They have
+never heard of this study, this tool or this company, and they are not going
+to look anything up. Everything they will ever know about this situation is in
+your article, in the order you put it there.
+
+So before any judgement, any joke and any figure, tell them **what actually
+happened**: who was involved, what they were doing, and the thing that
+occurred. `the_scene` in the card is that situation if it is filled in; the
+excerpts carry the rest. Concrete nouns, real actions, no field vocabulary
+that has not been explained yet.
+
+You are not writing a neutral news lead — open in your own voice, with the
+detail that caught you. But a stranger has to be able to picture the situation
+before you tell them what it means. A reader dropped into the middle of a
+scene they were never shown cannot care about your verdict on it, however
+sharp the verdict is.
+
+Test it on yourself before you answer: if somebody read only your first three
+paragraphs, could they describe the situation out loud to a friend? If not,
+you have written a comment on a story you never told.
+
+Every technical term is a promise. The first time you use one, the reader
+either already knows it from ordinary life or you explain it in the same
+sentence, in plain words. A term you have not explained is a term your reader
+skips, and after two of them they stop reading.
 
 Explain the hard part in ordinary language. Let the comparison do explanatory
 work inside the thought, instead of explaining everything formally and bolting
@@ -11824,10 +11884,10 @@ excerpt you are copying from is not the body that produced the figure, say so
 in `means`, so the check downstream knows to go and find the original.
 
 **source_dates**: when the sources were published, not when the events they
-describe happened. Code stamps the finished article with the newest date from
-here, so the dates must be real. If the newest thing you have is old, say so
-plainly in `note`: "nothing here is more recent than [month]" is a sentence
-the writer needs, and a reader deserves.
+describe happened. Code measures the material's age from here and refuses a
+card whose dates are missing, so the dates must be real. If the newest thing
+you have is old, say so plainly in `note`: "nothing here is more recent than
+[month]" is a sentence the writer needs, and a reader deserves.
 
 **main_mechanism**: the decision, constraint or trade-off that makes the thing
 work the way it does, in a few sentences. This is where you say how the pieces
@@ -12313,6 +12373,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `CHEAP_MODE` | `_env("AGENT_V2_CHEAP", "0").lower() in {"1",` | Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override zostawia u Claude'a. Sluzy do testowania HYDRAULIKI — czy lancuch |
 | `BEZ_TOKENOW` | `{"obraz"}` | — |
 | `OBRAZ_WLACZONY` | `True` | CZY OKLADKA W OGOLE POWSTAJE. Preset wylacza ja pustym `modele.obraz`; `stages.grafika` wtedy nie wola ani briefu, ani OpenAI. Do 2026-09-05 |
+| `OBRAZY_NA_ARTYKUL` | `2` | ILE OBRAZOW NA ARTYKUL. Dwa — polecenie wlasciciela z 9 wrzesnia 2026: okladka na gorze i jeden w polowie tekstu. Miejsce drugiego wybiera k |
 | `ZAPASOWY_PISARZ` | `CLAUDE` | NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py` i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec zmia |
 | `PRICING` | `{ CLAUDE: {"in": 5.00, "out": 25.00, "verifi` | — |
 | `STAWKI_PRZED_PODWYZKA` | `{ DEEPSEEK: {"in": 0.14, "out": 0.28, "cache` | --- taryfa szczytowa DeepSeeka ----------------------------------------------- Od 2026-08-16 16:00 UTC DeepSeek wprowadza ceny szczytowe i p |

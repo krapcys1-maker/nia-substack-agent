@@ -150,9 +150,9 @@ class AtrapaStages:
     # atrapy. To ta jedna linijka blokowala trzy artykuly z rzedu.
     # Import w srodku, bo `sys.path` do `agent-v2` ustawia sie nizej w pliku.
     @staticmethod
-    def wstaw_date_zrodel(tekst, card):
+    def usun_stopke_o_zrodlach(tekst, card):
         import stages as _s
-        return _s.wstaw_date_zrodel(tekst, card)
+        return _s.usun_stopke_o_zrodlach(tekst, card)
 
     def __init__(self):
         self.slad = []
@@ -218,6 +218,12 @@ class AtrapaStages:
     def grafika(self, conn, run_id, draft, sciezka_artykulu=""):
         self.slad.append("grafika")
 
+    # DRUGI OBRAZ, w srodku tekstu — od 9 wrzesnia 2026 sciezka artykulu wola
+    # go zaraz po okladce. Atrapa bez tej metody dawala `AttributeError` PO
+    # zapisaniu tekstu, czyli test oblewal na czyms, co artykulu nie dotyka.
+    def grafika_srodek(self, conn, run_id, draft, sciezka_artykulu=""):
+        self.slad.append("grafika_srodek")
+
     def zwroc_kandydatow(self, kandydaci):
         self.oddane_do_puli.extend(kandydaci)
         return len(kandydaci)
@@ -234,7 +240,7 @@ class AtrapaStages:
         return [{"url": "https://example.org/%d" % i, "text": "tresc"}
                 for i in range(4)]
 
-    def classify(self, conn, run_id, pytanie, corpus):
+    def classify(self, conn, run_id, pytanie, corpus, wiodacy_url=""):
         return []
 
     def synthesis(self, conn, run_id, pytanie, evidence):

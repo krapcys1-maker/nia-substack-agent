@@ -3916,6 +3916,31 @@ _JS_WKLEJ_HTML = """
 }
 """
 
+_JS_KARETKA_ZA_AKAPITEM = """
+([kotwica]) => {
+    const el = document.querySelector('.tiptap');
+    if (!el) return 'brak edytora';
+    const norm = (t) => (t || '').replace(/\\s+/g, ' ').trim();
+    const szukane = norm(kotwica);
+    if (!szukane) return 'pusta kotwica';
+    const akapity = Array.from(el.querySelectorAll('p'));
+    // POCZATEK AKAPITU, NIE DOWOLNE WYSTAPIENIE. Fraza z srodka innego zdania
+    // wstawilaby obraz w zupelnie innym miejscu niz to policzone.
+    let cel = akapity.find((p) => norm(p.innerText).startsWith(szukane));
+    if (!cel) cel = akapity.find((p) => norm(p.innerText).includes(szukane));
+    if (!cel) return 'nie znalazlem akapitu';
+    el.focus();
+    const zakres = document.createRange();
+    zakres.selectNodeContents(cel);
+    zakres.collapse(false);          // koniec akapitu, nie poczatek
+    const zazn = window.getSelection();
+    zazn.removeAllRanges();
+    zazn.addRange(zakres);
+    return 'ok';
+}
+"""
+
+
 _JS_WKLEJ_OBRAZ = """
 ([b64]) => {
     const el = document.querySelector('.tiptap');
@@ -3934,12 +3959,23 @@ _JS_WKLEJ_OBRAZ = """
 """
 
 
-def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None) -> None:
-    """Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora.
+def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None,
+                    obraz2: Path | None = None, kotwica2: str = "") -> None:
+    """Wkłada tytuł, podtytuł, grafiki i treść do otwartego edytora.
 
     Grafika idzie W TREŚĆ, na samą górę — tak, jak robi to właściciel ręcznie.
     Szukałem osobnego slotu okładki i była to droga naokoło: obraz wklejony do
     treści edytor sam wysyła na swój serwer i sam robi z niego podgląd.
+
+    DRUGI OBRAZ, w połowie tekstu, wchodzi tą samą drogą — różni się tylko
+    tym, gdzie stoi karetka przed wklejeniem. Miejsce przychodzi jako KOTWICA
+    TEKSTOWA (początek akapitu, po którym ma stanąć), a nie jako numer:
+    edytor składa własne węzły i numer `<p>` po wklejeniu HTML-a nie musi się
+    zgadzać z numerem akapitu w pliku.
+
+    KOLEJNOŚĆ MA ZNACZENIE: najpierw środek, potem okładka. Wklejenie okładki
+    na górę dokłada węzeł przed całym tekstem; robiąc to na końcu, nie ruszamy
+    akapitów, wśród których dopiero co szukaliśmy kotwicy.
     """
     import base64
 
@@ -3963,18 +3999,39 @@ def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None) -> None:
     print(f"  wklejona treść: {len(edytor.inner_text().split())} słów, "
           f"{page.locator('.tiptap a').count()} węzłów linkowych", flush=True)
 
+    def _wklej_obraz(plik: Path, opis: str, bylo: int) -> bool:
+        """Jeden obraz w miejscu, w którym stoi karetka. `bylo` = ile już jest."""
+        page.evaluate(_JS_WKLEJ_OBRAZ,
+                      [base64.b64encode(plik.read_bytes()).decode()])
+        for _ in range(20):   # wysyłka na serwer Substacka trwa
+            page.wait_for_timeout(1500)
+            if page.locator(".tiptap img").count() > bylo:
+                break
+        wgrany = page.locator(".tiptap img").count() > bylo
+        print("  %s: %s" % (opis, "wgrana" if wgrany else "NIE WESZŁA"),
+              flush=True)
+        return wgrany
+
+    # ŚRODEK PRZED OKŁADKĄ — patrz docstring.
+    if obraz2 and obraz2.exists() and kotwica2:
+        edytor.click()
+        page.wait_for_timeout(300)
+        gdzie = page.evaluate(_JS_KARETKA_ZA_AKAPITEM, [kotwica2])
+        if gdzie == "ok":
+            page.wait_for_timeout(400)
+            _wklej_obraz(obraz2, "grafika w środku", 0)
+        else:
+            # NIE WKLEJAMY NA ŚLEPO. Karetka stoi wtedy tam, gdzie ją zostawił
+            # poprzedni klik — czyli obraz wylądowałby w losowym miejscu, a to
+            # gorsze niż jeden obraz.
+            print("  grafika w środku: pomijam (%s)" % gdzie, flush=True)
+
     if obraz and obraz.exists():
+        bylo = page.locator(".tiptap img").count()
         edytor.click()
         page.keyboard.press("Control+Home")
         page.wait_for_timeout(500)
-        page.evaluate(_JS_WKLEJ_OBRAZ,
-                      [base64.b64encode(obraz.read_bytes()).decode()])
-        for _ in range(20):   # wysyłka na serwer Substacka trwa
-            page.wait_for_timeout(1500)
-            if page.locator(".tiptap img").count():
-                break
-        wgrany = page.locator(".tiptap img").count() > 0
-        print(f"  grafika: {'wgrana' if wgrany else 'NIE WESZŁA'}", flush=True)
+        _wklej_obraz(obraz, "grafika", bylo)
 
     wstaw_przycisk_subskrypcji(page)
 
@@ -4292,6 +4349,13 @@ def wystaw_artykul(
     if sciezka_png is None:
         kandydat = sciezka_md.with_suffix(".png")
         sciezka_png = kandydat if kandydat.exists() else None
+    # DRUGI OBRAZ leży obok, pod `-2.png`, a obok niego `-2.txt` z kotwicą.
+    # Oba pliki pisze `stages.grafika_srodek`; brak któregokolwiek znaczy
+    # po prostu artykuł z jedną grafiką.
+    _png2 = sciezka_md.with_name(sciezka_md.stem + "-2.png")
+    _txt2 = sciezka_md.with_name(sciezka_md.stem + "-2.txt")
+    sciezka_png2 = _png2 if _png2.exists() else None
+    kotwica2 = _txt2.read_text(encoding="utf-8").strip() if _txt2.exists() else ""
 
     p, browser, context = podlacz_sie()
     page = context.new_page()
@@ -4321,7 +4385,8 @@ def wystaw_artykul(
         page.wait_for_timeout(SETTLE_MS + 5000)
         wynik["szkic"] = page.url
 
-        wypelnij_artykul(page, artykul, sciezka_png)
+        wypelnij_artykul(page, artykul, sciezka_png,
+                         obraz2=sciezka_png2, kotwica2=kotwica2)
         wynik["wypelnione"] = True
 
         dalej = None

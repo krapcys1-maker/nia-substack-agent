@@ -131,12 +131,12 @@ inside. So:
 - A rule, a price, a deadline or a policy is a fact with a date on it. If the
   card does not say when it held, say what held at that time, not what is the
   case now.
-- **Do not write a datestamp.** The line reading "Figures checked against
-  sources to [date]" is written by code, from the card, after you finish. If
-  you write one yourself it will be stripped, and "as of March" sprinkled
-  through the prose is documentation, not writing. Dates inside the argument
-  are still yours: when a rule or a price only holds as of some date, say so
-  where it matters.
+- **Do not write a datestamp.** A line reading "Figures checked against
+  sources to [date]" does not belong in the article at all; code strips it if
+  it appears. The sources are listed under the piece with their own dates,
+  which is where a reader looks. "As of March" sprinkled through the prose is
+  documentation, not writing. Dates inside the argument are still yours: when
+  a rule or a price only holds as of some date, say so where it matters.
 - If `source_dates.note` says the material is old, the reader is told once,
   plainly, in your own words. Hiding the caveat is worse than the age. This
   is not narrating the research; it is the reader's right to weigh what they

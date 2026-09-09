@@ -408,6 +408,14 @@ BEZ_TOKENOW = {"obraz"}
 # decyzje.
 OBRAZ_WLACZONY = True
 
+# ILE OBRAZOW NA ARTYKUL. Dwa — polecenie wlasciciela z 9 wrzesnia 2026:
+# okladka na gorze i jeden w polowie tekstu. Miejsce drugiego wybiera kod,
+# nie pisarz (dlaczego — patrz `stages.grafika_srodek`).
+#
+# Ustawione na 1 wraca do jednej okladki i nie placi za drugi obraz;
+# `OBRAZ_WLACZONY = False` wylacza oba.
+OBRAZY_NA_ARTYKUL = 2
+
 # NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py`
 # i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec
 # zmiana pisarza w konfiguracji nie mowila nic o tym, co stanie sie po jego
@@ -808,11 +816,30 @@ CARD_MAX_CLAIM_CHARS = 240
 #
 # Teraz odsiew ocenia, czy temat ma DRUGI AKT, a dlugosc idzie za ta ocena.
 # Waski temat nie jest odrzucany — dostaje krotsza forme, i to jest w porzadku.
+#
+# PASMO 700-1275, CEL DO 1200 — POLECENIE WLASCICIELA, 9 wrzesnia 2026.
+#
+# Powod jest konkretny i dotyczy artykulu 0022. Odsiew dal mu SINGLE, wiec
+# 650 slow, i tekst wyszedl na 675. W tej przestrzeni pisarz zdazyl OCENIC
+# badanie i nie zdazyl go OPOWIEDZIEC: czytelnik dostal „konstytucje",
+# „zmowe" i „system instytucjonalny", nie dowiedziawszy sie wczesniej, kim
+# byli agenci, co mieli robic ani na czym polegalo kombinowanie. Wlasciciel
+# przeczytal to i powiedzial wprost: „wrzucasz kogos w srodek akcji, ktorej
+# nie zna, i masz sie kurwa domyslic".
+#
+# Podloga 700 jest wiec MIEJSCEM NA SCENE. Ponizej niej artykul moze byc
+# tylko komentarzem do historii, ktorej nie opowiedzial.
+#
+# GORNY LIMIT ZOSTAJE OSTRY, i to nie jest sprzecznosc. Lekcja o wypelniaczu
+# jest prawdziwa: tekst z materialem na trzysta slow napisal kiedys tysiac,
+# trzy razy ten sam mechanizm. Dlatego roznica miedzy poziomami siedzi
+# w CELU, a nie w podlodze — chudszy temat celuje nizej, ale nadal ma tyle
+# miejsca, zeby wprowadzic czytelnika, zanim zacznie go oceniac.
 DLUGOSC_WG_GLEBOKOSCI = {
     # drugi mechanizm albo ta sama rzecz w kilku dziedzinach
-    "RICH":   {"cel": 1075, "min": 900, "max": 1250},
+    "RICH":   {"cel": 1200, "min": 700, "max": 1275},
     # jeden mechanizm, dobrze udokumentowany
-    "SINGLE": {"cel": 650,  "min": 480, "max": 820},
+    "SINGLE": {"cel": 950,  "min": 700, "max": 1275},
     # USTALENIE NA JEDNO ZDANIE. Prompt odsiewu mowi o THIN wprost: „no article
     # at any length, it belongs in a note". Mimo to wpis tu jest, bo potok nie
     # ma prawa odmowic — artykul powstaje ZAWSZE (decyzja wlasciciela). Gdy
@@ -823,7 +850,7 @@ DLUGOSC_WG_GLEBOKOSCI = {
     # To jest DOKLADNIE ta usterka, przed ktora cala ta tabela powstala:
     # tekst z materialem na trzysta slow wypelnil tysiac tym samym
     # mechanizmem opisanym trzy razy.
-    "THIN":   {"cel": 420,  "min": 300, "max": 560},
+    "THIN":   {"cel": 800,  "min": 700, "max": 1275},
 }
 
 
@@ -843,12 +870,14 @@ KOTWICE_DLUGOSCI = {
     "RICH": ("this subject carries a second mechanism, or the same one in more "
              "than one field, and that is what earns the length — a thousand "
              "words spent on two things does not feel long"),
-    "SINGLE": ("this subject carries one mechanism, well documented. A piece "
-               "runs past a thousand words only when it carries two. Shorter "
-               "here is the right size, not a shortfall"),
-    "THIN": ("this is the shortest form we publish, and it is the honest one for "
-             "a finding this size. A longer text would be the same finding said "
-             "again"),
+    "SINGLE": ("this subject carries one mechanism, well documented. Aim below "
+               "the ceiling rather than at it — but spend the opening on the "
+               "situation itself, not on a summary of it. A reader who cannot "
+               "picture what happened has no way to care that it happened"),
+    "THIN": ("this is the shortest form we publish. Short does not mean "
+             "skipping the story: even here the reader meets the situation "
+             "before any judgement of it, and the length you save comes off "
+             "the analysis, never off the scene"),
 }
 
 

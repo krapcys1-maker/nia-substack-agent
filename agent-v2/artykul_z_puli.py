@@ -80,10 +80,23 @@ It still needs to be fetched and checked before the article asserts it:
   WHAT IT MEANS FOR THE READER: {skutek}
   SOURCE: {url} (published {data})
 
-Turn it into an article brief. The article is about **this subject**
-and runs about a thousand words, so the question has to be worth that length:
-not "what happened" — that is the note — but **why it happens, who arranged it
-that way, and what else runs on the same arrangement.**
+Turn it into an article brief. The article is about **this subject** and has
+room for both halves, in this order:
+
+**First, what happened.** The specific situation, concretely enough that a
+reader who has never heard of any of this can picture it: who was involved,
+what they were doing, what went wrong or right, what somebody changed. This
+is not the note's job and never was. A note has room for one fact. An article
+that skips the situation and opens on its meaning drops the reader into the
+middle of a scene they were never shown, and every judgement after that lands
+on nothing.
+
+**Then, why.** Why it happens, who arranged it that way, and what else runs
+on the same arrangement.
+
+The question you write has to be worth the length and must be answerable in
+that order. If the honest answer to "could a stranger picture this?" is no,
+the brief is not finished.
 
 The reader has no stake in the specific system. Before writing the question,
 answer privately: what does someone who will never touch this thing now know?
@@ -100,7 +113,7 @@ Return only valid JSON:
   "question": "<the one question the article answers, ending in a question mark>",
   "broken_belief": "<a specific assumption the source contradicts, or empty if no documented assumption is available; do not invent what everyone believes>",
   "why_they_believe_it": "<one sentence on where that belief comes from, or empty>",
-  "the_moment": "<the concrete moment a reader can picture, one sentence>",
+  "the_moment": "<THE SCENE, in one or two sentences: who was there, what they were doing, and the thing that happened. Written so somebody who has never heard of this subject can picture it. Not a summary of the finding, not its significance — the situation itself>",
   "search_terms": ["<3-6 phrases a researcher should search to document this properly>"],
   "sub_questions": ["<4-6 questions THE ARTICLE MUST ANSWER. Not search phrases — questions, each ending in a question mark. Together they should be the skeleton of the piece: what is the arrangement, who set it up, what does it cost and to whom, where else does it run, what would have to change for it to stop. A note answers one of these; an article answers most of them.>"],
   "second_act": "<what happened AFTER the fact itself — a consequence, a reversal, a court case, an amendment, a company changing course. Empty string if nothing did.>",
@@ -701,7 +714,45 @@ def _przebieg(conn, run_id: int) -> int:
 
     print()
     print("-- klasyfikacja --", flush=True)
-    evidence = stages.classify(conn, run_id, brief["question"], corpus)
+    # WIODĄCE ŹRÓDŁO PODANE Z NAZWY. To adres, od którego bank zaczął ten
+    # temat; gdy wypadnie na klasyfikacji, `classify` pyta o nie drugi raz.
+    # Patrz jego docstring: artykuł 0022 kosztował pełny research i wyszedł
+    # nie na swój temat, bo jedno wywołanie za 0,0006 USD potknęło się raz.
+    wiodace = str(brief.get("zrodlo_faktu") or "").strip()
+    evidence = stages.classify(conn, run_id, brief["question"], corpus,
+                               wiodacy_url=wiodace)
+
+    # DRUGIE ODRZUCENIE ZATRZYMUJE PRZEBIEG — PRZED SYNTEZĄ, PISARZEM
+    # I OKŁADKĄ, czyli przed wszystkim, co kosztuje.
+    #
+    # Artykuł napisany bez własnego tematu nie jest gorszym artykułem, tylko
+    # innym: 0022 miał opisać sto agentów, wśród których oszustwo samo się
+    # rozeszło, a inne agenty je zgłosiły. Wyszedł tekst o trzech obcych
+    # pracach i o tym, czego nie ustalono. Za taki tekst zapłaciliśmy pełną
+    # stawkę i właściciel słusznie zapytał, o czym on w ogóle jest.
+    #
+    # Zatrzymanie jest DARMOWE, a temat wraca do puli. Nie zgadujemy przy tym
+    # nowego kąta z resztek — to była właśnie ta cicha zamiana, która wypuściła
+    # 0022.
+    # TYLKO GDY BYŁO CO STRACIĆ. Adres z banku nie musi w ogóle trafić do
+    # korpusu: dyskoveria szuka źródeł do PYTANIA, nie do tego jednego linku,
+    # i artykuł stojący na innych, pobranych dokumentach jest w porządku —
+    # dla takiego przypadku istnieje wpis `not_fetched` niżej i tak zostaje.
+    #
+    # Zepsuło się co innego: strona BYŁA pobrana, leżała w korpusie z pełnym
+    # abstraktem, i mimo to zniknęła na klasyfikacji. Tę różnicę widać tutaj
+    # i tylko ona zatrzymuje przebieg.
+    _bylo_w_korpusie = any(str(c.get("url") or "") == wiodace for c in corpus)
+    if (wiodace and _bylo_w_korpusie
+            and not any(str(s.get("url") or "") == wiodace for s in evidence)):
+        print()
+        print("-- ZATRZYMANY: wiodące źródło nie przeszło klasyfikacji --",
+              flush=True)
+        print("   temat:  %s" % str(brief.get("title") or "")[:100], flush=True)
+        print("   źródło: %s" % wiodace[:100], flush=True)
+        print("   Nie piszę z resztek: temat wraca do puli na następny raz.",
+              flush=True)
+        return KOD_ZATRZYMANY
 
     print()
     print("-- synteza --", flush=True)
@@ -753,6 +804,18 @@ def _przebieg(conn, run_id: int) -> int:
     # w ogole wybralismy, i pisarz ma go widziec razem z reszta dowodow.
     card.setdefault("broken_belief", brief.get("broken_belief") or "")
     card.setdefault("why_they_believe_it", brief.get("why_they_believe_it") or "")
+    # SCENA. Brief wypelnia `the_moment` od poczatku i NIKT jej nie czytal —
+    # sprawdzone grepem: jedno przypisanie w schemacie briefu, zero odczytow
+    # na tej sciezce. Pisarz widzi wylacznie `card_json`, wiec jedyne zdanie
+    # opisujace SYTUACJE ginelo miedzy briefem a pisaniem.
+    #
+    # Skutek widac na 0022: artykul otwiera sie zdaniem „Giving AI agents
+    # a constitution sounds rather grand" i ocenia badanie, ktorego nigdy nie
+    # opowiedzial. Czytelnik dostaje „zmowe", „governance graph" i „Oracle/
+    # Controller runtime", nie dowiedziawszy sie, ze chodzi o sto agentow
+    # udajacych konkurujace firmy. Wlasciciel: „wrzucasz kogos w srodek akcji,
+    # ktorej on nie zna, i masz sie domyslic".
+    card.setdefault("the_scene", str(brief.get("the_moment") or "").strip())
 
     # KOMENTARZ WYZEJ BYL OBIETNICA BEZ POKRYCIA. Do karty szly wylacznie te
     # dwa pola; sam fakt, jego URL i data szly do `brief` (`fakt_wyjsciowy`,
@@ -1503,15 +1566,16 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     if not uwagi:
         print("   czysto — zadna uwaga", flush=True)
 
-    # STOPKA Z DATA ZRODEL WSTAWIANA PRZEZ KOD, NIE PRZEZ MODEL.
-    # Karta zna te date (`source_dates["newest"]`), a prompt kazal MODELOWI
-    # przepisac ja z pamieci — i trzy razy z rzedu przepisal zla, po czym
-    # bramka faktow obalala za to caly gotowy artykul. Patrz
-    # `stages.wstaw_date_zrodel`. Przed liczeniem dlugosci, zeby licznik slow
-    # dotyczyl tekstu, ktory naprawde pojdzie.
-    draft["body"] = stages.wstaw_date_zrodel(draft["body"], card)
+    # STOPKI Z DATA ZRODEL NIE MA. Wlasciciel przeczytal ja na wystawionym
+    # artykule i zapytal, po co tam stoi: data poprawna z konstrukcji i bez
+    # sensu dla czytelnika, ktory nie wie, czym jest karta. Zrodla stoja nizej
+    # z nazwami i adresami, kazde z wlasna data. Patrz
+    # `stages.usun_stopke_o_zrodlach` — wycinamy, cokolwiek model napisze.
+    # Przed liczeniem dlugosci, zeby licznik slow dotyczyl tekstu, ktory
+    # naprawde pojdzie.
+    draft["body"] = stages.usun_stopke_o_zrodlach(draft["body"], card)
 
-    # OSTATNIA BRAMKA — PO STOPCE Z DATA, PRZED OKLADKA I PRZEGLADARKA.
+    # OSTATNIA BRAMKA — PO WYCIECIU STOPKI, PRZED OKLADKA I PRZEGLADARKA.
     # Zmierzone 2026-09-06: artykul 0006 poszedl na konto ze zdaniem „Figures
     # checked against sources to unknown." i z pierwsza osoba o wyciagach.
     # Zaden etap ponizej nie umie tego cofnac, wiec pytanie pada tutaj —
@@ -1553,6 +1617,7 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     print(">> zapisano: %s" % sciezka, flush=True)
 
     stages.grafika(conn, run_id, draft, sciezka_artykulu=sciezka)
+    stages.grafika_srodek(conn, run_id, draft, sciezka_artykulu=sciezka)
 
     # --- PUBLIKACJA -------------------------------------------------------
     #
@@ -1593,9 +1658,10 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     # za JEDNO zdanie — stopke z data zrodel — przy audycie, ktory w tym samym
     # zdaniu napisal, ze wszystkie twierdzenia merytoryczne sa potwierdzone.
     #
-    # Naprawa idzie u ZRODLA, a nie po fakcie: `wstaw_date_zrodel` kaze kodowi
-    # napisac stopke z data z karty, wiec ta konkretna linijka — ta, ktora
-    # blokowala trzy artykuly z rzedu — nie ma juz jak byc falszywa.
+    # Naprawa idzie u ZRODLA, a nie po fakcie: `usun_stopke_o_zrodlach`
+    # WYCINA to zdanie z gotowego tekstu, wiec ta konkretna linijka — ta,
+    # ktora zablokowala trzy artykuly z rzedu — nie ma juz jak byc falszywa,
+    # bo nie ma jej wcale.
     #
     # WYCINANIA OBALONYCH ZDAN NIE MA I NIE MA BYC. Bylo zbudowane i zostalo
     # cofniete tego samego dnia na wyrazne polecenie wlasciciela: tekst z

@@ -27,16 +27,17 @@ through a variable this scan cannot see. Check before cutting.
 | `dyskoveria.md` | 82 | `stages.discovery` | `discovery` | 0 | 0 | 0 | 0 |
 | `fedreg.md` | 82 | `stages.kandydaci_z_fedreg` | `fedreg` | 6 | 5 | 1 | 0 |
 | `forma.md` | 93 | `stages.ocen_forme` | `forma` | 14 | 8 | 6 | 0 |
-| `grafika.md` | 82 | `stages.grafika` | `grafika` | 3 | 0 | 3 | 0 |
-| `klasyfikacja.md` | 55 | `stages.classify` | `classify` | 5 | 1 | 4 | 0 |
+| `grafika.md` | 89 | `stages.grafika` *(+1)* | `grafika` | 3 | 0 | 3 | 0 |
+| `klasyfikacja.md` | 55 | `stages._sklasyfikuj_jedno` | `classify` | 5 | 1 | 4 | 0 |
 | `kogo_odpowiedziec.md` | 48 | `stages.wybierz_do_odpowiedzi` | `wybor` | 5 | 0 | 5 | 0 |
 | `komentarz.md` | 148 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
 | `mysl.md` | 135 | `stages.note` | `—` | 3 | 1 | 2 | 0 |
-| `naprawa.md` | 43 | `stages.napraw_obalone` | `—` | 0 | 0 | 0 | 0 |
+| `naprawa.md` | 60 | `stages.napraw_obalone` | `—` | 0 | 0 | 0 | 0 |
 | `notka.md` | 165 | `stages.note` | `—` | 4 | 1 | 3 | 0 |
 | `odpowiedz.md` | 131 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
 | `OSWIADCZENIE_AUTORSTWA.md` | 56 | **nothing** | — | 0 | — | — | — |
-| `pisarz.md` | 308 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
+| `pisarz.md` | 312 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
+| `pisarz_persona.md` | 109 | `stages.write` | `write` | 4 | 1 | 3 | 0 |
 | `po_ludzku.md` | 53 | **nothing** | — | 0 | — | — | — |
 | `recenzent.md` | 29 | `stages.review` | `review` | 0 | 0 | 0 | 0 |
 | `restack.md` | 79 | `stages.ocen_restack` | `restack` | 4 | 3 | 1 | 0 |
@@ -53,7 +54,7 @@ through a variable this scan cannot see. Check before cutting.
 | field | verdict | read by |
 |---|---|---|
 | `dlaczego_mocny` | used | `stages.posortuj_bank` |
-| `id` | used | `alarm._co_z_tego_wyszlo`, `alarm.zawieszone`, `audyt_researchu.main`, `browser._artykuly_z_panelu` |
+| `id` | used | `alarm._co_z_tego_wyszlo`, `alarm.zawieszone`, `audyt_researchu.main`, `audyt_systemu.ocen_pomiary` |
 | `kod_wyrzucenia` | used | `stages.posortuj_bank` |
 | `kolejnosc` | used | `stages.posortuj_bank`, `wzajemnosc.odwzajemnienie`, `wzajemnosc.opoznienia`, `wzajemnosc.raport` |
 | `na_artykul` | used | `audyt_tematow.main`, `stages.artykulowy`, `stages.pick_topic`, `stages.posortuj_bank` |
@@ -66,10 +67,10 @@ through a variable this scan cannot see. Check before cutting.
 | field | verdict | read by |
 |---|---|---|
 | `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main`, `browser.wymagaj_wlasciwego_konta` |
-| `id` | used | `alarm._co_z_tego_wyszlo`, `alarm.zawieszone`, `audyt_researchu.main`, `browser._artykuly_z_panelu` |
+| `id` | used | `alarm._co_z_tego_wyszlo`, `alarm.zawieszone`, `audyt_researchu.main`, `audyt_systemu.ocen_pomiary` |
 | `loners` | **nobody, unexplained** | — |
 | `mechanism` | used | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
-| `missing` | unread, on purpose | `czego brakuje grupie — czytane przez czlowieka w logu` |
+| `missing` | used | `research_tasks.followup` |
 | `note` | **gate** | `stages.swiezosc_karty` |
 | `role` | used | `wzajemnosc.czytelnicy`, `wzajemnosc.kanaly` |
 | `why_it_travels` | unread, on purpose | `zmusza do sprawdzenia, czy mechanizm NAPRAWDE jest ten sam` |
@@ -134,26 +135,26 @@ through a variable this scan cannot see. Check before cutting.
 
 | field | verdict | read by |
 |---|---|---|
-| `prompt` | used | `stages.grafika` |
-| `subject` | used | `stages.grafika` |
+| `prompt` | used | `stages.grafika`, `stages.grafika_srodek` |
+| `subject` | used | `stages.grafika`, `stages.grafika_srodek` |
 | `why_this_scene` | unread, on purpose | `zmusza do wyboru sceny Z TEKSTU, nie ilustracji tematu` |
 
 ### `klasyfikacja.md`
 
 | field | verdict | read by |
 |---|---|---|
-| `class` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._przebieg`, `run.main`, `stages.classify` |
-| `excerpts` | used | `artykul_z_puli._przebieg`, `audyt_kosztow.collect`, `run.main`, `stages.bank_fragmentow` |
+| `class` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._przebieg`, `research_tasks.followup`, `research_tasks.snapshot` |
+| `excerpts` | used | `artykul_z_puli._przebieg`, `audyt_kosztow.collect`, `run.main`, `stages._sklasyfikuj_jedno` |
 | `note` | **gate** | `stages.swiezosc_karty` |
-| `numbers` | used | `artykul_z_puli._przebieg`, `run.main`, `stages.classify`, `stages.fallback_card` |
-| `relevance` | used | `stages.classify` |
+| `numbers` | used | `artykul_z_puli._przebieg`, `run.main`, `stages._sklasyfikuj_jedno`, `stages.fallback_card` |
+| `relevance` | used | `stages._sklasyfikuj_jedno`, `stages.classify` |
 
 ### `kogo_odpowiedziec.md`
 
 | field | verdict | read by |
 |---|---|---|
 | `index` | used | `run.main`, `stages.pick_topic`, `stages.review`, `stages.temat` |
-| `kind` | used | `personality._swiat`, `personality.memory_state`, `personality.notes`, `personality.remember` |
+| `kind` | used | `insights.collect`, `personality._swiat`, `personality.memory_state`, `personality.notes` |
 | `rank` | used | `stages.wybierz_do_odpowiedzi` |
 | `skipped_because` | used | `stages.wybierz_do_odpowiedzi` |
 | `why` | used | `artykul_z_puli._napisz_i_zapisz`, `run.main`, `stages.przygotuj_artykul_do_publikacji`, `stages.wybierz_do_odpowiedzi` |
@@ -187,7 +188,7 @@ through a variable this scan cannot see. Check before cutting.
 
 | field | verdict | read by |
 |---|---|---|
-| `kind` | used | `personality._swiat`, `personality.memory_state`, `personality.notes`, `personality.remember` |
+| `kind` | used | `insights.collect`, `personality._swiat`, `personality.memory_state`, `personality.notes` |
 | `reason_if_silent` | used | `stages.comment_on`, `stages.napisz_kandydata`, `stages.reply_to` |
 | `reply` | used | `run.dzien`, `run.odpowiedzi`, `stages.reply_to` |
 
@@ -198,6 +199,15 @@ through a variable this scan cannot see. Check before cutting.
 | `body` | **gate** | `stages.ocen_forme`, `stages.ocen_restack` |
 | `limits_paragraph_present` | used | `run.main` |
 | `numbers_used` | unread, on purpose | `spis liczb uzytych w tekscie — bramka LICZBA_SPOZA_KORPUSU i tak liczy je sama` |
+| `subtitle` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._ratuj_tekst`, `kanal.posty_z_kanalu`, `kanal.szukaj_nowych` |
+| `title` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._przebieg`, `artykul_z_puli._ratuj_tekst`, `browser._artykuly_z_panelu` |
+
+### `pisarz_persona.md`
+
+| field | verdict | read by |
+|---|---|---|
+| `body` | **gate** | `stages.ocen_forme`, `stages.ocen_restack` |
+| `limits_paragraph_present` | used | `run.main` |
 | `subtitle` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._ratuj_tekst`, `kanal.posty_z_kanalu`, `kanal.szukaj_nowych` |
 | `title` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._przebieg`, `artykul_z_puli._ratuj_tekst`, `browser._artykuly_z_panelu` |
 
@@ -239,7 +249,7 @@ through a variable this scan cannot see. Check before cutting.
 | `parallel_mechanisms` | used | `gates._korpus_pobranych`, `stages.write` |
 | `source_dates` | **gate** | `stages.swiezosc_karty` |
 | `url` | **gate** | `gates.szerokosc_podstawy`, `stages.bramka_kandydata`, `stages.napraw_obalone`, `stages.zweryfikuj` |
-| `value` | used | `browser.wymagaj_wlasciwego_konta`, `result_cache.read`, `run.main`, `statystyki._pozycje` |
+| `value` | used | `browser.wymagaj_wlasciwego_konta`, `insights.graph_windows`, `result_cache.read`, `run.main` |
 | `working_thesis` | used | `artykul_z_puli._przebieg`, `run.main` |
 
 ### `warto_pisac.md`

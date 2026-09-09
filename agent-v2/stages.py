@@ -824,51 +824,44 @@ ZDANIE_O_ZRODLACH = re.compile(
     r"[^.!?\n]*\bfigures?\b[^.!?\n]*\bchecked\b[^.!?\n]*[.!?]", re.IGNORECASE)
 
 
-def wstaw_date_zrodel(tekst: str, card: dict[str, Any]) -> str:
-    """Stopka z data zrodel pisana PRZEZ KOD, nie przez model.
+def usun_stopke_o_zrodlach(tekst: str, card: dict[str, Any]) -> str:
+    """Zdania „Figures checked against sources to <data>." NIE MA W ARTYKULE.
 
-    TRZECI raz z rzedu ta jedna linijka zablokowala gotowy artykul. Ostatni
-    raz: sprawdzenie faktow napisalo wprost, ze KAZDE twierdzenie
-    merytoryczne jest potwierdzone zrodlami pierwotnymi — po czym obalilo
-    caly tekst za JEDNO zdanie, stopke z data zrodel, bo model przepisal
-    do niej date sprzed miesiaca, a artykul cytowal material sprzed dwoch
-    dni.
+    ## Dlaczego znika, skoro mowilo prawde
 
-    Przyczyna nie lezala w modelu. `pisarz.md` kazal MU przepisac date z karty
-    do zdania, a karta ma ja w `source_dates["newest"]` i kod czyta to pole w
-    czterech miejscach. Prosilismy o przepisanie liczby, ktora mamy pod reka, i
-    karalismy za pomylke. Data wstawiana stad jest poprawna z konstrukcji.
+    Bo nie mowilo jej NIKOMU. Wlasciciel przeczytal je na wystawionym
+    artykule 0022 i zapytal wprost, po co tam stoi — data byla poprawna
+    z konstrukcji i bez sensu dla czytelnika, ktory nie wie, czym jest
+    „karta", czym jest `source_dates` ani do czego mu ta liczba.
 
-    Gdy karta nie ma dat, stopki NIE MA — zdanie o zrodlach bez zrodel byloby
-    dokladnie tym falszem, ktory ta funkcja usuwa.
+    To zdanie jest notatka z warsztatu podana jako tresc. Czytelnik dostaje
+    pod ostatnim akapitem adnotacje o procesie i musi sam zgadnac, czy to
+    zastrzezenie, czy stopka programu. Zrodla sa wypisane nizej z nazwami
+    i adresami; kazde niesie wlasna date. Zdanie o tym, do kiedy je
+    sprawdzono, nie dokladalo do tego nic, czego lista juz nie mowi.
+
+    ## Co zostaje
+
+    Wycinanie. Prompt pisarza zabrania mu pisac datestamp, ale zakaz w
+    promptcie to prosba, nie gwarancja — a to samo zdanie zablokowalo juz
+    gotowy artykul trzy razy z rzedu (model przepisywal date z pamieci
+    i mylil sie), raz wyszlo na konto jako „checked against sources to
+    unknown.". Wycinamy je wiec deterministycznie, przed bramkami, cokolwiek
+    model napisze.
+
+    Akapit, w ktorym stalo tylko to zdanie, znika w calosci — po stopce nie
+    zostaje dziura.
+
+    OBIETNICA Z OSWIADCZENIA JEST NIETKNIETA. Brzmi „My articles use
+    sources", nie „my articles carry a datestamp": spelnia ja LISTA ZRODEL
+    pod tekstem, a ta zostaje.
+
+    `card` zostaje w podpisie, bo `source_dates` nadal pracuje gdzie indziej
+    — `swiezosc_karty` liczy z niego wiek materialu, a `note` idzie do
+    pisarza, gdy material jest stary. Znika stopka, nie daty.
     """
-    daty = card.get("source_dates") or {}
-    najnowsza = str(daty.get("newest") or "").strip()
-    # DATA ALBO NIC. Zmierzone 2026-09-06 (artykul 0006 kartridza `ai`):
-    # synteza wpisala w `newest` slowo „unknown", bo zadna z pobranych stron
-    # nie niosla daty, a stopka wyszla jako „Figures checked against sources
-    # to unknown." — zdanie, ktore wyglada na blad programu, bo nim jest.
-    if not re.fullmatch(r"\d{4}(-\d{2}){0,2}", najnowsza):
-        najnowsza = ""
-    bez_starej = ZDANIE_O_ZRODLACH.sub("", tekst or "").strip()
-    czesci = [c.strip() for c in bez_starej.split("\n\n") if c.strip()]
-    if not najnowsza:
-        # Bez dat nie ma stopki, ale nie zostawiamy po niej dziury: akapit,
-        # w ktorym stalo tylko to zdanie, znika w calosci.
-        return "\n\n".join(czesci)
-    # NA DOLE, NIE NA GORZE — i cala reszta tego pliku nazywa to ZDANIE
-    # „stopka". Stalo jednak na pozycji zero, wiec KAZDY artykul otwieral sie
-    # notka zgodnosci zamiast pierwszym zdaniem autorki.
-    #
-    # Zmierzone na artykule 0014 z 8 wrzesnia 2026: czytelnik dostawal
-    # „Figures checked against sources to 2026-08-01." i dopiero pod tym
-    # tekst. Wlasciciel przeczytal to jako „brzmi jak gowno, o niczym" i mial
-    # racje co do pierwszego wrazenia: pierwsze zdanie artykulu bylo
-    # adnotacja procesu, a nie wypowiedzia.
-    #
-    # Data zostaje, bo mowi prawde o tym, do kiedy sprawdzono liczby. Zmienia
-    # sie tylko miejsce: stopka ma stac tam, gdzie stoi stopka.
-    czesci.append("Figures checked against sources to %s." % najnowsza)
+    bez_stopki = ZDANIE_O_ZRODLACH.sub("", tekst or "").strip()
+    czesci = [c.strip() for c in bez_stopki.split("\n\n") if c.strip()]
     return "\n\n".join(czesci)
 
 
@@ -1309,6 +1302,145 @@ def grafika(
         return {"blad": f"{type(exc).__name__}: {exc}"[:200]}
     brief["plik"] = str(cel)
     print(f"  [grafika] zapisana: {cel.name}  {len(dane) // 1024} KB", flush=True)
+    return brief
+
+
+def _akapity_tresci(body: str) -> list[str]:
+    """Akapity artykulu BEZ naglowkow, listy zrodel i stopek.
+
+    Drugi obraz ma stanac miedzy dwoma zdaniami autorki, a nie w wykazie
+    zrodel — wiec wszystko od naglowka zrodel w dol odpada tu na wejsciu.
+    """
+    czesci = []
+    for a in (body or "").split("\n\n"):
+        a = a.strip()
+        if not a:
+            continue
+        if a.lstrip("#").strip().lower().startswith(
+                str(getattr(config, "TYTUL_SEKCJI_ZRODEL", "sources")).lower()):
+            break
+        if a.startswith("#") or a.startswith("-") or a.startswith("*"):
+            continue
+        czesci.append(a)
+    return czesci
+
+
+def _miejsce_na_drugi_obraz(akapity: list[str]) -> int:
+    """Po ktorym akapicie stanie drugi obraz. `-1`, gdy tekst jest za krotki.
+
+    W POLOWIE MIERZONEJ SLOWAMI, nie liczba akapitow: przy jednym akapicie na
+    trzysta slow i szesciu na dwadziescia srodek listy nie jest srodkiem tekstu.
+
+    Nigdy w pierwszych dwoch ani ostatnich dwoch akapitach. Obraz tuz pod
+    okladka wyglada jak druga okladka, a obraz przed ostatnim zdaniem rozbija
+    puente — a ostatnia linijka jest w tym pismie celowana w kogos.
+    """
+    if len(akapity) < 5:
+        return -1
+    dlugosci = [len(a.split()) for a in akapity]
+    polowa = sum(dlugosci) / 2
+    biegiem = 0
+    for i, d in enumerate(dlugosci):
+        biegiem += d
+        if biegiem >= polowa:
+            return min(max(i, 1), len(akapity) - 3)
+    return len(akapity) // 2
+
+
+@_na_kanal("artykul")
+def grafika_srodek(
+    conn: sqlite3.Connection, run_id: int, draft: dict[str, Any],
+    sciezka_artykulu: Path | None = None,
+) -> dict[str, Any]:
+    """DRUGI obraz, w srodku tekstu. Decyzja wlasciciela z 9 wrzesnia 2026.
+
+    ## Skad kod wie, gdzie go wstawic
+
+    Pytanie wlasciciela brzmialo doslownie: „jak model bedzie wiedzial, gdzie
+    dawac to drugie zdjecie". Odpowiedz brzmi: NIE BEDZIE — i to jest wybor,
+    nie brak.
+
+    Rozwazany byl znacznik w tekscie (`[[IMAGE]]` albo podobny), ktory pisarz
+    wstawia sam. Odrzucony z dwoch powodow, oba zmierzone na tym projekcie:
+      * pisarz, ktory ma pamietac o dodatkowym znaczniku, czasem go nie
+        napisze, a czasem napisze cztery — i wtedy nie ma obrazu albo jest
+        ich cztery;
+      * `jezyki.ZNACZNIK_SZABLONU` lapie nawias z wielkimi literami jako
+        NIEWYPELNIONE POLE SZABLONU. 9 wrzesnia ta bramka odlozyla gotowy,
+        oplacony artykul za zwykly odnosnik Markdown. Znacznik obrazu
+        wpadalby w nia z definicji i trzeba by go wycinac przed bramka, czyli
+        budowac wyjatek w kontroli, ktora wlasnie ma wyjatkow nie miec.
+
+    Miejsce wybiera wiec KOD: polowa tekstu liczona w slowach, nigdy przy
+    krawedziach. Model dostaje akapity Z OKOLICY tego miejsca i pisze brief do
+    NICH, nie do calego artykulu — dzieki temu obraz mowi o tym, co czytelnik
+    ma wlasnie przed oczami, a nie drugi raz o tytule.
+
+    ## Ta sama oslona, co przy okladce
+
+    Grafika nigdy nie zabija artykulu. Gdy zabraknie budzetu albo padnie
+    generator, wychodzi artykul z jednym obrazem, a nie zaden.
+    """
+    if not getattr(config, "OBRAZ_WLACZONY", True):
+        return {"pominieta": "okladka wylaczona w presecie"}
+    if int(getattr(config, "OBRAZY_NA_ARTYKUL", 2)) < 2:
+        return {"pominieta": "preset zamawia jeden obraz"}
+
+    akapity = _akapity_tresci(draft.get("body", ""))
+    gdzie = _miejsce_na_drugi_obraz(akapity)
+    if gdzie < 0:
+        print("  [grafika 2] tekst za krotki na drugi obraz (%d akapitow)"
+              % len(akapity), flush=True)
+        return {"pominieta": "za malo akapitow"}
+
+    # KOTWICA TEKSTOWA, NIE NUMER AKAPITU. Edytor Substacka sklada wlasne
+    # wezly i numer `<p>` po wklejeniu nie musi sie zgadzac z numerem akapitu
+    # w pliku. Poczatek zdania znajdzie sie w obu.
+    kotwica = " ".join(akapity[gdzie].split())[:70]
+    okolica = "\n\n".join(akapity[max(0, gdzie - 1):gdzie + 2])
+
+    try:
+        prompt = _prompt(
+            "grafika.md",
+            title=draft.get("title", ""),
+            body=okolica[:6000],
+        )
+        brief = llm.parse_json(
+            llm.call("grafika", IMAGE_SYSTEM, prompt, conn=conn, run_id=run_id)
+        )
+        opis = brief.get("prompt") or ""
+        if not opis:
+            raise ValueError("brief graficzny bez promptu")
+        print("  [grafika 2] scena: %s" % str(brief.get("subject", ""))[:90],
+              flush=True)
+        dane = llm.obraz(opis, conn=conn, run_id=run_id)
+    except Exception as exc:
+        print("  [grafika 2] NIE POWSTAŁA (%s: %s) — artykuł wychodzi "
+              "z jednym obrazem" % (type(exc).__name__, exc), flush=True)
+        return {"blad": f"{type(exc).__name__}: {exc}"[:200]}
+    if not dane:
+        return brief   # DRY_RUN
+
+    cel = (sciezka_artykulu.with_name(sciezka_artykulu.stem + "-2.png")
+           if sciezka_artykulu
+           else config.ARTICLES_DIR / f"{run_id:04d}-srodek.png")
+    try:
+        cel.parent.mkdir(parents=True, exist_ok=True)
+        cel.write_bytes(dane)
+        # Kotwica obok obrazu, zeby publikacja nie musiala liczyc jej jeszcze
+        # raz — a przede wszystkim, zeby zalegly artykul wystawiony pozniej
+        # wiedzial, gdzie ten obraz mial stac.
+        cel.with_suffix(".txt").write_text(kotwica, encoding="utf-8")
+    except OSError as exc:
+        print("  [grafika 2] NIE ZAPISANA (%s: %s)" % (type(exc).__name__, exc),
+              flush=True)
+        return {"blad": f"{type(exc).__name__}: {exc}"[:200]}
+
+    brief["plik"] = str(cel)
+    brief["kotwica"] = kotwica
+    brief["po_akapicie"] = gdzie
+    print("  [grafika 2] zapisana: %s  %d KB — po akapicie %d z %d"
+          % (cel.name, len(dane) // 1024, gdzie + 1, len(akapity)), flush=True)
     return brief
 
 
@@ -5512,95 +5644,150 @@ def _jest_w_dokumencie(cytat: str, dokument: str) -> bool:
 
 
 @_na_kanal("artykul")
+def _sklasyfikuj_jedno(
+    conn: sqlite3.Connection, run_id: int, question: str, source: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Jedno źródło przez klasyfikator. `None`, gdy odpada.
+
+    Wyjęte z pętli, bo od 9 września 2026 to samo źródło bywa pytane DWA razy
+    — patrz `classify` i ratunek wiodącego źródła.
+    """
+    text = source.get("text", "")[: config.CLASSIFY_MAX_INPUT_CHARS]
+    prompt = _prompt(
+        "klasyfikacja.md",
+        question=question,
+        title=source.get("title", ""),
+        publisher=source.get("publisher", ""),
+        url=source.get("url", ""),
+        text=text,
+        max_excerpts=config.CLASSIFY_MAX_EXCERPTS,
+        max_excerpt_chars=config.CLASSIFY_MAX_EXCERPT_CHARS,
+    )
+    try:
+        raw = llm.call("classify", CLASSIFY_SYSTEM, prompt, conn=conn, run_id=run_id)
+        data = llm.parse_json(raw)
+    except Exception as exc:
+        print(f"  [klasyfikacja] {source.get('host')} — pominięty: {exc}", flush=True)
+        return None
+
+    relevance = float(data.get("relevance", 0) or 0)
+    klass = data.get("class", "ODPAD")
+    # CYTAT ISTNIEJE, GDY JEST W DOKUMENCIE — nie gdy model tak powiedział.
+    #
+    # Stało tu wyłącznie `isinstance(e, str) and e.strip()`, czyli cały dowód
+    # na dosłowność fragmentu brzmiał „to niepusty napis". `klasyfikacja.md`
+    # bardzo dokładnie opisuje obowiązek kopiowania słowo w słowo — i to była
+    # cała ochrona. Odtworzone: dokument mówiący „The only documented number
+    # is 12" oddał fragment „A study found 97 percent effectiveness",
+    # a klasyfikacja zachowała go jako dowód.
+    #
+    # Fragment, którego w dokumencie nie ma, jest gorszy niż brak fragmentu:
+    # idzie dalej z etykietą źródła, wchodzi do karty jako `evidence` i do
+    # banku jako materiał do ponownego użycia, a każdy następny etap traktuje
+    # go jak cytat.
+    odrzucone_cytaty = []
+    excerpts = []
+    for e in data.get("excerpts", []):
+        if not isinstance(e, str) or not e.strip():
+            continue
+        if _jest_w_dokumencie(e, text):
+            excerpts.append(e)
+        else:
+            odrzucone_cytaty.append(e)
+    if odrzucone_cytaty:
+        print("  [klasyfikacja] %d fragment(ow) NIE MA w dokumencie — "
+              "odrzucam: %s" % (len(odrzucone_cytaty),
+                                odrzucone_cytaty[0][:70]), flush=True)
+    # LIMITY BYŁY PROŚBĄ, NIE BRAMKĄ — tak samo jak w dyskoverii. Idą do
+    # promptu jako `{max_excerpts}` i `{max_excerpt_chars}`, a kod przyjmował,
+    # ile model dał. Odtworzone: 15 fragmentów po 1000 znaków przy 12 x 700.
+    # Każdy nadmiarowy znak to wejście do syntezy, która jest płatna.
+    if len(excerpts) > config.CLASSIFY_MAX_EXCERPTS:
+        print("  [klasyfikacja] %d fragmentow, przycinam do %d"
+              % (len(excerpts), config.CLASSIFY_MAX_EXCERPTS), flush=True)
+        excerpts = excerpts[:config.CLASSIFY_MAX_EXCERPTS]
+    excerpts = [e[:config.CLASSIFY_MAX_EXCERPT_CHARS] for e in excerpts]
+    print(
+        f"  [klasyfikacja] {klass:11} trafność={relevance:.2f} "
+        f"fragmentów={len(excerpts):2}  liczb={len(data.get('numbers', [])):2}  "
+        f"{source.get('host')}",
+        flush=True,
+    )
+    # Odrzucamy TYLKO odpad i puste wyciągi. Próg trafności był tu bramką
+    # przez jeden przebieg i natychmiast wyrzucił pracę naukową, która była
+    # DOSŁOWNIE tematem pisanego artykułu: siedem liczb w środku, a model
+    # dał jej trafność 0,20. Trafność zostaje notatką do kolejności.
+    if klass == "ODPAD" or not excerpts:
+        return None
+    return {
+        "url": source.get("url"),
+        "host": source.get("host"),
+        "title": source.get("title"),
+        "publisher": source.get("publisher"),
+        "class": klass,
+        "relevance": relevance,
+        "excerpts": excerpts,
+        "numbers": [n for n in data.get("numbers", []) if isinstance(n, str)],
+        "note": data.get("note", ""),
+    }
+
+
+@_na_kanal("artykul")
 def classify(
-    conn: sqlite3.Connection, run_id: int, question: str, corpus: list[dict[str, Any]]
+    conn: sqlite3.Connection, run_id: int, question: str,
+    corpus: list[dict[str, Any]], wiodacy_url: str = "",
 ) -> list[dict[str, Any]]:
     """Etap 5 — klasyfikacja i wyciąg fragmentów (DeepSeek).
 
     Po co: 320 tys. znaków surowego korpusu w Opusie to kilkadziesiąt centów za
     samo wejście, w większości na preambuły prawne. DeepSeek robi to za grosze
     i oddaje skoncentrowane cytaty.
+
+    ## `wiodacy_url` — źródło, od którego cały temat się zaczął
+
+    9 września 2026 artykuł 0022 wyszedł na konto NIE NA SWÓJ TEMAT. Bank
+    wybrał historię stu agentów dowodzących twierdzeń, wśród których samo
+    z siebie pojawiło się oszustwo, a inne agenty je zgłosiły. Strona pobrała
+    się poprawnie (`sources.id=9, fetched_ok=1`) i jej abstrakt leżał w karcie
+    zadania. Klasyfikator nazwał ją odpadem albo nie oddał ani jednego
+    dosłownego wyciągu — i wypadła.
+
+    ZMIERZONE, NIE ZGADNIĘTE: powtórzenie dokładnie tego samego wywołania na
+    tym samym tekście dało `PRIMARY`, trafność 0,90 i OSIEM wyciągów obecnych
+    w dokumencie co do znaku. Odrzucenie było jednorazowym potknięciem modelu
+    na wywołaniu za 0,0006 USD.
+
+    Skutek szedł dalej sam: żadne `confirmed_claim` nie niosło tego adresu,
+    więc `artykul_z_puli` dołożył zdanie banku ze znacznikiem `not_fetched`,
+    a `karta_dla_pisarza` wycina właśnie takie wpisy. Pisarz dostał siedem
+    twierdzeń o trzech INNYCH pracach i dziewięć pozycji „tego nie ustalono".
+    Napisał więc o niepewności, bo to miał przed sobą. Zapłacone: research,
+    synteza, `gpt-6-astra` i okładka.
+
+    Ponowienie kosztuje ułamek centa i ratuje przebieg za kilkadziesiąt.
+    Pytamy DRUGI RAZ TYLKO O WIODĄCE ŹRÓDŁO — dla pozostałych odrzucenie jest
+    zwykłą pracą klasyfikatora i ponawianie wszystkiego byłoby płaceniem za
+    podważanie własnej bramki.
     """
     kept: list[dict[str, Any]] = []
     for source in corpus:
-        text = source.get("text", "")[: config.CLASSIFY_MAX_INPUT_CHARS]
-        prompt = _prompt(
-            "klasyfikacja.md",
-            question=question,
-            title=source.get("title", ""),
-            publisher=source.get("publisher", ""),
-            url=source.get("url", ""),
-            text=text,
-            max_excerpts=config.CLASSIFY_MAX_EXCERPTS,
-            max_excerpt_chars=config.CLASSIFY_MAX_EXCERPT_CHARS,
-        )
-        try:
-            raw = llm.call("classify", CLASSIFY_SYSTEM, prompt, conn=conn, run_id=run_id)
-            data = llm.parse_json(raw)
-        except Exception as exc:
-            print(f"  [klasyfikacja] {source.get('host')} — pominięty: {exc}", flush=True)
-            continue
+        wynik = _sklasyfikuj_jedno(conn, run_id, question, source)
+        if wynik is not None:
+            kept.append(wynik)
 
-        relevance = float(data.get("relevance", 0) or 0)
-        klass = data.get("class", "ODPAD")
-        # CYTAT ISTNIEJE, GDY JEST W DOKUMENCIE — nie gdy model tak powiedzial.
-        #
-        # Stalo tu wylacznie `isinstance(e, str) and e.strip()`, czyli caly
-        # dowod na dosloownosc fragmentu brzmial „to niepusty napis".
-        # `klasyfikacja.md` bardzo dokladnie opisuje obowiazek kopiowania slowo
-        # w slowo — i to byla cala ochrona. Odtworzone: dokument mowiacy „The
-        # only documented number is 12" oddal fragment „A study found 97
-        # percent effectiveness", a klasyfikacja zachowala go jako dowod.
-        #
-        # Fragment, ktorego w dokumencie nie ma, jest gorszy niz brak
-        # fragmentu: idzie dalej z etykieta zrodla, wchodzi do karty jako
-        # `evidence` i do banku jako material do ponownego uzycia, a kazdy
-        # nastepny etap traktuje go jak cytat.
-        odrzucone_cytaty = []
-        excerpts = []
-        for e in data.get("excerpts", []):
-            if not isinstance(e, str) or not e.strip():
-                continue
-            if _jest_w_dokumencie(e, text):
-                excerpts.append(e)
+    # RATUNEK WIODĄCEGO ŹRÓDŁA — jedno tanie wywołanie, raz.
+    if wiodacy_url and not any(s.get("url") == wiodacy_url for s in kept):
+        zrodlo = next((c for c in corpus if c.get("url") == wiodacy_url), None)
+        if zrodlo is not None:
+            print("  [klasyfikacja] WIODĄCE ŹRÓDŁO WYPADŁO (%s) — pytam raz "
+                  "jeszcze, bo to od niego zaczął się ten temat"
+                  % wiodacy_url[:60], flush=True)
+            drugie = _sklasyfikuj_jedno(conn, run_id, question, zrodlo)
+            if drugie is not None:
+                kept.append(drugie)
+                print("  [klasyfikacja] URATOWANE za drugim razem", flush=True)
             else:
-                odrzucone_cytaty.append(e)
-        if odrzucone_cytaty:
-            print("  [klasyfikacja] %d fragment(ow) NIE MA w dokumencie — "
-                  "odrzucam: %s" % (len(odrzucone_cytaty),
-                                    odrzucone_cytaty[0][:70]), flush=True)
-        # LIMITY BYLY PROSBA, NIE BRAMKA — tak samo jak w dyskoverii. Ida do
-        # promptu jako `{max_excerpts}` i `{max_excerpt_chars}`, a kod przyjmowal,
-        # ile model dal. Odtworzone: 15 fragmentow po 1000 znakow przy 12 x 700.
-        # Kazdy nadmiarowy znak to wejscie do syntezy, ktora jest platna.
-        if len(excerpts) > config.CLASSIFY_MAX_EXCERPTS:
-            print("  [klasyfikacja] %d fragmentow, przycinam do %d"
-                  % (len(excerpts), config.CLASSIFY_MAX_EXCERPTS), flush=True)
-            excerpts = excerpts[:config.CLASSIFY_MAX_EXCERPTS]
-        excerpts = [e[:config.CLASSIFY_MAX_EXCERPT_CHARS] for e in excerpts]
-        print(
-            f"  [klasyfikacja] {klass:11} trafność={relevance:.2f} "
-            f"fragmentów={len(excerpts):2}  liczb={len(data.get('numbers', [])):2}  "
-            f"{source.get('host')}",
-            flush=True,
-        )
-        # Odrzucamy TYLKO odpad i puste wyciągi. Próg trafności był tu bramką
-        # przez jeden przebieg i natychmiast wyrzucił pracę naukową, która była
-        # DOSŁOWNIE tematem pisanego artykułu: siedem liczb w środku, a model
-        # dał jej trafność 0,20. Trafność zostaje notatką do kolejności.
-        if klass == "ODPAD" or not excerpts:
-            continue
-        kept.append({
-            "url": source.get("url"),
-            "host": source.get("host"),
-            "title": source.get("title"),
-            "publisher": source.get("publisher"),
-            "class": klass,
-            "relevance": relevance,
-            "excerpts": excerpts,
-            "numbers": [n for n in data.get("numbers", []) if isinstance(n, str)],
-            "note": data.get("note", ""),
-        })
+                print("  [klasyfikacja] i za drugim razem odpadło", flush=True)
 
     kept.sort(key=lambda s: s["relevance"], reverse=True)
 

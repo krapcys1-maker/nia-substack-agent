@@ -122,7 +122,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3014 wierszy, 27 funkcji na poziomie modułu, 1 klas
+3015 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -156,7 +156,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8682 wierszy, 150 funkcji na poziomie modułu, 0 klas
+8869 wierszy, 154 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -179,7 +179,7 @@
 | `pisarz_z_persona()` | Writing and prompt preview must choose the same persona route. |
 | `system_pisarza()` | System artykulu. Z wlaczona persona NIESIE TOZSAMOSC, a nie „anonimowa marke". |
 | `karta_dla_pisarza(card, teraz)` | Karta bez zastrzezenia, ktorego nie wolno opublikowac. |
-| `wstaw_date_zrodel(tekst, card)` | Stopka z data zrodel pisana PRZEZ KOD, nie przez model. |
+| `usun_stopke_o_zrodlach(tekst, card)` | Zdania „Figures checked against sources to <data>." NIE MA W ARTYKULE. |
 | `write(conn, run_id, card, glebokosc)` | Etap 7 — artykuł, modelem wybranym w presecie dla roli `write`. |
 | `_ile_reakcji(k)` *(wewn.)* | „(reakcji: N)" TYLKO wtedy, gdy zrodlo to pole w ogole wypelnia. |
 | `_po_rowno_ze_zrodel(komentarze, ile)` *(wewn.)* | Wycinek listy, ktory NIE MOZE zaglodzic zadnego miejsca rozmowy. |
@@ -187,6 +187,9 @@
 | `reply_to(conn, run_id, comment, evidence)` | Odpowiedź na komentarz pod własną treścią — do szuflady. |
 | `plan_tygodnia(dzien_artykulu)` | Harmonogram tygodnia: co i kiedy wychodzi. |
 | `grafika(conn, run_id, draft, sciezka_artykulu)` | Nagłówek graficzny artykułu. |
+| `_akapity_tresci(body)` *(wewn.)* | Akapity artykulu BEZ naglowkow, listy zrodel i stopek. |
+| `_miejsce_na_drugi_obraz(akapity)` *(wewn.)* | Po ktorym akapicie stanie drugi obraz. `-1`, gdy tekst jest za krotki. |
+| `grafika_srodek(conn, run_id, draft, sciezka_artykulu)` | DRUGI obraz, w srodku tekstu. Decyzja wlasciciela z 9 wrzesnia 2026. |
 | `_wiek_konta_w_dniach(conn)` *(wewn.)* | Ile dni działa to konto — liczone od pierwszego przebiegu w bazie. |
 | `budzet_dnia(conn)` | Ile czego agent może dziś zrobić — losowane z widełek, nie stałe. |
 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` *(wewn.)* | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. |
@@ -262,7 +265,8 @@
 | `synthesis(conn, run_id, question, evidence)` | Etap 6 — karta dowodowa (DeepSeek V4 Pro). |
 | `_plaski(t)` *(wewn.)* | Tekst do porownania cytatu ze zrodlem — BIALE ZNAKI I TYPOGRAFIA, koniec. |
 | `_jest_w_dokumencie(cytat, dokument)` *(wewn.)* | Czy fragment naprawde stoi w tekscie, ktory model dostal. |
-| `classify(conn, run_id, question, corpus)` | Etap 5 — klasyfikacja i wyciąg fragmentów (DeepSeek). |
+| `_sklasyfikuj_jedno(conn, run_id, question, source)` *(wewn.)* | Jedno źródło przez klasyfikator. `None`, gdy odpada. |
+| `classify(conn, run_id, question, corpus, wiodacy_url)` | Etap 5 — klasyfikacja i wyciąg fragmentów (DeepSeek). |
 | `_dobierz_przegladarka(conn, run_id, brakujace, juz_mamy)` *(wewn.)* | Drugie podejscie do stron, ktore zwyklemu pobieraniu daly pusty szkielet. |
 | `fetch(conn, run_id, sources)` | Etap 4 — pobranie stron. Zwykły HTTP, żadnego modelu, 0 USD. |
 | `_host(url)` *(wewn.)* | — |
@@ -313,7 +317,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5754 wierszy, 105 funkcji na poziomie modułu, 3 klas
+5819 wierszy, 105 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -394,7 +398,7 @@
 | `_esc(t)` *(wewn.)* | — |
 | `_html_z_linkami(tekst)` *(wewn.)* | Render inline HTTP(S) Markdown links while escaping all source text. |
 | `rozbierz_artykul(sciezka)` | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. |
-| `wypelnij_artykul(page, artykul, obraz)` | Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora. |
+| `wypelnij_artykul(page, artykul, obraz, obraz2, kotwica2)` | Wkłada tytuł, podtytuł, grafiki i treść do otwartego edytora. |
 | `wstaw_przycisk_subskrypcji(page)` | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. |
 | `tresc_oswiadczenia()` | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. |
 | `ustaw_oswiadczenie_ai(wyslij)` | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. |
@@ -693,7 +697,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3648 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3677 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -828,7 +832,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1635 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1701 wierszy, 14 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
