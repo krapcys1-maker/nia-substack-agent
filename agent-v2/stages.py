@@ -2198,7 +2198,14 @@ def znajdz_ciekawostki(
         # `deepseek-v4-flash` i zjada 41 333 tokeny wejscia za 0,0485 USD.
         # Skroty dokladaja okolo 2100 tokenow, czyli JEDEN PROCENT ceny etapu,
         # ktory i tak idzie najwyzej raz na dobe (`SZUKANIE_BANKU_NA_DOBE`).
-        zaczyn_kanalow=zaczyn_z_kanalow(ze_skrotem=True, run_id=run_id),
+        # ODCISKI WYSTAWIONYCH NOTEK — zeby nie placic za rozwazenie
+        # tematu, o ktorym juz pisalismy. Zmierzone 9 wrzesnia 2026:
+        # bez tego skaut dostawal 1 pozycje z 26 kolidujaca z tym, co
+        # juz poszlo na konto — badanie o grzybach, opisane DWA RAZY.
+        # `niepowtorzony` w `pick_topic` chroni dopiero PO oplaceniu
+        # wywolania; to sito dziala przed nim i nic nie kosztuje.
+        zaczyn_kanalow=zaczyn_z_kanalow(ze_skrotem=True, run_id=run_id,
+                                        opisane_rdzenie=pamiec_wystawionych()),
         # WYDARZENIE JAKO OKAZJA, NIE TEMAT — patrz komentarz wyzej.
         wydarzenia=("\n".join(
             "- %s (mowi o tym %d kanalow): %s"
@@ -6545,7 +6552,14 @@ def scout(conn: sqlite3.Connection, run_id: int, count: int = 6) -> list[dict[st
     prompt = _prompt(
         "skaut.md",
         count=count,
-        zaczyn_kanalow=zaczyn_z_kanalow(ze_skrotem=True, run_id=run_id),
+        # ODCISKI WYSTAWIONYCH NOTEK — zeby nie placic za rozwazenie
+        # tematu, o ktorym juz pisalismy. Zmierzone 9 wrzesnia 2026:
+        # bez tego skaut dostawal 1 pozycje z 26 kolidujaca z tym, co
+        # juz poszlo na konto — badanie o grzybach, opisane DWA RAZY.
+        # `niepowtorzony` w `pick_topic` chroni dopiero PO oplaceniu
+        # wywolania; to sito dziala przed nim i nic nie kosztuje.
+        zaczyn_kanalow=zaczyn_z_kanalow(ze_skrotem=True, run_id=run_id,
+                                        opisane_rdzenie=pamiec_wystawionych()),
         history_json=json.dumps(history, ensure_ascii=False, indent=2),
         pytania_czytelnikow=(
             "\n".join("- " + p for p in pytania) if pytania
