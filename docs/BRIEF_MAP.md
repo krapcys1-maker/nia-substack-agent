@@ -37,12 +37,12 @@ through a variable this scan cannot see. Check before cutting.
 | `odpowiedz.md` | 131 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
 | `OSWIADCZENIE_AUTORSTWA.md` | 56 | **nothing** | — | 0 | — | — | — |
 | `pisarz.md` | 312 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
-| `pisarz_persona.md` | 109 | `stages.write` | `write` | 4 | 1 | 3 | 0 |
+| `pisarz_persona.md` | 116 | `stages.write` | `write` | 4 | 1 | 3 | 0 |
 | `po_ludzku.md` | 53 | **nothing** | — | 0 | — | — | — |
-| `recenzent.md` | 29 | `stages.review` | `review` | 0 | 0 | 0 | 0 |
+| `recenzent.md` | 39 | `stages.review` | `review` | 0 | 0 | 0 | 0 |
 | `restack.md` | 79 | `stages.ocen_restack` | `restack` | 4 | 3 | 1 | 0 |
 | `skaut.md` | 392 | `stages.scout` | `scout` | 5 | 0 | 5 | 0 |
-| `synteza.md` | 114 | `stages.synthesis` | `synthesis` | 17 | 6 | 11 | 0 |
+| `synteza.md` | 126 | `stages.synthesis` | `synthesis` | 17 | 6 | 11 | 0 |
 | `warto_pisac.md` | 110 | `stages.warto_pisac` | `warto_pisac` | 13 | 0 | 13 | 0 |
 | `weryfikacja.md` | 152 | `stages.zweryfikuj` | `factcheck` | 7 | 6 | 1 | 0 |
 | `wykonalnosc.md` | 86 | `stages.feasibility` | `feasibility` | 7 | 1 | 6 | 0 |

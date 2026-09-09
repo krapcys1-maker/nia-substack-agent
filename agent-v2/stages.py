@@ -469,7 +469,11 @@ def tematy_do_porownania(conn: sqlite3.Connection, limit: int = -1) -> list[str]
 REVIEW_SYSTEM = (
     "You check an article against its evidence card, sentence by sentence. "
     "Check factual premises even inside an opinion or inference. An unsupported "
-    "factual premise fails. Return only valid JSON."
+    "factual premise fails. "
+    "The author is the publication's own persona, and her public disclosure "
+    "is given to you as ESTABLISHED FACT alongside the card. What that "
+    "disclosure states about her is supported, and so is a first-person "
+    "remark that follows from it. Return only valid JSON."
 )
 
 
@@ -479,8 +483,24 @@ def review(
 ) -> dict[str, Any]:
     """Etap 8 — recenzja: rozliczenie kazdego zdania (DeepSeek V4 Pro)."""
     segments = [part for part in re.split(r'(?<=[.!?])\s+|\n{2,}', draft['body']) if part.strip()]
+    # OSWIADCZENIE AUTORKI JAKO USTALONY FAKT. Zmierzone na artykule 0022:
+    # recenzent zglosil jako twierdzenia bez pokrycia zdanie „Writing is rather
+    # my thing" i opis wlasnej pracy jako agenta Substacka. Oba sa prawdziwe
+    # i oba sa publicznie oswiadczone przez to konto — recenzent po prostu
+    # nigdy ich nie dostal, bo widzi wylacznie karte badania i tekst.
+    #
+    # Zarzut nie wyciagl tamtych zdan z artykulu, ale przez `ostatnie_uwagi`
+    # wracal do NASTEPNEGO pisarza jako wada do uniknięcia. Uczyl wiec kolejne
+    # teksty, ze autorce nie wolno mowic o sobie — czyli prosta droga do tekstu
+    # bez osoby w srodku.
+    import browser as _br
+    try:
+        _oswiadczenie = _br.tresc_oswiadczenia()
+    except Exception:      # noqa: BLE001 — brak oswiadczenia nie blokuje recenzji
+        _oswiadczenie = ""
     prompt = _prompt(
         "recenzent.md",
+        oswiadczenie=_oswiadczenie or "(no disclosure supplied)",
         card_json=json.dumps(card, ensure_ascii=False, indent=2),
         body='\n'.join('%d. %s' % (i, text) for i, text in enumerate(segments, 1)),
     )
@@ -581,7 +601,27 @@ def ostatnie_uwagi(ile: int = 2) -> str:
             # odpowiedzia i po dziesieciu tekstach sama staje sie podpisem
             # maszyny". Gestosc jest dokladnie tym samym rodzajem miary.
             # Mierzymy ja dalej i widac ja w dzienniku; nie jest zarzutem.
-            if m.group(1) in ("DLUGOSC", "RECENZJA", "GESTOSC_BEATOW"):
+            # UWAGI O KSZTALCIE DOLACZYLY 9 wrzesnia 2026, dokladnie z tego
+            # samego powodu, co GESTOSC_BEATOW o cztery dni wczesniej.
+            #
+            # `BRAK_ESKALACJI`, `CZYTELNIK_NIEPRZYLAPANY` i `OTWARCIE_ZNANE` to
+            # OBSERWACJE o ksztalcie tekstu, nie wady. Wracajac do nastepnego
+            # pisarza jako „wada do uniknięcia", zamieniaja sie w polecenie:
+            # stopniuj ton, wstaw zwrot do czytelnika, nie zaczynaj od rzeczy
+            # znanej. Po dziesieciu tekstach to jest podpis maszyny, nie glos.
+            #
+            # Kontrprzyklad stoi w artykule, ktory wlasciciel PRZYJAL: otwiera
+            # go zdanie „You install an AI agent" — rzecz doskonale znana,
+            # i wlasnie dlatego wciaga. `OTWARCIE_ZNANE` uznaloby je za wade.
+            #
+            # `FAKT_BEZ_POKRYCIA` przechodzi dalej, bo pokrycie faktow zostaje.
+            # Recenzent dostaje jednak od dzis oswiadczenie autorki (patrz
+            # `review`), zeby nie zglaszal jej wlasnego zawodu jako twierdzenia
+            # bez zrodla — i zeby taki falszywy alarm nie uczyl kolejnych
+            # tekstow milczenia o sobie.
+            if m.group(1) in ("DLUGOSC", "RECENZJA", "GESTOSC_BEATOW",
+                              "BRAK_ESKALACJI", "CZYTELNIK_NIEPRZYLAPANY",
+                              "OTWARCIE_ZNANE", "ODCISK_FORMY"):
                 continue
             d = re.search(r"'detail':\s*[\"'](.{0,150})", linia)
             # Ogon skladni slownika obcinamy — wpis konczacy sie na `'}` albo

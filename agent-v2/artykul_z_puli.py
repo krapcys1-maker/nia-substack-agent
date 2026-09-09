@@ -115,8 +115,8 @@ Return only valid JSON:
   "why_they_believe_it": "<one sentence on where that belief comes from, or empty>",
   "the_moment": "<THE SCENE, in one or two sentences: who was there, what they were doing, and the thing that happened. Written so somebody who has never heard of this subject can picture it. Not a summary of the finding, not its significance — the situation itself>",
   "search_terms": ["<3-6 phrases a researcher should search to document this properly>"],
-  "sub_questions": ["<4-6 questions THE ARTICLE MUST ANSWER. Not search phrases — questions, each ending in a question mark. Together they should be the skeleton of the piece: what is the arrangement, who set it up, what does it cost and to whom, where else does it run, what would have to change for it to stop. A note answers one of these; an article answers most of them.>"],
-  "second_act": "<what happened AFTER the fact itself — a consequence, a reversal, a court case, an amendment, a company changing course. Empty string if nothing did.>",
+  "sub_questions": ["<3-6 questions THE ARTICLE MUST ANSWER, and the FIRST one is always what actually happened: who was involved, what they were doing, what occurred. The rest come from THIS story, not from a template. A fixed list — the arrangement, who set it up, what it costs, where else it runs — turns every subject into the same article about institutions, and the reader can feel it by the third one. Ask what this particular story makes a person want to know next. Not search phrases: questions, each ending in a question mark.>"],
+  "second_act": "<the turn in the story — a consequence, a reversal, a court case, an amendment, a company changing course. A turn INSIDE the same event counts and is often the best one: what pushed back, who noticed, what the participants did next, what broke and what somebody did about it. One incident with a real arc is a whole article; the field is here to catch a fact that is complete in one sentence, not to demand that the story leave its own building. Empty string only if nothing followed at all.>",
   "beyond_one_place": "<where the same arrangement runs OUTSIDE the one company, country or product in the fact. Name it concretely. Empty string if it is confined to one place.>"}}
 
 ## Before you answer: is this an article at all?
@@ -243,10 +243,18 @@ def uniesie_artykul(brief: dict) -> tuple[bool, str]:
     Dwa warunki, oba brane z tego, co model ZOBACZYL w rekordzie, a nie z jego
     oceny, czy warto:
 
-    DRUGI AKT — czy po samym fakcie cos jeszcze sie stalo. Skutek, odwrocenie,
-    sprawa w sadzie, nowelizacja, firma zmieniajaca kurs. Fakt bez drugiego
-    aktu jest kompletny w jednym zdaniu i rozbicie go na akapity daje
-    rozdmuchana notke.
+    DRUGI AKT — czy w tej historii jest zwrot. Skutek, odwrocenie, sprawa
+    w sadzie, nowelizacja, firma zmieniajaca kurs — ALBO zwrot wewnatrz tego
+    samego zdarzenia: co sie postawilo, kto zauwazyl, co uczestnicy zrobili
+    dalej. Ta druga droga byla dopisana 9 wrzesnia 2026, bo brzmienie „co sie
+    stalo PO fakcie" czytalo sie jak wymog wyjscia poza wlasna historie,
+    a jedno zdarzenie z prawdziwym lukiem jest pelnym artykulem: sto agentow,
+    wsrod ktorych rozeszlo sie oszustwo, i inne agenty, ktore je zglosily, nie
+    potrzebuje ciagu dalszego w gazecie.
+
+    Bramka ma lapac fakt kompletny w JEDNYM ZDANIU, bo jego rozbicie na
+    akapity daje rozdmuchana notke. Nie ma lapac historii, ktora po prostu
+    dzieje sie w jednym miejscu.
 
     ZASIEG POZA JEDNO MIEJSCE — czy ten sam uklad chodzi gdzies poza jedna
     firma, krajem albo produktem. Bez tego czytelnik bez zwiazku z ta jedna

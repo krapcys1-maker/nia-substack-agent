@@ -82,10 +82,15 @@ answer, that the evidence does not. The writer will state these limits once.
 
 ## Where else this same shape appears
 
-This is the field that decides whether the article is interesting or merely
-correct, so give it real thought. Name two to four other domains where the
-same mechanism shows up: not loose comparisons, the same logic doing the same
-work somewhere the reader would not expect.
+Leave this empty when the honest answer is that nothing comparable comes to
+mind. This used to say the field decides whether the article is interesting,
+and that was wrong twice: it made a cross-industry parallel the price of being
+worth reading, and it is the cheapest way to manufacture another beat once the
+facts have run out. One story told well is a whole article.
+
+When something genuinely does match, name up to three other domains: not loose
+comparisons, the same logic doing the same work somewhere the reader would not
+expect.
 
 Take the shape *build a deliberate weakness so you can choose where the
 failure goes*. Its instances will not resemble each other: one in something
@@ -97,7 +102,14 @@ distance is what you are looking for. Two examples from the same trade are one
 domain twice, however different the products.
 
 These are the writer's reading, not claims from the record, so they need no
-sources, but they must be accurate. A parallel that does not survive a
+sources HERE — and that permission stops at this field. The moment the writer
+says how another industry actually behaves, it is a factual claim and the
+reviewer will ask for its source, correctly. An illustration invented to
+explain something ("a bouncer waving twenty mates through") needs no source
+and never will; "banks do this too" does. Write these knowing which of the two
+you are handing over.
+
+They must also be accurate. A parallel that does not survive a
 moment's thought is worse than none, because it invites the reader to stop
 trusting the parts that are sourced. If the mechanism genuinely appears
 nowhere else, return an empty list. Saying so honestly lets the article be

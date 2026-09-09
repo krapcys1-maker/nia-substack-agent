@@ -163,7 +163,7 @@
 {{"title": "<the published headline>", "subtitle": "<one line>", "body": "<the article, plain text with blank lines between paragraphs>", "numbers_used": ["<each figure you wrote, exactly as written>"], "limits_paragraph_present": true|false}}
 ```
 
-#### `pisarz_persona.md` (109 wierszy)
+#### `pisarz_persona.md` (116 wierszy)
 
 **Pola wejściowe:** `card_json`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
@@ -177,9 +177,9 @@
 
 **Pola wejściowe:** *(brak)*
 
-#### `recenzent.md` (29 wierszy)
+#### `recenzent.md` (39 wierszy)
 
-**Pola wejściowe:** `body`, `card_json`
+**Pola wejściowe:** `body`, `card_json`, `oswiadczenie`
 
 **Kontrakt wyjścia:**
 
@@ -207,7 +207,7 @@
 {{"when": "<roughly when>", "what_happened": "<what people saw, in one sentence>", "what_changed": "<the rule or practice that came out of it, or 'nothing'>"}}
 ```
 
-#### `synteza.md` (114 wierszy)
+#### `synteza.md` (126 wierszy)
 
 **Pola wejściowe:** `evidence_json`, `max_claim_chars`, `max_confirmed`, `max_contradictions`, `max_numbers`, `max_uncertain`, `min_confirmed`, `min_numbers`, `question`
 
