@@ -103,5 +103,23 @@ sprawdz("run_id przekazany", zapis.get("run_id") == 1,
         "dostal %r" % zapis.get("run_id"))
 
 print()
+print("=== 4. SKAUT NIE PLACI ZA TEMAT, O KTORYM JUZ BYLO ===")
+# Zmierzone 9 wrzesnia 2026 na zywej puli: bez tego sita skaut dostawal
+# 1 pozycje z 26 kolidujaca z opublikowana notka — badanie o grzybach,
+# opisane na koncie DWA RAZY w dwie doby.
+#
+# `niepowtorzony` w `pick_topic` chroni dopiero PO oplaceniu wywolania,
+# i to samo dotyczy `znajdz_ciekawostki`, ktore napelnia bank.
+sprawdz("skaut dostaje odciski wystawionych notek",
+        zapis.get("opisane_rdzenie") is not None, str(sorted(zapis))[:100])
+
+zrodlo = open("agent-v2/stages.py", encoding="utf-8").read()
+sprawdz("oba wolania selektora maja to sito",
+        zrodlo.count("opisane_rdzenie=pamiec_wystawionych()") >= 2,
+        "wystapien: %d" % zrodlo.count("opisane_rdzenie=pamiec_wystawionych()"))
+sprawdz("zero golych wolan zaczyn_z_kanalow w briefach",
+        "zaczyn_kanalow=zaczyn_z_kanalow(ze_skrotem=True, run_id=run_id)," not in zrodlo)
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)
