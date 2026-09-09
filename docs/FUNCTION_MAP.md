@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 37 |
-| functions and methods | 785 |
+| functions and methods | 786 |
 | functions that call a paid model | 28 |
 | functions that touch the browser | 68 |
 | functions that touch the database | 49 |
@@ -44,7 +44,7 @@ For paid calls the verdict comes from
 | [`audyt_systemu.py`](#agent-v2audyt-systemu-py) | 9 | 0 | 1 | 0 | Audyt CALEGO systemu na zywych danych, jednym poleceniem. |
 | [`audyt_tematow.py`](#agent-v2audyt-tematow-py) | 4 | 0 | 0 | 0 | Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem. |
 | [`bramki.py`](#agent-v2bramki-py) | 9 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
-| [`browser.py`](#agent-v2browser-py) | 107 | 0 | 48 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
+| [`browser.py`](#agent-v2browser-py) | 108 | 0 | 48 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
 | [`browser_reader.py`](#agent-v2browser-reader-py) | 5 | 0 | 1 | 0 | Bound source reads, including Playwright shutdown, in an owned subprocess. |
 | [`call_runtime.py`](#agent-v2call-runtime-py) | 10 | 0 | 1 | 0 | Per-operation deadlines and usage; workers never write to the database. |
 | [`config.py`](#agent-v2config-py) | 44 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
@@ -263,7 +263,7 @@ Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci.
 
 Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 
-107 funkcji.
+108 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -374,6 +374,7 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 | 5584 | `restackuj_w_kanale(ile, decyzja, wyslij, url)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
 | 5790 | `w_rewirze(tekst)` | — | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
 | 5808 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 5883 | `_tylko_jeden_wpis(tekst)` | — | Pierwszy wpis z kontenera, gdy mimo wszystko trafilo sie ich kilka. | `browser._notka_przy_przycisku` |
 
 ---
 

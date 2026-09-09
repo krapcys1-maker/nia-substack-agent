@@ -320,7 +320,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5835 wierszy, 105 funkcji na poziomie modułu, 3 klas
+5915 wierszy, 106 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -429,6 +429,7 @@
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
+| `_tylko_jeden_wpis(tekst)` *(wewn.)* | Pierwszy wpis z kontenera, gdy mimo wszystko trafilo sie ich kilka. |
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
