@@ -313,7 +313,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5731 wierszy, 105 funkcji na poziomie modułu, 3 klas
+5754 wierszy, 105 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -377,7 +377,7 @@
 | `_stan_przycisku(uchwyt)` *(wewn.)* | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. |
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
-| `klik_mimo_zaslony(przycisk, nazwa)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
+| `klik_mimo_zaslony(przycisk, nazwa, timeout)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
 | `konto_za_duze(handle)` | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
 | `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |

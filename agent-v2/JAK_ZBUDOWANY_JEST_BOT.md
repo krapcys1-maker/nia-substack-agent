@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 37 061 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 37 084 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -455,7 +455,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5731 wierszy, 105 funkcji na poziomie modułu, 3 klas
+5754 wierszy, 105 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -519,7 +519,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_stan_przycisku(uchwyt)` *(wewn.)* | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. |
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
-| `klik_mimo_zaslony(przycisk, nazwa)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
+| `klik_mimo_zaslony(przycisk, nazwa, timeout)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
 | `konto_za_duze(handle)` | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
 | `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |
@@ -8739,7 +8739,22 @@ def restackuj_w_kanale(
                 page.wait_for_timeout(1200)
                 # Substack nazywa przycisk wyslania "Post" — szukamy go
                 # WEWNATRZ okna, nie w calym kanale, zeby nie trafic w cudzy.
-                page.get_by_role("button", name="Post").last.click(timeout=8000)
+                #
+                # PIATE MIEJSCE KLIKANIA, ZNALEZIONE TESTEM NA ZYWO 9 wrzesnia
+                # 2026. Cztery poprzednie dostaly `klik_mimo_zaslony` tego
+                # samego dnia, a to nie — bo klika `.last` w jednej linii,
+                # bez zmiennej `przycisk`, wiec sprawdzenie w tescie go nie
+                # widzialo. Restack padl przy pierwszej probie:
+                #
+                #     TimeoutError: Locator.click: Timeout 8000ms exceeded
+                #     waiting for get_by_role("button", name="Post").last
+                #
+                # Model wybral notke i napisal podpis za 0,04 USD, po czym
+                # calosc przepadla na kliknieciu. Cena bledu jest tu wyzsza
+                # niz gdzie indziej: restack chodzi na `claude-opus-5`.
+                klik_mimo_zaslony(
+                    page.get_by_role("button", name="Post").last, "restack",
+                    timeout=8000)
                 page.wait_for_timeout(SETTLE_MS + 2000)
                 wynik["restackowane"] += 1
                 # Restack tworzy NOWA notke z wlasnym numerem. Bez niego

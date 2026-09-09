@@ -150,12 +150,27 @@ zrodlo = open("agent-v2/browser.py", encoding="utf-8").read()
 _od = zrodlo.index("def klik_mimo_zaslony")
 _do = zrodlo.index("def konto_za_duze")
 poza_helperem = zrodlo[:_od] + zrodlo[_do:]
-gole = _re.findall(r"^\s+(?:przycisk|wyslac)\.click\(\)\s*$", poza_helperem, _re.M)
+# WZORZEC ZLAPAL CZTERY MIEJSCA I PRZEPUSCIL PIATE. Restack klikal
+# `page.get_by_role(...).last.click(timeout=8000)` w JEDNEJ linii, bez
+# zmiennej `przycisk` — wiec sprawdzenie po nazwie zmiennej go nie
+# widzialo, testy byly zielone, a restack padl przy pierwszej probie na
+# zywo. Szukamy teraz KAZDEGO klikniecia przycisku publikacji, po tresci
+# lokatora, nie po nazwie zmiennej.
+# KLIKNIECIE, KTORE OTWIERA, NIE JEST KLIKNIECIEM, KTORE WYSYLA. Jedno bare
+# `przycisk.click()` zostaje swiadomie: `wystaw_odpowiedz_pod_artykulem` klika
+# afordancje „Reply" tylko po to, zeby ROZWINAC pole. Gdyby ja cos zaslonilo,
+# nie opublikowalibysmy pustki — po prostu nie byloby gdzie pisac, i blad
+# wyjdzie od razu.
+DOZWOLONE_OTWARCIA = 1
+gole = _re.findall(r"^\s+(?:przycisk|wyslac)\.click\(", poza_helperem, _re.M)
+gole = gole[DOZWOLONE_OTWARCIA:]
+gole += [l for l in poza_helperem.splitlines()
+         if 'name="Post"' in l and ".click(" in l and not l.strip().startswith("#")]
 przez_helper = zrodlo.count("klik_mimo_zaslony(")
 sprawdz("zero golych klikniec przycisku publikacji", not gole,
         "zostalo %d: %s" % (len(gole), gole))
-sprawdz("wszystkie ida przez helper (definicja + cztery wywolania)",
-        przez_helper >= 5, "wystapien: %d" % przez_helper)
+sprawdz("wszystkie ida przez helper (definicja + piec wywolan)",
+        przez_helper >= 6, "wystapien: %d" % przez_helper)
 sprawdz("droga trafia do dziennika",
         zrodlo.count("droga_klikniecia") >= 4,
         "wystapien: %d" % zrodlo.count("droga_klikniecia"))

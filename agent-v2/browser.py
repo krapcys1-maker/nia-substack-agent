@@ -2962,7 +2962,8 @@ def polub_w_kanale(ile: int, wyslij: bool = False, *,
     return wynik
 
 
-def klik_mimo_zaslony(przycisk, nazwa: str = "przycisk") -> str:
+def klik_mimo_zaslony(przycisk, nazwa: str = "przycisk",
+                      timeout: float | None = None) -> str:
     """Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost.
 
     ZMIERZONE NA PRODUKCJI. Od 8 wrzesnia 2026 odpowiedzi przestaly wychodzic:
@@ -2997,7 +2998,11 @@ def klik_mimo_zaslony(przycisk, nazwa: str = "przycisk") -> str:
     Substack ja zdejmie.
     """
     try:
-        przycisk.click()
+        # LIMIT CZASU PRZEKAZUJEMY DALEJ. Restack mial wlasne `timeout=8000`
+        # i wciagniecie go pod ten helper bez tego parametru cicho wydluzyloby
+        # czekanie do domyslnych trzydziestu sekund — czyli poprawka zmienialaby
+        # rytm przy okazji naprawiania klikniecia.
+        przycisk.click(**({"timeout": timeout} if timeout else {}))
         return "zwykly"
     except Exception as exc:                                   # noqa: BLE001
         if "intercepts pointer events" not in str(exc):
@@ -4249,7 +4254,10 @@ def _domknij_publikacje_artykulu(page) -> bool:
     for label in ("Publish without buttons", "Opublikuj bez przycisków"):
         przycisk = page.get_by_role("button", name=label, exact=True)
         if przycisk.count() == 1 and przycisk.is_visible():
-            przycisk.click(timeout=10_000)
+            # TO TEZ JEST PUBLIKACJA, tylko jej ostatni krok. Okno wyskakuje po
+            # „Send", wiec zaslonienie tego przycisku zatrzymaloby CALY artykul
+            # — po zaplaceniu za pisarza, sprawdzenia i okladke.
+            klik_mimo_zaslony(przycisk, "domkniecie publikacji", timeout=10_000)
             print("  potwierdzono publikacje bez dodatkowych przyciskow", flush=True)
             return True
     return False
@@ -5605,7 +5613,22 @@ def restackuj_w_kanale(
                 page.wait_for_timeout(1200)
                 # Substack nazywa przycisk wyslania "Post" — szukamy go
                 # WEWNATRZ okna, nie w calym kanale, zeby nie trafic w cudzy.
-                page.get_by_role("button", name="Post").last.click(timeout=8000)
+                #
+                # PIATE MIEJSCE KLIKANIA, ZNALEZIONE TESTEM NA ZYWO 9 wrzesnia
+                # 2026. Cztery poprzednie dostaly `klik_mimo_zaslony` tego
+                # samego dnia, a to nie — bo klika `.last` w jednej linii,
+                # bez zmiennej `przycisk`, wiec sprawdzenie w tescie go nie
+                # widzialo. Restack padl przy pierwszej probie:
+                #
+                #     TimeoutError: Locator.click: Timeout 8000ms exceeded
+                #     waiting for get_by_role("button", name="Post").last
+                #
+                # Model wybral notke i napisal podpis za 0,04 USD, po czym
+                # calosc przepadla na kliknieciu. Cena bledu jest tu wyzsza
+                # niz gdzie indziej: restack chodzi na `claude-opus-5`.
+                klik_mimo_zaslony(
+                    page.get_by_role("button", name="Post").last, "restack",
+                    timeout=8000)
                 page.wait_for_timeout(SETTLE_MS + 2000)
                 wynik["restackowane"] += 1
                 # Restack tworzy NOWA notke z wlasnym numerem. Bez niego
