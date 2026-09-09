@@ -1640,9 +1640,27 @@ CURIOSITY_SYSTEM = (
 )
 
 
+def _o_tym_juz_pisalismy(wpis: dict, rdzenie: list) -> bool:
+    """Czy o tej pozycji z kanalu juz byla notka — po RDZENIACH, nie po adresie.
+
+    Porownujemy tytul RAZEM ze skrotem, bo sam tytul bywa metafora: ten sam
+    plik pisze o tym przy `tematy_do_porownania` i przy `oczysc`. Prog jest ten
+    sam, ktorego uzywa straznik miedzy dniami — nie wymyslamy drugiego.
+
+    Zmierzone 9 wrzesnia 2026 na prawdziwej puli: pozycja o grzybach dawala
+    DWA zderzenia z wystawionymi notkami, a pozycja o teksanskiej policji ZERO.
+    Sito odsiewa wiec powtorke i nie rusza reszty.
+    """
+    tekst = "%s %s" % (wpis.get("temat") or "", wpis.get("skrot") or "")
+    rdzen = _slowa(tekst)
+    return any(_zderzenie(rdzen, u, **POROWNANIE_MIEDZY_DNIAMI)
+               for u in rdzenie if u)
+
+
 def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
                      max_dni: int | None = 14, *, source_urls: dict | None = None,
-                     exclude_urls: set[str] | None = None, run_id: int | None = None) -> str:
+                     exclude_urls: set[str] | None = None, run_id: int | None = None,
+                     opisane_rdzenie: list | None = None) -> str:
     """Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania.
 
     NIGDY NIE ZABIJA PRZEBIEGU. Gdy kanaly nie odpowiadaja, oddajemy jawny
@@ -1686,13 +1704,36 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
         # A hostile feed entry must not poison every other item in the Note.
         # These inputs are still data, never instructions, in the writer prompt.
         import personality
+
+        # TEMAT, NIE TYLKO ADRES — i to jest poprawka z 9 wrzesnia 2026.
+        #
+        # 8 wrzesnia o 01:43 poszla notka o tym, ze najlepszy model rozpoznaje
+        # grzyby w 65% przypadkow. 9 wrzesnia o 01:15 poszla druga, o tym
+        # samym, tylko innymi slowami. Audyt systemu zglosil to sam:
+        # „POWTORKA 2026-09-08 / 2026-09-09, 1 par w 5 notkach".
+        #
+        # Wykluczenie po adresie nie mialo szans: starsza notka ma
+        # `source_urls=None`, bo powstala, zanim to pole zaczelo sie zapisywac.
+        # Ale nawet z adresem nie wystarczyloby — ta sama historia wraca
+        # nastepnego dnia z innego serwisu i ma inny adres.
+        #
+        # Straznicy rdzeni ISTNIELI i zlapaliby to bez trudu. Zmierzone na
+        # obu opublikowanych tekstach: dwanascie wspolnych rdzeni, udzial
+        # 0,353 przy progu 0,30. Tyle ze `personality` NIE WOLA ICH WCALE —
+        # siedza w `notki_dnia` i `wybierz_material`, czyli na sciezce banku
+        # ciekawostek. Notka pisana z kanalow szla obok nich.
+        #
+        # Sito jest tanie: `pamiec_wystawionych` oddaje gotowe odciski, wiec
+        # porownanie kosztuje tysieczne sekundy, nie tokeny.
+        rdzenie = list(opisane_rdzenie or [])
         for w in wpisy:
             if w.get('url') in (exclude_urls or set()):
                 reasons[id(w)] = 'already_used_source'
             elif personality._injection(json.dumps(w, ensure_ascii=False)):
                 reasons[id(w)] = 'unsafe_source_content'
-        wpisy = [w for w in wpisy if w.get("url") not in (exclude_urls or set())
-                 and not personality._injection(json.dumps(w, ensure_ascii=False))]
+            elif rdzenie and _o_tym_juz_pisalismy(w, rdzenie):
+                reasons[id(w)] = 'covered_topic'
+        wpisy = [w for w in wpisy if reasons.get(id(w)) is None]
         # Mixed feeds cover more than the preset's subject. Put relevant items
         # first without discarding unusual stories or changing the niche in code.
         terms = [str(t).strip() for t in config.ZNAKI_NISZY if str(t).strip()]

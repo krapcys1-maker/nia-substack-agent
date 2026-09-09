@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-565 wierszy, 21 funkcji na poziomie modułu, 0 klas
+578 wierszy, 21 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -156,7 +156,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8627 wierszy, 149 funkcji na poziomie modułu, 0 klas
+8668 wierszy, 150 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -198,6 +198,7 @@
 | `wczytaj_zuzyte()` | — |
 | `zapisz_zuzyte(nowe)` | Pamięć zużytych ciekawostek — poza bazą, bo budżet to cztery tabele. |
 | `wybierz_cele(conn, run_id, posty)` | Które posty z kanału zasługują na komentarz. |
+| `_o_tym_juz_pisalismy(wpis, rdzenie)` *(wewn.)* | Czy o tej pozycji z kanalu juz byla notka — po RDZENIACH, nie po adresie. |
 | `zaczyn_z_kanalow(ile, ze_skrotem, max_dni)` | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. |
 | `_rdzen_wydarzenia(w)` *(wewn.)* | Klucz zdarzenia: posortowane slowa rdzenia, zeby ta sama premiera |
 | `_nowe_wydarzenia(wydarzenia)` *(wewn.)* | Ktore z tych zdarzen sa NOWE — czyli nie dobieralismy juz o nich materialu. |
