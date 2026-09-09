@@ -416,6 +416,19 @@ OBRAZ_WLACZONY = True
 # `OBRAZ_WLACZONY = False` wylacza oba.
 OBRAZY_NA_ARTYKUL = 2
 
+# OBRAZ REFERENCYJNY — zeby NIA wygladala tak samo na kazdej okladce.
+#
+# Opis slowny nie wystarcza. „Ciemne, krotkie, faliste wlosy, garnitur" oddaje
+# za kazdym razem inna kobiete, a przy jednej okladce tygodniowo konto nie
+# zbuduje z tego rozpoznawalnej postaci. Generator przyjmuje jednak obraz
+# wzorcowy; wtedy wywolanie idzie na `/v1/images/edits` zamiast
+# `/v1/images/generations`.
+#
+# Plik nalezy do KARTRIDZA (`styl.referencja`), bo wyglad postaci jest
+# tozsamoscia konta, nie metoda silnika. Bez niego wszystko dziala jak dotad:
+# obraz powstaje z samego opisu.
+OBRAZ_REFERENCJA = ""
+
 # NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py`
 # i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec
 # zmiana pisarza w konfiguracji nie mowila nic o tym, co stanie sie po jego

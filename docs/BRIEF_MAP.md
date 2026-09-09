@@ -27,7 +27,7 @@ through a variable this scan cannot see. Check before cutting.
 | `dyskoveria.md` | 82 | `stages.discovery` | `discovery` | 0 | 0 | 0 | 0 |
 | `fedreg.md` | 82 | `stages.kandydaci_z_fedreg` | `fedreg` | 6 | 5 | 1 | 0 |
 | `forma.md` | 93 | `stages.ocen_forme` | `forma` | 14 | 8 | 6 | 0 |
-| `grafika.md` | 89 | `stages.grafika` *(+1)* | `grafika` | 3 | 0 | 3 | 0 |
+| `grafika.md` | 126 | `stages.grafika` *(+1)* | `grafika` | 3 | 0 | 3 | 0 |
 | `klasyfikacja.md` | 55 | `stages._sklasyfikuj_jedno` | `classify` | 5 | 1 | 4 | 0 |
 | `kogo_odpowiedziec.md` | 48 | `stages.wybierz_do_odpowiedzi` | `wybor` | 5 | 0 | 5 | 0 |
 | `komentarz.md` | 148 | `stages.comment_on` | `comment` | 3 | 0 | 3 | 0 |
@@ -136,7 +136,7 @@ through a variable this scan cannot see. Check before cutting.
 | field | verdict | read by |
 |---|---|---|
 | `prompt` | used | `stages.grafika`, `stages.grafika_srodek` |
-| `subject` | used | `stages.grafika`, `stages.grafika_srodek` |
+| `subject` | used | `artykul_z_puli._napisz_i_zapisz`, `stages.grafika`, `stages.grafika_srodek` |
 | `why_this_scene` | unread, on purpose | `zmusza do wyboru sceny Z TEKSTU, nie ilustracji tematu` |
 
 ### `klasyfikacja.md`

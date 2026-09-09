@@ -1303,6 +1303,8 @@ def grafika(
             "grafika.md",
             title=draft.get("title", ""),
             body=draft.get("body", "")[:6000],
+            juz_pokazane="This is the first illustration for this article; "
+                         "nothing has been drawn yet.",
         )
         brief = llm.parse_json(
             llm.call("grafika", IMAGE_SYSTEM, prompt, conn=conn, run_id=run_id)
@@ -1312,7 +1314,8 @@ def grafika(
             raise ValueError("brief graficzny bez promptu")
         print(f"  [grafika] przedmiot: {brief.get('subject', '')}", flush=True)
 
-        dane = llm.obraz(opis, conn=conn, run_id=run_id)
+        dane = llm.obraz(opis, conn=conn, run_id=run_id,
+                         referencja=str(getattr(config, "OBRAZ_REFERENCJA", "") or ""))
     except Exception as exc:
         # TREŚĆ wyjątku, nie sama nazwa klasy. Gdy grafika artykułu padła
         # na `IntegrityError`, log powiedział tylko tyle — a przyczyna („NOT NULL
@@ -1390,7 +1393,7 @@ def _miejsce_na_drugi_obraz(akapity: list[str]) -> int:
 @_na_kanal("artykul")
 def grafika_srodek(
     conn: sqlite3.Connection, run_id: int, draft: dict[str, Any],
-    sciezka_artykulu: Path | None = None,
+    sciezka_artykulu: Path | None = None, unikaj: str = "",
 ) -> dict[str, Any]:
     """DRUGI obraz, w srodku tekstu. Decyzja wlasciciela z 9 wrzesnia 2026.
 
@@ -1449,11 +1452,33 @@ def grafika_srodek(
     kotwica = _slowa_kotwicy or " ".join(_czysty.split())[:70]
     okolica = "\n\n".join(akapity[max(0, gdzie - 1):gdzie + 2])
 
+    # CALY ARTYKUL, NIE TRZY AKAPITY.
+    #
+    # ZMIERZONE 9 wrzesnia 2026 na artykule 0028: drugi obraz dostawal tylko
+    # `okolica`, czyli akapit przed i po. Model nie wiedzial, o czym jest
+    # tekst ani co juz pokazala okladka — i narysowal drugi raz to samo puste
+    # biuro z tym samym pomaranczowym kablem. Wlasciciel odrzucil to jako
+    # „generyczne" i mial racje: dwa obrazy z jednego artykulu byly prawie
+    # nieodroznialne.
+    #
+    # Model dostaje wiec CALOSC dla sensu, WSKAZANY FRAGMENT dla miejsca,
+    # i OPIS OKLADKI, zeby jej nie powtorzyc.
+    _pelny = "%s\n\n>>> THE PASSAGE THIS IMAGE SITS BESIDE <<<\n%s" % (
+        str(draft.get("body", ""))[:5000], okolica[:1500])
+    _juz = ("The cover of this same article already shows: %s\n"
+            "Draw something else. A different room, a different moment, "
+            "different objects in the foreground. Two illustrations from one "
+            "article that could be swapped without anybody noticing are one "
+            "illustration billed twice." % unikaj.strip()
+            if unikaj.strip() else
+            "The cover of this article is a separate scene; do not repeat a "
+            "wide empty office interior.")
     try:
         prompt = _prompt(
             "grafika.md",
             title=draft.get("title", ""),
-            body=okolica[:6000],
+            body=_pelny,
+            juz_pokazane=_juz,
         )
         brief = llm.parse_json(
             llm.call("grafika", IMAGE_SYSTEM, prompt, conn=conn, run_id=run_id)
@@ -1463,7 +1488,8 @@ def grafika_srodek(
             raise ValueError("brief graficzny bez promptu")
         print("  [grafika 2] scena: %s" % str(brief.get("subject", ""))[:90],
               flush=True)
-        dane = llm.obraz(opis, conn=conn, run_id=run_id)
+        dane = llm.obraz(opis, conn=conn, run_id=run_id,
+                         referencja=str(getattr(config, "OBRAZ_REFERENCJA", "") or ""))
     except Exception as exc:
         print("  [grafika 2] NIE POWSTAŁA (%s: %s) — artykuł wychodzi "
               "z jednym obrazem" % (type(exc).__name__, exc), flush=True)
