@@ -37,7 +37,7 @@ through a variable this scan cannot see. Check before cutting.
 | `odpowiedz.md` | 131 | `stages.reply_to` | `reply` | 3 | 0 | 3 | 0 |
 | `OSWIADCZENIE_AUTORSTWA.md` | 56 | **nothing** | — | 0 | — | — | — |
 | `pisarz.md` | 312 | `stages.write` | `write` | 5 | 1 | 4 | 0 |
-| `pisarz_persona.md` | 116 | `stages.write` | `write` | 4 | 1 | 3 | 0 |
+| `pisarz_persona.md` | 130 | `stages.write` | `write` | 4 | 1 | 3 | 0 |
 | `po_ludzku.md` | 53 | **nothing** | — | 0 | — | — | — |
 | `recenzent.md` | 39 | `stages.review` | `review` | 0 | 0 | 0 | 0 |
 | `restack.md` | 79 | `stages.ocen_restack` | `restack` | 4 | 3 | 1 | 0 |

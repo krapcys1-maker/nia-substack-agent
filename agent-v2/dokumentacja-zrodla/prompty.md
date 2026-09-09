@@ -163,7 +163,7 @@
 {{"title": "<the published headline>", "subtitle": "<one line>", "body": "<the article, plain text with blank lines between paragraphs>", "numbers_used": ["<each figure you wrote, exactly as written>"], "limits_paragraph_present": true|false}}
 ```
 
-#### `pisarz_persona.md` (116 wierszy)
+#### `pisarz_persona.md` (130 wierszy)
 
 **Pola wejściowe:** `card_json`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `style_examples`, `style_negative`, `style_positive`, `target_words`
 
