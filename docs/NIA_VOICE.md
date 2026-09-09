@@ -141,6 +141,50 @@ addresses nobody, which is what held `addressed` at 5/10.
 `request_sha256`. If they did not, the comparison is void and the tool says so
 rather than averaging two different questions.
 
+## The standard, the fingerprint and the blind test
+
+The owner's accepted texts live as files in the cartridge, under
+`styl/wzorzec/`: the approved article, the five approved Notes and an approved
+conversation translated one to one from Polish. They are the definition of the
+voice; a prompt may quote them, the files are canonical. Three tools use them
+and none of them makes a model call.
+
+**`narzedzia/odcisk_glosu.py FILE`** measures a text the way the owner once
+measured the accepted article against two rejected ones: words per sentence,
+short paragraphs, sentences addressed to the reader, hedges, field jargon,
+links in the body, attributions per hundred words, sentences about being an
+AI, reviewer words, first person, the ending, the repeated "That's not X.
+That's Y." construction. The band for each measure is the range across the
+accepted samples of the same form. The result is an observation for a person,
+never a gate: a rule on form becomes the machine's signature after ten texts,
+and this project has measured that. `--zdania` prints the sentences it
+counted so a wrong count can be seen; `--kalibracja` prints its numbers next
+to the owner's hand count; `--z-instancji` lists every article and Note draft
+of the active instance in date order, so drift shows as a trend rather than a
+feeling.
+
+**`narzedzia/slepa_proba_glosu.py --kandydaci FILE`** lays a new text next to
+two accepted ones without labels and asks which one is not from the standard.
+The key is written to a separate file and read after the answer. If the owner
+cannot pick the new text, the voice held; `--odpowiedzi` scores the answers and
+appends them to `glos-werdykty.jsonl` in the instance's data directory, so the
+record of what passed grows from the owner's decisions.
+
+**`narzedzia/proba_glosu.py --wejscie NAME --live`** writes Notes on one of
+six fixed inputs (`--lista-wejsc`): a story that asks for anger, one for
+warmth, one that needs explaining, one to disagree with, one to be delighted
+by, and one with no news at all. The scheduled generator never repeats an
+input, so a change between two runs could never be pinned on the prompt;
+a fixed input can. Each sample is also placed against the band of the
+accepted Notes when the preset carries a standard.
+
+What the character is, in these terms: the invariants are a person in the
+text, plain words, no reviewer register, sources under the piece rather than
+in it, and an ending that lands on somebody or something; the permitted
+variation is swearing only when the story earns it, warmth when it is earned,
+and the shape each story needs. The tools measure the invariants across the
+fixed inputs and leave the variation alone.
+
 ## Shared writing instructions and offline preview
 
 With `osobowosc.wlaczona = true`, every writing format receives the same system
