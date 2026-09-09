@@ -66,7 +66,7 @@ through a variable this scan cannot see. Check before cutting.
 
 | field | verdict | read by |
 |---|---|---|
-| `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main`, `browser.wymagaj_wlasciwego_konta` |
+| `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._odleglosc`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main` |
 | `id` | used | `alarm._co_z_tego_wyszlo`, `alarm.zawieszone`, `audyt_researchu.main`, `audyt_systemu.ocen_pomiary` |
 | `loners` | **nobody, unexplained** | — |
 | `mechanism` | used | `artykul_z_puli._napisz_i_zapisz`, `run.main` |
@@ -95,7 +95,7 @@ through a variable this scan cannot see. Check before cutting.
 | `control_url` | unread, on purpose | `zmusza do ZNALEZIENIA dokumentu rzadzacego, nie samego wpisania daty; kod czyta ` |
 | `control_verdict` | **gate** | `stages.swiezosc_faktu` |
 | `decision` | **gate** | `stages.bramka_kandydata` |
-| `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main`, `browser.wymagaj_wlasciwego_konta` |
+| `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._odleglosc`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main` |
 | `fact` | **gate** | `stages.bramka_kandydata`, `stages.swiezosc_faktu` |
 | `source_date` | **gate** | `stages.swiezosc_faktu` |
 | `url` | **gate** | `gates.szerokosc_podstawy`, `stages.bramka_kandydata`, `stages.napraw_obalone`, `stages.zweryfikuj` |
@@ -108,7 +108,7 @@ through a variable this scan cannot see. Check before cutting.
 | `actually` | **gate** | `stages.bramka_kandydata` |
 | `consequence` | **gate** | `stages.bramka_kandydata` |
 | `decision` | **gate** | `stages.bramka_kandydata` |
-| `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main`, `browser.wymagaj_wlasciwego_konta` |
+| `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._odleglosc`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main` |
 | `fact` | **gate** | `stages.bramka_kandydata`, `stages.swiezosc_faktu` |
 | `wrong_belief` | **gate** | `stages.bramka_kandydata` |
 
@@ -237,7 +237,7 @@ through a variable this scan cannot see. Check before cutting.
 | `citable_numbers` | used | `artykul_z_puli._przebieg`, `run.main`, `stages.synthesis` |
 | `claim` | **gate** | `stages.napraw_obalone`, `stages.zweryfikuj` |
 | `contradictions` | used (by name) | `run (para klucz-etykieta)` |
-| `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main`, `browser.wymagaj_wlasciwego_konta` |
+| `domain` | used | `artykul_z_puli._napisz_i_zapisz`, `artykul_z_puli._odleglosc`, `artykul_z_puli.wybierz_fakt`, `audyt_researchu.main` |
 | `evidence` | used | `audyt_kosztow.collect`, `audyt_researchu.main` |
 | `how_it_matches` | unread, on purpose | `uzasadnienie paraleli — bez niego model dokleja dowolna dziedzine` |
 | `main_mechanism` | used | `run.main` |
