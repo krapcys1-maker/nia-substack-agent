@@ -170,7 +170,7 @@
 **Kontrakt wyjścia:**
 
 ```json
-{{"title": "<headline>", "subtitle": "<one line>", "body": "<article with blank lines between paragraphs>", "numbers_used": ["<each figure exactly as written>"], "limits_paragraph_present": true|false}}
+{{"title": "<headline>", "subtitle": "<one line>", "body": "<article with blank lines between paragraphs>", "limits_paragraph_present": true|false}}
 ```
 
 #### `po_ludzku.md` (53 wierszy)

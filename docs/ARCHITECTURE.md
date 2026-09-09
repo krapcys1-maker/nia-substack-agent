@@ -3,7 +3,7 @@
 Two pipelines, one process, twenty-four modules. This document is the map: what
 each directory holds, what each module does, and how a run actually proceeds.
 
-For the complete function-level inventory — 770 functions with line numbers,
+For the complete function-level inventory — 772 functions with line numbers,
 cost markers and call edges — see [FUNCTION_MAP.md](FUNCTION_MAP.md), which is
 generated from the abstract syntax tree.
 
@@ -23,7 +23,7 @@ agent-v2/              the bot. Everything that runs is here
   llm.py               transport to model providers, and cost accounting
   db.py                four tables, narrow column migrations
   gates.py             deterministic checks on finished text
-  prompts/             25 prompt files, read from disk on every call
+  prompts/             26 prompt files, read from disk on every call
   tests/               193 free tests, 9 paid ones in tests/platne/
   systemd/             three services, three timers
   dokumentacja-zrodla/ the generator for the reconstruction document
@@ -231,7 +231,7 @@ without a denominator is not a measurement.
 
 ## What is universal and what is not
 
-Measured across the 770 functions:
+Measured across the 772 functions:
 
 | layer | functions | portable? |
 |---|---|---|

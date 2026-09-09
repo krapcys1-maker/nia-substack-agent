@@ -927,27 +927,38 @@ def write(
         f"### {e['function']}\n{e['text']}" for e in examples
     ) or ("(no pinned style examples for this publication — follow the two "
           "profiles and the voice notes, and do not imitate any author)")
-    prompt = _prompt(
-        "pisarz_persona.md" if persona else "pisarz.md",
-        target_words=dl["cel"],
-        min_words=dl["min"],
-        max_words=dl["max"],
-        kotwica_dlugosci=config.kotwica_dlugosci(glebokosc),
-        style_examples=rendered,
-        style_positive=positive,
-        style_negative=negative,
-        ruch_koncowy_nazwa=ruch_nazwa,
-        ruch_koncowy=ruch_opis,
-        ile_paraleli=opis_paraleli,
-        # CO ZARZUCONO POPRZEDNIM TEKSTOM. Patrz `ostatnie_uwagi`: ten sygnal
-        # powstawal przy kazdym artykule i konczyl na dysku.
-        poprzednie_uwagi=ostatnie_uwagi() or "(brak — to pierwszy artykul)",
-        # KARTA PRZYCIETA, NIE SUROWA — patrz `karta_dla_pisarza`. Zapis
-        # w bazie zostaje pelny, recenzent tez dostaje pelna; przycinamy
-        # wylacznie to, co idzie do PISANIA.
-        card_json=json.dumps(karta_dla_pisarza(card), ensure_ascii=False,
-                             indent=2),
-    )
+    if persona:
+        # Keep literal template names so source-boundary checks can trace both paths.
+        prompt = _prompt(
+            "pisarz_persona.md",
+            target_words=dl["cel"], min_words=dl["min"], max_words=dl["max"],
+            kotwica_dlugosci=config.kotwica_dlugosci(glebokosc),
+            style_examples=rendered, style_positive=positive, style_negative=negative,
+            poprzednie_uwagi=ostatnie_uwagi() or "(brak — to pierwszy artykul)",
+            card_json=json.dumps(karta_dla_pisarza(card), ensure_ascii=False, indent=2),
+        )
+    else:
+        prompt = _prompt(
+            "pisarz.md",
+            target_words=dl["cel"],
+            min_words=dl["min"],
+            max_words=dl["max"],
+            kotwica_dlugosci=config.kotwica_dlugosci(glebokosc),
+            style_examples=rendered,
+            style_positive=positive,
+            style_negative=negative,
+            ruch_koncowy_nazwa=ruch_nazwa,
+            ruch_koncowy=ruch_opis,
+            ile_paraleli=opis_paraleli,
+            # CO ZARZUCONO POPRZEDNIM TEKSTOM. Patrz `ostatnie_uwagi`: ten sygnal
+            # powstawal przy kazdym artykule i konczyl na dysku.
+            poprzednie_uwagi=ostatnie_uwagi() or "(brak — to pierwszy artykul)",
+            # KARTA PRZYCIETA, NIE SUROWA — patrz `karta_dla_pisarza`. Zapis
+            # w bazie zostaje pelny, recenzent tez dostaje pelna; przycinamy
+            # wylacznie to, co idzie do PISANIA.
+            card_json=json.dumps(karta_dla_pisarza(card), ensure_ascii=False,
+                                 indent=2),
+        )
     text = llm.call("write", system_pisarza(), prompt, conn=conn, run_id=run_id)
     draft = llm.parse_json(text)
     if not draft.get("body"):
