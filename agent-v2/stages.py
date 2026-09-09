@@ -1436,7 +1436,17 @@ def grafika_srodek(
     # KOTWICA TEKSTOWA, NIE NUMER AKAPITU. Edytor Substacka sklada wlasne
     # wezly i numer `<p>` po wklejeniu nie musi sie zgadzac z numerem akapitu
     # w pliku. Poczatek zdania znajdzie sie w obu.
-    kotwica = " ".join(akapity[gdzie].split())[:70]
+    # KOTWICA BEZ SKLADNI MARKDOWNA. W pliku akapit moze zaczynac sie od
+    # `[tekst](adres)` albo `**pogrubienia**`, a w edytorze widac juz tylko
+    # `tekst`. Zapisana surowo kotwica nie trafilaby w nic.
+    #
+    # Ucinamy tez na granicy slowa: „...isn't the sam" dziala tylko dopoki
+    # nikt po drodze nie ruszy ostatniego wyrazu, a edytor rusza (patrz
+    # `_JS_KARETKA_ZA_AKAPITEM`). Krotsza, cala fraza jest pewniejsza.
+    _czysty = re.sub(r"\[([^\]\n]+)\]\([^)\s]+\)", r"\1", akapity[gdzie])
+    _czysty = re.sub(r"[*_`]+", "", _czysty)
+    _slowa_kotwicy = " ".join(_czysty.split())[:70].rsplit(" ", 1)[0]
+    kotwica = _slowa_kotwicy or " ".join(_czysty.split())[:70]
     okolica = "\n\n".join(akapity[max(0, gdzie - 1):gdzie + 2])
 
     try:

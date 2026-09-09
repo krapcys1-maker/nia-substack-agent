@@ -149,6 +149,48 @@ i_okladka = br.index('page.keyboard.press("Control+Home")', i_srodek)
 sprawdz("srodek wklejany PRZED okladka", i_srodek < i_okladka)
 
 print()
+print("=== 7b. KOTWICA PRZEZYWA TO, CO EDYTOR ROBI Z TEKSTEM ===")
+# ZMIERZONE 9 wrzesnia 2026 na artykule 0025. Obraz powstal, kosztowal
+# 0,20 USD i NIE WSZEDL na strone:
+#     grafika w srodku: pomijam (nie znalazlem akapitu)
+#
+# Kotwica brzmiala „An explanation of why something should work equally well
+# isn't the sam", a ProseMirror przy wklejaniu zamienia prosty apostrof na
+# typograficzny. Ani `startsWith`, ani zapasowe `includes` nie mialy szans:
+# porownywalismy TYPOGRAFIE, nie tresc.
+sprawdz("JS sprowadza apostrofy do jednej postaci",
+        "\\u2019" in br and "toLowerCase()" in br)
+sprawdz("cudzyslowy i myslniki tez",
+        "\\u201c" in br and "\\u2013" in br)
+sprawdz("twarda spacja tez sie liczy", "\\u00a0" in br)
+
+# DRUGA POLOWA TEJ SAMEJ WADY: kotwica bierze sie z PLIKU, gdzie akapit moze
+# zaczynac sie od odnosnika Markdown albo pogrubienia. W edytorze widac wtedy
+# sam tekst, bez skladni.
+st_src = io.open("agent-v2/stages.py", encoding="utf-8").read()
+sprawdz("kotwica wycina skladnie odnosnika", "_czysty = re.sub(" in st_src)
+sprawdz("i konczy sie na granicy slowa", 'rsplit(" ", 1)[0]' in st_src)
+
+Z_ODNOSNIKIEM = ("[IEEE Spectrum opisuje to tutaj](https://example.org/x) "
+                 "i **dalej** zdanie o czyms zupelnie innym niz cala reszta.")
+_body = "\n\n".join([akapit(30)] * 6 + [Z_ODNOSNIKIEM] + [akapit(30)] * 6)
+_ak = stages._akapity_tresci(_body)
+_g = stages._miejsce_na_drugi_obraz(_ak)
+sprawdz("obraz trafia w akapit z odnosnikiem", _ak[_g] == Z_ODNOSNIKIEM,
+        _ak[_g][:60])
+
+import re as _re  # noqa: E402
+_czysty = _re.sub(r"\[([^\]\n]+)\]\([^)\s]+\)", r"\1", _ak[_g])
+_czysty = _re.sub(r"[*_`]+", "", _czysty)
+_kotwica = " ".join(_czysty.split())[:70].rsplit(" ", 1)[0]
+sprawdz("w kotwicy nie ma adresu", "https://" not in _kotwica, _kotwica)
+sprawdz("ani gwiazdek", "*" not in _kotwica and "[" not in _kotwica, _kotwica)
+sprawdz("i konczy sie calym slowem", not _kotwica.endswith(" ")
+        and _kotwica.split()[-1] in _czysty.split(), _kotwica)
+sprawdz("a zaczyna tak, jak edytor pokaze akapit",
+        _kotwica.startswith("IEEE Spectrum opisuje"), _kotwica)
+
+print()
 print("=== 8. ZNACZNIKA W TRESCI NIE MA I NIE MA BYC ===")
 # Gdyby ktos wrocil do pomyslu ze znacznikiem, ten wiersz oblewa razem
 # z bramka szablonu, ktora go zlapie.
