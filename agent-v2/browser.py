@@ -2995,18 +2995,55 @@ def konto_za_duze(handle: str) -> bool:
     """
     if config.SUBSKRYPCJE_MAX_ODBIORCOW is None:
         return False
+    import json as _json
+    import urllib.error as _err
+    import urllib.request as _req
+
     import personality
+
+    # ZWYKLE HTTP, BEZ PRZEGLADARKI — i to jest poprawka po awarii, ktora ta
+    # funkcja sama spowodowala w nocy z 8 na 9 wrzesnia 2026.
+    #
+    # Pierwsza wersja wolala `podlacz_sie()`, czyli startowala Playwrighta
+    # DRUGI RAZ w procesie, ktory juz go mial. Playwright oddal wtedy
+    # „It looks like you are using Playwright Sync API inside the asyncio
+    # loop" i — co gorsza — zostawil proces w stanie, z ktorego nie dalo sie
+    # juz otworzyc zadnej strony. Moj `except` zlapal ten jeden blad i poszedl
+    # dalej, wiec z zewnatrz wygladalo to na drobiazg. Nie bylo:
+    #
+    #     [subskrypcje] nie sprawdzilem rozmiaru @addyo (Error)
+    #     [subskrypcje] blok padl: Playwright Sync API inside the asyncio loop
+    #     [komentarze]  blok padl: to samo
+    #     [dyskusje]    blok padl: to samo
+    #
+    # Przebieg zamknal dzien z jedna notka, ZEREM komentarzy i ZEREM
+    # restackow. Sito, ktore mialo oszczedzic kwadrans, kosztowalo caly wieczor.
+    #
+    # Rozmiar publicznosci stoi w PUBLICZNYM JSON-ie i nie potrzebuje ani
+    # sesji, ani przegladarki — sprawdzone na zywym koncie: `followerCount`
+    # przychodzi zwyklym `urllib`. Zadna czesc tej funkcji nie ma prawa
+    # dotykac Playwrighta.
+    adres = "https://substack.com/api/v1/user/%s/public_profile" % handle
     try:
-        p, browser_, context = podlacz_sie()
-        strona = context.new_page()
-        try:
-            profil = api_json(strona, f"/api/v1/user/{handle}/public_profile")
-        finally:
-            strona.close()
+        zapytanie = _req.Request(adres, headers={"User-Agent": config.FETCH_USER_AGENT})
+        with _req.urlopen(zapytanie, timeout=15) as odp:
+            profil = _json.loads(odp.read())
+    except _err.HTTPError as exc:
+        if exc.code == 404:
+            # PROFILU NIE MA. To nie jest awaria sieci, tylko odpowiedz: pod tym
+            # uchwytem nie ma konta o mierzalnym rozmiarze. Straznik przy
+            # przycisku odrzucilby je z tego samego powodu („size is unknown"),
+            # wiec nie ma po co isc tam i placic za to przerwy.
+            print("  [subskrypcje] @%s nie ma profilu publicznego (404)"
+                  % handle, flush=True)
+            return True
+        print("  [subskrypcje] nie sprawdzilem rozmiaru @%s (HTTP %s) — decyzja"
+              " zostaje przy profilu" % (handle, exc.code), flush=True)
+        return False
     except Exception as exc:                                   # noqa: BLE001
-        # AWARIA SITA NIE MOZE ZATRZYMAC BLOKU. Gdy nie wiemy, puszczamy dalej
-        # — straznik przy przycisku i tak sprawdzi, a tam pomylka nic nie
-        # kosztuje poza jedna proba.
+        # AWARIA SIECI NIE MOZE ODSIEWAC KANDYDATOW. Chwilowy timeout nie jest
+        # dowodem na to, ze konto jest za duze — puszczamy dalej, a straznik
+        # przy przycisku sprawdzi i zapisze powod.
         print("  [subskrypcje] nie sprawdzilem rozmiaru @%s (%s) — decyzja"
               " zostaje przy profilu" % (handle, type(exc).__name__), flush=True)
         return False

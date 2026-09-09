@@ -312,7 +312,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5645 wierszy, 104 funkcji na poziomie modułu, 3 klas
+5682 wierszy, 104 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
