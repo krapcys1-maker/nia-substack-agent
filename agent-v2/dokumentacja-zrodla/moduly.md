@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-558 wierszy, 20 funkcji na poziomie modułu, 0 klas
+565 wierszy, 21 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -24,6 +24,7 @@
 | `memory_state()` | Keep milestones after individual Notes leave the bounded prompt memory. |
 | `_count(value)` *(wewn.)* | — |
 | `statistics(now)` | Publishable facts only: net growth and cumulative measured Note views. |
+| `voice_blocks(kind)` | The same identity and voice, in the same order, for every writing role. |
 | `_system(kind)` *(wewn.)* | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. |
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
@@ -155,7 +156,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8608 wierszy, 148 funkcji na poziomie modułu, 0 klas
+8627 wierszy, 149 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -175,10 +176,11 @@
 | `poprzednie_teksty(ile, pomin_tresc)` | Treści kilku ostatnich artykułów — materiał dla bramki ODCISK_FORMY. |
 | `_nazwa_zrodla(conn, url)` *(wewn.)* | Nazwa źródła zamiast gołego adresu. |
 | `save(conn, run_id, topic, card, draft, status, blocked_by, notes)` | Etap 9 — zapis. Artykuł do szuflady: baza + plik .md. |
+| `pisarz_z_persona()` | Writing and prompt preview must choose the same persona route. |
 | `system_pisarza()` | System artykulu. Z wlaczona persona NIESIE TOZSAMOSC, a nie „anonimowa marke". |
 | `karta_dla_pisarza(card, teraz)` | Karta bez zastrzezenia, ktorego nie wolno opublikowac. |
 | `wstaw_date_zrodel(tekst, card)` | Stopka z data zrodel pisana PRZEZ KOD, nie przez model. |
-| `write(conn, run_id, card, glebokosc)` | Etap 7 — artykuł (Claude). To jest produkt. |
+| `write(conn, run_id, card, glebokosc)` | Etap 7 — artykuł, modelem wybranym w presecie dla roli `write`. |
 | `_ile_reakcji(k)` *(wewn.)* | „(reakcji: N)" TYLKO wtedy, gdy zrodlo to pole w ogole wypelnia. |
 | `_po_rowno_ze_zrodel(komentarze, ile)` *(wewn.)* | Wycinek listy, ktory NIE MOZE zaglodzic zadnego miejsca rozmowy. |
 | `wybierz_do_odpowiedzi(conn, run_id, komentarze)` | Komu odpisac, gdy komentarzy jest wiecej niz kilka. |

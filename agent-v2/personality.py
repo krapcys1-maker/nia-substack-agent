@@ -160,6 +160,14 @@ the publicly visible follower list, not the publisher's subscriber database.
     return facts
 
 
+def voice_blocks(kind):
+    """The same identity and voice, in the same order, for every writing role."""
+    blocks = getattr(config, "PRESET_BLOKI", None) or {}
+    voice = {"article": "glos_artykulu", "note": "glos_notki"}.get(kind, "glos_komentarza")
+    return [blocks.get("linia_redakcyjna", ""), config.STYL_OPIS,
+            blocks.get("glos_wspolny", ""), blocks.get(voice, "")]
+
+
 def _system(kind):
     """System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy.
 
@@ -179,12 +187,9 @@ def _system(kind):
     Blok formy ma wiec mowic wylacznie o tym, co ta forma zmienia — dlugosc,
     ksztalt, do kogo mowi — a nie powtarzac, kim ona jest.
     """
-    blocks = config.PRESET_BLOKI
-    voice = "glos_notki" if kind == "note" else "glos_komentarza"
     return "\n\n".join([
         "Write in " + config.ARTICLE_LANGUAGE + ". Return one JSON object, no markdown fences.",
-        blocks.get("linia_redakcyjna", ""), config.STYL_OPIS,
-        blocks.get("glos_wspolny", ""), blocks.get(voice, ""),
+        *voice_blocks(kind),
         "You are openly an AI persona, not a human. Comic moods, fictional coworker "
         "comparisons and opinions are welcome. Do not turn jokes into claims of real "
         "sentience, physical experiences, unobserved actions or product capabilities. "
@@ -406,8 +411,10 @@ def _swiat(conn=None, run_id=None):
             "think about it, and let the air out. You are a person reacting to "
             "the news, never a news feed: do not list, do not round up, do not "
             "quote a headline, and never mention a second item. If nothing here "
-            "is worth a person's time today, ignore all of it and write from "
-            "your own life instead — that is a real option, not a failure."),
+            "is worth a person's time today, ignore all of it. An opinion, "
+            "an unmistakably fictional office bit or a reflection on supplied "
+            "project history is a real option. Do not invent an event in your "
+            "life to fill the gap."),
         "headlines": zaczyn,
         "sources": sources,
     }

@@ -320,6 +320,15 @@ class Domyslne(dict):
         return "<" + k + ">"
 
 def render(nazwa):
+    if nazwa == "pisarz.md" and stages.pisarz_z_persona():
+        nazwa = "pisarz_persona.md"
+    short_roles = {"notka.md": "note", "mysl.md": "note", "komentarz.md": "comment",
+                   "odpowiedz.md": "reply", "restack.md": "restack"}
+    if config.PERSONA_WLACZONA and nazwa in short_roles:
+        import personality
+        return ("[PERSONA: system; the generic template is bypassed. "
+                "The task, supplied post and publication memory are attached at runtime.]\n\n"
+                + personality._system(short_roles[nazwa]))
     tekst = (config.PROMPTS_DIR / nazwa).read_text(encoding="utf-8")
     pola = Domyslne(stages._pola_wspolne())
     # PRZYPIETE PRZYKLADY STYLU renderowane tak, jak robi to stages.write():
@@ -328,6 +337,7 @@ def render(nazwa):
     pola["style_examples"] = (chr(10) * 2).join(
         "### " + e["function"] + chr(10) + e["text"] for e in przyklady
     ) or "(no pinned style examples for this publication)"
+    pola["style_positive"], pola["style_negative"] = style.load_profiles()
     return tekst.format_map(pola)
 
 print("=" * 72)
@@ -343,7 +353,7 @@ print("--- CURIOSITY_SYSTEM ---")
 print(stages.CURIOSITY_SYSTEM)
 print()
 print("--- WRITER_SYSTEM ---")
-print(stages.WRITER_SYSTEM)
+print(stages.system_pisarza())
 print()
 print("--- POLA WSPOLNE (bez bloku po_ludzku) ---")
 for k, v in stages._pola_wspolne().items():

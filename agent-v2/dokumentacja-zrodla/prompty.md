@@ -163,6 +163,16 @@
 {{"title": "<the published headline>", "subtitle": "<one line>", "body": "<the article, plain text with blank lines between paragraphs>", "numbers_used": ["<each figure you wrote, exactly as written>"], "limits_paragraph_present": true|false}}
 ```
 
+#### `pisarz_persona.md` (85 wierszy)
+
+**Pola wejściowe:** `card_json`, `kotwica_dlugosci`, `language`, `marka`, `max_words`, `min_words`, `nisza`, `poprzednie_uwagi`, `style_examples`, `style_negative`, `style_positive`, `target_words`
+
+**Kontrakt wyjścia:**
+
+```json
+{{"title": "<headline>", "subtitle": "<one line>", "body": "<article with blank lines between paragraphs>", "limits_paragraph_present": true|false}}
+```
+
 #### `po_ludzku.md` (53 wierszy)
 
 **Pola wejściowe:** *(brak)*

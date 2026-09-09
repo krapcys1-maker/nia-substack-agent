@@ -98,9 +98,12 @@ try:
             and "never mention a second item" in instrukcja, instrukcja[:200])
     sprawdz("naglowka nadal sie nie cytuje",
             "quote a headline" in instrukcja, instrukcja[:200])
-    sprawdz("wolno nie wziac nic i napisac o sobie",
-            "write from" in instrukcja and "not a failure" in instrukcja,
-            instrukcja[:200])
+    sprawdz("wolno pominac news i wybrac opinie, fikcje albo historie projektu",
+            "ignore all of it" in instrukcja and "an opinion" in instrukcja
+            and "fictional office bit" in instrukcja and "supplied project history" in instrukcja,
+            instrukcja)
+    sprawdz("brak newsow nie uprawnia do zmyslania wlasnych zdarzen",
+            "do not invent an event in your life" in instrukcja, instrukcja)
     # KONTRDOWOD DLA STAREJ RAMKI: gdyby wrocila, ten test ma oblac.
     sprawdz("stara ramka 'not come up at all' NIE wrocila",
             "not come up at all" not in instrukcja, instrukcja[:200])
