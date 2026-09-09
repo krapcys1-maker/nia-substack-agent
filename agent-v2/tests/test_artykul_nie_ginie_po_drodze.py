@@ -461,6 +461,12 @@ class StagesZIndeksem(AtrapaStages):
     # mierzyl kolejnosc brania, a nie odsiew powtorek.
     POWTORKA_TEMATU = _stages.POWTORKA_TEMATU
     _o_tym_samym = staticmethod(_stages._o_tym_samym)
+    # Od 9 wrzesnia 2026 `wybierz_fakt` liczy tez ODLEGLOSC od tego, co juz
+    # poszlo — kandydat blisko starego tematu idzie na koniec kolejki. Atrapa
+    # bez `_slowa` dawala `AttributeError` i test oblewal na czyms, czego nie
+    # mierzy. Pamiec kolizji jest tu pusta, wiec kazdy udzial wyjdzie zero
+    # i kolejnosc brania zostaje nietknieta — o to temu plikowi chodzi.
+    _slowa = staticmethod(_stages._slowa)
 
     def tematy_do_porownania(self, conn):
         return []

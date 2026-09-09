@@ -340,6 +340,54 @@ def wybierz_fakt(conn, run_id, ile: int = 8) -> dict:
     print("  [temat] pamiec: %d artykulow + %d notek"
           % (len(wczesniej) - len(notki), len(notki)), flush=True)
 
+    # BLISKO PROGU TO NIE TO SAMO, CO DALEKO — i kolejnosc ma to widziec.
+    #
+    # Straznik powtorek jest bramka zero-jedynkowa: udzial wspolnych rdzeni
+    # ponizej 0,20 przechodzi, powyzej odpada. Ranking sedziego nie wie nic
+    # o tym, co juz opublikowalismy, wiec kandydat najlepszy jakoscia bywa
+    # zarazem najblizszy staremu tematowi — i wygrywa, bo bramka go przepuscila.
+    #
+    # ZMIERZONE 9 wrzesnia 2026 na zywym banku, szesc kandydatur:
+    #     ranga 0  udzial 0,161  (agenty oszukujace ocene w piaskownicy)
+    #     ranga 1  udzial 0,036
+    #     ranga 2  udzial 0,067
+    #     ranga 3  udzial 0,042
+    #     ranga 4  udzial 0,077
+    #     ranga 5  udzial 0,069
+    # Pierwszy szedl na CZWARTY z rzedu tekst o agentach ogrywajacych swoja
+    # ocene, przy pieciu tematach z zupelnie innych dziedzin obok. Formalnie
+    # bez powtorki, dla czytelnika ten sam artykul trzeci raz.
+    #
+    # Dlatego kandydat powyzej POLOWY progu jest DEGRADOWANY, a nie odrzucany:
+    # idzie za tymi, ktore sa wyraznie swieze, i wraca do gry, gdy innych nie
+    # ma. Twarda granica zostaje tam, gdzie byla.
+    _blisko = stages.POWTORKA_TEMATU["prog"] / 2
+
+    def _odleglosc(f):
+        """Najwyzszy udzial wspolnych rdzeni wobec tego, co juz poszlo."""
+        opis = "%s %s" % (f.get("domain") or "", f.get("fact") or "")
+        a = stages._slowa(opis)
+        naj = 0.0
+        for w in wczesniej:
+            if not w:
+                continue
+            b = stages._slowa(str(w))
+            if not a or not b:
+                continue
+            naj = max(naj, len(a & b) / max(1, min(len(a), len(b))))
+        return naj
+
+    _udzialy = {id(f): _odleglosc(f) for f in fakty}
+    _bliscy = [f for f in fakty if _udzialy[id(f)] >= _blisko]
+    if _bliscy and len(_bliscy) < len(fakty):
+        for f in _bliscy:
+            print("  [temat] blisko starego tematu (udzial %.3f, prog %.2f) — "
+                  "na koniec kolejki: %s"
+                  % (_udzialy[id(f)], stages.POWTORKA_TEMATU["prog"],
+                     (f.get("fact") or "")[:52]), flush=True)
+        fakty = ([f for f in fakty if _udzialy[id(f)] < _blisko]
+                 + [f for f in fakty if _udzialy[id(f)] >= _blisko])
+
     for f in fakty:
         opis = "%s %s" % (f.get("domain") or "", f.get("fact") or "")
         kolizja = next((w for w in wczesniej if w and stages._o_tym_samym(
