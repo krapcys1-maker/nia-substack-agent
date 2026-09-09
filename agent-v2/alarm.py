@@ -30,6 +30,23 @@ import config
 import db
 
 HISTORIA = config.DATA_DIR / "alarmy.json"
+
+# DRUGI KANAL, KTORY NIE POTRZEBUJE NICZEGO.
+#
+# ZMIERZONE 9 wrzesnia 2026: alarm liczy sie poprawnie i konczy na zdaniu
+# „[alarm NIEWYSLANY — brak konfiguracji]" w logu systemd. W dwie doby
+# przepadly tak CZTERY: „Agent robi mniej, niz deklaruje" (8 i 9 wrzesnia),
+# „BANK NIE MA O CZYM PISAC" (8 wrzesnia) i „POMIAR WZAJEMNOSCI OSLEPL"
+# (9 wrzesnia). Zapasc subskrypcji trwala tydzien i nikt nie dostal
+# wiadomosci.
+#
+# To jest dokladnie ta awaria, o ktorej ten plik pisze w naglowku: taka,
+# ktorej nie widac. Poczta wymaga hasla, ktore moze wpisac tylko wlasciciel;
+# dysk nie wymaga niczego. Kazdy alarm ladzie wiec TAKZE tutaj, niezaleznie
+# od tego, czy poczta dziala — jeden wiersz JSON na zdarzenie, do odczytania
+# poleceniem `python agent-v2/alarm.py pokaz`.
+DZIENNIK_ALARMOW = config.DATA_DIR / "alarmy.jsonl"
+
 CISZA_GODZIN = 24
 
 
@@ -74,6 +91,72 @@ def _zapisz(klucz: str) -> None:
                         encoding="utf-8")
 
 
+def _do_pliku(klucz: str, temat: str, tresc: str, poczta: str) -> None:
+    """Dopisuje alarm do dziennika na dysku. Nigdy nie rzuca.
+
+    CISZA DOBOWA GO NIE DOTYCZY, i to jest celowe. Wyciszenie chroni skrzynke
+    przed czterema takimi samymi listami; dziennik ma pokazac, ze problem
+    wystapil czterokrotnie. Bez tego „zglaszany w ciagu doby" wygladalby jak
+    „zdarzyl sie raz".
+    """
+    try:
+        DZIENNIK_ALARMOW.parent.mkdir(parents=True, exist_ok=True)
+        wiersz = json.dumps({
+            "kiedy": datetime.now(timezone.utc).isoformat(),
+            "klucz": klucz,
+            "temat": temat,
+            "tresc": (tresc or "")[:4000],
+            "poczta": poczta,
+        }, ensure_ascii=False)
+        with DZIENNIK_ALARMOW.open("a", encoding="utf-8") as f:
+            f.write(wiersz + "\n")
+    except OSError as exc:
+        # Alarm, ktory wywala agenta, bylby gorszy od problemu, ktory zglasza.
+        print(f"  [alarm] nie zapisalem do dziennika ({exc})", flush=True)
+
+
+def ostatnie_alarmy(dni: int = 7) -> list[dict]:
+    """Alarmy z ostatnich `dni` dni, od najnowszego."""
+    if not DZIENNIK_ALARMOW.exists():
+        return []
+    prog = datetime.now(timezone.utc) - timedelta(days=max(0, dni))
+    wynik = []
+    try:
+        tekst = DZIENNIK_ALARMOW.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    for linia in tekst.splitlines():
+        linia = linia.strip()
+        if not linia:
+            continue
+        try:
+            w = json.loads(linia)
+            kiedy = datetime.fromisoformat(str(w.get("kiedy")))
+        except (ValueError, TypeError):
+            continue
+        if kiedy.tzinfo is None:
+            kiedy = kiedy.replace(tzinfo=timezone.utc)
+        if kiedy >= prog:
+            wynik.append(w)
+    return list(reversed(wynik))
+
+
+def pokaz_alarmy(dni: int = 7) -> None:
+    """Wypisuje alarmy z ostatnich dni — kanal dla czlowieka bez poczty."""
+    wpisy = ostatnie_alarmy(dni)
+    print("=== ALARMY Z OSTATNICH %d DNI: %d ===" % (dni, len(wpisy)))
+    if not skonfigurowany():
+        print("    (poczta NIE jest ustawiona — to jedyny kanal, ktory dziala)")
+    for w in wpisy:
+        print()
+        print("  [%s] %s" % (str(w.get("kiedy"))[:16], w.get("temat")))
+        print("     klucz: %-28s poczta: %s"
+              % (w.get("klucz"), w.get("poczta")))
+        for linia in str(w.get("tresc") or "").splitlines()[:6]:
+            if linia.strip():
+                print("     %s" % linia.strip()[:110])
+
+
 def wyslij(klucz: str, temat: str, tresc: str) -> bool:
     """Wysyła alarm. `klucz` identyfikuje RODZAJ problemu, nie pojedynczy wypadek.
 
@@ -82,14 +165,22 @@ def wyslij(klucz: str, temat: str, tresc: str) -> bool:
     """
     u = _ustawienia()
     if not skonfigurowany():
-        print(f"  [alarm NIEWYSLANY — brak konfiguracji] {temat}", flush=True)
+        # NAJPIERW DYSK, POTEM REZYGNACJA. Bez tego alarm konczyl w logu
+        # systemd, ktory rotuje i ktorego nikt nie czyta codziennie.
+        _do_pliku(klucz, temat, tresc, "brak konfiguracji")
+        print(f"  [alarm NIEWYSLANY — brak konfiguracji, zapisany w %s] {temat}"
+              % DZIENNIK_ALARMOW.name, flush=True)
         return False
 
     poprzednio = _ostatnio(klucz)
     if poprzednio and datetime.now(timezone.utc) - poprzednio < timedelta(
             hours=CISZA_GODZIN):
+        # Do dziennika idzie MIMO wyciszenia — patrz `_do_pliku`. Skrzynka ma
+        # dostac jeden list, a dziennik ma pokazac, ile razy to sie stalo.
+        _do_pliku(klucz, temat, tresc, "wyciszony w ciagu doby")
         print(f"  [alarm pominiety — zglaszany w ciagu doby] {temat}", flush=True)
         return False
+    _do_pliku(klucz, temat, tresc, "wysylany poczta")
 
     wiadomosc = EmailMessage()
     # MARKA Z KONFIGURACJI, NIE WPISANA. Stalo tu „[agent NIA]" — nazwa
@@ -1087,7 +1178,9 @@ def _co_z_tego_wyszlo(wpisy: list[dict]) -> None:
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) > 1 and sys.argv[1] == "przeglad":
+    if len(sys.argv) > 1 and sys.argv[1] == "pokaz":
+        pokaz_alarmy(int(sys.argv[2]) if len(sys.argv) > 2 else 7)
+    elif len(sys.argv) > 1 and sys.argv[1] == "przeglad":
         przeglad(int(sys.argv[2]) if len(sys.argv) > 2 else 3)
     elif len(sys.argv) > 1 and sys.argv[1] == "test":
         print("skonfigurowany:", skonfigurowany())
