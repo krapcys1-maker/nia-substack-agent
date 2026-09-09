@@ -1990,7 +1990,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             if not wyslij:
                 print("  (nie klikam — tryb sprawdzenia)", flush=True)
                 return wynik
-            k.click(timeout=10_000)
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(k, rodzaj, timeout=10_000)
             page.wait_for_timeout(5000)
             if rodzaj == "subskrypcja":
                 _wybierz_darmowy_plan(page)
@@ -2239,12 +2239,23 @@ def restackuj_w_kanale(
 
 <!--KOD:browser.wypelnij_artykul-->
 ```python
-def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None) -> None:
-    """Wkłada tytuł, podtytuł, grafikę i treść do otwartego edytora.
+def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None,
+                    obraz2: Path | None = None, kotwica2: str = "") -> None:
+    """Wkłada tytuł, podtytuł, grafiki i treść do otwartego edytora.
 
     Grafika idzie W TREŚĆ, na samą górę — tak, jak robi to właściciel ręcznie.
     Szukałem osobnego slotu okładki i była to droga naokoło: obraz wklejony do
     treści edytor sam wysyła na swój serwer i sam robi z niego podgląd.
+
+    DRUGI OBRAZ, w połowie tekstu, wchodzi tą samą drogą — różni się tylko
+    tym, gdzie stoi karetka przed wklejeniem. Miejsce przychodzi jako KOTWICA
+    TEKSTOWA (początek akapitu, po którym ma stanąć), a nie jako numer:
+    edytor składa własne węzły i numer `<p>` po wklejeniu HTML-a nie musi się
+    zgadzać z numerem akapitu w pliku.
+
+    KOLEJNOŚĆ MA ZNACZENIE: najpierw środek, potem okładka. Wklejenie okładki
+    na górę dokłada węzeł przed całym tekstem; robiąc to na końcu, nie ruszamy
+    akapitów, wśród których dopiero co szukaliśmy kotwicy.
     """
     import base64
 
@@ -2268,18 +2279,39 @@ def wypelnij_artykul(page, artykul: dict[str, Any], obraz: Path | None) -> None:
     print(f"  wklejona treść: {len(edytor.inner_text().split())} słów, "
           f"{page.locator('.tiptap a').count()} węzłów linkowych", flush=True)
 
+    def _wklej_obraz(plik: Path, opis: str, bylo: int) -> bool:
+        """Jeden obraz w miejscu, w którym stoi karetka. `bylo` = ile już jest."""
+        page.evaluate(_JS_WKLEJ_OBRAZ,
+                      [base64.b64encode(plik.read_bytes()).decode()])
+        for _ in range(20):   # wysyłka na serwer Substacka trwa
+            page.wait_for_timeout(1500)
+            if page.locator(".tiptap img").count() > bylo:
+                break
+        wgrany = page.locator(".tiptap img").count() > bylo
+        print("  %s: %s" % (opis, "wgrana" if wgrany else "NIE WESZŁA"),
+              flush=True)
+        return wgrany
+
+    # ŚRODEK PRZED OKŁADKĄ — patrz docstring.
+    if obraz2 and obraz2.exists() and kotwica2:
+        edytor.click()
+        page.wait_for_timeout(300)
+        gdzie = page.evaluate(_JS_KARETKA_ZA_AKAPITEM, [kotwica2])
+        if gdzie == "ok":
+            page.wait_for_timeout(400)
+            _wklej_obraz(obraz2, "grafika w środku", 0)
+        else:
+            # NIE WKLEJAMY NA ŚLEPO. Karetka stoi wtedy tam, gdzie ją zostawił
+            # poprzedni klik — czyli obraz wylądowałby w losowym miejscu, a to
+            # gorsze niż jeden obraz.
+            print("  grafika w środku: pomijam (%s)" % gdzie, flush=True)
+
     if obraz and obraz.exists():
+        bylo = page.locator(".tiptap img").count()
         edytor.click()
         page.keyboard.press("Control+Home")
         page.wait_for_timeout(500)
-        page.evaluate(_JS_WKLEJ_OBRAZ,
-                      [base64.b64encode(obraz.read_bytes()).decode()])
-        for _ in range(20):   # wysyłka na serwer Substacka trwa
-            page.wait_for_timeout(1500)
-            if page.locator(".tiptap img").count():
-                break
-        wgrany = page.locator(".tiptap img").count() > 0
-        print(f"  grafika: {'wgrana' if wgrany else 'NIE WESZŁA'}", flush=True)
+        _wklej_obraz(obraz, "grafika", bylo)
 
     wstaw_przycisk_subskrypcji(page)
 ```

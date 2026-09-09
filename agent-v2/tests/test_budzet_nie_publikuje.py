@@ -187,9 +187,9 @@ class AtrapaStages:
     # Czyste funkcje (bez sieci, modelu i bazy) ida do PRAWDZIWEGO `stages` —
     # atrapowanie ich zamienialoby test w sprawdzanie wlasnej atrapy.
     @staticmethod
-    def wstaw_date_zrodel(tekst, card):
+    def usun_stopke_o_zrodlach(tekst, card):
         import stages as _s
-        return _s.wstaw_date_zrodel(tekst, card)
+        return _s.usun_stopke_o_zrodlach(tekst, card)
 
     # ZNACZNIK NIEWYSTAWIONEGO ARTYKULU — czyste operacje na pliku, wiec ida
     # do prawdziwego `stages` zgodnie z zasada opisana wyzej. Produkcji nie

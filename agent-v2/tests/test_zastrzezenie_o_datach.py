@@ -97,8 +97,11 @@ sprawdz("i nadal jest nazwana prawem czytelnika",
 # merytoryczne sa potwierdzone, i mimo to obalil caly tekst.
 sprawdz("prompt ZABRANIA modelowi pisac stopke z data",
         "Do not write a datestamp" in brief)
-sprawdz("i mowi, ze doda ja kod",
-        "written by code" in brief and "will be stripped" in brief)
+sprawdz("i mowi, ze kod ja usunie",
+        "code strips it" in brief)
+# ZE ZDANIE DODA KOD — TEGO PROMPT JUZ NIE MOWI, bo kod go nie dodaje.
+sprawdz("prompt nie obiecuje juz, ze stopke dopisze kod",
+        "written by code, from the card" not in brief)
 sprawdz("ale daty WEWNATRZ argumentu zostaja u modelu",
         "Dates inside the argument are still yours" in brief)
 
@@ -121,36 +124,77 @@ sprawdz("ale zawiera zdanie, ktore poprawka zostawila",
 
 print()
 print()
-print("=== 5. STOPKA TYLKO Z PRAWDZIWA DATA (artykul 0006, 2026-09-06) ===")
-# Synteza wpisala w `newest` slowo „unknown" i stopka wyszla jako
-# „Figures checked against sources to unknown." — zdanie-blad w opublikowanym
-# artykule. Data albo nic; a nic nie zostawia dziury po akapicie.
+print("=== 6. STOPKI Z DATA NIE MA W ARTYKULE W OGOLE ===")
+# 9 wrzesnia 2026. Wlasciciel przeczytal na WYSTAWIONYM artykule 0022 zdanie
+# „Figures checked against sources to 2026-08-01." i zapytal wprost, po co ono
+# tam stoi. Data byla poprawna z konstrukcji i bez sensu dla czytelnika: nie
+# wie, czym jest karta, czym `source_dates` ani do czego mu ta liczba.
+#
+# Zrodla stoja pod tekstem z nazwami, adresami i wlasnymi datami. Zdanie o tym,
+# do kiedy je sprawdzono, nie mowilo nic, czego lista juz nie mowi — bylo
+# notatka z warsztatu podana jako tresc.
+#
+# HISTORIA TEJ JEDNEJ LINIJKI, zeby nikt jej nie przywrocil w dobrej wierze:
+#   * blokowala gotowy artykul TRZY RAZY z rzedu (model przepisywal date
+#     z pamieci i mylil sie, a bramka faktow obalala za to caly tekst),
+#   * raz wyszla na konto jako „checked against sources to unknown.",
+#   * raz stanela na pozycji zero i odebrala autorce pierwsze zdanie.
+# Cztery awarie na jedno zdanie, ktorego nikt nie zamawial.
 sys.path.insert(0, "agent-v2")
 import stages  # noqa: E402
+
 _tekst = "# Tytul\n\nPierwszy akapit tresci.\n\nDrugi akapit."
-_zla = stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "unknown"}})
-sprawdz("slowo unknown nie daje stopki", "Figures checked" not in _zla, _zla[:80])
-sprawdz("i tekst zostaje nietkniety", _zla == _tekst)
-_dobra = stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "2026-09-01"}})
-# STOPKA NA DOLE, NIE POD TYTULEM — zmiana z 8 wrzesnia 2026.
-#
-# Ten test pilnowal wczesniej, zeby zdanie o zrodlach stalo na pozycji zaraz
-# pod naglowkiem. Skutek widac bylo na artykule 0014: czytelnik dostawal
-# „Figures checked against sources to 2026-08-01." jako PIERWSZE zdanie
-# artykulu, przed jakimkolwiek zdaniem autorki. Wlasciciel przeczytal to
-# jako tekst „o niczym" i pierwsze wrazenie mial sluszne — otwarciem byla
-# adnotacja procesu.
-#
-# Data zostaje, bo mowi prawde o tym, do kiedy sprawdzono liczby. Caly plik
-# nazywa to zdanie „stopka" i teraz stoi tam, gdzie stoi stopka.
-sprawdz("prawdziwa data daje stopke NA KONCU",
-        _dobra.split("\n\n")[-1].strip()
-        == "Figures checked against sources to 2026-09-01.", _dobra[-120:])
-sprawdz("i nie zabiera pierwszego zdania autorce",
-        "Figures checked" not in _dobra.split("\n\n")[1], _dobra[:120])
-sprawdz("sam rok tez jest data", "to 2026." in stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "2026"}}))
-sprawdz("kontrdowod: napis z literami odpada", "Figures checked" not in
-        stages.wstaw_date_zrodel(_tekst, {"source_dates": {"newest": "n/a"}}))
+
+sprawdz("funkcja nazywa sie tym, co robi",
+        hasattr(stages, "usun_stopke_o_zrodlach"))
+sprawdz("stara nazwa nie zostala obok",
+        not hasattr(stages, "wstaw_date_zrodel"))
+
+# NAJWAZNIEJSZE: prawdziwa data TEZ nie daje stopki. Poprzednia wersja tego
+# pliku zadala czegos odwrotnego, wiec gdyby ktos cofnal zmiane, ten wiersz
+# obleje.
+for data in ("2026-09-01", "2026", "unknown", "n/a", ""):
+    _w = stages.usun_stopke_o_zrodlach(_tekst, {"source_dates": {"newest": data}})
+    sprawdz("newest=%r nie dopisuje stopki" % data, "Figures checked" not in _w,
+            _w[-90:])
+    sprawdz("newest=%r zostawia tekst nietkniety" % data, _w == _tekst, _w[:90])
+
+# WYCINANIE ZOSTAJE. Zakaz w promptcie to prosba, nie gwarancja — a to samo
+# zdanie napisane przez model zablokowalo juz trzy gotowe artykuly.
+_z_stopka = _tekst + "\n\nFigures checked against sources to 2026-08-01."
+sprawdz("stopke napisana przez model wycinamy",
+        stages.usun_stopke_o_zrodlach(_z_stopka, {}) == _tekst,
+        repr(stages.usun_stopke_o_zrodlach(_z_stopka, {}))[-90:])
+sprawdz("po wycietym akapicie nie zostaje dziura",
+        "\n\n\n" not in stages.usun_stopke_o_zrodlach(_z_stopka, {}))
+
+# Wariant, ktory wyszedl na konto 6 wrzesnia.
+_z_unknown = _tekst + "\n\nFigures checked against sources to unknown."
+sprawdz("wariant ze slowem zamiast daty tez wypada",
+        stages.usun_stopke_o_zrodlach(_z_unknown, {}) == _tekst)
+
+# W SRODKU AKAPITU, nie w osobnym. Wycinamy zdanie, akapit zostaje.
+_w_srodku = "# Tytul\n\nZdanie pierwsze. Figures checked against sources to 2026-08-01. Zdanie trzecie."
+_po = stages.usun_stopke_o_zrodlach(_w_srodku, {})
+sprawdz("zdanie w srodku akapitu tez wypada", "Figures checked" not in _po, _po)
+sprawdz("a reszta akapitu zostaje",
+        "Zdanie pierwsze." in _po and "Zdanie trzecie." in _po, _po)
+
+# KONTRDOWOD: wzorzec nie moze zjadac zwyklej prozy o liczbach.
+_niewinne = "# Tytul\n\nThe figures they published were never independently audited."
+sprawdz("zwykle zdanie o liczbach zostaje",
+        stages.usun_stopke_o_zrodlach(_niewinne, {}) == _niewinne,
+        stages.usun_stopke_o_zrodlach(_niewinne, {}))
+
+print()
+print("=== 7. DATY ZRODEL NADAL PRACUJA GDZIE INDZIEJ ===")
+# Znika STOPKA, nie daty. `swiezosc_karty` liczy z nich wiek materialu i to
+# jest jedyny mechanizm, ktory pilnuje, zeby artykul nie stanal na czyms
+# sprzed pol roku. Gdyby ktos przy okazji usunal `source_dates`, ten wiersz
+# obleje.
+sprawdz("karta bez dat nadal jest zglaszana",
+        any(u.get("gate") == "KARTA_BEZ_DAT" for u in stages.swiezosc_karty({})),
+        str(stages.swiezosc_karty({}))[:120])
 
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 sys.exit(1 if oblane else 0)

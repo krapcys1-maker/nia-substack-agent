@@ -59,10 +59,10 @@ excerpt you are copying from is not the body that produced the figure, say so
 in `means`, so the check downstream knows to go and find the original.
 
 **source_dates**: when the sources were published, not when the events they
-describe happened. Code stamps the finished article with the newest date from
-here, so the dates must be real. If the newest thing you have is old, say so
-plainly in `note`: "nothing here is more recent than [month]" is a sentence
-the writer needs, and a reader deserves.
+describe happened. Code measures the material's age from here and refuses a
+card whose dates are missing, so the dates must be real. If the newest thing
+you have is old, say so plainly in `note`: "nothing here is more recent than
+[month]" is a sentence the writer needs, and a reader deserves.
 
 **main_mechanism**: the decision, constraint or trade-off that makes the thing
 work the way it does, in a few sentences. This is where you say how the pieces

@@ -2930,8 +2930,9 @@ def main() -> int:
              "numbers": s["numbers"]}
             for s in evidence
         ]
-        # Stopka z data zrodel PRZED zapisem — patrz `stages.wstaw_date_zrodel`.
-        draft["body"] = stages.wstaw_date_zrodel(draft["body"], card)
+        # Stopka z data zrodel WYCINANA przed zapisem, nie dopisywana — patrz
+        # `stages.usun_stopke_o_zrodlach`.
+        draft["body"] = stages.usun_stopke_o_zrodlach(draft["body"], card)
         path = stages.save(conn, run_id, topic, card, draft, status, blocked_by, notes)
 
         print(f"\n>> {status}" + (f" ({blocked_by})" if blocked_by else ""), flush=True)

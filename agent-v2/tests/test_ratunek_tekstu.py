@@ -208,9 +208,9 @@ class AtrapaStages:
 
     # Czyste funkcje ida do PRAWDZIWEGO `stages` — nie wolaja modelu ani bazy.
     @staticmethod
-    def wstaw_date_zrodel(tekst, card):
+    def usun_stopke_o_zrodlach(tekst, card):
         import stages as _s
-        return _s.wstaw_date_zrodel(tekst, card)
+        return _s.usun_stopke_o_zrodlach(tekst, card)
 
     # ZNACZNIK NIEWYSTAWIONEGO ARTYKULU — czyste operacje na pliku, wiec ida
     # do prawdziwego `stages` zgodnie z zasada opisana wyzej. Produkcji nie
