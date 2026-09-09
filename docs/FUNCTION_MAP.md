@@ -351,30 +351,30 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 | 4092 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
 | 4113 | `ustaw_oswiadczenie_ai(wyslij)` | WWW | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | `browser (poziom modulu)` |
 | 4191 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 4315 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
-| 4325 | `_domknij_publikacje_artykulu(page)` | WWW | Complete Substack's optional subscribe-button prompt after Send. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
-| 4339 | `_potwierdz_wysylke_artykulu(page, tytul)` | WWW | Retry reads, never the send; keep the editor open for a late prompt. | `browser.wystaw_artykul` |
-| 4358 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
-| 4482 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
-| 4515 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
-| 4551 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
-| 4735 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki` |
-| 4866 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
-| 4893 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
-| 4907 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
-| 4952 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
-| 5072 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
-| 5140 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
-| 5180 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
-| 5231 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
-| 5241 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
-| 5274 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
-| 5346 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
-| 5578 | `read_pages(urls)` | — | Read sources with a deadline that also covers browser shutdown. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
-| 5584 | `restackuj_w_kanale(ile, decyzja, wyslij, url)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
-| 5790 | `w_rewirze(tekst)` | — | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
-| 5808 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
-| 5883 | `_tylko_jeden_wpis(tekst)` | — | Pierwszy wpis z kontenera, gdy mimo wszystko trafilo sie ich kilka. | `browser._notka_przy_przycisku` |
+| 4438 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
+| 4448 | `_domknij_publikacje_artykulu(page)` | WWW | Complete Substack's optional subscribe-button prompt after Send. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
+| 4462 | `_potwierdz_wysylke_artykulu(page, tytul)` | WWW | Retry reads, never the send; keep the editor open for a late prompt. | `browser.wystaw_artykul` |
+| 4481 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
+| 4605 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
+| 4638 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
+| 4674 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
+| 4858 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki` |
+| 4989 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
+| 5016 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
+| 5030 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
+| 5075 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
+| 5195 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
+| 5263 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
+| 5303 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
+| 5354 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
+| 5364 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
+| 5397 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
+| 5469 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
+| 5701 | `read_pages(urls)` | — | Read sources with a deadline that also covers browser shutdown. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
+| 5707 | `restackuj_w_kanale(ile, decyzja, wyslij, url)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
+| 5913 | `w_rewirze(tekst)` | — | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 5931 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 6006 | `_tylko_jeden_wpis(tekst)` | — | Pierwszy wpis z kontenera, gdy mimo wszystko trafilo sie ich kilka. | `browser._notka_przy_przycisku` |
 
 ---
 

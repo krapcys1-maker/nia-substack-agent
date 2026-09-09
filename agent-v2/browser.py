@@ -4219,44 +4219,181 @@ def wystaw_odpowiedz_pod_artykulem(
         page.mouse.wheel(0, 12_000)
         page.wait_for_timeout(2500)
 
-        # Szukamy komentarza po autorze, a przycisk odpowiedzi w jego okolicy —
-        # inaczej trafilibyśmy w cudzy wątek.
-        # Przycisk odpowiedzi znajdujemy po ODLEGLOSCI OD KOMENTARZA, a nie po
-        # drzewie DOM: uklad zmienia sie miedzy widokami, a przy wielu
-        # komentarzach trafienie w cudzy watek byloby wpadka nie do cofniecia.
-        wybrany = page.evaluate("""(autor) => {
-            const kandydaci = [...document.querySelectorAll('*')].filter(
-                n => !n.children.length &&
-                     /^(reply|odpowiedz)$/i.test((n.innerText || '').trim()));
-            const kotwice = [...document.querySelectorAll('*')].filter(
-                n => !n.children.length &&
-                     (n.innerText || '').trim() === autor);
-            if (!kandydaci.length || !kotwice.length) return -1;
-            const k = kotwice[0].getBoundingClientRect();
-            let najlepszy = -1, naj = 1e9;
-            kandydaci.forEach((c, i) => {
-                const r = c.getBoundingClientRect();
-                const d = Math.hypot(r.top - k.top, r.left - k.left);
-                if (d < naj) { naj = d; najlepszy = i; }
-            });
-            kandydaci.forEach((c, i) => c.setAttribute('data-nia',
-                                                       i === najlepszy ? '1' : '0'));
-            return najlepszy;
-        }""", autor)
-        if wybrany < 0:
-            raise RuntimeError("nie znalazłem przycisku odpowiedzi")
-        przycisk = page.locator('[data-nia="1"]').first
-        print(f"  przycisk odpowiedzi znaleziony przy komentarzu {autor!r}",
-              flush=True)
+        # PRZYCISK ODPOWIEDZI — TRZY DROGI, OD NAJPEWNIEJSZEJ.
+        #
+        # Stalo tu jedno wyszukanie i bylo za ciasne z DWOCH powodow naraz.
+        # Kandydatem mogl byc tylko element BEZ DZIECI, ktorego tekst brzmi
+        # dokladnie „reply" albo „odpowiedz"; kotwica tylko element BEZ DZIECI
+        # o tekscie dokladnie rownym nazwie autora. Substack rysuje przycisk
+        # z ikona, a nazwisko z odznaka subskrybenta — wiec zadna z tych list
+        # nie powstawala i funkcja poddawala sie PRZED klinieciem.
+        #
+        # ZMIERZONE: pod artykulem o zamku dwie odpowiedzi na dwie proby
+        # skonczyly sie „nie znalazlem przycisku odpowiedzi". Model je napisal,
+        # zaplacilismy za nie, a dwoje czytelnikow nie dostalo nic. Kod sam
+        # pisze o sobie, ze „male konto zyje z rozmowy".
+        #
+        # Kolejnosc jest wazna: najpierw droga po ROLI, ktora rozumie ikone
+        # i odznake, potem stara heurystyka odleglosci jako zapasowa. Trafienie
+        # w cudzy watek jest wpadka nie do cofniecia, wiec obie drogi kotwicza
+        # sie na autorze, a nie na pierwszym lepszym przycisku na stronie.
+        przycisk = None
+        skad = ""
+
+        # ETYKIETA TEJ KONTROLKI TO `Comment`, NIE `Reply`.
+        #
+        # ODCZYTANE Z UKLADU STRONY, nie zgadniete. Po nieudanej probie
+        # zapisalismy `dom-odpowiedzi.html` i przejrzeli go: w calym dokumencie
+        # slowo „reply" pada w interfejsie RAZ, jako `Leave a reply...` w polu
+        # nowego komentarza pod artykulem. Przy pojedynczym komentarzu nie ma
+        # go wcale.
+        #
+        # Wiersz akcji pod komentarzem to ikony BEZ TEKSTU, rozpoznawalne
+        # tylko po `aria-label`: `Like`, `Comment`, `More options`. To wlasnie
+        # `Comment` otwiera odpowiedz w watku.
+        #
+        # Stare szukanie musialo wiec zawiesc dwa razy naraz: pytalo o nazwe
+        # „Reply", ktorej ta kontrolka nie ma, i o element BEZ DZIECI z takim
+        # tekstem, podczas gdy przycisk zawiera `<svg>`. Dwie odpowiedzi na
+        # dwie proby przepadly tak pod artykulem o zamku — model je napisal,
+        # zaplacilismy za nie, a dwoje czytelnikow nie dostalo nic.
+        ETYKIETY = re.compile(r"^\s*(reply|comment|odpowiedz|komentarz)\s*$", re.I)
+
+        # 1. Kontener komentarza tego autora, a w nim kontrolka po roli.
+        #    Autor jest odnosnikiem (`<a href="/@uchwyt">Nazwa</a>`), wiec
+        #    kotwica jest pewna; idziemy w gore do NAJBLIZSZEGO przodka, ktory
+        #    niesie te kontrolke, zeby nie trafic w cudzy watek.
+        try:
+            kotwica = page.get_by_role("link", name=autor).first
+            if kotwica.count() > 0:
+                for poziom in range(1, 8):
+                    rodzic = kotwica.locator("xpath=" + "/".join([".."] * poziom))
+                    if rodzic.count() == 0:
+                        break
+                    kand = rodzic.get_by_role("button", name=ETYKIETY)
+                    if kand.count() > 0:
+                        przycisk, skad = kand.first, "aria-label w kontenerze autora"
+                        break
+        except Exception:                              # noqa: BLE001
+            przycisk = None
+
+        # 2. Ta sama droga, ale gdy „reply" jest odnosnikiem, nie przyciskiem.
+        if przycisk is None:
+            try:
+                kotwica = page.get_by_role("link", name=autor).first
+                if kotwica.count() > 0:
+                    for poziom in range(1, 7):
+                        rodzic = kotwica.locator("xpath=" + "/".join([".."] * poziom))
+                        if rodzic.count() == 0:
+                            break
+                        kand = rodzic.get_by_text(ETYKIETY)
+                        if kand.count() > 0:
+                            przycisk, skad = kand.first, "tekst w kontenerze autora"
+                            break
+            except Exception:                          # noqa: BLE001
+                przycisk = None
+
+        # 3. Stara heurystyka odleglosci — teraz z LUZNIEJSZYM dopasowaniem:
+        #    element moze miec dzieci, a tekst zawierac ikone i biale znaki.
+        if przycisk is None:
+            wybrany = page.evaluate("""(autor) => {
+                // ETYKIETA PRZED TEKSTEM: ta kontrolka to sama ikona,
+                // wiec `innerText` jest pusty, a nazwa siedzi w `aria-label`.
+                const tekst = (n) => (n.innerText || n.textContent || '').trim();
+                const nazwa = (n) => (n.getAttribute('aria-label') || '').trim()
+                                  || tekst(n);
+                const kandydaci = [...document.querySelectorAll(
+                    'button, a, [role="button"]')].filter(
+                    n => /^(reply|comment|odpowiedz|komentarz)$/i.test(nazwa(n)));
+                const kotwice = [...document.querySelectorAll('a, span, div')].filter(
+                    n => tekst(n) === autor && tekst(n).length < 80);
+                if (!kandydaci.length || !kotwice.length) return -1;
+                const k = kotwice[0].getBoundingClientRect();
+                let najlepszy = -1, naj = 1e9;
+                kandydaci.forEach((c, i) => {
+                    const r = c.getBoundingClientRect();
+                    const d = Math.hypot(r.top - k.top, r.left - k.left);
+                    if (d < naj) { naj = d; najlepszy = i; }
+                });
+                kandydaci.forEach((c, i) => c.setAttribute('data-nia',
+                                                           i === najlepszy ? '1' : '0'));
+                return najlepszy;
+            }""", autor)
+            if wybrany >= 0:
+                przycisk = page.locator('[data-nia="1"]').first
+                skad = "odleglosc od nazwiska"
+
+        if przycisk is None:
+            # PORAZKA ZOSTAWIA SLAD. Nastepna naprawa ma ogladac uklad strony,
+            # a nie zgadywac po nazwie wyjatku.
+            try:
+                zrzut = config.DATA_DIR / "dom-odpowiedzi.html"
+                zrzut.parent.mkdir(parents=True, exist_ok=True)
+                zrzut.write_text(page.content()[:400_000], encoding="utf-8")
+                print("  zapisano uklad strony do %s" % zrzut.name, flush=True)
+            except Exception:                          # noqa: BLE001
+                pass
+            raise RuntimeError("nie znalazłem przycisku odpowiedzi przy %r" % autor)
+        print(f"  przycisk odpowiedzi znaleziony przy komentarzu {autor!r}"
+              f" ({skad})", flush=True)
+        wynik["skad_przycisk"] = skad
         przycisk.click(timeout=15_000)
         page.wait_for_timeout(3000)
 
-        pole = page.locator("textarea").first
-        pole.click(timeout=10_000)
+        # POLE ODPOWIEDZI TO EDYTOR, NIE `textarea`.
+        #
+        # ZMIERZONE 9 wrzesnia 2026 na zywym artykule, zaraz po tym, jak
+        # znalezienie przycisku wreszcie zaczelo dzialac: klikniecie otwiera
+        # pole, a `page.locator("textarea")` czeka dziesiec sekund i pada.
+        # Substack rysuje tu ProseMirror — `div[contenteditable="true"]`, ten
+        # sam rodzaj widgetu, ktory obsluguje juz `wypelnij_artykul`.
+        #
+        # Kolejnosc: najpierw edytor W OKOLICY otwartego pola, potem dowolny
+        # edytor na stronie, na koncu `textarea` — gdyby Substack gdzies
+        # jeszcze go uzywal. Kazda droga mowi o sobie w dzienniku, zeby przy
+        # nastepnej zmianie ukladu bylo wiadomo, ktora akurat zadziala.
+        pole, skad_pole = None, ""
+        for opis, lokator in (
+                ("edytor tiptap", page.locator(".tiptap[contenteditable='true']")),
+                ("edytor contenteditable", page.locator("[contenteditable='true']")),
+                ("pole tekstowe", page.locator("textarea"))):
+            try:
+                kand = lokator.last
+                if kand.count() > 0 and kand.is_visible():
+                    pole, skad_pole = kand, opis
+                    break
+            except Exception:                          # noqa: BLE001
+                continue
+        if pole is None:
+            # OSTATNIA DESKA — DOKLADNIE TO, CO BYLO WCZESNIEJ.
+            #
+            # Nowe drogi maja DOKLADAC mozliwosci, nie zabierac. Pierwsza
+            # wersja tej poprawki wymagala, zeby kandydat byl widoczny,
+            # i przez to przestawala probowac tam, gdzie stary kod pisal bez
+            # pytania. Zlapal to `test_dowod_przeciw_hostowi`: klikniecie
+            # przechodzilo, a funkcja rzucala „nie ma gdzie pisac", zamiast
+            # spróbowac tak jak dawniej.
+            pole, skad_pole = page.locator("textarea").first, "pole tekstowe (ostatnia deska)"
+        try:
+            pole.click(timeout=10_000)
+        except Exception:                              # noqa: BLE001
+            # ZRZUT DOPIERO TU, gdy naprawde nie ma gdzie pisac. Nastepna
+            # naprawa ma ogladac uklad strony, a nie zgadywac po nazwie
+            # wyjatku — tak wlasnie znalezlismy `aria-label="Comment"`.
+            try:
+                zrzut = config.DATA_DIR / "dom-pole-odpowiedzi.html"
+                zrzut.parent.mkdir(parents=True, exist_ok=True)
+                zrzut.write_text(page.content()[:400_000], encoding="utf-8")
+                print("  zapisano uklad strony do %s" % zrzut.name, flush=True)
+            except Exception:                          # noqa: BLE001
+                pass
+            raise
         page.keyboard.type(tekst, delay=12)
         page.wait_for_timeout(1500)
         wynik["wpisane"] = True
-        print(f"  wpisane w pole odpowiedzi: {len(tekst.split())} słów", flush=True)
+        wynik["skad_pole"] = skad_pole
+        print(f"  wpisane w pole odpowiedzi ({skad_pole}):"
+              f" {len(tekst.split())} słów", flush=True)
 
         wyslac = None
         for nazwa in ("Reply", "Post", "Odpowiedz", "Opublikuj"):
