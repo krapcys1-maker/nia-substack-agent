@@ -42,7 +42,7 @@ WZORCE: dict[str, dict[str, tuple[str, str]]] = {
         # Niewypelnione pole `{tytul}` albo `<the scene>`; znacznik TODO/TBD/
         # [uzupelnic]; „to unknown", „as of n/a"; stopka z data bez daty.
         "POLE_SZABLONU": (r"\{[a-z_][a-z_ ]{1,40}\}|<[a-z][a-z_ ,]{1,40}>", "niewypelnione pole szablonu w klamrach albo nawiasach katowych"),
-        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\[[A-Z][A-Z _]{2,40}\]|\blorem ipsum\b|\bTODO\b|\bTBD\b", "znacznik do uzupelnienia: TODO, TBD, [INSERT DATE], lorem ipsum"),
+        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\[(?-i:[A-Z][A-Z _]{2,40})\]|\blorem ipsum\b|\b(?-i:TODO)\b|\b(?-i:TBD)\b", "znacznik do uzupelnienia: TODO, TBD, [INSERT DATE], lorem ipsum"),
         # Plot bloku kodu, ktory wyciekl z odpowiedzi modelu do tresci. Ksztalt,
         # nie slowo, wiec ten sam wzorzec sluzy kazdemu jezykowi. Przechodzil.
         "PLOT_KODU": (r"^```|\n```", "plot bloku kodu w tresci artykulu"),
@@ -138,7 +138,7 @@ WZORCE: dict[str, dict[str, tuple[str, str]]] = {
     # ------------------------------------------------------------------
     "Polish": {
         "POLE_SZABLONU": (r"\{[a-z_][a-z_ ]{1,40}\}|<[a-z][a-z_ ,]{1,40}>", "niewypelnione pole szablonu w klamrach albo nawiasach katowych"),
-        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\[[A-Z][A-Z _]{2,40}\]|\blorem ipsum\b|\bTODO\b|\bTBD\b", "znacznik do uzupelnienia: TODO, TBD, [INSERT DATE], lorem ipsum"),
+        "ZNACZNIK_SZABLONU": (r"\[(?:uzupe[lł]ni[cć]|todo|tbd|placeholder)[^\]]*\]|\[(?-i:[A-Z][A-Z _]{2,40})\]|\blorem ipsum\b|\b(?-i:TODO)\b|\b(?-i:TBD)\b", "znacznik do uzupelnienia: TODO, TBD, [INSERT DATE], lorem ipsum"),
         # Plot bloku kodu, ktory wyciekl z odpowiedzi modelu do tresci. Ksztalt,
         # nie slowo, wiec ten sam wzorzec sluzy kazdemu jezykowi. Przechodzil.
         "PLOT_KODU": (r"^```|\n```", "plot bloku kodu w tresci artykulu"),
