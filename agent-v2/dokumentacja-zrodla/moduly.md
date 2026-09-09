@@ -834,12 +834,13 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1757 wierszy, 14 funkcji na poziomie modułu, 0 klas
+1794 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `temat_z_faktu(conn, run_id, fakt)` | Zamienia udokumentowany fakt w brief artykulu. |
 | `glebokosc_z_oceny(ocena)` | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. |
+| `_pola_glebi_puste(brief)` *(wewn.)* | Czy model zostawil OBA pola glebi puste — czyli nie odpowiedzial wcale. |
 | `uniesie_artykul(brief)` | Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania. |
 | `wybierz_fakt(conn, run_id, ile)` | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. |
 | `main()` | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. |

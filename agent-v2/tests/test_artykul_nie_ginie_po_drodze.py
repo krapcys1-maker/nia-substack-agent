@@ -542,18 +542,33 @@ try:
         lambda fakt: dict(BRIEF, second_act="", beyond_one_place="",
                           fakt_wyjsciowy=fakt["fact"]))
     sprawdz("przebieg bez tematu konczy sie kodem 1", kod == 1, kod)
+    # LICZYMY ROZNE FAKTY, NIE WYWOLANIA — i to jest poprawka pomiaru
+    # z 9 wrzesnia 2026, nie zluzowanie wymagania.
+    #
+    # Od tego dnia `_przebieg` pyta o brief DRUGI RAZ, gdy model zostawil oba
+    # pola glebi puste (patrz `test_puste_pole_to_nie_odmowa.py`). Ta atrapa
+    # zwraca puste pola ZAWSZE, wiec kazdy fakt jest tu pytany dwukrotnie
+    # i lista wywolan ma osiem pozycji na cztery tematy. Wymaganie zostaje
+    # to samo: cztery ROZNE fakty, w kolejnosci rangi.
+    rozne = list(dict.fromkeys(wziete))
     sprawdz("cztery proby wzialy CZTERY ROZNE fakty",
-            len(wziete) == 4 and len(set(wziete)) == 4,
-            [f[:40] for f in wziete])
+            len(rozne) == 4, [f[:40] for f in rozne])
     sprawdz("i wzialy je w kolejnosci rangi, czyli od najmocniejszego",
-            wziete == FAKTY_INDEKSU[:4], [f[:40] for f in wziete])
+            rozne == FAKTY_INDEKSU[:4], [f[:40] for f in rozne])
+    # I DOWOD, ZE PONOWIENIE NAPRAWDE ZASZLO. Bez tego wiersza poprawka wyzej
+    # przepuscilaby takze przebieg, ktory o ponowieniu zapomnial.
+    sprawdz("kazdy fakt pytany dwa razy, bo pola glebi byly puste",
+            len(wziete) == 8, len(wziete))
+    sprawdz("i przebieg powiedzial o tym na ekranie",
+            wydruk.count("pytam raz jeszcze o ten sam fakt") == 4,
+            wydruk.count("pytam raz jeszcze o ten sam fakt"))
     sprawdz("indeks wystarczyl — zero platnych szukan", a.szukania == 0,
             a.szukania)
     # Cel pierwszy: po petli WSZYSTKIE cztery leza z powrotem w puli.
     stany = stany_indeksu()
     sprawdz("wszystkie cztery odrzucone leza w indeksie jako `nowy`",
-            all(stany[f] == "nowy" for f in wziete),
-            {f[:30]: stany[f] for f in wziete})
+            all(stany[f] == "nowy" for f in rozne),
+            {f[:30]: stany[f] for f in rozne})
     sprawdz("czyli caly indeks jest wolny — nic nie splonelo",
             set(stany.values()) == {"nowy"}, stany)
     sprawdz("ekran nadal obiecuje to samo, co kod robi",
@@ -618,10 +633,13 @@ try:
                           fakt_wyjsciowy=fakt["fact"]),
         przed_startem=zostaw_dwoch)
     stany = stany_indeksu()
+    # Znowu ROZNE fakty, nie wywolania — atrapa oddaje puste pola glebi, wiec
+    # kazdy z dwoch jest pytany dwa razy.
+    rozne2 = list(dict.fromkeys(wziete))
     sprawdz("pusta pula w polowie petli — odrzuceni i tak wracaja",
-            kod == 1 and wziete == FAKTY_INDEKSU[:2]
+            kod == 1 and rozne2 == FAKTY_INDEKSU[:2]
             and sum(1 for s in stany.values() if s == "nowy") == 2,
-            (kod, [f[:30] for f in wziete], stany))
+            (kod, [f[:30] for f in rozne2], stany))
     sprawdz("i dopiero wtedy sciezka siega po platne szukanie",
             a.szukania == 1, a.szukania)
 finally:

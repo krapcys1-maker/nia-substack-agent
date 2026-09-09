@@ -231,6 +231,17 @@ def glebokosc_z_oceny(ocena: dict) -> str:
     return "SINGLE" if ile >= 2 else "THIN"
 
 
+def _pola_glebi_puste(brief: dict) -> bool:
+    """Czy model zostawil OBA pola glebi puste — czyli nie odpowiedzial wcale.
+
+    To co innego niz „nie ma drugiego aktu ani zasiegu". Model, ktory obejrzal
+    fakt i uznal, ze nic po nim nie nastapilo, wpisuje zdanie o tym. Model,
+    ktory pominal pole, zostawia pusty napis — i o tym nie wiemy nic.
+    """
+    return not (str(brief.get("second_act") or "").strip()
+                or str(brief.get("beyond_one_place") or "").strip())
+
+
 def uniesie_artykul(brief: dict) -> tuple[bool, str]:
     """Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania.
 
@@ -627,6 +638,27 @@ def _przebieg(conn, run_id: int) -> int:
     # nie unosi tysiaca slow. Probujemy kolejnych, zamiast poddawac sie na
     # pierwszym — dokladnie tak, jak `wybierz_fakt` robi to przy powtorkach.
     unosi, powod = uniesie_artykul(brief)
+    # PUSTE POLE TO NIE ODPOWIEDZ „NIE" — PYTAMY DRUGI RAZ.
+    #
+    # ZMIERZONE 9 wrzesnia 2026. Przebieg odrzucil CZTERY fakty z rzedu
+    # i skonczyl bez artykulu. Powtorzenie tego samego wywolania na TYM SAMYM
+    # fakcie (banki w Chinach wydajace karty z tokenami modeli) oddalo
+    # `beyond_one_place` na 26 slow: „Agricultural Bank's Kimi card and China
+    # Merchants' MiniMax card show the arrangement is not unique to one bank
+    # or AI company". W przebiegu to pole bylo puste.
+    #
+    # To ta sama zmiennosc taniego modelu, ktora rano skasowala temat artykulu
+    # na klasyfikacji, i ta sama odpowiedz: jedno ponowienie za 0,002 USD
+    # zamiast wyrzucenia dobrego tematu.
+    #
+    # Ponawiamy TYLKO przy obu polach pustych. Gdy model wpisal zdanie i ono
+    # nie wystarczylo, to jest jego werdykt i szanujemy go — pytanie drugi raz
+    # byloby placeniem za podwazanie wlasnej bramki.
+    if not unosi and _pola_glebi_puste(brief):
+        print("  (oba pola glebi puste — pytam raz jeszcze o ten sam fakt)",
+              flush=True)
+        brief = temat_z_faktu(conn, run_id, fakt)
+        unosi, powod = uniesie_artykul(brief)
     proby = 1
     # ODDAJEMY PO PETLI, NIE W SRODKU — i to jest naprawa regresu, ktory sam
     # tu wpisalem. `zwroc_kandydatow([fakt])` stalo WEWNATRZ petli, wiec
@@ -673,6 +705,11 @@ def _przebieg(conn, run_id: int) -> int:
         print("  TYTUL:  %s" % brief.get("title"), flush=True)
         print("  PYTANIE: %s" % brief.get("question"), flush=True)
         unosi, powod = uniesie_artykul(brief)
+        if not unosi and _pola_glebi_puste(brief):
+            print("  (oba pola glebi puste — pytam raz jeszcze o ten sam fakt)",
+                  flush=True)
+            brief = temat_z_faktu(conn, run_id, fakt)
+            unosi, powod = uniesie_artykul(brief)
     if not unosi:
         import research_tasks
         research_tasks.decision(config.DATA_DIR, run_id, 'article_feasibility',
