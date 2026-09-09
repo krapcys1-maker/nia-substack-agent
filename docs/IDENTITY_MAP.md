@@ -31,10 +31,10 @@ Constant `config.NAZWA_MARKI`, set by `konto.nazwa_marki`
 | `README.md` | 3 | comment — harmless, but stale | `**Your autonomous Substack editor. Your publication, your rules.**` |
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 1 | GENERATED — rebuilds itself | `# Your Publication — dokumentacja odtworzeniowa agenta` |
 | `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 46 | GENERATED — rebuilds itself | `Agent prowadzi anglojęzycznego Substacka **„Your Publication"**, który` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12101 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12513 | GENERATED — rebuilds itself | `\| `NAZWA_MARKI` \| `"Your Publication"` \| Konto na Substacku. Nazwa publikacji, tak jak m` |
 | `agent-v2/alarm.py` | 146 | **BY HAND** | `uruchamialby bota pod marka „Your Publication". To ma byc alarm.` |
 | `agent-v2/config.py` | 139 | **FIELD** | `NAZWA_MARKI = "Your Publication"` |
-| `agent-v2/konfiguracja.py` | 723 | **BY HAND** | `Placeholder marki („Your Publication", „Your AI Publication") trafialby` |
+| `agent-v2/konfiguracja.py` | 726 | **BY HAND** | `Placeholder marki („Your Publication", „Your AI Publication") trafialby` |
 | `agent-v2/run.py` | 609 | comment — harmless, but stale | `# „Your Publication", czyli nas — Substack melduje w tym` |
 | `agent-v2/systemd/nia-agent.service` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — agent` |
 | `agent-v2/systemd/nia-agent.timer` | 2 | **BY HAND** — systemd unit | `Description=Your Publication — zegar agenta` |
@@ -46,7 +46,7 @@ Constant `config.NAZWA_MARKI`, set by `konto.nazwa_marki`
 | `agent-v2/tests/test_jednostki_dla_instalacji.py` | 108 | test fixture | `"Your Publication" not in tresc)` |
 | `agent-v2/tests/test_jednostki_dla_instalacji.py` | 134 | test fixture | `_zostala_marka = any("Your Publication" in t for t in bez_zmian.values())` |
 | `agent-v2/tests/test_konto_z_env.py` | 107 | test fixture | `and len(konfiguracja.placeholder_konta("", "Your Publication")) == 2)` |
-| `agent-v2/tests/test_panel.py` | 142 | test fixture | `.replace('Your Publication', 'Legacy publication'), encoding='utf-8')` |
+| `agent-v2/tests/test_panel.py` | 155 | test fixture | `.replace('Your Publication', 'Legacy publication'), encoding='utf-8')` |
 | `agent-v2/tests/test_pochodne_po_konfiguracji.py` | 26 | test fixture | `domyslnej „Your Publication".` |
 | `agent-v2/tests/test_pochodne_po_konfiguracji.py` | 111 | test fixture | `if isinstance(wartosc, str) and ("Your Publication" in wartosc` |
 | `agent-v2/tests/test_pochodne_po_konfiguracji.py` | 139 | test fixture | `config.NAZWA_MARKI == "Your Publication", config.NAZWA_MARKI)` |
@@ -58,8 +58,8 @@ Constant `config.NAZWA_MARKI`, set by `konto.nazwa_marki`
 | `konfiguracja.example.toml` | 41 | TEMPLATE — this is the file you copy | `nazwa_marki = "Your Publication"` |
 | `packs/README.md` | 27 | **BY HAND** | `your publication.` |
 | `panel/app.js` | 109 | **BY HAND** | `return `<div class="eyebrow">${t('Your publication. Your rules.','Twoja publikacja. Twoj` |
-| `panel/app.js` | 116 | **BY HAND** | `return `<h1>${t('Connect your publication.','Podłącz swoją publikację.')}</h1><p class="` |
-| `panel/app.js` | 142 | **BY HAND** | `capture();draft={id:null,target:'my-preset',meta:{opis:''},revision:null,models:clone(st` |
+| `panel/app.js` | 151 | **BY HAND** | `return `<h1>${t('Connect your publication.','Podłącz swoją publikację.')}</h1><p class="` |
+| `panel/app.js` | 180 | **BY HAND** | `capture();draft={id:null,target:'my-preset',meta:{opis:''},revision:null,models:clone(st` |
 
 ---
 
@@ -78,14 +78,14 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 
 | file | line | how | context |
 |---|---|---|---|
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 736 | GENERATED — rebuilds itself | `\| `konto_placeholder()` \| Konto instalacji nadal jest placeholderem — bot sprawdzalby pr` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2326 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
-| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12102 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 795 | GENERATED — rebuilds itself | `\| `konto_placeholder()` \| Konto instalacji nadal jest placeholderem — bot sprawdzalby pr` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 2388 | GENERATED — rebuilds itself | `5. Nowy szkic pod `https://{SUBSTACK_HANDLE}.substack.com/publish/post?type=newsletter` ` |
+| `agent-v2/JAK_ZBUDOWANY_JEST_BOT.md` | 12514 | GENERATED — rebuilds itself | `\| `SUBSTACK_HANDLE` \| `"your-handle"` \| — \|` |
 | `agent-v2/alarm.py` | 140 | **BY HAND** | `"""Konto instalacji nadal jest placeholderem — bot sprawdzalby profil „your-handle".` |
-| `agent-v2/browser.py` | 592 | comment — harmless, but stale | `# (your-handle.substack.com), a /api/v1/reader/* i /api/v1/user/*` |
-| `agent-v2/browser.py` | 1346 | comment — harmless, but stale | `# `substack.com/@your-handle/following` oddaje 26 uchwytow, a` |
+| `agent-v2/browser.py` | 637 | comment — harmless, but stale | `# (your-handle.substack.com), a /api/v1/reader/* i /api/v1/user/*` |
+| `agent-v2/browser.py` | 1391 | comment — harmless, but stale | `# `substack.com/@your-handle/following` oddaje 26 uchwytow, a` |
 | `agent-v2/config.py` | 141 | **FIELD** | `SUBSTACK_HANDLE = "your-handle"` |
-| `agent-v2/konfiguracja.py` | 699 | **BY HAND** | `PLACEHOLDER_UCHWYTU = "your-handle"` |
+| `agent-v2/konfiguracja.py` | 702 | **BY HAND** | `PLACEHOLDER_UCHWYTU = "your-handle"` |
 | `agent-v2/tests/test_cicha_porazka.py` | 416 | test fixture | `"https://your-handle.substack.com/p/tekst", "Ktos", TEKST, wyslij=True)` |
 | `agent-v2/tests/test_dowod_przeciw_hostowi.py` | 450 | test fixture | `"https://your-handle.substack.com/p/%s" % sciezka,` |
 | `agent-v2/tests/test_komentarz_potwierdzony.py` | 502 | test fixture | `"url": "https://your-handle.substack.com/p/tekst"},` |
@@ -96,7 +96,7 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 | `agent-v2/tests/test_obserwacje.py` | 364 | test fixture | `Z_LINKIEM = "Pressure panels have a tiny hole. https://your-handle.substack.com/p/x"` |
 | `agent-v2/tests/test_obserwacje.py` | 365 | test fixture | `Z_LINKIEM_2 = "Sorting machines read the barcode. https://your-handle.substack.com/p/y"` |
 | `agent-v2/tests/test_panel.py` | 50 | test fixture | `self.assertEqual(result['fields']['konto.uchwyt'], 'your-handle')` |
-| `agent-v2/tests/test_panel.py` | 141 | test fixture | `path.write_text(path.read_text(encoding='utf-8').replace('your-handle', 'legacy-profile'` |
+| `agent-v2/tests/test_panel.py` | 154 | test fixture | `path.write_text(path.read_text(encoding='utf-8').replace('your-handle', 'legacy-profile'` |
 | `agent-v2/tests/test_przyklad_przechodzi_reguly.py` | 113 | test fixture | `ai.pola.get("konto.uchwyt") == "your-handle", ai.pola.get("konto.uchwyt"))` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 20 | test fixture | `Odczyt, nic nie klikniete, konto `your-handle`:` |
 | `agent-v2/tests/test_pula_obserwacji.py` | 22 | test fixture | `substack.com/@your-handle/following  -> 26 uchwytow` |
@@ -105,7 +105,7 @@ Constant `config.SUBSTACK_HANDLE`, set by `konto.uchwyt`
 | `agent-v2/tests/test_wzrost_konta.py` | 54 | test fixture | `"handle": "your-handle",` |
 | `analizy/2026-09-06-presety-odlaczenie-klony/RAPORT.md` | 46 | **BY HAND** | `Śledzony preset `ai` zawiera przykładowe konto `your-handle`; lokalny `nia` ma inne usta` |
 | `konfiguracja.example.toml` | 36 | TEMPLATE — this is the file you copy | `uchwyt = "your-handle"` |
-| `panel/app.js` | 142 | **BY HAND** | `capture();draft={id:null,target:'my-preset',meta:{opis:''},revision:null,models:clone(st` |
+| `panel/app.js` | 180 | **BY HAND** | `capture();draft={id:null,target:'my-preset',meta:{opis:''},revision:null,models:clone(st` |
 | `presety/ai/preset.toml` | 75 | **BY HAND** | `uchwyt = "your-handle"` |
 | `presety/hidden-bill/README.md` | 85 | **BY HAND** | `W repo pozostaje publiczny przykład `konto.uchwyt = "your-handle"`.` |
 | `presety/hidden-bill/preset.toml` | 13 | **BY HAND** | `uchwyt = "your-handle"` |
@@ -145,7 +145,7 @@ itself, or is a test fixture that no live run reads.
 | what | file | line | context |
 |---|---|---|---|
 | nazwa marki | `agent-v2/alarm.py` | 146 | `uruchamialby bota pod marka „Your Publication". To ma byc alarm.` |
-| nazwa marki | `agent-v2/konfiguracja.py` | 723 | `Placeholder marki („Your Publication", „Your AI Publication") trafialb` |
+| nazwa marki | `agent-v2/konfiguracja.py` | 726 | `Placeholder marki („Your Publication", „Your AI Publication") trafialb` |
 | nazwa marki | `agent-v2/systemd/nia-agent.service` | 2 | `Description=Your Publication — agent` |
 | nazwa marki | `agent-v2/systemd/nia-agent.timer` | 2 | `Description=Your Publication — zegar agenta` |
 | nazwa marki | `agent-v2/systemd/nia-alarm.service` | 2 | `Description=Your Publication — kontrola sesji, zdrowia i alarm` |
@@ -154,12 +154,12 @@ itself, or is a test fixture that no live run reads.
 | nazwa marki | `agent-v2/systemd/nia-artykul.timer` | 2 | `Description=Your Publication — zegar artykulu tygodniowego` |
 | nazwa marki | `packs/README.md` | 27 | `your publication.` |
 | nazwa marki | `panel/app.js` | 109 | `return `<div class="eyebrow">${t('Your publication. Your rules.','Twoj` |
-| nazwa marki | `panel/app.js` | 116 | `return `<h1>${t('Connect your publication.','Podłącz swoją publikację.` |
-| nazwa marki | `panel/app.js` | 142 | `capture();draft={id:null,target:'my-preset',meta:{opis:''},revision:nu` |
+| nazwa marki | `panel/app.js` | 151 | `return `<h1>${t('Connect your publication.','Podłącz swoją publikację.` |
+| nazwa marki | `panel/app.js` | 180 | `capture();draft={id:null,target:'my-preset',meta:{opis:''},revision:nu` |
 | uchwyt konta | `agent-v2/alarm.py` | 140 | `"""Konto instalacji nadal jest placeholderem — bot sprawdzalby profil ` |
-| uchwyt konta | `agent-v2/konfiguracja.py` | 699 | `PLACEHOLDER_UCHWYTU = "your-handle"` |
+| uchwyt konta | `agent-v2/konfiguracja.py` | 702 | `PLACEHOLDER_UCHWYTU = "your-handle"` |
 | uchwyt konta | `analizy/2026-09-06-presety-odlaczenie-klony/RAPORT.md` | 46 | `Śledzony preset `ai` zawiera przykładowe konto `your-handle`; lokalny ` |
-| uchwyt konta | `panel/app.js` | 142 | `capture();draft={id:null,target:'my-preset',meta:{opis:''},revision:nu` |
+| uchwyt konta | `panel/app.js` | 180 | `capture();draft={id:null,target:'my-preset',meta:{opis:''},revision:nu` |
 | uchwyt konta | `presety/ai/preset.toml` | 75 | `uchwyt = "your-handle"` |
 | uchwyt konta | `presety/hidden-bill/README.md` | 85 | `W repo pozostaje publiczny przykład `konto.uchwyt = "your-handle"`.` |
 | uchwyt konta | `presety/hidden-bill/preset.toml` | 13 | `uchwyt = "your-handle"` |

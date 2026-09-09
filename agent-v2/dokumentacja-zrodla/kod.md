@@ -750,6 +750,16 @@ def warto_pisac(
       DOLOZ  — jest zlamane przekonanie, ale materialu za malo: szukamy pary
       ODLOZ  — nie ma zlamanego przekonania, czyli nie ma luki
     """
+    if pisarz_z_persona():
+        evidence_card = karta_dla_pisarza(card)
+        raw = llm.call(
+            "warto_pisac", "Assess supported story material. Return only valid JSON.",
+            _prompt("warto_pisac_persona.md",
+                    card_json=json.dumps(evidence_card, ensure_ascii=False)),
+            conn=conn, run_id=run_id,
+        )
+        return _ocena_historii_persony(llm.parse_json(raw), evidence_card)
+
     # KARTA SZLA TU UCIETA W POLOWIE ZDANIA. Limit 14000 znakow nie mial przy
     # sobie zadnego pomiaru, a audyt policzyl, ze ucinal 7 z 8 kart — model
     # dostawal skladniowo zepsuty JSON bez zadnego znacznika, ze czegos brakuje,

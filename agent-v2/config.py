@@ -894,9 +894,33 @@ KOTWICE_DLUGOSCI = {
 }
 
 
-def kotwica_dlugosci(glebokosc: str) -> str:
-    """Zdanie kalibrujace dlugosc, dobrane do ilosci materialu."""
-    return KOTWICE_DLUGOSCI.get((glebokosc or "").upper(), KOTWICE_DLUGOSCI["SINGLE"])
+# KOTWICE DLA PERSONY. Kotwica RICH wyzej uzasadnia dlugosc „drugim
+# mechanizmem albo ta sama rzecza w wiecej niz jednej dziedzinie" — to jest
+# esej o instytucjach i nie kazda historia go ma. Z persona glebokosc liczy
+# `stages._ocena_historii_persony`: ile udokumentowanych watkow ma TA JEDNA
+# historia (od 9 wrzesnia 2026). Kotwica mowi wiec o watkach wewnatrz
+# historii, nie o drugiej branzy; reszta — scena przed ocena, nie wypelniac
+# powtorzeniem — zostaje ta sama, bo dotyczy czytelnika, nie kartridza.
+KOTWICE_DLUGOSCI_PERSONA = {
+    "RICH": ("the record supports several distinct threads inside this one "
+             "story, and that is what earns the length — spend it on the "
+             "situation and on developing your own observation, not on other "
+             "industries and not on saying a point twice"),
+    "SINGLE": ("the record supports one thread, well documented. Aim below the "
+               "ceiling rather than at it, and spend the opening on the "
+               "situation itself, not on a summary of it"),
+    "THIN": KOTWICE_DLUGOSCI["THIN"],
+}
+
+
+def kotwica_dlugosci(glebokosc: str, persona: bool = False) -> str:
+    """Zdanie kalibrujace dlugosc, dobrane do ilosci materialu.
+
+    `persona=True` bierze wersje bez wymogu drugiej dziedziny — patrz
+    `KOTWICE_DLUGOSCI_PERSONA`.
+    """
+    tabela = KOTWICE_DLUGOSCI_PERSONA if persona else KOTWICE_DLUGOSCI
+    return tabela.get((glebokosc or "").upper(), tabela["SINGLE"])
 
 
 def dlugosc_dla(glebokosc: str) -> dict[str, int]:

@@ -2658,15 +2658,26 @@ def main() -> int:
         print("\n-- czy jest tu luka --", flush=True)
         try:
             ocena = stages.warto_pisac(conn, run_id, card)
-            wiara = (ocena.get("contradicted_belief") or {}).get("the_belief", "")
-            print("   zlamane przekonanie: %s"
-                  % ("TAK" if ocena["przekonanie"] else "NIE"), flush=True)
-            if wiara:
-                print('   czytelnik wierzy: "%s"' % str(wiara)[:120], flush=True)
-            print("   filary: %d z 3  (%s)" % (
-                ocena["ile_filarow"],
-                ", ".join(k for k, v in ocena["filary"].items() if v) or "zaden"),
-                flush=True)
+            if ocena.get("persona_story"):
+                # SCIEZKA PERSONY (od 9 wrzesnia 2026, patrz
+                # `stages._ocena_historii_persony`): nie ma przekonania ani
+                # filarow, jest liczba udokumentowanych watkow. Twarde
+                # `ocena["ile_filarow"]` rzucaloby tu KeyError, a `except`
+                # nizej polykal go jako „awarie bramki" — oplacona ocena szla
+                # do kosza i karta wychodzila bez `ocena_ciekawosci`.
+                print("   udokumentowane pytania: %d (%s)"
+                      % (len(ocena.get("answerable_questions") or []),
+                         ocena.get("depth")), flush=True)
+            else:
+                wiara = (ocena.get("contradicted_belief") or {}).get("the_belief", "")
+                print("   zlamane przekonanie: %s"
+                      % ("TAK" if ocena["przekonanie"] else "NIE"), flush=True)
+                if wiara:
+                    print('   czytelnik wierzy: "%s"' % str(wiara)[:120], flush=True)
+                print("   filary: %d z 3  (%s)" % (
+                    ocena["ile_filarow"],
+                    ", ".join(k for k, v in ocena["filary"].items() if v) or "zaden"),
+                    flush=True)
             print("   >> %s — %s" % (ocena["werdykt"], ocena["powod"]), flush=True)
 
             if ocena["werdykt"] == "DOLOZ":

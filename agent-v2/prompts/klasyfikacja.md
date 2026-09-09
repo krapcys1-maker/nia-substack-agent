@@ -27,8 +27,12 @@ at most {max_excerpt_chars} characters, that bear directly on the question.
 Copy them EXACTLY as they appear. Do not paraphrase, do not tidy the grammar,
 do not join two distant sentences into one. Every later stage treats these as
 the evidence of record, and a sentence you smoothed is a sentence the writer
-will quote as fact. Prefer passages that state a rule, a reason, a threshold,
-a decision or a measurement over passages that merely introduce a topic.
+will quote as fact. Preserve the situation as well as the finding: who took
+part, what task they were doing, the conditions and what happened. Put the
+passages establishing that context first, followed by the result and its
+material limits. A relevant introduction or description of the experiment is
+evidence the reader needs, not disposable background. Skip generic marketing
+introductions, menus and unrelated history.
 
 **numbers**: every specific figure that appears in the passages you selected,
 each with the few words around it that say what it measures. A figure is a

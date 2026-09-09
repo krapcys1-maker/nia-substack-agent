@@ -3,7 +3,7 @@
 Two pipelines, one process, twenty-four modules. This document is the map: what
 each directory holds, what each module does, and how a run actually proceeds.
 
-For the complete function-level inventory — 784 functions with line numbers,
+For the complete function-level inventory — 785 functions with line numbers,
 cost markers and call edges — see [FUNCTION_MAP.md](FUNCTION_MAP.md), which is
 generated from the abstract syntax tree.
 
@@ -23,8 +23,8 @@ agent-v2/              the bot. Everything that runs is here
   llm.py               transport to model providers, and cost accounting
   db.py                four tables, narrow column migrations
   gates.py             deterministic checks on finished text
-  prompts/             26 prompt files, read from disk on every call
-  tests/               203 free tests, 9 paid ones in tests/platne/
+  prompts/             27 prompt files, read from disk on every call
+  tests/               204 free tests, 9 paid ones in tests/platne/
   systemd/             three services, three timers
   dokumentacja-zrodla/ the generator for the reconstruction document
   data/                database, journal, session — gitignored, never committed
@@ -152,6 +152,19 @@ rests on what they already know. **The model returns only quotes and yes/no.**
 Counting, dividing and locating are done in code: a model's arithmetic cannot be
 checked, a quote can be found in the text.
 
+**With a persona cartridge the curiosity gate asks a different question.** The
+institutional pillars above (a named decider, a felt number, a second field)
+describe an essay about systems, and not every story is one. When the preset
+carries an identity, `warto_pisac` instead lists the distinct questions the
+confirmed claims can actually answer inside this one subject, and code turns
+that count into the article's depth. A small builder's useful project, a
+single experiment or the author's own work can carry an article without an
+opponent or a second industry; the writer's length anchor says the same. The
+scene the writer opens on comes from the leading source's own excerpts, not
+from the pre-research brief, and the pre-research gate accepts documented
+material inside one story (`story_material`) alongside a second act or a
+reach beyond one place.
+
 ---
 
 ## The 26 model roles
@@ -231,7 +244,7 @@ without a denominator is not a measurement.
 
 ## What is universal and what is not
 
-Measured across the 784 functions:
+Measured across the 785 functions:
 
 | layer | functions | portable? |
 |---|---|---|

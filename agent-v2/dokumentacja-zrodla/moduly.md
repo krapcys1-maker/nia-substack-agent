@@ -123,7 +123,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3015 wierszy, 27 funkcji na poziomie modułu, 1 klas
+3026 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -157,7 +157,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9052 wierszy, 155 funkcji na poziomie modułu, 0 klas
+9118 wierszy, 156 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -287,6 +287,7 @@
 | `dopisz_do_banku_notek(notki)` | Dokłada notki do banku, pomijajac te, ktore juz tam sa. |
 | `wez_z_banku_notek(ile)` | Wyjmuje najstarsze niewykorzystane notki i ZNACZY je jako wyjete. |
 | `stan_banku_notek()` | Ile mamy zapasu — do wypisania przy starcie przebiegu. |
+| `_ocena_historii_persony(result, card)` *(wewn.)* | Measure supported story threads without imposing an institutional essay. |
 | `warto_pisac(conn, run_id, card)` | Etap przed pisarzem: czy jest tu luka, ktora obcy poczuje. |
 | `zbierz_pytania(wpisy)` | Wyławia z odpowiedzi czytelnikow te, ktore sa PYTANIAMI, i zapisuje je. |
 | `wczytaj_pytania()` | Pula pytan czytelnikow. Uszkodzony plik to pusta pula, nie awaria. |
@@ -700,7 +701,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3702 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3726 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -712,7 +713,7 @@
 | `narzedzie_wyszukiwania(model)` | Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie. |
 | `_dzis_utc()` *(wewn.)* | Dzisiejszy dzien UTC. Funkcja, nie stala — proces moze przejsc polnoc. |
 | `sufit_dnia(dzien)` | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. |
-| `kotwica_dlugosci(glebokosc)` | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. |
+| `kotwica_dlugosci(glebokosc, persona)` | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. |
 | `dlugosc_dla(glebokosc)` | Ile slow ma miec artykul o tej glebokosci. |
 | `_tokens_for(chars)` *(wewn.)* | — |
 | `dlugosc_notki(typ)` | Przedział słów dla tego typu notki. Nieznany typ dostaje całe pasmo. |
@@ -835,14 +836,14 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1796 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1822 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `temat_z_faktu(conn, run_id, fakt)` | Zamienia udokumentowany fakt w brief artykulu. |
 | `glebokosc_z_oceny(ocena)` | RICH / SINGLE / THIN — liczone z tego, co `warto_pisac` ZOBACZYLO. |
-| `_pola_glebi_puste(brief)` *(wewn.)* | Czy model zostawil OBA pola glebi puste — czyli nie odpowiedzial wcale. |
-| `uniesie_artykul(brief)` | Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania. |
+| `_pola_glebi_puste(brief)` *(wewn.)* | Czy model zostawil WSZYSTKIE pola glebi puste — czyli nie odpowiedzial wcale. |
+| `uniesie_artykul(brief)` | Czy rekord ma material na artykul przed platnym researchem. |
 | `wybierz_fakt(conn, run_id, ile)` | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. |
 | `main()` | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. |
 | `_zrob_miejsce_na_fakt(card)` *(wewn.)* | Robi miejsce na wstrzykniete twierdzenie, nie tracac zadnego ZRODLA. |

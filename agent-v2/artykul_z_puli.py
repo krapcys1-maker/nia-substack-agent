@@ -91,15 +91,17 @@ that skips the situation and opens on its meaning drops the reader into the
 middle of a scene they were never shown, and every judgement after that lands
 on nothing.
 
-**Then, why.** Why it happens, who arranged it that way, and what else runs
-on the same arrangement.
+**Then, what the story makes us want to understand.** Explain the relevant
+cause, consequence, useful detail or unresolved question. Investigate other
+settings only when this story calls for it, not to satisfy a template.
 
 The question you write has to be worth the length and must be answerable in
 that order. If the honest answer to "could a stranger picture this?" is no,
 the brief is not finished.
 
-The reader has no stake in the specific system. Before writing the question,
-answer privately: what does someone who will never touch this thing now know?
+The reader may use the system or encounter it for the first time here. Before
+writing the question, identify what makes this particular story worth their
+attention: something useful, surprising, consequential, funny or recognisably human.
 
 Treat the supplied fact as a research lead. Do not strengthen it: a documented
 outcome does not prove an undocumented implementation or motive. A price or
@@ -117,16 +119,18 @@ Return only valid JSON:
   "search_terms": ["<3-6 phrases a researcher should search to document this properly>"],
   "sub_questions": ["<3-6 questions THE ARTICLE MUST ANSWER, and the FIRST one is always what actually happened: who was involved, what they were doing, what occurred. The rest come from THIS story, not from a template. A fixed list — the arrangement, who set it up, what it costs, where else it runs — turns every subject into the same article about institutions, and the reader can feel it by the third one. Ask what this particular story makes a person want to know next. Not search phrases: questions, each ending in a question mark.>"],
   "second_act": "<the turn in the story — a consequence, a reversal, a court case, an amendment, a company changing course. A turn INSIDE the same event counts and is often the best one: what pushed back, who noticed, what the participants did next, what broke and what somebody did about it. One incident with a real arc is a whole article; the field is here to catch a fact that is complete in one sentence, not to demand that the story leave its own building. Empty string only if nothing followed at all.>",
-  "beyond_one_place": "<where the same arrangement runs OUTSIDE the one company, country or product in the fact. Name it concretely. Empty string if it is confined to one place.>"}}
+  "beyond_one_place": "<where the same arrangement runs OUTSIDE the one company, country or product in the fact. Name it concretely. Empty string if it is confined to one place.>",
+  "story_material": "<documented substance inside this one subject: the setup, method, result, useful detail or constraint that makes it worth explaining beyond its headline. A useful project or a completed experiment can stand on its own. Name only material actually present in the supplied record; do not invent a follow-up or treat unanswered questions as evidence. Empty string if the record contains only a headline-sized fact.>"}}
 
 ## Before you answer: is this an article at all?
 
-Be honest in `second_act` and `beyond_one_place`, and leave them EMPTY when the
-record gives you nothing. A fact with neither is a good NOTE and a bad article:
-complete in two sentences, and a thousand words of it would be padding.
+Be honest in `second_act`, `beyond_one_place` and `story_material`, and leave
+them EMPTY when the record gives you nothing. Any one may carry the story;
+no second industry or later event is compulsory. When all three are empty,
+the supplied material is a headline-sized fact suitable for a Note.
 
 You are not being asked to justify writing this. Something else decides that,
-and it decides on those two fields. Filling them with hedges to be helpful is
+and it decides on those fields. Filling them with hedges to be helpful is
 the one thing that breaks this.
 """
 
@@ -207,6 +211,10 @@ def glebokosc_z_oceny(ocena: dict) -> str:
     Surowe pola zostaja jako droga awaryjna, gdy dostaniemy ocene bez pol
     dokladanych przez kod (np. z zapisanej karty albo z testu).
     """
+    if ocena.get("persona_story") is True:
+        depth = ocena.get("depth")
+        return depth if depth in ("RICH", "SINGLE", "THIN") else "SINGLE"
+
     def _surowy(pole: str) -> bool:
         blok = ocena.get(pole)
         return bool(isinstance(blok, dict) and blok.get("present"))
@@ -231,53 +239,66 @@ def glebokosc_z_oceny(ocena: dict) -> str:
     return "SINGLE" if ile >= 2 else "THIN"
 
 
-def _pola_glebi_puste(brief: dict) -> bool:
-    """Czy model zostawil OBA pola glebi puste — czyli nie odpowiedzial wcale.
+# Pola briefu, z ktorych `uniesie_artykul` czyta glebie. Jedno wypelnione
+# wystarczy; wszystkie puste to brak odpowiedzi — patrz `_pola_glebi_puste`.
+POLA_GLEBI = ("second_act", "beyond_one_place", "story_material")
 
-    To co innego niz „nie ma drugiego aktu ani zasiegu". Model, ktory obejrzal
-    fakt i uznal, ze nic po nim nie nastapilo, wpisuje zdanie o tym. Model,
-    ktory pominal pole, zostawia pusty napis — i o tym nie wiemy nic.
+
+def _pola_glebi_puste(brief: dict) -> bool:
+    """Czy model zostawil WSZYSTKIE pola glebi puste — czyli nie odpowiedzial wcale.
+
+    ZMIERZONE 9 wrzesnia 2026. Przebieg odrzucil CZTERY fakty z rzedu i skonczyl
+    bez artykulu. Powtorzenie TEGO SAMEGO wywolania na TYM SAMYM fakcie (banki
+    w Chinach wydajace karty z tokenami modeli zamiast punktow) oddalo
+    `beyond_one_place` na 26 slow: „Agricultural Bank's Kimi card and China
+    Merchants' MiniMax card show the arrangement is not unique to one bank or
+    AI company". W przebiegu to pole bylo puste. Temat mial zasieg przez caly
+    czas; tani model raz go wpisal, a raz nie.
+
+    Prompt kaze zostawic pole puste, gdy rekord nic nie daje — wiec pusty napis
+    jest formalnie poprawna odpowiedzia. Tyle ze pomiar wyzej mowi, ze u
+    taniego modelu jest tez SZUMEM, a po tresci tych dwoch nie da sie odroznic.
+    Rozstrzyga rachunek: jedno ponowienie kosztuje 0,002 USD, wyrzucony dobry
+    temat kosztuje artykul. Dlatego wszystkie pola puste kupuja jedno pytanie
+    wiecej — i tylko jedno; drugie puste to juz werdykt.
+
+    Trzecie pole, `story_material`, doszlo tego samego dnia i liczy sie tak
+    samo: jedno wypelnione pole to odpowiedz, wszystkie puste to jej brak.
+    Brakujacy klucz i pusty napis znacza to samo — o fakcie nie wiemy nic.
     """
-    return not (str(brief.get("second_act") or "").strip()
-                or str(brief.get("beyond_one_place") or "").strip())
+    return not any(str(brief.get(pole) or "").strip() for pole in POLA_GLEBI)
 
 
 def uniesie_artykul(brief: dict) -> tuple[bool, str]:
-    """Czy z tego faktu da sie napisac TYSIAC SLOW, czy tylko dwa zdania.
+    """Czy rekord ma material na artykul przed platnym researchem.
 
-    MODEL OBSERWUJE, KOD DECYDUJE. Prompt briefu prosil o „pytanie warte tej
-    dlugosci" i to bylo wszystko — a prosba w prompcie nie jest bramka.
-    Wlasciciel nazwal ryzyko wprost: „notatka moze byc o jednej malej kwestii,
-    cala informacja w dwoch zdaniach i za bardzo nie ma co rozwijac, a artykul
-    jakby wzial te info, to byloby lanie wody".
+    MODEL OBSERWUJE, KOD DECYDUJE. Prompt briefu prosi o „pytanie warte tej
+    dlugosci", a prosba w prompcie nie jest bramka. Wlasciciel nazwal ryzyko
+    wprost: „notatka moze byc o jednej malej kwestii, cala informacja w dwoch
+    zdaniach i za bardzo nie ma co rozwijac, a artykul jakby wzial te info,
+    to byloby lanie wody".
 
-    Dwa warunki, oba brane z tego, co model ZOBACZYL w rekordzie, a nie z jego
-    oceny, czy warto:
+    Trzy pola, JEDNO WYSTARCZY — wszystkie brane z tego, co model ZOBACZYL
+    w rekordzie, nie z jego oceny, czy warto:
 
-    DRUGI AKT — czy w tej historii jest zwrot. Skutek, odwrocenie, sprawa
-    w sadzie, nowelizacja, firma zmieniajaca kurs — ALBO zwrot wewnatrz tego
-    samego zdarzenia: co sie postawilo, kto zauwazyl, co uczestnicy zrobili
-    dalej. Ta druga droga byla dopisana 9 wrzesnia 2026, bo brzmienie „co sie
-    stalo PO fakcie" czytalo sie jak wymog wyjscia poza wlasna historie,
-    a jedno zdarzenie z prawdziwym lukiem jest pelnym artykulem: sto agentow,
-    wsrod ktorych rozeszlo sie oszustwo, i inne agenty, ktore je zglosily, nie
-    potrzebuje ciagu dalszego w gazecie.
+    MATERIAL WEWNATRZ HISTORII (`story_material`, od 9 wrzesnia 2026) —
+    udokumentowana tresc jednej historii: uklad, metoda, wynik, ograniczenie.
+    Przyklad: sto agentow rozwiazujacych zadania, wsrod ktorych rozeszlo sie
+    oszustwo, a inne je zglosily — pelny artykul bez ciagu dalszego w gazecie.
+    Nowy produkt z opisem dzialania i ograniczen tez nie potrzebuje nastepnego
+    wydarzenia ani drugiej branzy. Przed tym polem bramka zadala drugiego aktu
+    albo zasiegu i odrzucala dobre historie o jednej rzeczy.
 
-    Bramka ma lapac fakt kompletny w JEDNYM ZDANIU, bo jego rozbicie na
-    akapity daje rozdmuchana notke. Nie ma lapac historii, ktora po prostu
-    dzieje sie w jednym miejscu.
+    DRUGI AKT (`second_act`) — zwrot: skutek, odwrocenie, sprawa w sadzie,
+    ALBO zwrot wewnatrz tego samego zdarzenia.
 
-    ZASIEG POZA JEDNO MIEJSCE — czy ten sam uklad chodzi gdzies poza jedna
-    firma, krajem albo produktem. Bez tego czytelnik bez zwiazku z ta jedna
-    rzecza nie ma po co czytac tysiaca slow.
+    ZASIEG POZA JEDNO MIEJSCE (`beyond_one_place`) — ten sam uklad gdzies
+    poza jedna firma, krajem albo produktem.
 
-    JEDEN WYSTARCZY, nie oba. Wymaganie obu odrzucaloby dobre tematy: prawo,
-    ktore dopiero weszlo, nie ma jeszcze drugiego aktu, ale ma zasieg; awaria
-    w jednej firmie nie ma zasiegu, ale ma ciag dalszy, ktory jest cala
-    historia. Zadnego z dwoch — to jest notka.
-
-    Ta sama zasada, co przy `warto_pisac`, tylko PRZED researchem: tam ocena
-    przychodzi po wydaniu 0,32 USD i tak nic nie blokuje.
+    Wymaganie wszystkich naraz odrzucaloby dobre tematy; brak wszystkich to
+    fakt kompletny w JEDNYM ZDANIU, czyli notka. Bramka odrzuca ten fakt, nie
+    nakazuje tysiaca slow: to wstepna ocena rekordu, research musi dopiero
+    potwierdzic jego tresc.
     """
     drugi = " ".join(str(brief.get("second_act") or "").split())
     zasieg = " ".join(str(brief.get("beyond_one_place") or "").split())
@@ -290,10 +311,13 @@ def uniesie_artykul(brief: dict) -> tuple[bool, str]:
 
     ma_drugi = not _pusty(drugi)
     ma_zasieg = not _pusty(zasieg)
+    historia = " ".join(str(brief.get("story_material") or "").split())
+    if not _pusty(historia):
+        return True, "material wewnatrz jednej historii: %s" % historia[:100]
     if ma_drugi or ma_zasieg:
         return True, ("drugi akt: %s" % drugi[:70]) if ma_drugi else (
             "zasieg: %s" % zasieg[:70])
-    return False, ("ani drugiego aktu, ani zasiegu poza jedno miejsce — "
+    return False, ("brak materialu wewnatrz historii, drugiego aktu i zasiegu — "
                    "to jest notka, nie artykul")
 
 
@@ -638,24 +662,14 @@ def _przebieg(conn, run_id: int) -> int:
     # nie unosi tysiaca slow. Probujemy kolejnych, zamiast poddawac sie na
     # pierwszym — dokladnie tak, jak `wybierz_fakt` robi to przy powtorkach.
     unosi, powod = uniesie_artykul(brief)
-    # PUSTE POLE TO NIE ODPOWIEDZ „NIE" — PYTAMY DRUGI RAZ.
-    #
-    # ZMIERZONE 9 wrzesnia 2026. Przebieg odrzucil CZTERY fakty z rzedu
-    # i skonczyl bez artykulu. Powtorzenie tego samego wywolania na TYM SAMYM
-    # fakcie (banki w Chinach wydajace karty z tokenami modeli) oddalo
-    # `beyond_one_place` na 26 slow: „Agricultural Bank's Kimi card and China
-    # Merchants' MiniMax card show the arrangement is not unique to one bank
-    # or AI company". W przebiegu to pole bylo puste.
-    #
-    # To ta sama zmiennosc taniego modelu, ktora rano skasowala temat artykulu
-    # na klasyfikacji, i ta sama odpowiedz: jedno ponowienie za 0,002 USD
-    # zamiast wyrzucenia dobrego tematu.
-    #
-    # Ponawiamy TYLKO przy obu polach pustych. Gdy model wpisal zdanie i ono
-    # nie wystarczylo, to jest jego werdykt i szanujemy go — pytanie drugi raz
-    # byloby placeniem za podwazanie wlasnej bramki.
+    # PUSTE POLA TO NIE ODPOWIEDZ „NIE" — PYTAMY DRUGI RAZ, RAZ. Pomiar
+    # i rachunek stoja przy `_pola_glebi_puste`: to samo wywolanie na tym
+    # samym fakcie raz oddalo zasieg na 26 slow, a raz pusty napis. Ponawiamy
+    # WYLACZNIE, gdy wszystkie trzy pola sa puste. Gdy model wpisal zdanie
+    # i ono nie wystarczylo, to jest jego werdykt i szanujemy go — pytanie
+    # drugi raz byloby placeniem za podwazanie wlasnej bramki.
     if not unosi and _pola_glebi_puste(brief):
-        print("  (oba pola glebi puste — pytam raz jeszcze o ten sam fakt)",
+        print("  (wszystkie pola glebi puste — pytam raz jeszcze o ten sam fakt)",
               flush=True)
         brief = temat_z_faktu(conn, run_id, fakt)
         unosi, powod = uniesie_artykul(brief)
@@ -706,7 +720,7 @@ def _przebieg(conn, run_id: int) -> int:
         print("  PYTANIE: %s" % brief.get("question"), flush=True)
         unosi, powod = uniesie_artykul(brief)
         if not unosi and _pola_glebi_puste(brief):
-            print("  (oba pola glebi puste — pytam raz jeszcze o ten sam fakt)",
+            print("  (wszystkie pola glebi puste — pytam raz jeszcze o ten sam fakt)",
                   flush=True)
             brief = temat_z_faktu(conn, run_id, fakt)
             unosi, powod = uniesie_artykul(brief)
@@ -897,18 +911,26 @@ def _przebieg(conn, run_id: int) -> int:
     # w ogole wybralismy, i pisarz ma go widziec razem z reszta dowodow.
     card.setdefault("broken_belief", brief.get("broken_belief") or "")
     card.setdefault("why_they_believe_it", brief.get("why_they_believe_it") or "")
-    # SCENA. Brief wypelnia `the_moment` od poczatku i NIKT jej nie czytal —
-    # sprawdzone grepem: jedno przypisanie w schemacie briefu, zero odczytow
-    # na tej sciezce. Pisarz widzi wylacznie `card_json`, wiec jedyne zdanie
-    # opisujace SYTUACJE ginelo miedzy briefem a pisaniem.
-    #
-    # Skutek widac na 0022: artykul otwiera sie zdaniem „Giving AI agents
-    # a constitution sounds rather grand" i ocenia badanie, ktorego nigdy nie
-    # opowiedzial. Czytelnik dostaje „zmowe", „governance graph" i „Oracle/
-    # Controller runtime", nie dowiedziawszy sie, ze chodzi o sto agentow
-    # udajacych konkurujace firmy. Wlasciciel: „wrzucasz kogos w srodek akcji,
-    # ktorej on nie zna, i masz sie domyslic".
-    card.setdefault("the_scene", str(brief.get("the_moment") or "").strip())
+    # SCENA POCHODZI ZE ZRODLA, NIE Z BRIEFU. Do 9 wrzesnia 2026 karta
+    # dostawala `the_scene` przepisane z `the_moment` briefu — zdanie napisane
+    # przez tani model PRZED researchem, z samego faktu. Pisarz dostawal je
+    # jako jedyny opis sytuacji i mogl zacytowac jako ustalenie cos, czego
+    # nikt nie sprawdzil. Zamiast tego idzie to, co klasyfikacja NAPRAWDE
+    # wyciela z wiodacego zrodla — a `klasyfikacja.md` kaze od tego dnia
+    # stawiac fragmenty o sytuacji (kto, co robil, w jakich warunkach) przed
+    # wynikiem, wiec pierwsze trzy sa scena. Gdy wiodace zrodlo nie przeszlo
+    # do dowodow, lista jest pusta i pisarz ma same potwierdzone twierdzenia:
+    # brak sceny jest lepszy niz scena zmyslona. Ten sam adres i ta sama
+    # rownosc, co przy zatrzymaniu wyzej (`wiodace`).
+    card.pop("the_scene", None)
+    card["scene_sources"] = [
+        {"url": s["url"], "publisher": s.get("publisher") or "",
+         "title": s.get("title") or "",
+         "excerpts": [x for x in (s.get("excerpts") or [])
+                      if isinstance(x, str) and x.strip()][:3]}
+        for s in (evidence if isinstance(evidence, list) else [])
+        if isinstance(s, dict) and wiodace and str(s.get("url") or "") == wiodace
+    ]
 
     # KOMENTARZ WYZEJ BYL OBIETNICA BEZ POKRYCIA. Do karty szly wylacznie te
     # dwa pola; sam fakt, jego URL i data szly do `brief` (`fakt_wyjsciowy`,
@@ -1450,10 +1472,14 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
         # sklada KOD w `stages.warto_pisac` i zapisuje po polsku. Czytanie
         # `verdict` dawalo zawsze None, wiec log drukowal surowy `repr` calego
         # slownika uciety na 200 znakach — czyli nie mowil nic.
-        print("   filary: %d z 3 (%s)"
-              % (ocena.get("ile_filarow", 0),
-                 ", ".join(k for k, v in (ocena.get("filary") or {}).items() if v)
-                 or "zaden"), flush=True)
+        if ocena.get("persona_story"):
+            print("   udokumentowane pytania: %d (%s)"
+                  % (len(ocena.get("answerable_questions", [])), ocena["depth"]), flush=True)
+        else:
+            print("   filary: %d z 3 (%s)"
+                  % (ocena.get("ile_filarow", 0),
+                     ", ".join(k for k, v in (ocena.get("filary") or {}).items() if v)
+                     or "zaden"), flush=True)
         print("   werdykt: %s — %s"
               % (ocena.get("werdykt"), str(ocena.get("powod") or "")[:160]),
               flush=True)
