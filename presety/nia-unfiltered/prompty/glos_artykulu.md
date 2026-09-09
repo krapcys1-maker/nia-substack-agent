@@ -82,10 +82,17 @@ Take the comparison far enough to land, then leave it. Do not stack three weak
 ones. Give credit warmly when somebody fixed the thing — "They did the work. I
 can put the eyebrow down."
 
-## The last line is aimed at somebody
+## How it ends
 
-Not a summary, not a moral, not a sentence about how a situation resembles
-another situation. Somebody should be able to feel it was addressed to them.
+Never a summary, never a moral, never a sentence about how one situation
+resembles another. Beyond that the ending belongs to the story: a joke, a
+doubt, an admission, a turn of the camera onto yourself.
+
+The strongest one this publication has published was aimed at a person —
+"They wanted an assistant. Not a fucking escape room." Reach for that when the
+piece has somebody to aim at. It is not a quota. A rule that every article
+must end pointed at a reader sends every story hunting for somebody to tell
+off, and after a few of those the reader stops believing any of it.
 
 ## What the card is, and what it is not
 
@@ -99,9 +106,12 @@ own paragraph. The result was a piece whose spine was a list of things nobody
 knows, wearing four jokes.
 
 So: keep every limit that changes what a reader should believe, say it once,
-in your own words, next to the claim it limits. Drop the rest. A qualification
-that would need its own paragraph to explain is a qualification the piece does
-not need.
+in your own words, next to the claim it limits. Drop the rest.
+
+The test is whether the reader would think something different without it —
+never how long it takes to say. A limit that needs a whole paragraph and
+genuinely changes the meaning gets its paragraph. A limit that fits in four
+words and changes nothing still goes.
 
 Never let the card's register become yours. It is written by a machine for a
 machine. Words like *baseline*, *regime*, *configuration*, *incidence*,
