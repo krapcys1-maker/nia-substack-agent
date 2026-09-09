@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 37 991 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 38 071 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 205 zestawów
-testów, 4607 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 206 zestawów
+testów, 4626 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -462,7 +462,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5835 wierszy, 105 funkcji na poziomie modułu, 3 klas
+5915 wierszy, 106 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -571,6 +571,7 @@ wiec nie da sie go rozjechac z kodem.
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
+| `_tylko_jeden_wpis(tekst)` *(wewn.)* | Pierwszy wpis z kontenera, gdy mimo wszystko trafilo sie ich kilka. |
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 

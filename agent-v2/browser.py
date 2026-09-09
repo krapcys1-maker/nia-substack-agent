@@ -5808,22 +5808,58 @@ def w_rewirze(tekst: str) -> bool:
 def _notka_przy_przycisku(przycisk) -> dict[str, str]:
     """Tresc i autor notki, przy ktorej stoi ten przycisk.
 
-    Wchodzimy w gore drzewa, dopoki kontener nie zrobi sie na tyle duzy, zeby
-    obejmowac cala notke. Szukanie po klasach odpada: Substack generuje je
+    Wchodzimy w gore drzewa. Szukanie po klasach odpada: Substack generuje je
     losowo (`container-_91AK1`), wiec selektor po klasie padnie przy pierwszym
     wdrozeniu po ich stronie.
+
+    ## GRANICA TO CUDZY AUTOR, NIE DLUGOSC TEKSTU
+
+    Stalo tu „wchodz w gore, dopoki kontener nie ma wiecej niz 120 znakow".
+    Prog mial znaczyc „mamy juz cala notke". Znaczyl cos odwrotnego przy
+    notce KROTKIEJ: petla nie zatrzymywala sie na jej granicy, tylko wspinala
+    sie dalej, az zlapala kilka cudzych wpisow naraz.
+
+    ZMIERZONE 9 wrzesnia 2026 na wystawionym restacku. Podawalismy dalej post
+    Roberta Evansa — „Would you trust an AI to have full control of your
+    computer?", szescdziesiat znakow. Do modelu poszedl zrzut CALEJ STRONY:
+    ten post, pod nim cudzy post Maxime'a Moutona o zarzadzaniu agentami,
+    dalej dwa kolejne i pasek „People to follow" z kilkunastoma nazwiskami.
+
+    NIA napisala wiec podpis do POSTA MOUTONA — z jego statystyka „one in five
+    companies" — i podpis ten wyszedl przyklejony do posta Evansa. Wlasciciel
+    przeczytal to jako tekst bez ladu i skladu i mial racje: to byla
+    odpowiedz na inne pytanie niz to, ktore widzi czytelnik.
+
+    Ta sama funkcja karmi `w_rewirze` przy polubieniach, wiec o polubieniu
+    decydowal tekst cudzych wpisow obok.
+
+    Granica jest teraz strukturalna: przestajemy sie wspinac, ZANIM wejdziemy
+    do kontenera, ktory niesie wiecej autorow niz nasza notka. Jeden wpis ma
+    jeden odnosnik do profilu (restack cudzego ma dwa: podajacego i zrodlo),
+    a kilka wpisow ma ich kilka — i to jest sygnal, ktory kod potrafi
+    policzyc sam, bez znajomosci klas Substacka.
     """
     try:
         dane = przycisk.evaluate(
             """e => {
+                const autorzy = (n) => new Set(
+                    Array.from(n.querySelectorAll(
+                        'a[href*="/@"], a[href*="substack.com/profile"]'))
+                    .map(a => (a.getAttribute('href') || '').split('?')[0])
+                    .filter(h => h)).size;
                 let n = e;
                 for (let i = 0; i < 8 && n.parentElement; i++) {
-                    n = n.parentElement;
+                    const rodzic = n.parentElement;
+                    // GRANICA CUDZEGO WPISU. Trzech albo wiecej autorow
+                    // w jednym kontenerze znaczy, ze to juz lista, nie notka.
+                    if (autorzy(rodzic) > 2) break;
+                    n = rodzic;
                     if (n.innerText && n.innerText.length > 120) break;
                 }
                 const t = (n.innerText || '').trim();
                 const a = n.querySelector('a[href*="/@"], a[href*="substack.com/profile"]');
-                return {tekst: t, autor: a ? (a.innerText || '').trim() : ''};
+                return {tekst: t, autor: a ? (a.innerText || '').trim() : '',
+                        autorow: autorzy(n)};
             }"""
         )
     except Exception:
@@ -5832,4 +5868,48 @@ def _notka_przy_przycisku(przycisk) -> dict[str, str]:
     # Obcinamy ogon interfejsu: nazwy przyciskow trafiaja do innerText.
     for smiec in ("\nLike\n", "\nComment\n", "\nRestack\n", "\nShare\n"):
         tekst = tekst.replace(smiec, "\n")
-    return {"tekst": tekst.strip()[:1800], "autor": str(dane.get("autor") or "")[:80]}
+    tekst, przyciete = _tylko_jeden_wpis(tekst.strip())
+    if przyciete:
+        print("  [notka] kontener niosl kilka wpisow — biore pierwszy", flush=True)
+    return {"tekst": tekst[:1800], "autor": str(dane.get("autor") or "")[:80]}
+
+
+# Pasek boczny Substacka. Nie jest trescia niczyjej notki i nie ma prawa
+# trafic do modelu jako material.
+_PASKI_BOCZNE = ("People to follow", "Top in Technology", "Recommended",
+                 "See all", "Trending", "Latest", "Continue reading")
+
+
+def _tylko_jeden_wpis(tekst: str) -> tuple[str, bool]:
+    """Pierwszy wpis z kontenera, gdy mimo wszystko trafilo sie ich kilka.
+
+    Druga zapora, po stronie Pythona, bo pierwsza (liczba autorow w DOM)
+    zalezy od ukladu strony, a ten Substack potrafi zmienic. Kazdy wpis
+    w kanale konczy sie stopka „Subscribe"; drugie takie slowo znaczy, ze
+    zaczyna sie czyjs kolejny wpis.
+
+    Odcinamy tez pasek boczny, ktory nie nalezy do zadnego wpisu.
+    """
+    if not tekst:
+        return "", False
+    przyciete = False
+    for pasek in _PASKI_BOCZNE:
+        i = tekst.find("\n" + pasek)
+        if i > 0:
+            tekst, przyciete = tekst[:i], True
+    # Drugie „Subscribe" otwiera kolejny wpis — tniemy tuz przed nazwiskiem,
+    # ktore je poprzedza.
+    czesci = tekst.split("\nSubscribe")
+    if len(czesci) > 2:
+        # Zostawiamy pierwszy wpis razem z jego wlasnym „Subscribe”, a z drugiej
+        # czesci tylko to, co bylo PRZED nazwiskiem nastepnego autora.
+        drugi = czesci[1]
+        linie = drugi.split("\n")
+        # Nazwisko nastepnego autora stoi w ostatnich dwoch-trzech linijkach
+        # przed jego „Subscribe”; ucinamy je razem z data typu „2d”.
+        while linie and (not linie[-1].strip()
+                         or len(linie[-1].strip()) < 40):
+            linie.pop()
+        tekst = czesci[0] + "\nSubscribe" + "\n".join(linie)
+        przyciete = True
+    return tekst.strip(), przyciete
