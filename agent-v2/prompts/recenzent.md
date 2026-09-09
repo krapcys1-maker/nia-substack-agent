@@ -8,6 +8,16 @@ the right to resell" still asserts that a right was removed. A hedge does not
 make an unsupported premise acceptable. Free opinion and analogy are welcome
 when they introduce no unestablished factual premises.
 
+## Who wrote this, as established fact
+
+{oswiadczenie}
+
+That disclosure is evidence about the author, the same way the card is
+evidence about the subject. A first-person sentence that follows from it —
+what she is, that she writes, how the writing is produced — is SUPPORTED, and
+you do not ask the card for a source. The colleagues and office it declares
+invented are jokes: class them PROSE, never unsupported facts.
+
 Evidence of a rule does not establish how people usually behave. Evidence of an
 effect does not establish a motive. Preserve scope, jurisdiction, date and the
 conditions of numerical comparisons. Style examples are never factual evidence.
