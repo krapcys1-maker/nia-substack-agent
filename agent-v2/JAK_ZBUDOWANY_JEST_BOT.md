@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 36 993 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 37 047 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 194 zestawów
-testów, 4330 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 4333 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-565 wierszy, 21 funkcji na poziomie modułu, 0 klas
+578 wierszy, 21 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -298,7 +298,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-8627 wierszy, 149 funkcji na poziomie modułu, 0 klas
+8668 wierszy, 150 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -340,6 +340,7 @@ wiec nie da sie go rozjechac z kodem.
 | `wczytaj_zuzyte()` | — |
 | `zapisz_zuzyte(nowe)` | Pamięć zużytych ciekawostek — poza bazą, bo budżet to cztery tabele. |
 | `wybierz_cele(conn, run_id, posty)` | Które posty z kanału zasługują na komentarz. |
+| `_o_tym_juz_pisalismy(wpis, rdzenie)` *(wewn.)* | Czy o tej pozycji z kanalu juz byla notka — po RDZENIACH, nie po adresie. |
 | `zaczyn_z_kanalow(ile, ze_skrotem, max_dni)` | Tematy, o ktorych mowi sie w tym tygodniu — do promptu, nie do cytowania. |
 | `_rdzen_wydarzenia(w)` *(wewn.)* | Klucz zdarzenia: posortowane slowa rdzenia, zeby ta sama premiera |
 | `_nowe_wydarzenia(wydarzenia)` *(wewn.)* | Ktore z tych zdarzen sa NOWE — czyli nie dobieralismy juz o nich materialu. |

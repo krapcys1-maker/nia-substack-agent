@@ -68,6 +68,12 @@ def podstaw_kanaly(wynik=None, wyjatek=None):
         return wynik
 
     modul.zaczyn_z_kanalow = zaczyn_z_kanalow
+    # ODCISKI WYSTAWIONYCH NOTEK — od 9 wrzesnia 2026 `_swiat` je przekazuje,
+    # zeby pozycja, o ktorej juz pisalismy, nie wracala do dwunastki. Atrapa bez
+    # tej funkcji dawala `AttributeError`, a `_swiat` — oslonieta szerokim
+    # `except` — oddawala pusty napis. Cztery sprawdzenia nizej oblewaly wtedy
+    # z powodu, ktory nie mial nic wspolnego z ich trescia.
+    modul.pamiec_wystawionych = lambda: [frozenset({"grzyby", "mushro"})]
     modul.wywolania = wywolania
     sys.modules["stages"] = modul
 
@@ -178,5 +184,24 @@ finally:
         sys.modules.pop("stages", None)
 
 print()
+print()
+print("=== ODCISKI WYSTAWIONYCH NOTEK IDA DO SELEKTORA ===")
+# CALA POPRAWKA Z 9 WRZESNIA 2026. 8 wrzesnia o 01:43 poszla notka o tym, ze
+# najlepszy model rozpoznaje grzyby w 65% przypadkow; 9 wrzesnia o 01:15 poszla
+# druga, o tym samym, innymi slowami. Audyt zglosil to sam:
+# „POWTORKA 2026-09-08 / 2026-09-09, 1 par w 5 notkach".
+#
+# Wykluczenie po ADRESIE nie mialo szans — starsza notka ma `source_urls=None`.
+# A straznicy rdzeni, ktorzy zlapaliby to bez trudu (zmierzone na obu tekstach:
+# dwanascie wspolnych rdzeni, udzial 0,353 przy progu 0,30), siedza na sciezce
+# banku ciekawostek i TEN plik nie wolal ich ani razu.
+podstaw_kanaly(NAGLOWKI)
+personality._swiat()
+k = sys.modules["stages"].wywolania[-1]
+sprawdz("selektor dostaje odciski wystawionych notek",
+        k.get("opisane_rdzenie") is not None, str(sorted(k))[:90])
+sprawdz("i nie sa puste", bool(k.get("opisane_rdzenie")), str(k.get("opisane_rdzenie")))
+sprawdz("adresy nadal wykluczane obok", "exclude_urls" in k, str(sorted(k))[:90])
+
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)

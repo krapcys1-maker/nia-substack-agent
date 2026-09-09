@@ -392,8 +392,21 @@ def _swiat(conn=None, run_id=None):
         sources = {}
         recent_urls = {url for row in memory() if row.get("kind", "note") == "note"
                        for url in row.get("source_urls", []) if isinstance(url, str)}
+        # ADRES TO ZA MALO — patrz `stages._o_tym_juz_pisalismy`.
+        #
+        # 8 i 9 wrzesnia 2026 wyszly dwie notki o tym samym badaniu grzybow,
+        # innymi slowami. Starsza ma `source_urls=None`, bo powstala, zanim to
+        # pole zaczelo sie zapisywac — wiec wykluczenie po adresie nie mialo
+        # czego wykluczyc. A i z adresem by nie starczylo: ta sama historia
+        # wraca nastepnego dnia z innego serwisu i ma inny adres.
+        #
+        # Straznicy rdzeni istnieli od dawna i zlapaliby to bez trudu, tyle ze
+        # TEN plik nie wolal ich ani razu — siedza na sciezce banku ciekawostek,
+        # a notka z kanalow szla obok. Teraz dostaja odciski wystawionych notek.
         zaczyn = stages.zaczyn_z_kanalow(ile=12, ze_skrotem=True, max_dni=14,
-                                        source_urls=sources, exclude_urls=recent_urls, run_id=run_id)
+                                        source_urls=sources, exclude_urls=recent_urls,
+                                        run_id=run_id,
+                                        opisane_rdzenie=stages.pamiec_wystawionych())
     except Exception:                                            # noqa: BLE001
         return ""
     zaczyn = str(zaczyn or "").strip()
