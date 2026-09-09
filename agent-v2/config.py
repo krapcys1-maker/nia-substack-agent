@@ -1837,6 +1837,18 @@ BANK_UDZIAL_ARTYKULOW = 0.33
 # z pieciu przebiegow placil za wlasne szukanie.
 BANK_MAKS_WOLNYCH = 20
 
+# ILE KANDYDATUR ZOSTAJE DLA ARTYKULU, gdy notki tez siegaja do banku.
+#
+# Od 9 wrzesnia 2026 notka bierze fakt z banku, jesli tam lezy. Bez rezerwy
+# byloby to zabranie artykulowi materialu: notki ida DWA RAZY DZIENNIE,
+# artykul RAZ W TYGODNIU, wiec czternascie notek wyczyscilo by bank przed
+# wtorkiem i tekst tygodnia stanalby na tym, co zostalo.
+#
+# Zmierzone tego dnia na zywym banku: osiem kandydatur, z tego szesc wolnych.
+# Przy rezerwie trzech notki moga wziac trzy, a artykul ma z czego wybierac.
+BANK_REZERWA_NA_ARTYKUL = 3
+
+
 # ILE RAZY NA DOBE WOLNO DOBIERAC MATERIAL DO BANKU.
 #
 # Bylo: przy kazdym z pieciu przebiegow. Zmierzone 1 wrzesnia 2026 na

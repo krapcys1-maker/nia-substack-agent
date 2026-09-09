@@ -8075,12 +8075,30 @@ def dopisz_kandydatow(kandydaci: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def wez_kandydatow(ile: int = 1,
-                   na_artykul: bool = False) -> list[dict[str, Any]]:
+                   na_artykul: bool = False,
+                   unikaj_artykulowych: bool = False,
+                   zostaw: int = 0) -> list[dict[str, Any]]:
     """Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych.
 
     Znaczymy przy wyjmowaniu, nie po publikacji — ta sama zasada co w banku
     notek: przy awarii miedzy jednym a drugim wolimy stracic kandydata niz
-    wystawic to samo dwa razy.
+    wystawic to samo dwa razy. Zwrot przy niepowodzeniu robi
+    `_chron_bank_notek` przez `zwroc_kandydatow`.
+
+    ## `unikaj_artykulowych` i `zostaw` — dla notek
+
+    Od 9 wrzesnia 2026 notka tez bierze fakt z banku. Bez tych dwoch hamulcow
+    zabieralaby go artykulowi: notki ida dwa razy dziennie, artykul raz
+    w tygodniu.
+
+    `unikaj_artykulowych` pomija kandydatury, ktore sedzia banku oznaczyl jako
+    uniosace dluga forme. `na_artykul` bylo dotad TYLKO PREFERENCJA przy
+    sortowaniu — tu jest filtrem, i to jest wlasciwa asymetria: artykul bierze
+    najlepsze i moze siegnac po nieoznaczone, notka nie siega po oznaczone.
+
+    `zostaw` to podloga: nie wydajemy kandydata, jesli po wydaniu wolnych
+    zostaloby mniej niz tyle. Liczy sie na swiezych i nieprzeterminowanych,
+    czyli na tym, co artykul naprawde zastanie.
     """
     indeks = wczytaj_indeks()
     # SPIZARNIA Z POPRZEDNIEGO PISMA SIE NIE LICZY.
@@ -8159,6 +8177,27 @@ def wez_kandydatow(ile: int = 1,
     # researchu tekst MUSI powstac, a odsiew do zera zamienilby brak oceny
     # w brak artykulu. Pozostale kryteria zostaja nietkniete jako rozstrzygajace
     # remisy.
+    # NOTKA NIE SIEGA PO MATERIAL NA ARTYKUL. Filtr, nie preferencja —
+    # patrz docstring.
+    if unikaj_artykulowych:
+        odlozone = [p for p in swiezi if p[0].get("na_artykul")]
+        swiezi = [p for p in swiezi if not p[0].get("na_artykul")]
+        if odlozone:
+            print("  [indeks] %d kandydatur zostawiam artykulowi"
+                  % len(odlozone), flush=True)
+
+    # REZERWA. Liczona na tym, co artykul naprawde zastanie: swiezych
+    # i nieprzeterminowanych, po odliczeniu tego, co wlasnie bierzemy.
+    if zostaw > 0:
+        wolno_wziac = max(0, len(swiezi) - zostaw)
+        if wolno_wziac < ile:
+            print("  [indeks] rezerwa dla artykulu: wolnych %d, zostawiam %d, "
+                  "biore %d z %d" % (len(swiezi), zostaw, wolno_wziac, ile),
+                  flush=True)
+        ile = min(ile, wolno_wziac)
+        if ile <= 0:
+            return []
+
     swiezi.sort(key=lambda para: (
         (not para[0].get("na_artykul")) if na_artykul else False,
         not para[0].get("z_kanalu"),
@@ -8269,6 +8308,47 @@ def wez_kandydatow(ile: int = 1,
         if borrowed is not None:
             borrowed.extend(wziete)
     return wziete
+
+
+def fakt_na_notke() -> dict[str, Any] | None:
+    """Jeden fakt z banku dla notki — albo `None`, gdy bank ma go zostawic.
+
+    ## Po co
+
+    9 wrzesnia 2026 zmierzono, skad notki biora temat: `personality.notes`
+    mowi o sobie wprost „Choose a subject from the persona, not the research
+    bank" i bierze rubryke z listy dwudziestu plus naglowki z kanalow. Bank
+    ogladal WYLACZNIE artykul, czyli raz w tygodniu.
+
+    Rachunek wychodzil absurdalny. W banku lezaly: pierwszy dopuszczony przez
+    FDA robot pobierajacy krew, petabajtowy zbior danych genomowych, ustawa
+    szykowana w Kongresie. Notek idzie CZTERNASCIE tygodniowo i wszystkie
+    dostawaly naglowki, a te osiem faktow czekalo na jeden tekst i traci
+    waznosc po siedmiu dniach. Dwie notki z szesciu wyszly wtedy o tym samym
+    (grzyby rozpoznawane w 65%), a jedna o tym, ze przybyl jeden obserwujacy.
+
+    ## Czego ta funkcja NIE robi
+
+    Nie zabiera artykulowi materialu. Pomija kandydatury oznaczone jako
+    uniosace dluga forme i zostawia `config.BANK_REZERWA_NA_ARTYKUL` wolnych
+    w banku. Gdy bank jest chudy, oddaje `None`, a notka wraca do rubryki —
+    czyli do zachowania sprzed tej zmiany.
+
+    Nie zastepuje tez rubryki. Rubryka jest KATEM, fakt MATERIALEM; notka
+    o petabajcie danych napisana pod rubryke LICZBA to nadal notka NIA,
+    a nie depesza.
+    """
+    try:
+        wziete = wez_kandydatow(
+            1, unikaj_artykulowych=True,
+            zostaw=int(getattr(config, "BANK_REZERWA_NA_ARTYKUL", 3)))
+    except Exception as exc:            # noqa: BLE001
+        # BANK NIGDY NIE ZABIJA NOTKI. Zepsuty plik indeksu ma oznaczac notke
+        # z rubryki, a nie brak notki.
+        print("  [indeks] fakt na notke niedostepny (%s: %s)"
+              % (type(exc).__name__, exc), flush=True)
+        return None
+    return wziete[0] if wziete else None
 
 
 # Trzy jedyne powody, dla ktorych wolno skasowac oplaconego kandydata. KOD, nie
