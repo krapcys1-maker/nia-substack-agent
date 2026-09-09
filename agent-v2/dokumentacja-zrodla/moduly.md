@@ -157,7 +157,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9016 wierszy, 155 funkcji na poziomie modułu, 0 klas
+9026 wierszy, 155 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -319,7 +319,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-5819 wierszy, 105 funkcji na poziomie modułu, 3 klas
+5835 wierszy, 105 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|

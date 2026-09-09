@@ -3920,7 +3920,23 @@ _JS_KARETKA_ZA_AKAPITEM = """
 ([kotwica]) => {
     const el = document.querySelector('.tiptap');
     if (!el) return 'brak edytora';
-    const norm = (t) => (t || '').replace(/\\s+/g, ' ').trim();
+    // EDYTOR PRZEPISUJE ZNAKI PRZY WKLEJANIU. Zmierzone 9 wrzesnia 2026 na
+    // artykule 0025: kotwica brzmiala „...equally well isn't the sam", a
+    // ProseMirror zamienil prosty apostrof na typograficzny, wiec ani
+    // `startsWith`, ani `includes` nie trafily. Obraz powstal, kosztowal
+    // 0,20 USD i nie wszedl na strone.
+    //
+    // Skladamy wiec oba teksty do jednej postaci: apostrofy, cudzyslowy
+    // i myslniki do wersji zwyklej, biale znaki do jednej spacji, wszystko
+    // malymi literami. Porownujemy TRESC, a nie typografie.
+    const norm = (t) => (t || '')
+        .replace(/[\u2018\u2019\u02bc\u00b4]/g, "'")
+        .replace(/[\u201c\u201d]/g, '"')
+        .replace(/[\u2013\u2014\u2212]/g, '-')
+        .replace(/\u00a0/g, ' ')
+        .replace(/\\s+/g, ' ')
+        .trim()
+        .toLowerCase();
     const szukane = norm(kotwica);
     if (!szukane) return 'pusta kotwica';
     const akapity = Array.from(el.querySelectorAll('p'));
