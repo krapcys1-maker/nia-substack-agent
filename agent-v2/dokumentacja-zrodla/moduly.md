@@ -641,7 +641,7 @@
 
 ### `alarm.py` — kontrola sesji, zdrowia i alarm do właściciela
 
-1100 wierszy, 27 funkcji na poziomie modułu, 0 klas
+1193 wierszy, 30 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -649,6 +649,9 @@
 | `skonfigurowany()` | — |
 | `_ostatnio(klucz)` *(wewn.)* | — |
 | `_zapisz(klucz)` *(wewn.)* | — |
+| `_do_pliku(klucz, temat, tresc, poczta)` *(wewn.)* | Dopisuje alarm do dziennika na dysku. Nigdy nie rzuca. |
+| `ostatnie_alarmy(dni)` | Alarmy z ostatnich `dni` dni, od najnowszego. |
+| `pokaz_alarmy(dni)` | Wypisuje alarmy z ostatnich dni — kanal dla czlowieka bez poczty. |
 | `wyslij(klucz, temat, tresc)` | Wysyła alarm. `klucz` identyfikuje RODZAJ problemu, nie pojedynczy wypadek. |
 | `brak_presetu()` | Silnik bez podlaczonego presetu ODMAWIA startu z zegara — to ma byc alarm, nie cisza. |
 | `konto_placeholder()` | Konto instalacji nadal jest placeholderem — bot sprawdzalby profil „your-handle". |
