@@ -48,8 +48,13 @@ class FeedIsolation(unittest.TestCase):
             config.KANALY_RSS = {"B": "https://example.org/b"}
             self.assertTrue(feeds.korpus_kanalow()[0]["temat"].startswith("B "))
             self.assertEqual(get.call_count, 2)
-            config.DATA_DIR = Path(self.tmp.name) / "other-instance"
-            feeds.korpus_kanalow()
+            # DRUGA INSTANCJA = INNY KATALOG DANYCH. Przez `patch`, nie golym
+            # przypisaniem: gole nie cofa sie po tescie i nastepny plik w petli
+            # dziedziczy podmieniony katalog. Pilnuje tego
+            # `test_komplet_sciezek`, ktory oblewal dokladnie na tej linii.
+            with patch.object(config, "DATA_DIR",
+                              Path(self.tmp.name) / "other-instance"):
+                feeds.korpus_kanalow()
             self.assertEqual(get.call_count, 3)
 
     def test_youtube_configuration_is_read_at_call_time(self):

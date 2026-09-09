@@ -94,9 +94,10 @@ def _ustaw_zapas(kiedy):
 # wychodzila zawsze zero i dwie sekcje oblewaly sie z powodu KONFIGURACJI,
 # a nie kodu. Test podstawia wiec wlasne kanaly i oddaje produkcyjne na koniec.
 _KANALY_PRODUKCYJNE = dict(korpus_kanalow.config.KANALY_YOUTUBE)
-_DANE_PRODUKCYJNE = korpus_kanalow.config.DATA_DIR
 _DANE_TESTU = tempfile.TemporaryDirectory()
-korpus_kanalow.config.DATA_DIR = Path(_DANE_TESTU.name)
+_PODMIANA_DANYCH = patch.object(korpus_kanalow.config, "DATA_DIR",
+                                Path(_DANE_TESTU.name))
+_PODMIANA_DANYCH.start()
 korpus_kanalow.config.KANALY_YOUTUBE.clear()
 korpus_kanalow.config.KANALY_YOUTUBE.update({
     "Atrapa A": "UC00000000000000000000A",
@@ -174,7 +175,7 @@ sprawdz("zapas wazny miedzy 5 a 60 minut",
 print()
 korpus_kanalow.config.KANALY_YOUTUBE.clear()
 korpus_kanalow.config.KANALY_YOUTUBE.update(_KANALY_PRODUKCYJNE)
-korpus_kanalow.config.DATA_DIR = _DANE_PRODUKCYJNE
+_PODMIANA_DANYCH.stop()
 _DANE_TESTU.cleanup()
 
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))

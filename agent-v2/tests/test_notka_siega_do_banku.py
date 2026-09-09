@@ -241,5 +241,40 @@ sprawdz("zakaz dokladania liczb z pamieci",
         "do not add figures, dates or causes from memory" in zrodlo)
 
 print()
+print("=== 10. SEDZIA BANKU RUSZA TEZ NA SCIEZCE PERSONY ===")
+# Bez rangi `wez_kandydatow` sortuje po `10**6` dla wszystkich, czyli bank
+# idzie w kolejnosci wstawiania. Bez `na_artykul` filtr z sekcji 1 nie ma
+# czego odsiac — czyli notka moze wziac najlepszy fakt sprzed artykulu.
+#
+# Zmierzone 9 wrzesnia 2026: `posortuj_bank` stalo w `notki_dnia` PO `return`
+# oddajacym sterowanie personie i nie wykonalo sie ANI RAZU. W tabeli `calls`
+# zero wywolan o celu `bank`, w banku osiem kandydatur z `ranga: None`.
+import ast  # noqa: E402
+st = io.open("agent-v2/stages.py", encoding="utf-8").read()
+drzewo = ast.parse(st)
+fn = next(n for n in ast.walk(drzewo)
+          if isinstance(n, ast.FunctionDef) and n.name == "notki_dnia")
+
+# Linia `return personality.notes(...)` i linia wywolania sedziego.
+zwroty = [n.lineno for n in ast.walk(fn)
+          if isinstance(n, ast.Return) and isinstance(n.value, ast.Call)
+          and isinstance(n.value.func, ast.Attribute)
+          and n.value.func.attr == "notes"]
+sedzia = [n.lineno for n in ast.walk(fn)
+          if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+          and n.func.id == "posortuj_bank"]
+sprawdz("persona ma swoje odejscie z funkcji", len(zwroty) == 1, str(zwroty))
+sprawdz("sedzia wolany co najmniej raz", len(sedzia) >= 1, str(sedzia))
+sprawdz("i co najmniej raz PRZED tym odejsciem",
+        any(l < zwroty[0] for l in sedzia) if zwroty else False,
+        "sedzia w liniach %s, odejscie w %s" % (sedzia, zwroty))
+# KONTRDOWOD: awaria sedziego nie moze zabrac dnia.
+i = st.index("posortuj_bank(conn, run_id)")
+sprawdz("awaria sedziego jest oslonieta",
+        "except Exception" in st[i:i + 260], st[i:i + 260])
+sprawdz("i mowi, ze bierze bank taki, jaki jest",
+        "biore bank taki, jaki jest" in st[i:i + 400])
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)

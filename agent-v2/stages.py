@@ -4237,6 +4237,33 @@ def notki_dnia(
     z konstrukcji, a nie z nadziei.
     """
     if config.PERSONA_WLACZONA:
+        # SEDZIA BANKU TEZ NA TEJ SCIEZCE.
+        #
+        # `posortuj_bank` stalo nizej w tej funkcji (przy galezi bez persony)
+        # i NIGDY sie nie wykonalo: to `return` ponizej konczy funkcje kilkadziesiat
+        # linii wczesniej. Zmierzone 9 wrzesnia 2026 na produkcji — w tabeli
+        # `calls` nie ma ani jednego wywolania o celu `bank`, a kazda z osmiu
+        # kandydatur w banku ma `ranga: None` i `na_artykul: None`.
+        #
+        # Skutki byly dwa. Bank szedl praktycznie w kolejnosci wstawiania,
+        # bo `wez_kandydatow` sortuje po randze, ktorej nie ma. I preferencja
+        # artykulu wobec materialu na dluga forme byla bezczynna, bo nikt tego
+        # pola nie wypelnial — a od dzis zalezy od niego takze to, po co notka
+        # NIE siega.
+        #
+        # Wlasna zapora sedziego zostaje jedynym hamulcem i wystarcza: rusza
+        # tylko wtedy, gdy jest wpis bez rangi, wiec po ocenieniu banku milczy
+        # do przyjscia nowego materialu. Przy jednym szukaniu na dobe to okolo
+        # jednego wywolania dziennie, ~0,0105 USD.
+        #
+        # AWARIA SEDZIEGO NIE ZABIERA DNIA — tak samo jak w galezi bez persony.
+        # Bank nieposortowany jest gorszy od posortowanego i duzo lepszy od
+        # braku notek.
+        try:
+            posortuj_bank(conn, run_id)
+        except Exception as exc:                       # noqa: BLE001
+            print("  [bank] sedzia nie przeszedl (%s) — biore bank taki, jaki jest"
+                  % type(exc).__name__, flush=True)
         import personality
         return personality.notes(conn, run_id, ile=ile, od=od)
     typy = list(config.NOTE_MIX_ARTICLE_DAY if dzien_artykulu

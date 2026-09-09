@@ -65,6 +65,18 @@ class SourceContracts(unittest.TestCase):
         self.assertEqual(call.call_count, 1)
         self.assertEqual([r['status'] for r in stages.wczytaj_indeks()], ['odrzucony','uzyty','uzyty'])
 
+    # ATRAPA `classify` ODDAJE WIODACE ZRODLO, A NIE PUSTA LISTE.
+    #
+    # Stalo tu `return_value=[]`, wygodne i NIEREALNE z dwoch powodow.
+    # Prawdziwe `stages.classify` przy pustym wyniku RZUCA
+    # `ValueError("klasyfikacja odrzucila wszystko")`, wiec pusta lista nie
+    # zdarza sie nigdy. A od 9 wrzesnia 2026 sciezka artykulu ZATRZYMUJE
+    # przebieg, gdy wiodace zrodlo bylo w korpusie i nie przeszlo
+    # klasyfikacji — bo dokladnie tak powstal artykul 0022, napisany nie na
+    # swoj temat po pelnym, oplaconym researchu.
+    #
+    # Oba testy nizej pytaja o co innego (czy lead dociera do pobrania, czy
+    # ponowienie celuje w luke), wiec atrapa ma odwzorowywac przebieg udany.
     def test_original_lead_reaches_fetch_without_being_assumed_primary(self):
         lead = self.fact('One supported research lead with a public source.')
         brief = dict(title='A concrete question', question='What did the test show?',
@@ -77,7 +89,7 @@ class SourceContracts(unittest.TestCase):
              patch.object(article, 'temat_z_faktu', return_value=brief), \
              patch.object(stages, 'discovery', return_value=[{'url':'https://example.net/record','class':'PRIMARY'}]), \
              patch.object(stages, 'fetch', side_effect=fetch), \
-             patch.object(stages, 'classify', return_value=[]), \
+             patch.object(stages, 'classify', return_value=[{'url': lead['url'], 'class': 'PRIMARY', 'excerpts': ['x'], 'numbers': [], 'relevance': 0.9}]), \
              patch.object(stages, 'synthesis', return_value={}), \
              patch.object(article, '_napisz_i_zapisz', return_value=0), \
              patch.multiple(config, MIN_ZRODEL_DO_PISANIA=1, MIN_PRIMARY_SOURCES=1), \
@@ -108,7 +120,7 @@ class SourceContracts(unittest.TestCase):
              patch.object(article, 'temat_z_faktu', return_value=brief), \
              patch.object(stages, 'discovery', side_effect=[sources,[extra]]) as search, \
              patch.object(stages, 'fetch', side_effect=fetch), \
-             patch.object(stages, 'classify', return_value=[]) as classify, \
+             patch.object(stages, 'classify', return_value=[{'url': lead['url'], 'class': 'PRIMARY', 'excerpts': ['x'], 'numbers': [], 'relevance': 0.9}]) as classify, \
              patch.object(stages, 'synthesis', return_value={'not_established':['An independent comparison.']}), \
              patch.object(article, '_napisz_i_zapisz', return_value=0) as writer, \
              patch.multiple(config, MIN_ZRODEL_DO_PISANIA=2, MIN_PRIMARY_SOURCES=1), \

@@ -28,11 +28,27 @@ r = config.dlugosc_dla("RICH")
 s = config.dlugosc_dla("SINGLE")
 print("    RICH   cel %s (%s-%s)" % (r["cel"], r["min"], r["max"]))
 print("    SINGLE cel %s (%s-%s)" % (s["cel"], s["min"], s["max"]))
-sprawdz("waski temat dostaje wyraznie krotsza forme", s["cel"] < r["cel"] * 0.7,
+# PASMO WSPOLNE, ROZNE CELE — decyzja wlasciciela z 9 wrzesnia 2026:
+# „od 700 do 1275", cel do 1200.
+#
+# Ten plik zadal wczesniej ROZLACZNYCH zakresow: `SINGLE.max < RICH.min`.
+# Regula byla sluszna wobec jednej wady (tekst z materialem na trzysta slow
+# wypelnil kiedys tysiac, trzy razy ten sam mechanizm) i wywolala druga.
+# Artykul 0022 dostal SINGLE, czyli sufit 820, i wyszedl na 675 slow. W tej
+# przestrzeni pisarz zdazyl OCENIC badanie i nie zdazyl go OPOWIEDZIEC:
+# czytelnik dostal „konstytucje", „zmowe" i „system instytucjonalny", nie
+# dowiedziawszy sie wczesniej, kim byli agenci ani co robili.
+#
+# Podloga 700 jest wiec MIEJSCEM NA SCENE, wspolnym dla wszystkich poziomow.
+# Roznica miedzy nimi siedzi teraz w CELU, nie w krancach — i tego pilnujemy
+# nizej, zeby chudy temat nadal celowal nizej niz bogaty.
+sprawdz("waski temat celuje nizej niz bogaty", s["cel"] < r["cel"],
         "%s vs %s" % (s["cel"], r["cel"]))
-sprawdz("krotki artykul ma sensowne dno (nie notka)", s["min"] >= 400, s["min"])
+sprawdz("kazdy artykul ma miejsce na scene (podloga 700)",
+        s["min"] >= 700 and r["min"] >= 700, (s["min"], r["min"]))
 sprawdz("dlugi nie przekracza tego, co czyta sie do konca", r["max"] <= 1300, r["max"])
-sprawdz("zakresy sie nie nakladaja", s["max"] < r["min"], (s["max"], r["min"]))
+sprawdz("sufit jest wspolny i ostry", s["max"] == r["max"] == 1275,
+        (s["max"], r["max"]))
 # ZMIANA DECYZJI (2026-08-20). Bylo: nieznana glebokosc dostaje RICH. Nieznana
 # glebokosc znaczy jednak „model oddal cos spoza slownika", czyli NIE WIEM, ile
 # tu jest materialu — a odpowiedzia na „nie wiem" nie moze byc forma najdluzsza,
@@ -234,15 +250,25 @@ th = config.dlugosc_dla("THIN")
 sprawdz("THIN ma wlasny wpis", th != r, th)
 sprawdz("i jest krotszy od SINGLE", th["cel"] < sg["cel"], (th["cel"], sg["cel"]))
 sprawdz("a SINGLE od RICH", sg["cel"] < r["cel"], (sg["cel"], r["cel"]))
-# KONTRDOWOD: sam osobny wpis nie wystarczy, jesli bylby rownie dlugi.
-# Roznica ma byc odczuwalna, nie kosmetyczna.
-sprawdz("THIN jest krotszy od RICH o ponad polowe", th["cel"] * 2 < r["cel"],
+# KONTRDOWOD: sam osobny wpis nie wystarczy, jesli cel bylby ten sam.
+# Roznica ma byc odczuwalna, tylko mierzy sie ja teraz na CELU, nie na
+# krancach — patrz sekcja 1 i decyzja wlasciciela o pasmie 700-1275.
+sprawdz("THIN celuje wyraznie nizej niz RICH", th["cel"] <= r["cel"] * 0.75,
         (th["cel"], r["cel"]))
 sprawdz("kazdy poziom ma spojne min/cel/max",
         all(w["min"] <= w["cel"] <= w["max"] for w in (r, sg, th)))
-sprawdz("i zakresy sie nie nakladaja",
-        th["max"] <= sg["cel"] and sg["max"] <= r["cel"],
-        (th["max"], sg["cel"], sg["max"], r["cel"]))
+sprawdz("wszystkie mieszcza sie w pasmie 700-1275",
+        all(w["min"] >= 700 and w["max"] <= 1275 for w in (r, sg, th)),
+        [(w["min"], w["max"]) for w in (r, sg, th)])
+# ZAPORA PRZED WYPELNIACZEM ZOSTAJE, tylko w innym miejscu: nie w sufitach,
+# a w kotwicy, ktora pisarz dostaje razem z celem. THIN ma tam powiedziane
+# wprost, ze oszczedza na analizie, nigdy na scenie.
+sprawdz("kotwica THIN broni sceny przed cieciem",
+        "never off the scene" in config.kotwica_dlugosci("THIN"),
+        config.kotwica_dlugosci("THIN")[:120])
+sprawdz("kotwica SINGLE kaze wydac otwarcie na sytuacje",
+        "not on a summary of it" in config.kotwica_dlugosci("SINGLE"),
+        config.kotwica_dlugosci("SINGLE")[:120])
 
 # GALAZ DOMYSLNA. Nieznana glebokosc znaczy „nie wiem, ile tu jest materialu" —
 # na to uczciwa odpowiedzia jest forma srednia, nie najdluzsza.
