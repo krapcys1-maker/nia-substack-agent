@@ -2962,6 +2962,52 @@ def polub_w_kanale(ile: int, wyslij: bool = False, *,
     return wynik
 
 
+def klik_mimo_zaslony(przycisk, nazwa: str = "przycisk") -> str:
+    """Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost.
+
+    ZMIERZONE NA PRODUKCJI. Od 8 wrzesnia 2026 odpowiedzi przestaly wychodzic:
+    zero przez trzy poprzednie dni, potem cztery porazki 8 wrzesnia i trzy
+    w nocy z 8 na 9. Za kazdym razem to samo, slowo w slowo:
+
+        Locator.click: Timeout 30000ms exceeded
+        <div class="pencraft pc-display-flex pc-flexDirection-column ..."> …
+        from <div id="entry"> … subtree intercepts pointer events
+
+    Przycisk BYL znajdowany, byl widoczny i byl wlaczony. Zaslania go panel
+    Substacka wewnatrz `#entry`, a Playwright — slusznie — odmawia klikniecia
+    w miejsce, gdzie zdarzenie dostanie kto inny. Ponawial przez trzydziesci
+    sekund, wiec to nie jest migniecie: zaslona stoi.
+
+    DLACZEGO NIE `force=True`. To by NIE naprawilo, tylko ukrylo: `force`
+    pomija sprawdzenia i klika w te same wspolrzedne, czyli trafia dokladnie
+    w zaslaniajacy panel. Dostalibysmy „klikniete" i zadnej odpowiedzi.
+
+    `element.click()` w przegladarce omija test trafienia i wysyla zdarzenie
+    NA TEN ELEMENT, ktory juz mamy — rozwiazany przez role i nazwe, nie przez
+    piksele. React slucha klikniec przez delegacje na korzeniu, wiec zdarzenie
+    dochodzi.
+
+    NORMALNA DROGA ZOSTAJE PIERWSZA i to jest cala ostroznosc tej funkcji.
+    Dopoki nikt nie zaslania, nic sie nie zmienia — awaryjne wyjscie wlacza sie
+    wylacznie przy przechwyceniu wskaznika. Reszte bledow oddajemy dalej,
+    bo „przycisk nie istnieje" i „przycisk zaslonily" to dwie rozne sprawy.
+
+    Oddaje `"zwykly"` albo `"mimo zaslony"` — do dziennika, zeby dalo sie
+    policzyc, jak czesto zaslona wystepuje, i zauwazyc dzien, w ktorym
+    Substack ja zdejmie.
+    """
+    try:
+        przycisk.click()
+        return "zwykly"
+    except Exception as exc:                                   # noqa: BLE001
+        if "intercepts pointer events" not in str(exc):
+            raise
+        print("  [%s] cos zaslania przycisk — wysylam zdarzenie wprost"
+              % nazwa, flush=True)
+        przycisk.evaluate("el => el.click()")
+        return "mimo zaslony"
+
+
 def konto_za_duze(handle: str) -> bool:
     """Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS.
 
@@ -4143,7 +4189,7 @@ def wystaw_odpowiedz_pod_artykulem(
         wynik["przycisk_widoczny"] = wyslac is not None
 
         if wyslij and wyslac is not None:
-            wyslac.click()
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(wyslac, "odpowiedz pod artykulem")
             wynik["klikniete"] = True     # jak w `wystaw_komentarz`
             page.wait_for_timeout(8000)
             odp = potwierdz_komentarz(page, url_artykulu, tekst)
@@ -4530,7 +4576,10 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
         wynik["przycisk_widoczny"] = przycisk is not None
 
         if wyslij and przycisk is not None:
-            przycisk.click()
+            # DROGA KLIKNIECIA IDZIE DO DZIENNIKA — patrz `klik_mimo_zaslony`.
+            # Bez tego nie da sie policzyc, jak czesto zaslona wystepuje, ani
+            # zauwazyc dnia, w ktorym Substack ja zdejmie.
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(przycisk, "odpowiedz")
             wynik["klikniete"] = True     # jak w `wystaw_komentarz`
             page.wait_for_timeout(6000)
             odp = potwierdz_odpowiedz(page, note_id, tekst)
@@ -4678,7 +4727,7 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
 
         if wyslij and wynik["przycisk_widoczny"]:
             odpowiedzi = sluchaj_publikacji(page)
-            przycisk.click()
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(przycisk, "notka")
             page.wait_for_timeout(6000)
             kody = [r.status for r in odpowiedzi]
             # Najpierw pytamy o odpowiedz Substacka na sam zapis — jest
@@ -5299,7 +5348,7 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
         print(f"  przycisk wysyłki widoczny: {wynik['przycisk_widoczny']}", flush=True)
 
         if wyslij and wynik["przycisk_widoczny"]:
-            przycisk.click()
+            wynik["droga_klikniecia"] = klik_mimo_zaslony(przycisk, "komentarz")
             # OD TEJ LINII WSZYSTKO PO NASZEJ STRONIE JUZ SIE UDALO:
             # przegladarka, strona, pole, tekst, przycisk. To POLOWA dowodu
             # przeciw hostowi — druga polowa to odpowiedz z potwierdzania,
