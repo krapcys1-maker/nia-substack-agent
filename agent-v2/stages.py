@@ -6249,10 +6249,21 @@ def discovery(
         ) or "(none yet - this is the first article of this account)"),
     )
     real_urls: list[str] = []
-    text = llm.call(
-        "discovery", DISCOVERY_SYSTEM, prompt,
-        conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
-    )
+    # PIERWSZE WYWOLANIE TEZ POD OSLONA, i to jest drugi regres tej samej
+    # poprawki, zlapany na produkcji. Ratunek nizej siedzial za `if not
+    # real_urls`, wiec dzialal tylko wtedy, gdy pierwsze wywolanie WROCILO.
+    # A ono nie wracalo: `llm.Truncated: Search completed without usable text
+    # or URLs` leci z `llm.call`, czyli przebieg umieral przed ratunkiem.
+    # Trzy przebiegi artykulu pod rzad zginely dokladnie tak.
+    text = ""
+    try:
+        text = llm.call(
+            "discovery", DISCOVERY_SYSTEM, prompt,
+            conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
+        )
+    except Exception as exc:                # noqa: BLE001
+        print("  [dyskoveria] pierwsza proba padla (%s: %s)"
+              % (type(exc).__name__, str(exc)[:90]), flush=True)
     # ZERO WYSZUKIWAN — PYTAMY DRUGI RAZ, ZANIM ZABIJEMY ARTYKUL.
     #
     # `tool_choice: "auto"` znaczy, ze model MOZE nie siegnac po narzedzie, i

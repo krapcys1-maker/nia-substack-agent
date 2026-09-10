@@ -182,6 +182,36 @@ sprawdz("routing wrocil na swoje", stages.config.MODEL_FOR.get("discovery") == p
         "%s wobec %s" % (stages.config.MODEL_FOR.get("discovery"), przed))
 
 print()
+print("=== 3d. PIERWSZE WYWOLANIE, KTORE SAMO PADA, TEZ MA RATUNEK ===")
+# DRUGI REGRES TEJ SAMEJ POPRAWKI, zlapany na produkcji. Ratunek siedzial za
+# `if not real_urls`, wiec dzialal tylko wtedy, gdy pierwsze wywolanie WROCILO.
+# A ono nie wracalo: `llm.Truncated` leci z `llm.call`, wiec przebieg umieral
+# przed ratunkiem. Trzy przebiegi artykulu pod rzad zginely dokladnie tak.
+stan3 = {"nr": 0}
+modele3 = []
+
+
+def pada_od_razu(purpose, system, user, **kw):
+    stan3["nr"] += 1
+    modele3.append(stages.config.MODEL_FOR["discovery"])
+    if stan3["nr"] <= 2:
+        raise stages.llm.Truncated(
+            "Search completed without usable text or URLs")
+    zebrane = kw.get("collect_urls")
+    if zebrane is not None:
+        for zrodlo in ZRODLA["sources"]:
+            zebrane.append(zrodlo["url"])
+    return json.dumps(ZRODLA)
+
+
+with patch.object(stages.llm, "call", pada_od_razu),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []):
+    wynik4 = stages.discovery(None, None, "czy komisja powstanie?", [])
+sprawdz("artykul powstal mimo dwoch wyjatkow z rzedu", bool(wynik4))
+sprawdz("byly trzy podejscia", stan3["nr"] == 3, stan3["nr"])
+sprawdz("trzecie na modelu zapasowym",
+        len(modele3) == 3 and modele3[2] != modele3[0], modele3)
+
+print()
 print("=== 4. POWTORKA IDZIE Z TYM SAMYM PYTANIEM ===")
 zapytania = []
 atrapa4 = _atrapa([0, 2])
