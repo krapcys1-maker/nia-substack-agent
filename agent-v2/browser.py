@@ -5879,6 +5879,36 @@ def restackuj_w_kanale(
         page.wait_for_timeout(SETTLE_MS + 6000)
 
         przyciski = page.get_by_role("button", name="Restack")
+        # KANAL TRZEBA PRZEWINAC, ZEBY W OGOLE ISTNIAL.
+        #
+        # Substack doladowuje notki dopiero przy przewijaniu. Ten blok wchodzil
+        # na kanal, czekal i liczyl przyciski — czyli widzial JEDEN EKRAN.
+        #
+        # ZMIERZONE NA ZYWO 10 wrzesnia 2026, ten sam kanal, ta sama sesja,
+        # w odstepie minuty:
+        #     bez przewijania      4 przyciski
+        #     po trzech przewinieciach  14 przyciskow
+        #
+        # Skutek widac w normie: restacki chodzily na 42 procent, dokladnie
+        # jeden na przebieg przy budzecie dwoch do czterech. Z czterech
+        # kandydatow jeden wypadal poza rewirem, kilka odrzucal model i
+        # zostawal jeden. Pula nie byla chuda — byla nieodczytana.
+        #
+        # Przewijamy, dopoki przybywa przyciskow i dopoki nie mamy ich
+        # wyraznie wiecej niz budzet. Stop na braku przyrostu, zeby nie
+        # przewijac w nieskonczonosc kanalu, ktory sie skonczyl.
+        cel = max(int(ile) * 4, 12)
+        poprzednio = -1
+        for krok in range(8):
+            teraz = przyciski.count()
+            if teraz >= cel or teraz == poprzednio:
+                break
+            poprzednio = teraz
+            page.mouse.wheel(0, 1400)
+            page.wait_for_timeout(1100)
+        if przyciski.count() > (poprzednio if poprzednio >= 0 else 0):
+            print("  kanal przewiniety: %d -> %d notek"
+                  % (max(0, poprzednio), przyciski.count()), flush=True)
         wynik["znalezione"] = przyciski.count()
         print(f"  notek w kanale do rozwazenia: {wynik['znalezione']}", flush=True)
 
