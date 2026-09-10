@@ -158,7 +158,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9285 wierszy, 157 funkcji na poziomie modułu, 0 klas
+9292 wierszy, 157 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -438,12 +438,13 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1214 wierszy, 22 funkcji na poziomie modułu, 4 klas
+1234 wierszy, 23 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
 | `_dostawca(model)` *(wewn.)* | Czyj to model. JEDNO miejsce, zeby nie rozjechalo sie z kontrola kluczy. |
 | `_preflight(purpose, conn, run_id)` *(wewn.)* | Warunki, które decydują, czy wywołanie może się w ogóle udać. |
+| `_powod_urwania(zdarzenie)` *(wewn.)* | POWOD urwania odpowiedzi, nie pierwsze 300 znakow calego zdarzenia. |
 | `_narzedzie_wyszukiwania(model)` *(wewn.)* | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. |
 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` *(wewn.)* | — |
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
@@ -710,7 +711,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3768 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3782 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

@@ -501,19 +501,26 @@ def discovery(
         # za material i nie dostalismy tekstu — najgorszy mozliwy wynik, gorszy
         # niz brak artykulu, bo brak artykulu jest darmowy.
         rezerwa = float(getattr(config, "REZERWA_NA_PISARZA_USD", 0.60))
+        # SZACUNEK MA SZACOWAC TE RZECZ, KTORA SZACUJE. Pierwsza wersja brala
+        # tu `rezerwa` takze jako koszt wyszukiwania i odmawiala przy 1,18 USD
+        # w przebiegu, choc 0,35 na research plus 0,60 na pisarza miescilo sie
+        # tam bez trudu.
+        koszt = float(getattr(config, "KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD", 0.40))
         try:
             zostalo = db.available_budget(conn, run_id)
         except Exception:                   # noqa: BLE001
             zostalo = float("inf")
-        if zostalo - rezerwa < rezerwa:
+        if zostalo - koszt < rezerwa:
             print("  [dyskoveria] awaryjne wyszukiwanie WSTRZYMANE: w przebiegu"
-                  " zostalo %.2f USD, a pisarz potrzebuje %.2f. Lepiej nie"
-                  " zaczynac, niz zaplacic za material i nie napisac tekstu."
-                  % (zostalo, rezerwa), flush=True)
+                  " zostalo %.2f USD, samo wyszukiwanie kosztuje okolo %.2f,"
+                  " a pisarzowi trzeba zostawic %.2f. Lepiej nie zaczynac, niz"
+                  " zaplacic za material i nie napisac tekstu."
+                  % (zostalo, koszt, rezerwa), flush=True)
             raise ValueError(
                 "wyszukiwanie u dostawcy nie dziala, a na awaryjne (model %s)"
-                " nie ma budzetu w tym przebiegu: zostalo %.2f USD"
-                % (zapasowy, zostalo))
+                " nie ma budzetu w tym przebiegu: zostalo %.2f USD, potrzeba"
+                " %.2f na research i %.2f na pisarza"
+                % (zapasowy, zostalo, koszt, rezerwa))
         poprzedni = config.MODEL_FOR["discovery"]
         print("  [dyskoveria] %s nie wyszukuje — PRZECHODZE NA %s. To jest"
               " DROZSZE (zmierzone: 0,27 USD wobec 0,0005) i dzieje sie tylko"

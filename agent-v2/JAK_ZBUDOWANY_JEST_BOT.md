@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 38 838 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 38 879 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 217 zestawów
-testów, 4829 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 218 zestawów
+testów, 4844 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -300,7 +300,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9285 wierszy, 157 funkcji na poziomie modułu, 0 klas
+9292 wierszy, 157 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -580,12 +580,13 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1214 wierszy, 22 funkcji na poziomie modułu, 4 klas
+1234 wierszy, 23 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
 | `_dostawca(model)` *(wewn.)* | Czyj to model. JEDNO miejsce, zeby nie rozjechalo sie z kontrola kluczy. |
 | `_preflight(purpose, conn, run_id)` *(wewn.)* | Warunki, które decydują, czy wywołanie może się w ogóle udać. |
+| `_powod_urwania(zdarzenie)` *(wewn.)* | POWOD urwania odpowiedzi, nie pierwsze 300 znakow calego zdarzenia. |
 | `_narzedzie_wyszukiwania(model)` *(wewn.)* | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. |
 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` *(wewn.)* | — |
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
@@ -852,7 +853,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3768 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3782 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -7114,19 +7115,26 @@ def discovery(
         # za material i nie dostalismy tekstu — najgorszy mozliwy wynik, gorszy
         # niz brak artykulu, bo brak artykulu jest darmowy.
         rezerwa = float(getattr(config, "REZERWA_NA_PISARZA_USD", 0.60))
+        # SZACUNEK MA SZACOWAC TE RZECZ, KTORA SZACUJE. Pierwsza wersja brala
+        # tu `rezerwa` takze jako koszt wyszukiwania i odmawiala przy 1,18 USD
+        # w przebiegu, choc 0,35 na research plus 0,60 na pisarza miescilo sie
+        # tam bez trudu.
+        koszt = float(getattr(config, "KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD", 0.40))
         try:
             zostalo = db.available_budget(conn, run_id)
         except Exception:                   # noqa: BLE001
             zostalo = float("inf")
-        if zostalo - rezerwa < rezerwa:
+        if zostalo - koszt < rezerwa:
             print("  [dyskoveria] awaryjne wyszukiwanie WSTRZYMANE: w przebiegu"
-                  " zostalo %.2f USD, a pisarz potrzebuje %.2f. Lepiej nie"
-                  " zaczynac, niz zaplacic za material i nie napisac tekstu."
-                  % (zostalo, rezerwa), flush=True)
+                  " zostalo %.2f USD, samo wyszukiwanie kosztuje okolo %.2f,"
+                  " a pisarzowi trzeba zostawic %.2f. Lepiej nie zaczynac, niz"
+                  " zaplacic za material i nie napisac tekstu."
+                  % (zostalo, koszt, rezerwa), flush=True)
             raise ValueError(
                 "wyszukiwanie u dostawcy nie dziala, a na awaryjne (model %s)"
-                " nie ma budzetu w tym przebiegu: zostalo %.2f USD"
-                % (zapasowy, zostalo))
+                " nie ma budzetu w tym przebiegu: zostalo %.2f USD, potrzeba"
+                " %.2f na research i %.2f na pisarza"
+                % (zapasowy, zostalo, koszt, rezerwa))
         poprzedni = config.MODEL_FOR["discovery"]
         print("  [dyskoveria] %s nie wyszukuje — PRZECHODZE NA %s. To jest"
               " DROZSZE (zmierzone: 0,27 USD wobec 0,0005) i dzieje sie tylko"
@@ -12673,6 +12681,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `MODEL_ZAPASOWY_WYSZUKIWANIA` | `CLAUDE` | MODEL, PO KTORY SIEGAMY, GDY WYSZUKIWANIE U DOSTAWCY PADNIE. 10 wrzesnia 2026 narzedzie `web_search` DeepSeeka przestalo cokolwiek oddawac n |
 | `REZERWA_NA_PISARZA_USD` | `0.60` | ILE ZOSTAWIC PISARZOWI, ZANIM SIEGNIEMY PO DROGIE WYSZUKIWANIE. 10 wrzesnia 2026 awaryjne odkrycie na Opusie kosztowalo 0,68 USD przy `RUN_L |
 | `DISCOVERY_MAX_SEARCHES_ZAPASOWE` | `4` | ILE WYSZUKIWAN WOLNO MODELOWI ZAPASOWEMU. Awaryjne odkrycie na Opusie 10 wrzesnia 2026: osiem wyszukiwan, 99 851 tokenow wejscia, 4 097 wyjs |
+| `KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD` | `0.40` | ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac. ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 8 |
 | `WEB_SEARCH_USD_PER_1K` | `10.00` | Wyszukiwanie po stronie Anthropic: USD za 1000 zapytań. |
 | `SUFIT_PODNIESIONY_NA` | `""` | — |
 | `SUFIT_PODNIESIONY_RAZY` | `2.0` | O ILE PODNOSI SIE SUFIT W DNIU PRACY PRZY WLASCICIELU. Mnoznik, nie druga liczba: sufit dzienny jest polem konfiguracji, a wpisana tu kwota  |
