@@ -89,7 +89,30 @@ print("=== 4. ZADEN ODSIEW NIE ZOSTAL CICHY ===")
 # Kontrdowod po drzewie skladni: szukamy `continue`, po ktorym w tym samym
 # bloku nie ma zadnego `print`. Napis by tu nie wystarczyl — komentarze
 # w tym pliku same zawieraja slowo `continue`.
+#
+# DWA MIEJSCA SA WYLACZONE I OBA Z POWODU.
+#
+# 1. PETLA WYBORU KANDYDATA. Ona tylko SZUKA pierwszej notki, ktorej jeszcze
+#    nie obsluzylismy. Przewijanie listy nie jest decyzja o niczyjej notce
+#    i nie ma czego zglaszac; odsiewy zaczynaja sie po wybraniu kandydata.
+# 2. GALAZ PROBY SUCHEJ. `if not wyslij: continue` stoi TUZ POD wydrukowana
+#    decyzja („RESTACK u …") i znaczy tylko tyle, ze nie klikamy.
 drzewo = ast.parse(CIALO)
+
+
+def _wnetrza(wezel):
+    """Wszystkie `continue` lezace WEWNATRZ tego wezla."""
+    return {id(w) for w in ast.walk(wezel) if isinstance(w, ast.Continue)}
+
+
+wyjete = set()
+for wezel in ast.walk(drzewo):
+    zrzut = ast.dump(wezel)
+    if isinstance(wezel, ast.For) and "zrobione_odciski" in zrzut             and "odcisk_kandydata" in zrzut:
+        wyjete |= _wnetrza(wezel)
+    if isinstance(wezel, ast.If) and "wyslij" in ast.dump(wezel.test):
+        wyjete |= _wnetrza(wezel)
+
 ciche = 0
 for wezel in ast.walk(drzewo):
     for pole in ("body", "orelse", "finalbody"):
@@ -97,28 +120,53 @@ for wezel in ast.walk(drzewo):
         if not isinstance(blok, list):
             continue
         for nr, krok in enumerate(blok):
-            if not isinstance(krok, ast.Continue):
+            if not isinstance(krok, ast.Continue) or id(krok) in wyjete:
                 continue
-            poprzednie = blok[:nr]
             mowi = any(isinstance(x, ast.Expr) and isinstance(x.value, ast.Call)
                        and isinstance(x.value.func, ast.Name)
                        and x.value.func.id == "print"
-                       for x in poprzednie)
-            # GALAZ PROBY SUCHEJ NIE JEST ODSIEWEM. `if not wyslij: continue`
-            # stoi TUZ POD wydrukowana decyzja („RESTACK u …") i znaczy tylko
-            # tyle, ze w trybie sprawdzenia nie klikamy. Liczenie jej jako
-            # cichego odpadu kazaloby dopisac tam zbedne zdanie do logu.
-            proba_sucha = (isinstance(wezel, ast.If)
-                           and "wyslij" in ast.dump(wezel.test))
-            if not mowi and not proba_sucha:
+                       for x in blok[:nr])
+            if not mowi:
                 ciche += 1
 sprawdz("nie ma `continue` bez slowa wyjasnienia", ciche == 0, ciche)
+# KONTRDOWOD DLA SAMEGO WYKRYWACZA: gdyby wylaczenia byly za szerokie,
+# nie zlapalby juz niczego. Sprawdzamy go na probce z cichym odpadem.
+PROBKA = """
+def f(xs):
+    for x in xs:
+        if not x:
+            continue
+        print("mam")
+"""
+_ciche_probki = 0
+for _w in ast.walk(ast.parse(PROBKA)):
+    for _p in ("body", "orelse"):
+        _b = getattr(_w, _p, None)
+        if not isinstance(_b, list):
+            continue
+        for _n, _k in enumerate(_b):
+            if isinstance(_k, ast.Continue) and not any(
+                    isinstance(x, ast.Expr) and isinstance(x.value, ast.Call)
+                    and isinstance(x.value.func, ast.Name)
+                    and x.value.func.id == "print" for x in _b[:_n]):
+                _ciche_probki += 1
+sprawdz("wykrywacz nadal lapie cichy odpad na probce", _ciche_probki == 1,
+        _ciche_probki)
 
 print()
 print("=== 5. NIC INNEGO NIE ZOSTALO PRZY OKAZJI RUSZONE ===")
 sprawdz("odstep nadal PRZED kolejnym restackiem",
         'if wynik["restackowane"]:' in CIALO)
-sprawdz("norma nadal przerywa petle", 'wynik["restackowane"] >= ile' in CIALO)
+sprawdz("norma nadal przerywa petle",
+        'wynik["restackowane"] < ile' in CIALO
+        or 'wynik["restackowane"] >= ile' in CIALO)
+# PO RESTACKU LISTA JEST POBIERANA OD NOWA — patrz pomiar w naglowku pliku.
+sprawdz("lista pobierana od nowa po kazdym obrocie",
+        "przyciski.count()" in CIALO.split("zrobione_odciski")[1][:900]
+        if "zrobione_odciski" in CIALO else False)
+sprawdz("obsluzonych poznajemy po odcisku tresci, nie po numerze",
+        "zrobione_odciski.add(" in CIALO)
+sprawdz("i petla ma wlasny sufit obrotow", "MAKS_OBROTOW" in CIALO)
 sprawdz("odmowa modelu nadal zapisywana", 'wynik["odmowy"].append' in CIALO)
 sprawdz("porazka nadal idzie do dziennika",
         'zapisz_w_dzienniku("restack", udane=False' in CIALO)

@@ -322,7 +322,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6205 wierszy, 109 funkcji na poziomie modułu, 3 klas
+6315 wierszy, 109 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -580,7 +580,7 @@
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1115 wierszy, 40 funkcji na poziomie modułu, 4 klas
+1137 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|

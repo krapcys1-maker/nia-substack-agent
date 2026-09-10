@@ -137,5 +137,30 @@ sprawdz("i stoi przed pierwszym wejsciem na strone", i_w < i_goto,
         (i_w, i_goto))
 
 print()
+print("=== POLE ODPOWIEDZI: CZEKAMY, AZ SIE ZAMONTUJE ===")
+# ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, odpowiedz pod naszym artykulem:
+#     przycisk odpowiedzi znaleziony przy komentarzu 'Chaos Engine'
+#     BLAD: TimeoutError: Locator.click ... waiting for locator("textarea").first
+# Trzy drogi do pola sprawdzaly sie w JEDNYM obrocie, tuz po klinieciu.
+# Substack montuje edytor tiptap asynchronicznie, wiec zadna jeszcze nie
+# istniala i szukanie spadalo na `textarea`, ktorej tam nie ma wcale.
+# Tego samego dnia rano ta sama funkcja znalazla tiptap bez trudu — to wyscig,
+# nie brak drogi.
+import ast as _ast
+_ZR = io.open("agent-v2/browser.py", encoding="utf-8").read()
+_C = ""
+for _w in _ast.walk(_ast.parse(_ZR)):
+    if isinstance(_w, _ast.FunctionDef) and _w.name == "wystaw_odpowiedz_pod_artykulem":
+        _C = _ast.get_source_segment(_ZR, _w) or ""
+sprawdz("szukanie pola ponawia sie", "for podejscie in range(" in _C)
+sprawdz("z przerwa miedzy podejsciami",
+        "page.wait_for_timeout(1500)" in _C)
+sprawdz("kolejnosc drog bez zmian",
+        _C.find("edytor tiptap") < _C.find("edytor contenteditable") < _C.find("pole tekstowe"))
+sprawdz("ostatnia deska nadal na koncu", "ostatnia deska" in _C)
+sprawdz("i mowi, gdy pole pojawilo sie z opoznieniem",
+        "pole odpowiedzi pojawilo sie po" in _C)
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)

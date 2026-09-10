@@ -4464,18 +4464,43 @@ def wystaw_odpowiedz_pod_artykulem(
         # edytor na stronie, na koncu `textarea` — gdyby Substack gdzies
         # jeszcze go uzywal. Kazda droga mowi o sobie w dzienniku, zeby przy
         # nastepnej zmianie ukladu bylo wiadomo, ktora akurat zadziala.
+        # POCZEKAJ, AZ EDYTOR SIE POJAWI — a nie pytaj o niego natychmiast.
+        #
+        # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, odpowiedz pod naszym wlasnym
+        # artykulem: przycisk odpowiedzi znaleziony, a zaraz potem
+        #
+        #     BLAD: TimeoutError: Locator.click: Timeout 10000ms exceeded.
+        #     Call log: - waiting for locator("textarea").first
+        #
+        # Trzy drogi do pola sprawdzaly sie w jednym obrocie, tuz po klinieciu
+        # w „Comment". Substack montuje edytor tiptap asynchronicznie, wiec
+        # w tym momencie zadna z trzech jeszcze nie istniala i szukanie spadalo
+        # na ostatnia deske — `textarea`, ktorej na tej stronie nie ma wcale.
+        # Model napisal odpowiedz, zaplacilismy za nia, a czytelnik nie dostal
+        # nic. Tego samego dnia rano ta sama funkcja znalazla „edytor tiptap"
+        # bez trudu, wiec to jest wyscig, nie brak drogi.
+        #
+        # Czekamy krotko i pytamy kilka razy zamiast raz. Kolejnosc drog
+        # zostaje ta sama.
         pole, skad_pole = None, ""
-        for opis, lokator in (
-                ("edytor tiptap", page.locator(".tiptap[contenteditable='true']")),
-                ("edytor contenteditable", page.locator("[contenteditable='true']")),
-                ("pole tekstowe", page.locator("textarea"))):
-            try:
-                kand = lokator.last
-                if kand.count() > 0 and kand.is_visible():
-                    pole, skad_pole = kand, opis
-                    break
-            except Exception:                          # noqa: BLE001
-                continue
+        for podejscie in range(6):
+            for opis, lokator in (
+                    ("edytor tiptap", page.locator(".tiptap[contenteditable='true']")),
+                    ("edytor contenteditable", page.locator("[contenteditable='true']")),
+                    ("pole tekstowe", page.locator("textarea"))):
+                try:
+                    kand = lokator.last
+                    if kand.count() > 0 and kand.is_visible():
+                        pole, skad_pole = kand, opis
+                        break
+                except Exception:                      # noqa: BLE001
+                    continue
+            if pole is not None:
+                if podejscie:
+                    print("  pole odpowiedzi pojawilo sie po %.1f s"
+                          % (podejscie * 1.5), flush=True)
+                break
+            page.wait_for_timeout(1500)
         if pole is None:
             # OSTATNIA DESKA — DOKLADNIE TO, CO BYLO WCZESNIEJ.
             #
@@ -5904,18 +5929,73 @@ def restackuj_w_kanale(
             if teraz >= cel or teraz == poprzednio:
                 break
             poprzednio = teraz
+            # `mouse.wheel` wymaga, zeby wskaznik stal nad przewijanym
+            # obszarem, a po wejsciu na strone stoi w rogu — zmierzone
+            # 10 wrzesnia: blok restackow widzial 5 notek, a ten sam kanal
+            # przewiniety przez `scrollBy` oddal 15. Robimy jedno i drugie,
+            # bo `scrollBy` nie dziala tam, gdzie przewija sie kontener,
+            # a nie okno.
+            try:
+                page.evaluate("window.scrollBy(0, 1600)")
+            except Exception:                          # noqa: BLE001
+                pass
+            page.mouse.move(600, 500)
             page.mouse.wheel(0, 1400)
-            page.wait_for_timeout(1100)
+            page.wait_for_timeout(1400)
         if przyciski.count() > (poprzednio if poprzednio >= 0 else 0):
             print("  kanal przewiniety: %d -> %d notek"
                   % (max(0, poprzednio), przyciski.count()), flush=True)
         wynik["znalezione"] = przyciski.count()
         print(f"  notek w kanale do rozwazenia: {wynik['znalezione']}", flush=True)
 
-        for i in range(min(ile * 4, przyciski.count())):
-            if wynik["restackowane"] >= ile:
+        # PO RESTACKU KANAL SIE PRZERYSOWUJE, WIEC INDEKSY TRACA WAZNOSC.
+        #
+        # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dzieki rachunkowi dolozonemu
+        # tego samego dnia:
+        #
+        #     notek w kanale do rozwazenia: 5
+        #     RESTACK u Chelsea Salamone ... podane dalej 1/2
+        #     pomijam (przycisk niewidoczny, pozycja 1)
+        #     pomijam (przycisk niewidoczny, pozycja 2)
+        #     pomijam (przycisk niewidoczny, pozycja 3)
+        #     pomijam (przycisk niewidoczny, pozycja 4)
+        #     rachunek: 5 znalezionych -> 4 niewidocznych -> 1 podanych dalej
+        #
+        # Pierwszy restack przechodzi, a wszystkie pozostale pozycje z tej samej
+        # listy staja sie niewidoczne. Substack po podaniu dalej przestawia
+        # kanal: nasza notka wchodzi na gore, oryginal sie zwija, a `nth(i)`
+        # wskazuje w prozne miejsce. Osobny pomiar tego samego dnia pokazal, ze
+        # przy samym OTWARCIU i zamknieciu okna lista przezywa w calosci —
+        # rozbija ja dopiero prawdziwa publikacja.
+        #
+        # Dlatego po kazdym udanym restacku pobieramy liste OD NOWA i idziemy
+        # od poczatku, a juz obsluzonych poznajemy po odcisku tresci. Numer
+        # pozycji przestaje cokolwiek znaczyc miedzy obrotami.
+        zrobione_odciski: set = set()
+        obrotow = 0
+        MAKS_OBROTOW = max(int(ile) * 6, 18)
+        while wynik["restackowane"] < ile and obrotow < MAKS_OBROTOW:
+            obrotow += 1
+            ile_teraz = przyciski.count()
+            kandydat = None
+            odcisk_kandydata = ""
+            for i in range(ile_teraz):
+                probny = przyciski.nth(i)
+                try:
+                    if not probny.is_visible():
+                        continue
+                    wstepna = _notka_przy_przycisku(probny)
+                except Exception:                      # noqa: BLE001
+                    continue
+                odcisk = plaski(str(wstepna.get("tekst") or ""))[:120]
+                if not odcisk or odcisk in zrobione_odciski:
+                    continue
+                kandydat, odcisk_kandydata = probny, odcisk
                 break
-            kandydat = przyciski.nth(i)
+            if kandydat is None:
+                print("    (nie ma juz nowych notek do rozwazenia)", flush=True)
+                break
+            zrobione_odciski.add(odcisk_kandydata)
             try:
                 # TRZY CICHE ODPADY, TERAZ GLOSNE.
                 #
@@ -5936,8 +6016,8 @@ def restackuj_w_kanale(
                 # jest pomiar. Kazdy mowi teraz o sobie i trafia do licznika.
                 if not kandydat.is_visible():
                     wynik["niewidoczne"] = wynik.get("niewidoczne", 0) + 1
-                    print("    pomijam (przycisk niewidoczny, pozycja %d)" % i,
-                          flush=True)
+                    print("    pomijam (przycisk zniknal miedzy wyborem"
+                          " a klinieciem)", flush=True)
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.

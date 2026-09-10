@@ -112,6 +112,23 @@ class FalszywaStrona:
     def press(self, *a, **k):
         pass
 
+    # PRZEWIJANIE KANALU — dodane 10 wrzesnia 2026, kiedy okazalo sie, ze blok
+    # restackow widzi 5 notek zamiast 15, bo Substack doladowuje je dopiero
+    # przy przewijaniu. Atrapa nie doklada notek: ich liczba jest ustawiona
+    # z gory, a ten test mierzy PRZERWY, nie wielkosc puli. Chodzi tylko o to,
+    # zeby nie wywalac sie na braku metody.
+    class _Mysz:
+        def move(self, *a, **k):
+            pass
+
+        def wheel(self, *a, **k):
+            pass
+
+    mouse = _Mysz()
+
+    def evaluate(self, *a, **k):
+        return None
+
     def close(self):
         pass
 
@@ -141,8 +158,22 @@ def przebieg(ile, ile_notek, zgody):
     browser.podlacz_sie = lambda: (Nic(), Nic(), FalszywyKontekst(strona))
     browser.wymagaj_sesji = lambda: None
     browser.naprawde_wyslac = lambda w, r: w
-    browser._notka_przy_przycisku = lambda p: {"tekst": "Cudza notka o czyms.",
-                                               "autor": "Ktos"}
+    # KAZDA NOTKA MA WLASNA TRESC, bo od 10 wrzesnia 2026 petla poznaje juz
+    # obsluzonych po ODCISKU TRESCI, a nie po numerze pozycji (kanal po
+    # restacku sie przerysowuje i numery traca waznosc). Atrapa oddajaca
+    # wszystkim ten sam tekst kazalaby kodowi uznac caly kanal za jedna,
+    # juz podana dalej notke — i tak sie wlasnie zachowal, oddajac jeden
+    # restack zamiast trzech.
+    # TRESC ZALEZY OD PRZYCISKU, NIE OD NUMERU WYWOLANIA. Petla czyta notke
+    # DWA RAZY na kandydata — raz przy wyborze, raz po nim — wiec licznik
+    # wywolan dawalby za kazdym razem inny odcisk i ten sam przycisk wracalby
+    # w nieskonczonosc. Odcisk ma opisywac NOTKE.
+    def _falszywa_notka(przycisk):
+        nr = getattr(przycisk, "i", 0)
+        return {"tekst": "Cudza notka numer %s o czyms." % nr,
+                "autor": "Ktos %s" % nr}
+
+    browser._notka_przy_przycisku = _falszywa_notka
     browser.zapisz_w_dzienniku = lambda *a, **k: None
     licznik = {"n": 0}
 
