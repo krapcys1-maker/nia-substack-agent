@@ -118,6 +118,21 @@ sprawdz("jedno zdanie wolno, blok nie",
         "may never be is a paragraph the reader has to untangle" in KOMENTARZ)
 sprawdz("przy cierpieniu zadlo zamienia sie w cieplo, ksztalt zostaje",
         "the sting becomes warmth, but the shape stays" in KOMENTARZ)
+# UDERZENIE PIERWSZE W ODPOWIEDZI. Zmierzone na zywej odpowiedzi 10 wrzesnia:
+# „Chaos Engine says something nice about a security control that's fitted but
+# not locked" — narrator opowiadajacy scene, na ktora czytelnik wlasnie patrzy.
+# Wzielo sie to z tego, ze lista uderzen zaczynala sie od „what they actually
+# said". Po poprawce ta sama sytuacja dala „A padlock clipped through the hasp,
+# doing absolutely nothing."
+sprawdz("uderzenie pierwsze to ODPOWIEDZ, nie streszczenie",
+        "Your answer to them, plainly" in KOMENTARZ)
+sprawdz("i wprost zakazuje opisywania, co powiedzieli",
+        "Not a description of what they said" in KOMENTARZ)
+sprawdz("stare `what they actually said` nie zostalo jako polecenie",
+        KOMENTARZ.count("what they actually said") <= 1,
+        KOMENTARZ.count("what they actually said"))
+sprawdz("jedno slowo albo emoji tez ma odpowiedz",
+        "one word or one emoji" in KOMENTARZ)
 # RESTACK: to jest ta wpadka, ktora wlasciciel widzial na ekranie — podpis
 # odpowiadal na inne pytanie niz to, ktore czytelnik ma przed oczami.
 sprawdz("restack odpowiada na ICH post",
