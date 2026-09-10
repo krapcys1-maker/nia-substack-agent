@@ -639,6 +639,20 @@ REZERWA_NA_PISARZA_USD = 0.60
 # dyskoveria chodzi na `DISCOVERY_MAX_SEARCHES`.
 DISCOVERY_MAX_SEARCHES_ZAPASOWE = 4
 
+# ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac.
+#
+# ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 851
+# tokenow wejscia, 4 097 wyjscia — 0,68 USD. Wyszukiwania dokladaja wyniki do
+# wejscia nastepnej tury, wiec polowa wyszukiwan to mniej wiecej polowa
+# rachunku: przy `DISCOVERY_MAX_SEARCHES_ZAPASOWE` = 4 wychodzi okolo 0,35.
+# Bierzemy 0,40 z zapasem.
+#
+# Pierwsza wersja tej bramki brala tu `REZERWA_NA_PISARZA_USD` jako szacunek
+# kosztu wyszukiwania i przez to odmawiala przy 1,18 USD w przebiegu, choc
+# 0,35 na research plus 0,60 na pisarza spokojnie sie tam miescilo. Szacunek
+# ma byc szacunkiem tej rzeczy, ktora szacuje.
+KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD = 0.40
+
 
 def narzedzie_wyszukiwania(model: str) -> tuple[str, str]:
     """Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie.

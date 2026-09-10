@@ -242,7 +242,7 @@ def zawsze_pusto(purpose, system, user, **kw):
     return json.dumps(ZRODLA)          # nigdy nie dopisuje adresow
 
 
-with patch.object(stages.llm, "call", zawsze_pusto),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []),      patch.object(stages.db, "available_budget", lambda c, r: 0.50):
+with patch.object(stages.llm, "call", zawsze_pusto),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []),      patch.object(stages.db, "available_budget", lambda c, r: 0.70):
     try:
         stages.discovery(None, None, "czy komisja powstanie?", [])
         sprawdz("przy chudym budzecie nie zaczynamy", False, "przeszlo")
@@ -265,8 +265,11 @@ def pusto_potem_pelno(purpose, system, user, **kw):
     return json.dumps(ZRODLA)
 
 
-with patch.object(stages.llm, "call", pusto_potem_pelno),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []),      patch.object(stages.db, "available_budget", lambda c, r: 1.40):
+with patch.object(stages.llm, "call", pusto_potem_pelno),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []),      patch.object(stages.db, "available_budget", lambda c, r: 1.18):
     wynik5 = stages.discovery(None, None, "czy komisja powstanie?", [])
+# 1,18 USD to DOKLADNIE to, co zostalo w przebiegu na produkcji 10 wrzesnia.
+# Pierwsza wersja bramki tu odmawiala, choc 0,40 na research i 0,60 na pisarza
+# miesci sie w 1,18 z zapasem.
 sprawdz("przy zdrowym budzecie artykul powstaje", bool(wynik5))
 sprawdz("i model zapasowy zostal uzyty", stan5["nr"] == 3, stan5["nr"])
 
