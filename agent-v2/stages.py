@@ -6321,6 +6321,27 @@ def discovery(
     # a brakiem artykulu, i wlasciciel wybral drozszy artykul.
     zapasowy = getattr(config, "MODEL_ZAPASOWY_WYSZUKIWANIA", config.CLAUDE)
     if not real_urls and config.MODEL_FOR.get("discovery") != zapasowy:
+        # NIE ZJADAMY BUDZETU PISARZA NA RESEARCH.
+        #
+        # Pierwsza wersja tego wyjscia zrobila dokladnie to: awaryjne odkrycie
+        # na Opusie kosztowalo 0,68 USD przy `RUN_LIMIT_USD` 1,50, reszta
+        # etapow dobila do 1,05, a pisarz padl z `BudgetExceeded`. Zaplacilismy
+        # za material i nie dostalismy tekstu — najgorszy mozliwy wynik, gorszy
+        # niz brak artykulu, bo brak artykulu jest darmowy.
+        rezerwa = float(getattr(config, "REZERWA_NA_PISARZA_USD", 0.60))
+        try:
+            zostalo = db.available_budget(conn, run_id)
+        except Exception:                   # noqa: BLE001
+            zostalo = float("inf")
+        if zostalo - rezerwa < rezerwa:
+            print("  [dyskoveria] awaryjne wyszukiwanie WSTRZYMANE: w przebiegu"
+                  " zostalo %.2f USD, a pisarz potrzebuje %.2f. Lepiej nie"
+                  " zaczynac, niz zaplacic za material i nie napisac tekstu."
+                  % (zostalo, rezerwa), flush=True)
+            raise ValueError(
+                "wyszukiwanie u dostawcy nie dziala, a na awaryjne (model %s)"
+                " nie ma budzetu w tym przebiegu: zostalo %.2f USD"
+                % (zapasowy, zostalo))
         poprzedni = config.MODEL_FOR["discovery"]
         print("  [dyskoveria] %s nie wyszukuje — PRZECHODZE NA %s. To jest"
               " DROZSZE (zmierzone: 0,27 USD wobec 0,0005) i dzieje sie tylko"

@@ -610,6 +610,20 @@ NAJNOWSZE_WYSZUKIWANIE = "web_search_20260209"
 # miedzy drozszym artykulem a brakiem artykulu.
 MODEL_ZAPASOWY_WYSZUKIWANIA = CLAUDE
 
+# ILE ZOSTAWIC PISARZOWI, ZANIM SIEGNIEMY PO DROGIE WYSZUKIWANIE.
+#
+# 10 wrzesnia 2026 awaryjne odkrycie na Opusie kosztowalo 0,68 USD przy
+# `RUN_LIMIT_USD` 1,50. Reszta etapow dobila do 1,05 i na pisarza zostalo
+# 0,45 — za malo na rezerwacje, wiec przebieg padl z `BudgetExceeded` PO
+# oplaceniu researchu. Zaplacilismy za material i nie dostalismy tekstu.
+#
+# Zmierzone na czterech ostatnich udanych wywolaniach pisarza:
+#     gpt-6-astra       0,4331 / 0,4700 / 0,2465 USD
+#     claude-fable-5-1  0,3952 USD
+#     srednio 0,3862, najdrozszy 0,4700
+# Prog 0,60 miesci najdrozszy zmierzony przypadek z zapasem na sprawdzenia.
+REZERWA_NA_PISARZA_USD = 0.60
+
 
 def narzedzie_wyszukiwania(model: str) -> tuple[str, str]:
     """Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie.

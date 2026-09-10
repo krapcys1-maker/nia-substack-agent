@@ -212,6 +212,49 @@ sprawdz("trzecie na modelu zapasowym",
         len(modele3) == 3 and modele3[2] != modele3[0], modele3)
 
 print()
+print("=== 3e. DROGIE WYSZUKIWANIE NIE ZJADA BUDZETU PISARZA ===")
+# PIERWSZA WERSJA WYJSCIA AWARYJNEGO ZROBILA DOKLADNIE TO. Zmierzone na
+# produkcji 10 wrzesnia 2026: awaryjne odkrycie na Opusie 0,68 USD przy
+# `RUN_LIMIT_USD` 1,50, reszta etapow do 1,05, pisarz padl z `BudgetExceeded`.
+# Zaplacone za material, tekstu nie ma — gorzej niz brak artykulu, bo brak
+# artykulu jest darmowy.
+stan4 = {"nr": 0}
+
+
+def zawsze_pusto(purpose, system, user, **kw):
+    stan4["nr"] += 1
+    return json.dumps(ZRODLA)          # nigdy nie dopisuje adresow
+
+
+with patch.object(stages.llm, "call", zawsze_pusto),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []),      patch.object(stages.db, "available_budget", lambda c, r: 0.50):
+    try:
+        stages.discovery(None, None, "czy komisja powstanie?", [])
+        sprawdz("przy chudym budzecie nie zaczynamy", False, "przeszlo")
+    except ValueError as exc:
+        sprawdz("przy chudym budzecie nie zaczynamy", True)
+        sprawdz("i powod to budzet, nie zagadka",
+                "nie ma budzetu" in str(exc), str(exc)[:80])
+sprawdz("model zapasowy NIE zostal oplacony", stan4["nr"] == 2, stan4["nr"])
+
+# KONTRDOWOD: przy zdrowym budzecie wyjscie awaryjne dziala jak dotad.
+stan5 = {"nr": 0}
+
+
+def pusto_potem_pelno(purpose, system, user, **kw):
+    stan5["nr"] += 1
+    zebrane = kw.get("collect_urls")
+    if stan5["nr"] >= 3 and zebrane is not None:
+        for zrodlo in ZRODLA["sources"]:
+            zebrane.append(zrodlo["url"])
+    return json.dumps(ZRODLA)
+
+
+with patch.object(stages.llm, "call", pusto_potem_pelno),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []),      patch.object(stages.db, "available_budget", lambda c, r: 1.40):
+    wynik5 = stages.discovery(None, None, "czy komisja powstanie?", [])
+sprawdz("przy zdrowym budzecie artykul powstaje", bool(wynik5))
+sprawdz("i model zapasowy zostal uzyty", stan5["nr"] == 3, stan5["nr"])
+
+print()
 print("=== 4. POWTORKA IDZIE Z TYM SAMYM PYTANIEM ===")
 zapytania = []
 atrapa4 = _atrapa([0, 2])

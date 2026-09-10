@@ -421,10 +421,118 @@ def discovery(
         ) or "(none yet - this is the first article of this account)"),
     )
     real_urls: list[str] = []
-    text = llm.call(
-        "discovery", DISCOVERY_SYSTEM, prompt,
-        conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
-    )
+    # PIERWSZE WYWOLANIE TEZ POD OSLONA, i to jest drugi regres tej samej
+    # poprawki, zlapany na produkcji. Ratunek nizej siedzial za `if not
+    # real_urls`, wiec dzialal tylko wtedy, gdy pierwsze wywolanie WROCILO.
+    # A ono nie wracalo: `llm.Truncated: Search completed without usable text
+    # or URLs` leci z `llm.call`, czyli przebieg umieral przed ratunkiem.
+    # Trzy przebiegi artykulu pod rzad zginely dokladnie tak.
+    text = ""
+    try:
+        text = llm.call(
+            "discovery", DISCOVERY_SYSTEM, prompt,
+            conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
+        )
+    except Exception as exc:                # noqa: BLE001
+        print("  [dyskoveria] pierwsza proba padla (%s: %s)"
+              % (type(exc).__name__, str(exc)[:90]), flush=True)
+    # ZERO WYSZUKIWAN — PYTAMY DRUGI RAZ, ZANIM ZABIJEMY ARTYKUL.
+    #
+    # `tool_choice: "auto"` znaczy, ze model MOZE nie siegnac po narzedzie, i
+    # czasem nie siega. Zmierzone na logach serwera:
+    #
+    #     8 wrzesnia   szukania=18, 12       wejscie 325k / 91k tokenow
+    #     9 wrzesnia   szukania=15, 6        wejscie 132k / 30k
+    #     10 wrzesnia  szukania=0, 0         wejscie 1288 / 1357
+    #
+    # Liczba tokenow wejscia jest tu dowodem: przy prawdziwym szukaniu wracaja
+    # wyniki i wejscie idzie w setki tysiecy. Dzis model odpowiedzial od reki
+    # z pamieci, DWA RAZY POD RZAD, i straznik dwa razy sluszenie wywalil caly
+    # przebieg artykulu — po oplaceniu tematu, pytan i klasyfikacji.
+    #
+    # Wymuszenie `{"type": "web_search"}` NIE jest odpowiedzia i zostalo juz raz
+    # sprawdzone na zywo: model wolal narzedzie w kolko, 15 wyszukiwan i ani
+    # jednego zdania odpowiedzi (patrz `llm._deepseek`). Powtorzenie tego samego
+    # zapytania kosztuje 0,003 USD i jest jedyna roznica miedzy artykulem
+    # a brakiem artykulu.
+    if not real_urls:
+        print("  [dyskoveria] zero wyszukiwan — model odpowiedzial z pamieci."
+              " Pytam drugi raz.", flush=True)
+        # POWTORKA NIE MA PRAWA POGORSZYC SYTUACJI, i to jest wlasny regres
+        # zlapany na produkcji godzine po napisaniu tej poprawki. Druga proba
+        # rzucila `llm.Truncated: Search completed without usable text or URLs`
+        # i zabila przebieg wyjatkiem, ktory NIC nie mowi o przyczynie — gorzej
+        # niz straznik nizej, ktory nazywa rzecz po imieniu.
+        #
+        # Ratunek ma prawo nie zadzialac. Nie ma prawa zamienic czytelnej
+        # diagnozy w niezrozumialy blad.
+        try:
+            text = llm.call(
+                "discovery", DISCOVERY_SYSTEM, prompt,
+                conn=conn, run_id=run_id, web_search=True,
+                collect_urls=real_urls,
+            ) or text
+        except Exception as exc:            # noqa: BLE001
+            print("  [dyskoveria] druga proba tez nie szukala (%s: %s)"
+                  % (type(exc).__name__, str(exc)[:90]), flush=True)
+
+    # AWARIA DOSTAWCY NIE MA KASOWAC ARTYKULU. Ostatnie wyjscie, drogie i glosne.
+    #
+    # ZMIERZONE NA SERWERZE 10 wrzesnia 2026, gole wywolanie z jednym zdaniem
+    # polecenia „You MUST use the web_search tool before answering":
+    #     deepseek-v4-flash   wej=103  wyj=91   zero adresow, `Truncated`
+    #     claude-opus-5       wej=38463 wyj=2230 szukania=2, 19 adresow
+    # Dwa dni wczesniej ten sam deepseek robil po 12-18 wyszukiwan na wywolanie.
+    # To nie jest nasz blad ani zly prompt — to niedostepne narzedzie po stronie
+    # dostawcy, i trwalo caly dzien.
+    #
+    # CENA JEST PRAWDZIWA I DLATEGO TO JEST OSTATNIE WYJSCIE, nie pierwsze:
+    # tamto jedno wywolanie Opusa kosztowalo 0,27 USD wobec 0,0005 na deepseeku.
+    # Wchodzi wylacznie wtedy, gdy skonfigurowany model nie szukal DWA RAZY,
+    # czyli w dniu awarii — a wtedy wybor stoi miedzy drozszym artykulem
+    # a brakiem artykulu, i wlasciciel wybral drozszy artykul.
+    zapasowy = getattr(config, "MODEL_ZAPASOWY_WYSZUKIWANIA", config.CLAUDE)
+    if not real_urls and config.MODEL_FOR.get("discovery") != zapasowy:
+        # NIE ZJADAMY BUDZETU PISARZA NA RESEARCH.
+        #
+        # Pierwsza wersja tego wyjscia zrobila dokladnie to: awaryjne odkrycie
+        # na Opusie kosztowalo 0,68 USD przy `RUN_LIMIT_USD` 1,50, reszta
+        # etapow dobila do 1,05, a pisarz padl z `BudgetExceeded`. Zaplacilismy
+        # za material i nie dostalismy tekstu — najgorszy mozliwy wynik, gorszy
+        # niz brak artykulu, bo brak artykulu jest darmowy.
+        rezerwa = float(getattr(config, "REZERWA_NA_PISARZA_USD", 0.60))
+        try:
+            zostalo = db.available_budget(conn, run_id)
+        except Exception:                   # noqa: BLE001
+            zostalo = float("inf")
+        if zostalo - rezerwa < rezerwa:
+            print("  [dyskoveria] awaryjne wyszukiwanie WSTRZYMANE: w przebiegu"
+                  " zostalo %.2f USD, a pisarz potrzebuje %.2f. Lepiej nie"
+                  " zaczynac, niz zaplacic za material i nie napisac tekstu."
+                  % (zostalo, rezerwa), flush=True)
+            raise ValueError(
+                "wyszukiwanie u dostawcy nie dziala, a na awaryjne (model %s)"
+                " nie ma budzetu w tym przebiegu: zostalo %.2f USD"
+                % (zapasowy, zostalo))
+        poprzedni = config.MODEL_FOR["discovery"]
+        print("  [dyskoveria] %s nie wyszukuje — PRZECHODZE NA %s. To jest"
+              " DROZSZE (zmierzone: 0,27 USD wobec 0,0005) i dzieje sie tylko"
+              " przy awarii wyszukiwania u dostawcy."
+              % (poprzedni, zapasowy), flush=True)
+        config.MODEL_FOR["discovery"] = zapasowy
+        try:
+            text = llm.call(
+                "discovery", DISCOVERY_SYSTEM, prompt,
+                conn=conn, run_id=run_id, web_search=True,
+                collect_urls=real_urls,
+            ) or text
+        except Exception as exc:            # noqa: BLE001
+            print("  [dyskoveria] model zapasowy tez zawiodl (%s: %s)"
+                  % (type(exc).__name__, str(exc)[:90]), flush=True)
+        finally:
+            # ROUTING WRACA NA MIEJSCE. Bez tego jedna awaria dostawcy
+            # przestawialaby caly przebieg na najdrozszy model po cichu.
+            config.MODEL_FOR["discovery"] = poprzedni
     try:
         data = llm.parse_json(text)
     except Exception:
