@@ -199,7 +199,7 @@ stare = (personality.short_form, personality.memory, personality.memory_state,
 stare_tematy = config.PERSONA_TEMATY
 try:
     config.PERSONA_TEMATY = ("LICZBA: a figure that sounds fine until you say it out loud",)
-    personality.short_form = lambda conn, run_id, kind, material: (
+    personality.short_form = lambda conn, run_id, kind, material, **_kw: (
         zebrane.append(material) or {"text": "x", "topic": "t"})
     personality.memory = lambda *a, **k: []
     personality.memory_state = lambda *a, **k: {"intro": True}

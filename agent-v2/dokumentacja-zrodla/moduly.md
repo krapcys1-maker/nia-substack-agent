@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-744 wierszy, 23 funkcji na poziomie modułu, 0 klas
+803 wierszy, 23 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -29,8 +29,8 @@
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
 | `rozbij_dlugie_uderzenia(tekst, maks)` | Za dluga linia idzie na dwie — po granicy ZDANIA. Oddaje (tekst, ile). |
-| `_valid(text, maximum)` *(wewn.)* | — |
-| `short_form(conn, run_id, kind, material)` | One paid decision: respond, or remain silent. No paid repair attempts. |
+| `_valid(text, maximum, dozwolone_adresy)` *(wewn.)* | `dozwolone_adresy` — adresy, ktore SAMI podalismy w materiale. |
+| `short_form(conn, run_id, kind, material, napisane_teraz)` | One paid decision: respond, or remain silent. No paid repair attempts. |
 | `_swiat(conn, run_id)` *(wewn.)* | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. |
 | `_fakt_z_banku()` *(wewn.)* | Jeden fakt z banku dla tej notki, albo `None`. |
 | `notes(conn, run_id, ile, od)` | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. |

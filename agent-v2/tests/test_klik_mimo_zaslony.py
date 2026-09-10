@@ -186,7 +186,22 @@ POZA_REGULA = {"klik_mimo_zaslony"}
 
 
 def klika(fn):
-    return any(isinstance(w, ast.Attribute) and w.attr == "click"
+    """Czy funkcja NAPRAWDE klika — golym `.click` albo przez helper.
+
+    Sam `.click` przestal wystarczac 10 wrzesnia 2026. `wystaw_komentarz`
+    klikalo wtedy DWA razy w to samo pole: raz u siebie, raz w srodku
+    `wpisz_w_puste_pole`, ktore czysci pole przed pisaniem. Zbedne klikniecie
+    poszlo, w funkcji nie zostal zaden goly `.click` — i ta regula przestala
+    ja widziec, choc przycisk „Post" nadal klika, tyle ze przez helper.
+
+    Wynik byl gorszy niz oblany test: `wystaw_komentarz` wypadlo z listy
+    OBJETYCH i trafilo miedzy posrednikow, czyli regula przestala jej
+    pilnowac. Straznik, ktory milknie przy poprawce, jest gorszy od braku
+    straznika, bo wyglada na spelniony.
+    """
+    return any((isinstance(w, ast.Attribute) and w.attr == "click")
+               or (isinstance(w, ast.Call) and isinstance(w.func, ast.Name)
+                   and w.func.id == "klik_mimo_zaslony")
                for w in ast.walk(fn))
 
 
