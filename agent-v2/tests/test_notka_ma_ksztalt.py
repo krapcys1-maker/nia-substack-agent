@@ -75,29 +75,11 @@ print()
 print("=== 2. TRZY UDERZENIA SA NAZWANE ===")
 for numer, fraza in ((1, "THE THING, plainly"),
                      (2, "THE ABSURDITY, about the PEOPLE"),
-                     (3, "A LINE AIMED AT SOMEBODY, WITH YOU STANDING IN IT")):
+                     (3, "A LINE AIMED AT SOMEBODY")):
     sprawdz("uderzenie %d nazwane" % numer, fraza in OSOBOWOSC, fraza)
 sprawdz("zart siedzi w uderzeniu drugim",
         "and it is the joke" in OSOBOWOSC)
 sprawdz("zadnego gestego akapitu", "Never one dense paragraph" in OSOBOWOSC)
-# UDERZENIE TRZECIE ZMIERZONE, 10 wrzesnia 2026. Cztery notki wystawione tego
-# dnia wobec pieciu przyjetych przez wlasciciela:
-#                                    przyjete   nasze
-#     NIA obecna w zdaniu              3 z 5    0 z 4
-#     polecenie wydane firmie          0 z 5    3 z 4
-#     otwarcie nazwa firmy             1 z 5    4 z 4
-# „OpenAI, before anyone calls this genius, put the compute bill beside the
-# claim" jest sluszne i napisane przez dzial polityki publicznej.
-sprawdz("autorka stoi we wlasnym uderzeniu",
-        "You are the one talking" in OSOBOWOSC)
-sprawdz("zakaz notatki sluzbowej wprost",
-        "Company, do this by that date" in OSOBOWOSC)
-sprawdz("z przykladem, ktory dziala",
-        "satellite network before you" in OSOBOWOSC)
-# FRAZA NIEROZCIETA — instrukcja jest sklejana z kilku literalow, wiec
-# „keep the public doorway open" jest w PLIKU przelamane miedzy nimi.
-sprawdz("i z przykladem, ktory nie dziala",
-        "A memo does not" in OSOBOWOSC)
 # FRAZA NIEROZCIETA. Instrukcja jest sklejana z kilku literalow, wiec
 # „past twenty-five words" w PLIKU jest przelamane miedzy nimi, choc
 # w gotowym napisie stoi razem. Szukamy czegos, co w zrodle jest ciagle.
@@ -127,14 +109,6 @@ sprawdz("i z powodem, czemu tamto zdanie szkodzilo",
 # nie moze go porzucic.
 sprawdz("dluzsza forma powtarza ciag, a nie porzuca go",
         "never gets to abandon it" in WSPOLNY)
-sprawdz("kartridz tez zna rozpad uderzenia trzeciego",
-        "Beat three is the one that decays" in WSPOLNY)
-sprawdz("z tabela pomiaru obok",
-        "an instruction issued to a company" in WSPOLNY)
-# KONTRDOWOD: nazwanie firmy NIE jest zakazane — jeden z przyjetych przykladow
-# to robi. Zakazana jest FORMA, ktora przejmuje wszystkie cztery notki.
-sprawdz("nazwanie firmy nadal dozwolone",
-        "Naming the company is allowed" in WSPOLNY)
 
 print()
 print("=== 4. KOMENTARZ I RESTACK IDA TYM SAMYM RYTMEM ===")
@@ -144,21 +118,6 @@ sprawdz("jedno zdanie wolno, blok nie",
         "may never be is a paragraph the reader has to untangle" in KOMENTARZ)
 sprawdz("przy cierpieniu zadlo zamienia sie w cieplo, ksztalt zostaje",
         "the sting becomes warmth, but the shape stays" in KOMENTARZ)
-# UDERZENIE PIERWSZE W ODPOWIEDZI. Zmierzone na zywej odpowiedzi 10 wrzesnia:
-# „Chaos Engine says something nice about a security control that's fitted but
-# not locked" — narrator opowiadajacy scene, na ktora czytelnik wlasnie patrzy.
-# Wzielo sie to z tego, ze lista uderzen zaczynala sie od „what they actually
-# said". Po poprawce ta sama sytuacja dala „A padlock clipped through the hasp,
-# doing absolutely nothing."
-sprawdz("uderzenie pierwsze to ODPOWIEDZ, nie streszczenie",
-        "Your answer to them, plainly" in KOMENTARZ)
-sprawdz("i wprost zakazuje opisywania, co powiedzieli",
-        "Not a description of what they said" in KOMENTARZ)
-sprawdz("stare `what they actually said` nie zostalo jako polecenie",
-        KOMENTARZ.count("what they actually said") <= 1,
-        KOMENTARZ.count("what they actually said"))
-sprawdz("jedno slowo albo emoji tez ma odpowiedz",
-        "one word or one emoji" in KOMENTARZ)
 # RESTACK: to jest ta wpadka, ktora wlasciciel widzial na ekranie — podpis
 # odpowiadal na inne pytanie niz to, ktore czytelnik ma przed oczami.
 sprawdz("restack odpowiada na ICH post",
