@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 39 109 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 39 130 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 220 zestawów
-testów, 4889 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 4896 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -853,7 +853,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3797 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3801 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -988,7 +988,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1822 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1839 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -12802,7 +12802,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `MODEL_ZAPASOWY_WYSZUKIWANIA` | `CLAUDE` | MODEL, PO KTORY SIEGAMY, GDY WYSZUKIWANIE U DOSTAWCY PADNIE. 10 wrzesnia 2026 narzedzie `web_search` DeepSeeka przestalo cokolwiek oddawac n |
 | `REZERWA_NA_PISARZA_USD` | `0.60` | ILE ZOSTAWIC PISARZOWI, ZANIM SIEGNIEMY PO DROGIE WYSZUKIWANIE. 10 wrzesnia 2026 awaryjne odkrycie na Opusie kosztowalo 0,68 USD przy `RUN_L |
 | `DISCOVERY_MAX_SEARCHES_ZAPASOWE` | `4` | ILE WYSZUKIWAN WOLNO MODELOWI ZAPASOWEMU. Awaryjne odkrycie na Opusie 10 wrzesnia 2026: osiem wyszukiwan, 99 851 tokenow wejscia, 4 097 wyjs |
-| `KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD` | `0.40` | ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac. ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 8 |
+| `KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD` | `0.80` | ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac. ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 8 |
 | `SUBSKRYPCJE_MAKS_OGLADANYCH` | `40` | ILU KANDYDATOW WOLNO OBEJRZEC W JEDNYM PRZEBIEGU SUBSKRYPCJI. Do 10 wrzesnia 2026 okno mialo osiem pozycji — cztery sloty plus zapas na odpa |
 | `WEB_SEARCH_USD_PER_1K` | `10.00` | Wyszukiwanie po stronie Anthropic: USD za 1000 zapytań. |
 | `SUFIT_PODNIESIONY_NA` | `""` | — |

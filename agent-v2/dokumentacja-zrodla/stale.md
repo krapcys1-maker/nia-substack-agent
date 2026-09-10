@@ -63,7 +63,7 @@
 | `MODEL_ZAPASOWY_WYSZUKIWANIA` | `CLAUDE` | MODEL, PO KTORY SIEGAMY, GDY WYSZUKIWANIE U DOSTAWCY PADNIE. 10 wrzesnia 2026 narzedzie `web_search` DeepSeeka przestalo cokolwiek oddawac n |
 | `REZERWA_NA_PISARZA_USD` | `0.60` | ILE ZOSTAWIC PISARZOWI, ZANIM SIEGNIEMY PO DROGIE WYSZUKIWANIE. 10 wrzesnia 2026 awaryjne odkrycie na Opusie kosztowalo 0,68 USD przy `RUN_L |
 | `DISCOVERY_MAX_SEARCHES_ZAPASOWE` | `4` | ILE WYSZUKIWAN WOLNO MODELOWI ZAPASOWEMU. Awaryjne odkrycie na Opusie 10 wrzesnia 2026: osiem wyszukiwan, 99 851 tokenow wejscia, 4 097 wyjs |
-| `KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD` | `0.40` | ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac. ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 8 |
+| `KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD` | `0.80` | ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac. ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 8 |
 | `SUBSKRYPCJE_MAKS_OGLADANYCH` | `40` | ILU KANDYDATOW WOLNO OBEJRZEC W JEDNYM PRZEBIEGU SUBSKRYPCJI. Do 10 wrzesnia 2026 okno mialo osiem pozycji — cztery sloty plus zapas na odpa |
 | `WEB_SEARCH_USD_PER_1K` | `10.00` | Wyszukiwanie po stronie Anthropic: USD za 1000 zapytań. |
 | `SUFIT_PODNIESIONY_NA` | `""` | — |

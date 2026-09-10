@@ -812,10 +812,27 @@ def _przebieg(conn, run_id: int) -> int:
         import research_tasks
         followup = research_tasks.followup(config.DATA_DIR, run_id, brief, corpus,
                                            config.MIN_ZRODEL_DO_PISANIA, config.MIN_PRIMARY_SOURCES)
-        dodatkowe = [s for s in stages.discovery(conn, run_id,
-                                                 pytanie_do_researchu + followup, recent,
-                                                 tylko_pierwotne=bez_rekordow)
-                     if s.get("url") not in juz]
+        # DRUGA RUNDA MA DOKLADAC, NIE ZABIJAC.
+        #
+        # ZMIERZONE 10 wrzesnia 2026: pierwsza runda oddala SIEDEM zrodel,
+        # potem druga runda trafila na te sama awarie wyszukiwania u dostawcy,
+        # bramka budzetu slusznie nie pozwolila siegnac po drogi model —
+        # i `ValueError` z drugiej rundy zabil caly artykul. Wyrzucilismy
+        # material za 0,76 USD, ktory juz lezal na stole.
+        #
+        # Ta runda z definicji jest DOBIERANIEM: wchodzi tylko wtedy, gdy
+        # pobranych albo pierwotnych jest za malo, i ma poprawic sytuacje.
+        # Runda, ktora moze pogorszyc wynik do zera, nie jest dobieraniem.
+        try:
+            dodatkowe = [s for s in stages.discovery(conn, run_id,
+                                                     pytanie_do_researchu + followup, recent,
+                                                     tylko_pierwotne=bez_rekordow)
+                         if s.get("url") not in juz]
+        except Exception as exc:                      # noqa: BLE001
+            dodatkowe = []
+            print("  (druga runda nie doszla do skutku: %s: %s — pisze z tego,"
+                  " co juz mam)" % (type(exc).__name__, str(exc)[:110]),
+                  flush=True)
         if dodatkowe:
             corpus = corpus + stages.fetch(conn, run_id, dodatkowe)
 

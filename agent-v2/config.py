@@ -642,16 +642,20 @@ DISCOVERY_MAX_SEARCHES_ZAPASOWE = 4
 # ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac.
 #
 # ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 851
-# tokenow wejscia, 4 097 wyjscia — 0,68 USD. Wyszukiwania dokladaja wyniki do
-# wejscia nastepnej tury, wiec polowa wyszukiwan to mniej wiecej polowa
-# rachunku: przy `DISCOVERY_MAX_SEARCHES_ZAPASOWE` = 4 wychodzi okolo 0,35.
-# Bierzemy 0,40 z zapasem.
+# tokenow wejscia, 4 097 wyjscia — 0,68 USD.
+#
+# ZALOZENIE „polowa wyszukiwan to polowa rachunku" OKAZALO SIE FALSZYWE i to
+# jest poprawka po pomiarze, nie po namysle. Przy `DISCOVERY_MAX_SEARCHES_
+# ZAPASOWE` = 4 zmierzone wywolania kosztowaly 0,43 i 0,76 USD, bo wejscie
+# urosło do 57 852 i 119 277 tokenow — model czyta CALE strony, ktore znajdzie,
+# i cztery obszerne trafienia potrafia wazyc wiecej niz osiem krotkich.
+# Bierzemy 0,80, czyli najdrozszy zmierzony przypadek.
 #
 # Pierwsza wersja tej bramki brala tu `REZERWA_NA_PISARZA_USD` jako szacunek
 # kosztu wyszukiwania i przez to odmawiala przy 1,18 USD w przebiegu, choc
 # 0,35 na research plus 0,60 na pisarza spokojnie sie tam miescilo. Szacunek
 # ma byc szacunkiem tej rzeczy, ktora szacuje.
-KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD = 0.40
+KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD = 0.80
 
 # ILU KANDYDATOW WOLNO OBEJRZEC W JEDNYM PRZEBIEGU SUBSKRYPCJI.
 #

@@ -265,11 +265,12 @@ def pusto_potem_pelno(purpose, system, user, **kw):
     return json.dumps(ZRODLA)
 
 
-with patch.object(stages.llm, "call", pusto_potem_pelno),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []),      patch.object(stages.db, "available_budget", lambda c, r: 1.18):
+with patch.object(stages.llm, "call", pusto_potem_pelno),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []),      patch.object(stages.db, "available_budget", lambda c, r: 1.50):
     wynik5 = stages.discovery(None, None, "czy komisja powstanie?", [])
-# 1,18 USD to DOKLADNIE to, co zostalo w przebiegu na produkcji 10 wrzesnia.
-# Pierwsza wersja bramki tu odmawiala, choc 0,40 na research i 0,60 na pisarza
-# miesci sie w 1,18 z zapasem.
+# 1,50 USD to `RUN_LIMIT_USD`, czyli budzet swiezego przebiegu. Tyle wlasnie ma
+# artykul na starcie i tyle musi wystarczyc: 0,80 na awaryjny research i 0,60
+# dla pisarza. Przy 1,18 — czyli po opłaceniu wczesniejszych etapow — bramka
+# slusznie odmawia, i tak sie stalo na produkcji przy DRUGIEJ rundzie.
 sprawdz("przy zdrowym budzecie artykul powstaje", bool(wynik5))
 sprawdz("i model zapasowy zostal uzyty", stan5["nr"] == 3, stan5["nr"])
 
@@ -292,6 +293,39 @@ sprawdz("wszystkie zapytania identyczne", len(zapytania) >= 2
         and len(set(zapytania)) == 1, len(set(zapytania)))
 # Powtarzamy TO SAMO, bo problem lezy po stronie wyboru narzedzia, nie tresci.
 # Przepisanie pytania przy powtorce zamienialoby ratunek w loterie.
+
+print()
+print("=== 6. DRUGA RUNDA DOBIERA, NIE ZABIJA ===")
+# ZMIERZONE 10 wrzesnia 2026: pierwsza runda oddala SIEDEM zrodel za 0,76 USD,
+# druga trafila na te sama awarie u dostawcy, bramka budzetu slusznie nie
+# pozwolila siegnac po drogi model — i `ValueError` z DRUGIEJ rundy zabil caly
+# artykul. Material, ktory juz lezal na stole, poszedl do kosza.
+import ast as _ast   # noqa: E402
+import io as _io     # noqa: E402
+_ZR = _io.open("agent-v2/artykul_z_puli.py", encoding="utf-8").read()
+_i = _ZR.find("-- druga runda: pobranych")
+_OGON = _ZR[_i:_i + 2200] if _i >= 0 else ""
+sprawdz("druga runda istnieje", bool(_OGON))
+sprawdz("i jest oslonieta", "except Exception as exc:" in _OGON)
+sprawdz("pusta lista zamiast wyjatku", "dodatkowe = []" in _OGON)
+sprawdz("i mowi, ze pisze z tego, co ma",
+        "pisze z tego," in _OGON)
+# KONTRDOWOD: pierwsza runda ma NADAL moc zatrzymania przebiegu. Bez zrodel
+# nie ma z czego pisac i wtedy milczenie jest uczciwe.
+_j = _ZR.find("sources = stages.discovery(")
+sprawdz("pierwsza runda nadal bez oslony",
+        _j >= 0 and "try:" not in _ZR[max(0, _j - 200):_j],
+        _ZR[max(0, _j - 60):_j + 40] if _j >= 0 else "brak")
+
+print()
+print("=== 7. SZACUNEK KOSZTU ZGADZA SIE Z POMIAREM ===")
+# Pierwsza wersja brala 0,40 z zalozenia „polowa wyszukiwan to polowa
+# rachunku". Zmierzone przy czterech wyszukiwaniach: 0,43 i 0,76 USD, bo
+# model czyta cale strony i cztery obszerne waza wiecej niz osiem krotkich.
+_koszt = float(getattr(stages.config, "KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD", 0))
+sprawdz("szacunek pokrywa najdrozszy zmierzony przypadek", _koszt >= 0.76,
+        _koszt)
+sprawdz("i nie jest absurdalnie wysoki", _koszt <= 1.50, _koszt)
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
