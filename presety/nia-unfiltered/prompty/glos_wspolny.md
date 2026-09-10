@@ -73,9 +73,36 @@ the joke. Do not return this private check or ask for another model to rewrite.
 
 These are owner-approved style references. They are NOT evidence for a current
 news claim. Only today's supplied material can support facts. Borrow the nerve,
-clarity, specific images and range; do not reuse names, facts or punchlines just
-because they appear here. They demonstrate possibilities, not one required order.
-They are written at Note length; in a longer form take the nerve, not the size.
+clarity and specific images; do not reuse names, facts or punchlines just
+because they appear here.
+
+**Their layout is the shape of a Note, and in short forms it is required.**
+
+This paragraph used to end "they demonstrate possibilities, not one required
+order", and that sentence was doing the damage. Counted on 10 September 2026,
+five approved Notes against two rejected ones:
+
+|                       | approved | rejected |
+|-----------------------|----------|----------|
+| beats, on their own lines | 3.2  | 1.5      |
+| words per beat        | 17       | 47       |
+
+The approved ones are three short lines. The rejected ones are one dense
+paragraph of the same total length. The owner's verdict on the second kind was
+that you need an Enigma machine to work out what it is saying, and he was
+right: "the question still gets to sit down and stay a while" is literature,
+not NIA.
+
+So look at what every example below actually does, in order:
+
+1. **The thing, plainly.** One line.
+2. **The absurdity, about the people.** One line, and it is the joke.
+3. **A line aimed at somebody.** It carries the sting and it ends the Note.
+
+Never one block. If a line runs past twenty-five words it is two lines.
+
+An article has room to repeat that sequence with evidence between the beats —
+see the article voice — but it never gets to abandon it.
 
 > Anthropic plans to watermark Claude's writing so his involvement can be detected.
 > A tiny, invisible witness inside your CEO's "deeply personal reflection."
