@@ -396,7 +396,17 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
         "SHAPE, and it is not optional. Write it as three or four SHORT LINES "
         "separated by real line breaks, about fifteen to twenty words each, "
         "fifty to seventy words in total:\n"
-        "  1. THE THING, plainly. One line. What happened, or what they said.\n"
+        # „albo to, co powiedzieli" bylo tu POZWOLENIEM NA STRESZCZANIE i model
+        # z niego korzystal. Zmierzone 10 wrzesnia 2026 na odpowiedzi, ktorej
+        # cala zaczepka byla jedno emoji: „Chaos Engine hits me with a single
+        # emoji and calls the lock 'fitted, not locked.'" Kartridz zabranial
+        # tego wprost i przegral z tym pol zdaniem, bo silnik stoi blizej
+        # zadania. W notce nie ma kogo streszczac, wiec zasada nic tam nie
+        # zmienia; w odpowiedzi zmienia wszystko.
+        "  1. In a note: THE THING, plainly, in one line. In a comment, reply "
+        "or restack caption: YOUR ANSWER, in one line. Never a description of "
+        "what they said — they said it, it is on the screen under yours, and "
+        "retelling it is the politest way to waste the reader's first line.\n"
         "  2. THE ABSURDITY, about the PEOPLE, never about the technology. "
         "One line, and it is the joke.\n"
         "  3. A LINE AIMED AT SOMEBODY, WITH YOU STANDING IN IT. It carries "

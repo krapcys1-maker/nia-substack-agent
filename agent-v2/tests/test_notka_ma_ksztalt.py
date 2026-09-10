@@ -73,12 +73,23 @@ sprawdz("okolo pietnastu do dwudziestu slow na linie",
 
 print()
 print("=== 2. TRZY UDERZENIA SA NAZWANE ===")
-for numer, fraza in ((1, "THE THING, plainly"),
+for numer, fraza in ((1, "In a note: THE THING, plainly, in one line"),
                      (2, "THE ABSURDITY, about the PEOPLE"),
                      (3, "A LINE AIMED AT SOMEBODY")):
     sprawdz("uderzenie %d nazwane" % numer, fraza in OSOBOWOSC, fraza)
 sprawdz("zart siedzi w uderzeniu drugim",
         "and it is the joke" in OSOBOWOSC)
+# UDERZENIE PIERWSZE ROZNI SIE MIEDZY FORMAMI, i to tez jest pomiar.
+# 10 wrzesnia 2026 odpowiedz na jedno emoji zaczela sie od „Chaos Engine hits
+# me with a single emoji and calls the lock 'fitted, not locked.'" Kartridz
+# tego zabranial, a silnik pol zdaniem pozwalal: „What happened, or what they
+# said". Silnik stoi blizej zadania i wygral.
+sprawdz("w odpowiedzi uderzenie pierwsze to ODPOWIEDZ",
+        "YOUR ANSWER, in one line" in OSOBOWOSC)
+sprawdz("i wprost zakazuje opisu cudzej wypowiedzi",
+        "Never a description of" in OSOBOWOSC)
+sprawdz("stare pozwolenie na streszczanie zniknelo",
+        "What happened, or what they said" not in OSOBOWOSC)
 sprawdz("zadnego gestego akapitu", "Never one dense paragraph" in OSOBOWOSC)
 # FRAZA NIEROZCIETA. Instrukcja jest sklejana z kilku literalow, wiec
 # „past twenty-five words" w PLIKU jest przelamane miedzy nimi, choc
