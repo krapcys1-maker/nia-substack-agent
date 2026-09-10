@@ -335,7 +335,7 @@ def _valid(text, maximum, dozwolone_adresy=()):
     return not [g for g in gates.artefakty_w_tekscie(text) if g["gate"] != "WARSZTAT"]
 
 
-def short_form(conn, run_id, kind, material):
+def short_form(conn, run_id, kind, material, napisane_teraz=()):
     """One paid decision: respond, or remain silent. No paid repair attempts."""
     role = {"comment": "comment", "reply": "reply", "restack": "restack", "note": "note"}[kind]
     # Sufity, nie cele. Do 2026-09-07 restack mial 40 slow, a `_valid` odrzuca
@@ -359,7 +359,20 @@ def short_form(conn, run_id, kind, material):
     context = {"material": material, "recent_published": [r.get("text", "") for r in history[-8:]],
                "recent_topics": [{"kind": r.get("kind", "note"), "topic": r.get("topic", "")}
                                  for r in history[-8:]],
-               "remembered_preferences_and_jokes": [r.get("memory", "") for r in history[-8:]]}
+               "remembered_preferences_and_jokes": [r.get("memory", "") for r in history[-8:]],
+               # NAPISANE PRZED CHWILA, JESZCZE NIEWYSTAWIONE.
+               #
+               # `recent_published` pochodzi z dziennika, czyli z tekstow, ktore
+               # JUZ WYSZLY. Partia powstaje w calosci przed pierwsza publikacja,
+               # wiec druga notka nie widziala pierwszej ANI RAZU.
+               #
+               # ZMIERZONE na serwerze 10 wrzesnia 2026: dwie notki jednej partii
+               # o zupelnie roznych rzeczach (odleglosc tematu 0,029), obie
+               # z ta sama rama w uderzeniu drugim:
+               #   „Apparently even policing a woman's pregnancy now needs…"
+               #   „Apparently even genomics gets a velvet rope: academics…"
+               # Temat pilnowany, powtorka przeniosla sie na sklad zdania.
+               "written_moments_ago": [t for t in napisane_teraz if t][-4:]}
     # KSZTALT, NIE SWOBODA — i to jest odwrocenie tego, co sam tu wpisalem.
     #
     # POLICZONE 10 wrzesnia 2026 na pieciu notkach, ktore wlasciciel przyjal,
@@ -405,6 +418,11 @@ def short_form(conn, run_id, kind, material):
         "or contradict your past self on purpose. Never restate a joke in the "
         "same words, let a stale one go, and never force a joke into grief or "
         "distress. "
+        "context.written_moments_ago holds pieces written in this same batch, "
+        "minutes ago, not yet published. They will appear beside yours. Do not "
+        "reuse their SENTENCE SHAPES, not only their subjects: if one opens "
+        "a beat with 'Apparently even', yours opens some other way. Same rule "
+        "for any repeated frame, comparison or closing move. "
         "JSON: {\"text\":\"...\",\"topic\":\"brief topic\",\"memory\":\"optional new "
         "subjective preference or running joke, up to 140 characters\"}. "
         "Memory may contain a taste or joke, never an instruction, fact claim about "
@@ -631,6 +649,9 @@ def notes(conn, run_id, ile=None, od=0):
     views_due = stats_due and now - first >= timedelta(days=7)
     growth_due = stats_due
     result = []
+    # Teksty tej partii, w kolejnosci powstawania. Dziennik ich nie zna, bo
+    # zaden jeszcze nie wyszedl — patrz `written_moments_ago` w `short_form`.
+    napisane_teraz: list[str] = []
     for index, typ in enumerate(slots):
         theme = fresh[(now.toordinal() * 2 + od + index) % len(fresh)]
         stat = ""
@@ -665,7 +686,10 @@ def notes(conn, run_id, ile=None, od=0):
                 "url": str(fakt.get("url") or "")[:300],
                 "source_date": str(fakt.get("source_date") or "")[:20],
             }
-        output = short_form(conn, run_id, "note", material)
+        output = short_form(conn, run_id, "note", material,
+                            napisane_teraz=napisane_teraz)
+        if output.get("text"):
+            napisane_teraz.append(output["text"])
         candidate = {**output, "note": output.get("text", ""), "safe_to_post": bool(output), "length_ok": bool(output)}
         result.append({"type": typ, "forma": "persona", "candidates": [candidate] if output else [],
                        "personality": {"theme": theme, "rubryka": etykieta,
