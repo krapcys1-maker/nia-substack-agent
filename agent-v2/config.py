@@ -653,6 +653,21 @@ DISCOVERY_MAX_SEARCHES_ZAPASOWE = 4
 # ma byc szacunkiem tej rzeczy, ktora szacuje.
 KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD = 0.40
 
+# ILU KANDYDATOW WOLNO OBEJRZEC W JEDNYM PRZEBIEGU SUBSKRYPCJI.
+#
+# Do 10 wrzesnia 2026 okno mialo osiem pozycji — cztery sloty plus zapas na
+# odpady — i liczylo takze pominiecia za rozmiar, ktore NIC nie kosztuja
+# (odczyt publicznego JSON-a, bez przegladarki i bez przerwy rytmu).
+#
+# Zmierzone na produkcji: sufit 1000 odbiorcow, a pula podawala konta
+# ze 134 438, 131 684, 90 381 i 3 758 obserwujacymi oraz cztery publikacje
+# bez profilu uzytkownika. Osiem obejrzanych, osiem pominiec, ZERO prob —
+# przez trzy doby z rzedu, przy normie czterech subskrypcji dziennie.
+#
+# Granica zostaje, bo `uchwyt_publikacji` bywa zapytaniem do API i jeden
+# przebieg nie ma obchodzic calej puli.
+SUBSKRYPCJE_MAKS_OGLADANYCH = 40
+
 
 def narzedzie_wyszukiwania(model: str) -> tuple[str, str]:
     """Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie.

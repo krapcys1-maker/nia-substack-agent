@@ -24,7 +24,7 @@ agent-v2/              the bot. Everything that runs is here
   db.py                four tables, narrow column migrations
   gates.py             deterministic checks on finished text
   prompts/             27 prompt files, read from disk on every call
-  tests/               218 free tests, 9 paid ones in tests/platne/
+  tests/               220 free tests, 9 paid ones in tests/platne/
   systemd/             three services, three timers
   dokumentacja-zrodla/ the generator for the reconstruction document
   data/                database, journal, session — gitignored, never committed
@@ -45,7 +45,7 @@ research has already been paid for.
 |---|---|---|---|---|
 | `stages.py` | 7,226 | ~3,320 | 43% | every model stage |
 | `browser.py` | 5,131 | ~2,470 | 41% | the entire Substack layer |
-| `run.py` | 2,843 | ~1,218 | 49% | orchestration |
+| `run.py` | 2,843 | ~1,220 | 49% | orchestration |
 | `config.py` | 2,714 | ~900 | 57% | settings, with reasons |
 
 That prose is not decoration. It records what was measured and why a number is

@@ -2120,10 +2120,43 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         ZAPAS_NA_ODPADY = 4
         proby = 0
         z_pamieci = 0
+        za_duzi = 0
+        obejrzani = 0
         zostal_slad = False
-        for host in kandydaci[: na_teraz["subskrypcje"] + ZAPAS_NA_ODPADY]:
+        # OKNO LICZY SIE W TYM, CO KOSZTUJE, NIE W OBEJRZANYCH KANDYDATACH.
+        #
+        # Stalo tu `kandydaci[: na_teraz["subskrypcje"] + ZAPAS_NA_ODPADY]`,
+        # czyli osiem pozycji z gory listy, i to wystarczylo, zeby subskrypcje
+        # stanely na ZERZE. Zmierzone na produkcji 7-10 wrzesnia 2026:
+        #
+        #     norma           4 subskrypcje dziennie
+        #     wykonanie       0% przez trzy doby, 10 „nieudanych" prob
+        #     powod           kazdy kandydat z osmiu przekraczal sufit
+        #
+        # Sufit to 1000 odbiorcow. Konta, ktore pula podawala, mialy 134 438,
+        # 131 684, 90 381 i 3 758 obserwujacych — od czterech do stu trzydziestu
+        # razy za duzo. Cztery kolejne w ogole nie maja profilu uzytkownika
+        # (to publikacje, nie ludzie) i tez odpadaly.
+        #
+        # Pominiecie za rozmiar NIC NIE KOSZTUJE: to odczyt publicznego JSON-a,
+        # bez przegladarki, bez przerwy rytmu i bez zuzycia slotu — mowi o tym
+        # komentarz przy samym sprawdzeniu. Okno przycinane po takich
+        # pominieciach mierzy wiec cos, co jest darmowe, i zamyka blok, zanim
+        # dojdzie do pierwszego kandydata we wlasciwym rozmiarze.
+        #
+        # Zostaje GORNA GRANICA, bo `uchwyt_publikacji` bywa zapytaniem do API
+        # i jeden przebieg nie ma obchodzic calej puli.
+        limit_ogladania = max(
+            na_teraz["subskrypcje"] + ZAPAS_NA_ODPADY,
+            int(getattr(config, "SUBSKRYPCJE_MAKS_OGLADANYCH", 40)))
+        for host in kandydaci:
             if proby >= na_teraz["subskrypcje"]:
                 break
+            if obejrzani >= limit_ogladania:
+                print("  (obejrzalem %d kandydatow i konczę na dzis — reszta"
+                      " puli poczeka)" % obejrzani, flush=True)
+                break
+            obejrzani += 1
             if not zostal_czas("subskrypcje"):
                 break
             uchwyt = browser.uchwyt_publikacji(host)
@@ -2192,6 +2225,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                     "subskrypcja_pominieta", udane=True, komu=uchwyt,
                     powod="account exceeds the size limit or its size is unknown")
                 zostal_slad = True
+                za_duzi += 1
                 print(f"  (@{uchwyt} przekracza sufit odbiorcow — pomijam bez"
                       f" przerwy i bez zuzycia proby)", flush=True)
                 continue
@@ -2220,6 +2254,19 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 "subskrypcja_pominieta", udane=True,
                 powod="pominietych %d z %d kandydatow: juz ich subskrybujemy"
                       " wedlug dziennika" % (z_pamieci, len(kandydaci)))
+        # CALA PULA ZA DUZA TO WLASNA DIAGNOZA, nie brak okazji.
+        #
+        # Przez trzy doby blok konczyl sie zerem i w dzienniku zostawaly same
+        # pojedyncze pominiecia. Z boku wygladalo to jak „nie bylo kogo
+        # subskrybowac", a naprawde bylo: „pula podaje wylacznie konta
+        # kilkadziesiat razy wieksze od sufitu". To dwie rozne usterki i tylko
+        # jedna z nich naprawia sie w tym pliku.
+        if za_duzi:
+            print("  [subskrypcje] %d z %d obejrzanych przekraczalo sufit %s"
+                  " odbiorcow%s"
+                  % (za_duzi, obejrzani, config.SUBSKRYPCJE_MAX_ODBIORCOW,
+                     " — pula nie zawiera kont w naszym rozmiarze" if not proby
+                     else ""), flush=True)
 
     # --- 4. polubienia: najtańszy uczciwy sygnał ------------------------------
     def polubienia() -> None:

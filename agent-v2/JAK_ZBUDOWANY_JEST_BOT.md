@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 38 879 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 38 977 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 218 zestawów
-testów, 4844 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 220 zestawów
+testów, 4880 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -266,7 +266,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3063 wierszy, 27 funkcji na poziomie modułu, 1 klas
+3110 wierszy, 27 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -464,7 +464,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6169 wierszy, 109 funkcji na poziomie modułu, 3 klas
+6205 wierszy, 109 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -853,7 +853,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3782 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3797 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -8854,15 +8854,41 @@ def restackuj_w_kanale(
                 break
             kandydat = przyciski.nth(i)
             try:
+                # TRZY CICHE ODPADY, TERAZ GLOSNE.
+                #
+                # ZMIERZONE na produkcji 7-10 wrzesnia 2026: restacki chodza na
+                # 42 procent normy, a dziennie wychodzi DOKLADNIE JEDEN przy
+                # budzecie czterech. W logu stalo za kazdym razem to samo:
+                #
+                #     notek w kanale do rozwazenia: 6
+                #     [restack] claude-opus-5 ... (jedno wywolanie)
+                #     podane dalej 1/2
+                #
+                # Szesciu kandydatow, JEDNO pytanie do modelu. Pieciu odpadalo
+                # przed ocena i nie zostawialo po sobie ani slowa, bo wszystkie
+                # trzy odsiewy konczyly sie golym `continue`. Z zewnatrz
+                # wygladalo to jak pusty kanal, a kanal pusty nie byl.
+                #
+                # Nie zgaduje, ktory z tych trzech odsiewow to robi — od tego
+                # jest pomiar. Kazdy mowi teraz o sobie i trafia do licznika.
                 if not kandydat.is_visible():
+                    wynik["niewidoczne"] = wynik.get("niewidoczne", 0) + 1
+                    print("    pomijam (przycisk niewidoczny, pozycja %d)" % i,
+                          flush=True)
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.
                 kto = _autor_przy_przycisku(kandydat)
                 if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    wynik["nasze"] = wynik.get("nasze", 0) + 1
+                    print("    pomijam (to nasza wlasna notka)", flush=True)
                     continue
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
+                    wynik["bez_tresci"] = wynik.get("bez_tresci", 0) + 1
+                    print("    pomijam (nie odczytalem tresci notki u %s)"
+                          % (str((kto or {}).get("autor") or "?")[:24]),
+                          flush=True)
                     continue
                 # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
                 if not w_rewirze(notka["tekst"]):
@@ -8995,6 +9021,16 @@ def restackuj_w_kanale(
                     page.wait_for_timeout(600)
                 except Exception:
                     pass
+        # RACHUNEK CALEGO BLOKU, ZAWSZE. Bez tego jednego zdania trzeba
+        # przegladac log linia po linii, zeby odpowiedziec na pytanie
+        # „czemu jeden restack, skoro budzet ma cztery".
+        print("  rachunek: %d znalezionych -> %d niewidocznych, %d naszych,"
+              " %d bez tresci, %d poza rewirem -> %d ocenionych,"
+              " %d odmow -> %d podanych dalej"
+              % (wynik["znalezione"], wynik.get("niewidoczne", 0),
+                 wynik.get("nasze", 0), wynik.get("bez_tresci", 0),
+                 wynik.get("poza_rewirem", 0), wynik["rozwazone"],
+                 len(wynik["odmowy"]), wynik["restackowane"]), flush=True)
         if not wyslij:
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)
@@ -12682,6 +12718,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `REZERWA_NA_PISARZA_USD` | `0.60` | ILE ZOSTAWIC PISARZOWI, ZANIM SIEGNIEMY PO DROGIE WYSZUKIWANIE. 10 wrzesnia 2026 awaryjne odkrycie na Opusie kosztowalo 0,68 USD przy `RUN_L |
 | `DISCOVERY_MAX_SEARCHES_ZAPASOWE` | `4` | ILE WYSZUKIWAN WOLNO MODELOWI ZAPASOWEMU. Awaryjne odkrycie na Opusie 10 wrzesnia 2026: osiem wyszukiwan, 99 851 tokenow wejscia, 4 097 wyjs |
 | `KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD` | `0.40` | ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac. ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 8 |
+| `SUBSKRYPCJE_MAKS_OGLADANYCH` | `40` | ILU KANDYDATOW WOLNO OBEJRZEC W JEDNYM PRZEBIEGU SUBSKRYPCJI. Do 10 wrzesnia 2026 okno mialo osiem pozycji — cztery sloty plus zapas na odpa |
 | `WEB_SEARCH_USD_PER_1K` | `10.00` | Wyszukiwanie po stronie Anthropic: USD za 1000 zapytań. |
 | `SUFIT_PODNIESIONY_NA` | `""` | — |
 | `SUFIT_PODNIESIONY_RAZY` | `2.0` | O ILE PODNOSI SIE SUFIT W DNIU PRACY PRZY WLASCICIELU. Mnoznik, nie druga liczba: sufit dzienny jest polem konfiguracji, a wpisana tu kwota  |

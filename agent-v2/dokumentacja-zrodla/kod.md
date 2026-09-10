@@ -2240,15 +2240,41 @@ def restackuj_w_kanale(
                 break
             kandydat = przyciski.nth(i)
             try:
+                # TRZY CICHE ODPADY, TERAZ GLOSNE.
+                #
+                # ZMIERZONE na produkcji 7-10 wrzesnia 2026: restacki chodza na
+                # 42 procent normy, a dziennie wychodzi DOKLADNIE JEDEN przy
+                # budzecie czterech. W logu stalo za kazdym razem to samo:
+                #
+                #     notek w kanale do rozwazenia: 6
+                #     [restack] claude-opus-5 ... (jedno wywolanie)
+                #     podane dalej 1/2
+                #
+                # Szesciu kandydatow, JEDNO pytanie do modelu. Pieciu odpadalo
+                # przed ocena i nie zostawialo po sobie ani slowa, bo wszystkie
+                # trzy odsiewy konczyly sie golym `continue`. Z zewnatrz
+                # wygladalo to jak pusty kanal, a kanal pusty nie byl.
+                #
+                # Nie zgaduje, ktory z tych trzech odsiewow to robi — od tego
+                # jest pomiar. Kazdy mowi teraz o sobie i trafia do licznika.
                 if not kandydat.is_visible():
+                    wynik["niewidoczne"] = wynik.get("niewidoczne", 0) + 1
+                    print("    pomijam (przycisk niewidoczny, pozycja %d)" % i,
+                          flush=True)
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.
                 kto = _autor_przy_przycisku(kandydat)
                 if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    wynik["nasze"] = wynik.get("nasze", 0) + 1
+                    print("    pomijam (to nasza wlasna notka)", flush=True)
                     continue
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
+                    wynik["bez_tresci"] = wynik.get("bez_tresci", 0) + 1
+                    print("    pomijam (nie odczytalem tresci notki u %s)"
+                          % (str((kto or {}).get("autor") or "?")[:24]),
+                          flush=True)
                     continue
                 # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
                 if not w_rewirze(notka["tekst"]):
@@ -2381,6 +2407,16 @@ def restackuj_w_kanale(
                     page.wait_for_timeout(600)
                 except Exception:
                     pass
+        # RACHUNEK CALEGO BLOKU, ZAWSZE. Bez tego jednego zdania trzeba
+        # przegladac log linia po linii, zeby odpowiedziec na pytanie
+        # „czemu jeden restack, skoro budzet ma cztery".
+        print("  rachunek: %d znalezionych -> %d niewidocznych, %d naszych,"
+              " %d bez tresci, %d poza rewirem -> %d ocenionych,"
+              " %d odmow -> %d podanych dalej"
+              % (wynik["znalezione"], wynik.get("niewidoczne", 0),
+                 wynik.get("nasze", 0), wynik.get("bez_tresci", 0),
+                 wynik.get("poza_rewirem", 0), wynik["rozwazone"],
+                 len(wynik["odmowy"]), wynik["restackowane"]), flush=True)
         if not wyslij:
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)
