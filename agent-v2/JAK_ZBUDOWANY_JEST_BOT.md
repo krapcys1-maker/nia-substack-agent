@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 39 130 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 39 189 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 220 zestawów
-testów, 4896 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 4905 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -464,7 +464,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6315 wierszy, 109 funkcji na poziomie modułu, 3 klas
+6374 wierszy, 110 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -529,6 +529,7 @@ wiec nie da sie go rozjechac z kodem.
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
 | `klik_mimo_zaslony(przycisk, nazwa, timeout)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
+| `_inna_strona(przed, teraz)` *(wewn.)* | Czy przegladarka zmienila STRONE, a nie tylko kotwice albo ukosnik. |
 | `_tresc_pola(pole)` *(wewn.)* | Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania. |
 | `oproznij_pole(page, pole, nazwa)` | Czysci pole do zera. Oddaje `True`, gdy naprawde jest puste. |
 | `wpisz_w_puste_pole(page, pole, tekst, nazwa, timeout, klikaj)` | Czysci pole, pisze, sprawdza wynik. Oddaje to, co naprawde stoi w polu. |

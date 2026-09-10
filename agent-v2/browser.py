@@ -3041,6 +3041,20 @@ def klik_mimo_zaslony(przycisk, nazwa: str = "przycisk",
         return "mimo zaslony"
 
 
+def _inna_strona(przed: str, teraz: str) -> bool:
+    """Czy przegladarka zmienila STRONE, a nie tylko kotwice albo ukosnik.
+
+    Odpowiedz pod artykulem otwiera pole w miejscu; przejscie na inny adres
+    znaczy, ze klikniety element byl odnosnikiem, nie przyciskiem — patrz
+    `wystaw_odpowiedz_pod_artykulem`.
+    """
+    def goly(u: str) -> str:
+        u = str(u or "").split("#")[0].split("?")[0]
+        return u.rstrip("/").lower()
+    a, b = goly(przed), goly(teraz)
+    return bool(a) and bool(b) and a != b
+
+
 def _tresc_pola(pole) -> str:
     """Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania."""
     try:
@@ -4449,8 +4463,53 @@ def wystaw_odpowiedz_pod_artykulem(
         print(f"  przycisk odpowiedzi znaleziony przy komentarzu {autor!r}"
               f" ({skad})", flush=True)
         wynik["skad_przycisk"] = skad
+        # KLIKNIECIE MA OTWIERAC POLE, A NIE ZABIERAC NAS ZE STRONY.
+        #
+        # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dwa przebiegi pod rzad.
+        # Adres byl poprawny — nasz artykul o zamku — przycisk znaleziony
+        # („aria-label w kontenerze autora"), a odlozony zrzut ukladu okazal
+        # sie CUDZA STRONA:
+        #
+        #     <title>(9) Chaos Engine (@chaosengine2026): "😱"</title>
+        #     canonical: substack.com/profile/527355842-chaos-engine/note/c-332614348
+        #     zero `contenteditable`, zero `textarea`, 16 przyciskow „Comment"
+        #
+        # Czyli klikniety element nie byl przyciskiem odpowiedzi, tylko
+        # odnosnikiem do wlasnej strony tego komentarza. Szukanie pola
+        # odbywalo sie juz na cudzym profilu, gdzie zadnego pola nie ma —
+        # i konczylo sie „waiting for locator('textarea').first". Model
+        # napisal odpowiedz, zaplacilismy za nia, czytelnik nie dostal nic.
+        #
+        # Wracamy i probujemy dalej. Adres sprawdzamy PRZED szukaniem pola,
+        # bo inaczej diagnoza mowi o brakujacym polu zamiast o zlej stronie.
+        adres_przed = page.url
         przycisk.click(timeout=15_000)
         page.wait_for_timeout(3000)
+        if _inna_strona(adres_przed, page.url):
+            print("  UWAGA: klikniecie przenioslo nas z %s na %s — wracam"
+                  % (adres_przed[:70], page.url[:70]), flush=True)
+            wynik["klikniecie_zabralo_ze_strony"] = page.url[:200]
+            try:
+                page.goto(adres_przed, wait_until="domcontentloaded",
+                          timeout=READ_TIMEOUT_MS)
+                page.wait_for_timeout(SETTLE_MS)
+            except Exception as exc:                   # noqa: BLE001
+                print("  (nie udalo sie wrocic: %s)" % type(exc).__name__,
+                      flush=True)
+            # Na wlasnej stronie artykulu pole komentarza stoi na dole i jest
+            # zwyklym polem watku — odpowiedz trafia pod ten sam tekst, tylko
+            # bez zagniezdzenia. Lepsze niz cisza.
+            for napis in ("Write a comment", "Napisz komentarz", "Add a comment"):
+                kand = page.get_by_text(napis, exact=False).first
+                try:
+                    if kand.count() > 0 and kand.is_visible():
+                        kand.click(timeout=8000)
+                        page.wait_for_timeout(2000)
+                        print("  otwarte pole komentarza pod artykulem (%r)"
+                              % napis, flush=True)
+                        break
+                except Exception:                      # noqa: BLE001
+                    continue
 
         # POLE ODPOWIEDZI TO EDYTOR, NIE `textarea`.
         #

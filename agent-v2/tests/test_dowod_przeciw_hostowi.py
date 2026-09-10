@@ -205,6 +205,10 @@ class Strona:
         self.napis_odpowiedzi = napis_odpowiedzi
         self.wyslano = False
         self.mouse = _Mysz()
+        # ADRES STRONY — od 10 wrzesnia 2026 sciezka odpowiedzi sprawdza, czy
+        # klikniecie nie zabralo jej z artykulu na cudzy profil. Atrapa stoi
+        # w miejscu, wiec adres sie nie zmienia i straznik milczy.
+        self.url = "https://your-handle.substack.com/p/nasz"
         self.keyboard = _Klawiatura()
         self.pola = Zbior([Element()])
         self.edytowalne = Zbior([])

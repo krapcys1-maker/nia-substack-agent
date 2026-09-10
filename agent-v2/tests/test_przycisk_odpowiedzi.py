@@ -162,5 +162,39 @@ sprawdz("i mowi, gdy pole pojawilo sie z opoznieniem",
         "pole odpowiedzi pojawilo sie po" in _C)
 
 print()
+print("=== KLIKNIECIE, KTORE ZABIERA ZE STRONY ===")
+# ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dwa przebiegi pod rzad. Adres byl
+# poprawny — nasz artykul o zamku — przycisk znaleziony, a odlozony zrzut
+# ukladu okazal sie CUDZA STRONA:
+#     <title>(9) Chaos Engine (@chaosengine2026): "😱"</title>
+#     canonical: substack.com/profile/527355842-chaos-engine/note/c-332614348
+#     zero `contenteditable`, zero `textarea`, 16 przyciskow „Comment"
+# Klikniety element byl odnosnikiem do wlasnej strony komentarza, nie
+# przyciskiem odpowiedzi. Szukanie pola szlo juz po cudzym profilu i konczylo
+# sie „waiting for locator('textarea').first" — czyli diagnoza mowila
+# o brakujacym polu zamiast o zlej stronie.
+import browser as _b   # noqa: E402
+sprawdz("kotwica i ukosnik to ta sama strona",
+        not _b._inna_strona("https://x.substack.com/p/lock",
+                            "https://x.substack.com/p/lock/#comment-1"))
+sprawdz("znaczniki w adresie to ta sama strona",
+        not _b._inna_strona("https://x.substack.com/p/lock",
+                            "https://x.substack.com/p/lock?utm=1"))
+sprawdz("cudzy profil to INNA strona",
+        _b._inna_strona("https://x.substack.com/p/lock",
+                        "https://substack.com/profile/1-ktos/note/c-2"))
+sprawdz("pusty adres nie wywoluje falszywego alarmu",
+        not _b._inna_strona("", "https://substack.com/x"))
+sprawdz("sprawdzenie jest w sciezce odpowiedzi",
+        "_inna_strona(adres_przed, page.url)" in _C)
+sprawdz("i mowi glosno, dokad nas zabralo",
+        "klikniecie przenioslo nas z" in _C)
+sprawdz("wracamy na artykul", "page.goto(adres_przed" in _C)
+sprawdz("i probujemy pola komentarza pod artykulem",
+        "Write a comment" in _C)
+sprawdz("wynik zapamietuje ten wypadek",
+        'wynik["klikniecie_zabralo_ze_strony"]' in _C)
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)

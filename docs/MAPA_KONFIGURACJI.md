@@ -19,7 +19,7 @@ Nie opisuje, z czego bot jest zbudowany — to robi `agent-v2/JAK_ZBUDOWANY_JEST
 generowany z kodu i pilnowany testem. Ten plik opisuje, **co się w nim rusza**.
 
 Pełny spis funkcji, z krawędziami wywołań i znacznikami kosztu, leży osobno:
-[FUNCTION_MAP.md](FUNCTION_MAP.md) — 795 funkcji w 37 modułach, generowana
+[FUNCTION_MAP.md](FUNCTION_MAP.md) — 797 funkcji w 37 modułach, generowana
 z drzewa składni. Problemy napotkane po drodze:
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
@@ -178,7 +178,7 @@ Podział kolumny „rodzaj pracy":
 | co | gdzie | rodzaj |
 |---|---|---|
 | uchwyt Substacka | `config.py:84` `SUBSTACK_HANDLE = "your-handle"` | KONFIG |
-| **drugi, niezależny egzemplarz tego samego uchwytu** | `browser.py:795` `PROFIL_HANDLE = "your-handle"` | KOD |
+| **drugi, niezależny egzemplarz tego samego uchwytu** | `browser.py:797` `PROFIL_HANDLE = "your-handle"` | KOD |
 | dwa adresy panelu wpisane na sztywno | `browser.py:751-752` | KOD |
 | user-agent z nazwą marki | `config.py:2248` `FETCH_USER_AGENT` | KONFIG |
 | nazwa marki w komunikacie pisarza | `stages.py:387` `WRITER_SYSTEM` | KOD |
@@ -683,7 +683,7 @@ modułu.
 | # | co | gdzie | dlaczego to jest małe |
 |---|---|---|---|
 | 1 | wczytanie TOML-a na górze `config.py` i nadpisanie stałych | `config.py:1-60` | wszystkie stałe są już w jednym pliku; dochodzi ~40 linii wczytywania i walidacji |
-| 2 | **usunięcie `browser.PROFIL_HANDLE`** i podmiana 11 użyć na `config.SUBSTACK_HANDLE` | `browser.py:795` + 11 miejsc | zamiana identyfikatora, zero logiki |
+| 2 | **usunięcie `browser.PROFIL_HANDLE`** i podmiana 11 użyć na `config.SUBSTACK_HANDLE` | `browser.py:797` + 11 miejsc | zamiana identyfikatora, zero logiki |
 | 3 | dwa adresy panelu z uchwytu zamiast na sztywno | `browser.py:751-752` | dwie linie |
 | 4 | 4 komunikaty systemowe z tematu zamiast na sztywno | `stages.py:113, 1181, 6847, 7196` | `SCOUT_SYSTEM = ("You are a topic scout for the %s-language %s '%s', a publication about %s...")` |
 | 5 | kontrola kluczy po **dostawcy**, nie po identyfikatorze modelu | `llm.py:74-79` | naprawia dziurę z 3.1 przy okazji |
