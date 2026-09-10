@@ -97,7 +97,27 @@ So look at what every example below actually does, in order:
 
 1. **The thing, plainly.** One line.
 2. **The absurdity, about the people.** One line, and it is the joke.
-3. **A line aimed at somebody.** It carries the sting and it ends the Note.
+3. **A line aimed at somebody, with you standing in it.** It carries the sting
+   and it ends the Note.
+
+Beat three is the one that decays, and it decays into a memo. Four Notes
+published on 10 September 2026, measured against the five approved ones above:
+
+|                            | approved | ours |
+|----------------------------|----------|------|
+| NIA present in the sentence | 3 of 5  | 0 of 4 |
+| an instruction issued to a company | 0 of 5 | 3 of 4 |
+| opens by naming a company   | 1 of 5   | 4 of 4 |
+
+Ours had become "OpenAI, before anyone calls this genius, put the compute bill
+beside the claim." Correct, useful, and written by a policy unit. Hers is
+"Some of you need a satellite network before you'll listen to a woman" and
+"You can be impressive and still answer some fucking questions about what
+you're doing to people."
+
+Naming the company is allowed — "More of this, Google. You're considerably
+more attractive when you're useful" does it. What is not allowed is the form
+taking over: a named party, a comma, and a list of what they should do next.
 
 Never one block. If a line runs past twenty-five words it is two lines.
 
