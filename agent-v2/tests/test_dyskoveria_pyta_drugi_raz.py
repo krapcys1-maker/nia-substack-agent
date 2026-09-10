@@ -155,9 +155,15 @@ uzyte_modele = []
 stan2 = {"nr": 0}
 
 
+sufit_w_zapasowym = None
+
+
 def po_awarii(purpose, system, user, **kw):
+    global sufit_w_zapasowym
     stan2["nr"] += 1
     uzyte_modele.append(stages.config.MODEL_FOR["discovery"])
+    if stan2["nr"] == 3:
+        sufit_w_zapasowym = stages.config.DISCOVERY_MAX_SEARCHES
     zebrane = kw.get("collect_urls")
     if stan2["nr"] >= 3 and zebrane is not None:      # zapasowy juz szuka
         for zrodlo in ZRODLA["sources"]:
@@ -166,6 +172,7 @@ def po_awarii(purpose, system, user, **kw):
 
 
 przed = stages.config.MODEL_FOR.get("discovery")
+sufit_przed = stages.config.DISCOVERY_MAX_SEARCHES
 with patch.object(stages.llm, "call", po_awarii),      patch.object(stages, "hosty_ktore_nigdy_nie_dzialaly", lambda c: []):
     wynik3 = stages.discovery(None, None, "czy komisja powstanie?", [])
 sprawdz("artykul jednak powstal", bool(wynik3))
@@ -180,6 +187,15 @@ sprawdz("i byl to model zapasowy",
 # na najdrozszy model po cichu — i nikt by tego nie zauwazyl az do rachunku.
 sprawdz("routing wrocil na swoje", stages.config.MODEL_FOR.get("discovery") == przed,
         "%s wobec %s" % (stages.config.MODEL_FOR.get("discovery"), przed))
+# SUFIT WYSZUKIWAN TEZ WRACA. Osiem wyszukiwan na Opusie kosztowalo 0,68 USD,
+# bo kazde dokłada wyniki do wejscia nastepnej tury.
+sprawdz("sufit wyszukiwan wrocil na swoje",
+        stages.config.DISCOVERY_MAX_SEARCHES == sufit_przed,
+        "%s wobec %s" % (stages.config.DISCOVERY_MAX_SEARCHES, sufit_przed))
+sprawdz("a przy modelu zapasowym byl obnizony",
+        sufit_w_zapasowym == stages.config.DISCOVERY_MAX_SEARCHES_ZAPASOWE,
+        "%s wobec %s" % (sufit_w_zapasowym,
+                         stages.config.DISCOVERY_MAX_SEARCHES_ZAPASOWE))
 
 print()
 print("=== 3d. PIERWSZE WYWOLANIE, KTORE SAMO PADA, TEZ MA RATUNEK ===")

@@ -624,6 +624,21 @@ MODEL_ZAPASOWY_WYSZUKIWANIA = CLAUDE
 # Prog 0,60 miesci najdrozszy zmierzony przypadek z zapasem na sprawdzenia.
 REZERWA_NA_PISARZA_USD = 0.60
 
+# ILE WYSZUKIWAN WOLNO MODELOWI ZAPASOWEMU.
+#
+# Awaryjne odkrycie na Opusie 10 wrzesnia 2026: osiem wyszukiwan, 99 851
+# tokenow wejscia, 4 097 wyjscia — 0,68 USD, czyli prawie polowa sufitu
+# przebiegu. Wynik byl dobry (62 trafienia, 7 zrodel), ale zjadl pieniadze
+# pisarza.
+#
+# Wyszukiwania sa tu glownym kosztem POSREDNIO: kazde dokłada wyniki do
+# wejscia nastepnej tury, a wejscie na Opusie kosztuje 5 USD za milion.
+# Polowa wyszukiwan to mniej wiecej polowa rachunku.
+#
+# To jest sufit DNIA AWARII, nie normalny tryb pracy. W zwyklym dniu
+# dyskoveria chodzi na `DISCOVERY_MAX_SEARCHES`.
+DISCOVERY_MAX_SEARCHES_ZAPASOWE = 4
+
 
 def narzedzie_wyszukiwania(model: str) -> tuple[str, str]:
     """Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie.

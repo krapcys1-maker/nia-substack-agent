@@ -520,6 +520,12 @@ def discovery(
               " przy awarii wyszukiwania u dostawcy."
               % (poprzedni, zapasowy), flush=True)
         config.MODEL_FOR["discovery"] = zapasowy
+        # MNIEJ WYSZUKIWAN NA DROGIM MODELU. Osiem kosztowalo 0,68 USD, bo
+        # kazde dokłada wyniki do wejscia nastepnej tury, a wejscie Opusa to
+        # 5 USD za milion tokenow. To jest sufit DNIA AWARII, nie normalny tryb.
+        ile_szukan = config.DISCOVERY_MAX_SEARCHES
+        config.DISCOVERY_MAX_SEARCHES = int(getattr(
+            config, "DISCOVERY_MAX_SEARCHES_ZAPASOWE", ile_szukan))
         try:
             text = llm.call(
                 "discovery", DISCOVERY_SYSTEM, prompt,
@@ -533,6 +539,7 @@ def discovery(
             # ROUTING WRACA NA MIEJSCE. Bez tego jedna awaria dostawcy
             # przestawialaby caly przebieg na najdrozszy model po cichu.
             config.MODEL_FOR["discovery"] = poprzedni
+            config.DISCOVERY_MAX_SEARCHES = ile_szukan
     try:
         data = llm.parse_json(text)
     except Exception:
