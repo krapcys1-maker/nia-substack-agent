@@ -835,16 +835,16 @@ Opt-in conversational short forms.
 | 227 | `_etykiety()` | — | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. | `personality._valid` |
 | 232 | `_valid(text, maximum)` | — | — | `personality.short_form` |
 | 248 | `short_form(conn, run_id, kind, material)` | **$**((zmienna)) | One paid decision: respond, or remain silent. | `personality.interaction`, `personality.notes` |
-| 325 | `short_form.finish(output, reason)` | — | — | `personality.short_form` |
-| 376 | `_swiat(conn, run_id)` | — | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. | `personality.notes` |
-| 450 | `_fakt_z_banku()` | — | Jeden fakt z banku dla tej notki, albo `None`. | `personality.notes` |
-| 464 | `notes(conn, run_id, ile, od)` | — | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. | `stages.notki_dnia` |
-| 546 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
-| 558 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
-| 568 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
-| 590 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu`, `browser.konto_za_duze` |
-| 598 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `personality.remember_interaction`, `run.dzien`, `run.dzien.notki` |
-| 633 | `remember_interaction(kind, candidate, publication, target)` | — | Only confirmed persona output becomes autobiographical continuity. | `browser.restackuj_w_kanale`, `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` *(+1)* |
+| 356 | `short_form.finish(output, reason)` | — | — | `personality.short_form` |
+| 407 | `_swiat(conn, run_id)` | — | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. | `personality.notes` |
+| 481 | `_fakt_z_banku()` | — | Jeden fakt z banku dla tej notki, albo `None`. | `personality.notes` |
+| 495 | `notes(conn, run_id, ile, od)` | — | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. | `stages.notki_dnia` |
+| 577 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
+| 589 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
+| 599 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
+| 621 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu`, `browser.konto_za_duze` |
+| 629 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `personality.remember_interaction`, `run.dzien`, `run.dzien.notki` |
+| 664 | `remember_interaction(kind, candidate, publication, target)` | — | Only confirmed persona output becomes autobiographical continuity. | `browser.restackuj_w_kanale`, `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` *(+1)* |
 
 ---
 

@@ -270,14 +270,45 @@ def short_form(conn, run_id, kind, material):
                "recent_topics": [{"kind": r.get("kind", "note"), "topic": r.get("topic", "")}
                                  for r in history[-8:]],
                "remembered_preferences_and_jokes": [r.get("memory", "") for r in history[-8:]]}
+    # KSZTALT, NIE SWOBODA — i to jest odwrocenie tego, co sam tu wpisalem.
+    #
+    # POLICZONE 10 wrzesnia 2026 na pieciu notkach, ktore wlasciciel przyjal,
+    # i dwoch, ktore odrzucil:
+    #
+    #                       uderzen (linii)   slow na uderzenie
+    #     przyjete                  3,2               17,2
+    #     nasze                     1,5               46,7
+    #
+    # Jego notki to TRZY KROTKIE LINIE: fakt, absurd o ludziach, zdanie
+    # wycelowane w kogos. Nasze to jeden blok czterdziestu siedmiu slow.
+    # Roznica jest strukturalna, nie stylistyczna — i wyprodukowaly ja moje
+    # wlasne zdania „choose your own length" oraz „no compulsory punchline
+    # form", ktore mialy chronic przed sztywnoscia, a daly rozlazly akapit
+    # bez puenty.
+    #
+    # Wlasciciel przeczytal wynik i powiedzial, ze trzeba wyciagac Enigme,
+    # zeby zrozumiec, o co chodzi. Mial racje: „the question still gets to sit
+    # down and stay a while" to literatura, nie NIA.
+    ksztalt = (
+        "SHAPE, and it is not optional. Write it as three or four SHORT LINES "
+        "separated by real line breaks, about fifteen to twenty words each, "
+        "fifty to seventy words in total:\n"
+        "  1. THE THING, plainly. One line. What happened, or what they said.\n"
+        "  2. THE ABSURDITY, about the PEOPLE, never about the technology. "
+        "One line, and it is the joke.\n"
+        "  3. A LINE AIMED AT SOMEBODY. It carries the sting and it ends the "
+        "note.\n"
+        "Never one dense paragraph. A reader who has to work out where the "
+        "thought turns has already scrolled past. If a line runs past twenty-"
+        "five words, it is two lines.\n"
+    )
     instruction = (
-        f"Write one {kind}. Choose your own length: one line can be a complete "
-        "answer and so can a short paragraph. Stop when the thought is finished, "
-        "not at a word count. Do not pad, and never compress a real point to make "
+        f"Write one {kind}. " + ksztalt +
+        "Do not pad, and never compress a real point to make "
         "it shorter — a squeezed thought is worse than a long one. "
         "For interactions, refer to a specific thing in the supplied text. "
         "If there is nothing worth saying, return an empty text. No obligatory "
-        "compliment, engagement question, hashtag or repo plug. Vary rhythm. "
+        "compliment, engagement question, hashtag or repo plug. "
         "Your recent publications and remembered jokes are YOUR OWN continuity, not a "
         "style guide or blocklist. Older posts may use a previous voice; use the "
         "current identity and voice instructions for tone. You may develop a running bit, call one back in a new shape, "
