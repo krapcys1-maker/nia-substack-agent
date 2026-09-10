@@ -597,6 +597,19 @@ WEB_SEARCH_TOOL = {
 # Wersja narzedzia wyszukiwania dla modelu Anthropic, z galezia awaryjna.
 NAJNOWSZE_WYSZUKIWANIE = "web_search_20260209"
 
+# MODEL, PO KTORY SIEGAMY, GDY WYSZUKIWANIE U DOSTAWCY PADNIE.
+#
+# 10 wrzesnia 2026 narzedzie `web_search` DeepSeeka przestalo cokolwiek
+# oddawac na caly dzien. Zmierzone na tym samym poleceniu:
+#     deepseek-v4-flash   wej=103   wyj=91    zero adresow
+#     claude-opus-5       wej=38463 wyj=2230  szukania=2, 19 adresow
+# Dwa dni wczesniej ten sam deepseek robil po 12-18 wyszukiwan na wywolanie.
+#
+# `stages.discovery` siega tu DOPIERO po dwoch pustych probach i mowi o tym
+# glosno, bo roznica ceny jest prawdziwa: 0,27 USD wobec 0,0005. To jest wybor
+# miedzy drozszym artykulem a brakiem artykulu.
+MODEL_ZAPASOWY_WYSZUKIWANIA = CLAUDE
+
 
 def narzedzie_wyszukiwania(model: str) -> tuple[str, str]:
     """Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie.
