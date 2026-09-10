@@ -6253,6 +6253,32 @@ def discovery(
         "discovery", DISCOVERY_SYSTEM, prompt,
         conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
     )
+    # ZERO WYSZUKIWAN — PYTAMY DRUGI RAZ, ZANIM ZABIJEMY ARTYKUL.
+    #
+    # `tool_choice: "auto"` znaczy, ze model MOZE nie siegnac po narzedzie, i
+    # czasem nie siega. Zmierzone na logach serwera:
+    #
+    #     8 wrzesnia   szukania=18, 12       wejscie 325k / 91k tokenow
+    #     9 wrzesnia   szukania=15, 6        wejscie 132k / 30k
+    #     10 wrzesnia  szukania=0, 0         wejscie 1288 / 1357
+    #
+    # Liczba tokenow wejscia jest tu dowodem: przy prawdziwym szukaniu wracaja
+    # wyniki i wejscie idzie w setki tysiecy. Dzis model odpowiedzial od reki
+    # z pamieci, DWA RAZY POD RZAD, i straznik dwa razy sluszenie wywalil caly
+    # przebieg artykulu — po oplaceniu tematu, pytan i klasyfikacji.
+    #
+    # Wymuszenie `{"type": "web_search"}` NIE jest odpowiedzia i zostalo juz raz
+    # sprawdzone na zywo: model wolal narzedzie w kolko, 15 wyszukiwan i ani
+    # jednego zdania odpowiedzi (patrz `llm._deepseek`). Powtorzenie tego samego
+    # zapytania kosztuje 0,003 USD i jest jedyna roznica miedzy artykulem
+    # a brakiem artykulu.
+    if not real_urls:
+        print("  [dyskoveria] zero wyszukiwan — model odpowiedzial z pamieci."
+              " Pytam drugi raz.", flush=True)
+        text = llm.call(
+            "discovery", DISCOVERY_SYSTEM, prompt,
+            conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
+        )
     try:
         data = llm.parse_json(text)
     except Exception:
