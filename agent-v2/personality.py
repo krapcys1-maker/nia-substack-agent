@@ -291,10 +291,38 @@ def rozbij_dlugie_uderzenia(tekst: str, maks: int = MAKS_SLOW_W_UDERZENIU):
     return "\n".join(wyjscie), rozbite
 
 
-def _valid(text, maximum):
+def _valid(text, maximum, dozwolone_adresy=()):
+    """`dozwolone_adresy` — adresy, ktore SAMI podalismy w materiale.
+
+    ZMIERZONE 10 wrzesnia 2026, i to jest wpadka dokladnie tej klasy, ktora
+    ten projekt tropi: dwie moje wlasne instrukcje kasujace sie nawzajem.
+
+    Instrukcja notki z faktem mowi wprost: „Name the source in passing when it
+    earns a mention; the URL may go in the text". Model posluchal i wkleil
+    adres, ktory MU PODALISMY. Ta funkcja wyrzucila caly tekst za sam fakt
+    obecnosci `https://`. Notka byla dobra:
+
+        Anil Madhavapeddy fixed a path-traversal bug in cohttp with a public PR.
+        About ten minutes later his live server was being probed for that exact
+        pattern. (…)
+        The disclosure "embargo" now lasts roughly as long as it takes
+        a maintainer to make coffee.
+        Funny how the agent is always "he" when it's picking a lock.
+
+    Zaplacone 0,16 USD, status `empty_or_invalid_text`, do kosza bez slowa.
+
+    ZAKAZ ZOSTAJE dla wszystkiego innego. Chodzilo w nim o adresy WYMYSLONE
+    i o zaczepianie ludzi po nazwie — nie o zrodlo, ktore sami wybralismy
+    i sprawdzilismy. Wycinamy wiec z tekstu dokladnie te adresy, ktore
+    podalismy, i pytamy o reszte.
+    """
     if not isinstance(text, str) or not text.strip() or len(text.split()) > maximum:
         return False
-    if _injection(text) or re.search(r"https?://|\bwww\.|(?:^|\s)@[A-Za-z0-9_]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}", text, re.I):
+    do_sprawdzenia = text
+    for adres in dozwolone_adresy:
+        if adres:
+            do_sprawdzenia = do_sprawdzenia.replace(adres, " ")
+    if _injection(text) or re.search(r"https?://|\bwww\.|(?:^|\s)@[A-Za-z0-9_]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}", do_sprawdzenia, re.I):
         return False
     # NAZWA RUBRYKI W TEKSCIE = NASZE RUSZTOWANIE NA KONCIE. Sprawdzamy mimo
     # rozdzielenia wyzej, bo rozdzielenie chroni tylko przed przepisaniem
@@ -442,7 +470,10 @@ def short_form(conn, run_id, kind, material):
     if not isinstance(result, dict):
         return finish(reason="invalid_json")
     body = result.get("text", "")
-    if not _valid(body, maximum):
+    # ADRES, KTORY SAMI PODALISMY, NIE JEST WYCIEKIEM. Instrukcja mowi
+    # „the URL may go in the text" — patrz `_valid`.
+    zrodlo_url = str((material.get("fact") or {}).get("url") or "")
+    if not _valid(body, maximum, dozwolone_adresy=(zrodlo_url,) if zrodlo_url else ()):
         return finish(reason="empty_or_invalid_text")
     # UKLAD POPRAWIA KOD, NIE DRUGIE WYWOLANIE. Te same slowa, ta sama
     # kolejnosc — tylko lamanie wiersza tam, gdzie i tak konczy sie zdanie.
