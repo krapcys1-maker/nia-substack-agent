@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 38 397 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 38 612 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 211 zestawów
-testów, 4712 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 214 zestawów
+testów, 4774 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-670 wierszy, 22 funkcji na poziomie modułu, 0 klas
+744 wierszy, 23 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -170,6 +170,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_system(kind)` *(wewn.)* | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. |
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
+| `rozbij_dlugie_uderzenia(tekst, maks)` | Za dluga linia idzie na dwie — po granicy ZDANIA. Oddaje (tekst, ile). |
 | `_valid(text, maximum)` *(wewn.)* | — |
 | `short_form(conn, run_id, kind, material)` | One paid decision: respond, or remain silent. No paid repair attempts. |
 | `_swiat(conn, run_id)` *(wewn.)* | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. |
@@ -299,7 +300,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9118 wierszy, 156 funkcji na poziomie modułu, 0 klas
+9170 wierszy, 157 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -446,6 +447,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_to_aktualizacja(nowy, stary)` *(wewn.)* | TO SAMO ZDANIE, INNE LICZBY — czyli nowe ustalenie, nie powtorka. |
 | `dopisz_kandydatow(kandydaci)` | Przepuszcza kandydatow przez bramke i dokłada do indeksu. |
 | `wez_kandydatow(ile, na_artykul, unikaj_artykulowych, zostaw)` | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. |
+| `zapomnij_fakty_przebiegu()` | Czysci pamiec wydanych faktow — dla testow i dlugo zyjacego procesu. |
 | `fakt_na_notke()` | Jeden fakt z banku dla notki — albo `None`, gdy bank ma go zostawic. |
 | `co_zadzialalo(ile)` | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. |
 | `_tabela_odbioru(naj, ile)` *(wewn.)* | Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt. |
@@ -462,7 +464,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6080 wierszy, 106 funkcji na poziomie modułu, 3 klas
+6169 wierszy, 109 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -527,6 +529,9 @@ wiec nie da sie go rozjechac z kodem.
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
 | `klik_mimo_zaslony(przycisk, nazwa, timeout)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
+| `_tresc_pola(pole)` *(wewn.)* | Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania. |
+| `oproznij_pole(page, pole, nazwa)` | Czysci pole do zera. Oddaje `True`, gdy naprawde jest puste. |
+| `wpisz_w_puste_pole(page, pole, tekst, nazwa, timeout, klikaj)` | Czysci pole, pisze, sprawdza wynik. Oddaje to, co naprawde stoi w polu. |
 | `konto_za_duze(handle)` | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
 | `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |

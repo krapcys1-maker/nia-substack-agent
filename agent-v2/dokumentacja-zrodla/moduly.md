@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-670 wierszy, 22 funkcji na poziomie modułu, 0 klas
+744 wierszy, 23 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -28,6 +28,7 @@
 | `_system(kind)` *(wewn.)* | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. |
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
+| `rozbij_dlugie_uderzenia(tekst, maks)` | Za dluga linia idzie na dwie — po granicy ZDANIA. Oddaje (tekst, ile). |
 | `_valid(text, maximum)` *(wewn.)* | — |
 | `short_form(conn, run_id, kind, material)` | One paid decision: respond, or remain silent. No paid repair attempts. |
 | `_swiat(conn, run_id)` *(wewn.)* | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. |
@@ -157,7 +158,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9118 wierszy, 156 funkcji na poziomie modułu, 0 klas
+9170 wierszy, 157 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -304,6 +305,7 @@
 | `_to_aktualizacja(nowy, stary)` *(wewn.)* | TO SAMO ZDANIE, INNE LICZBY — czyli nowe ustalenie, nie powtorka. |
 | `dopisz_kandydatow(kandydaci)` | Przepuszcza kandydatow przez bramke i dokłada do indeksu. |
 | `wez_kandydatow(ile, na_artykul, unikaj_artykulowych, zostaw)` | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. |
+| `zapomnij_fakty_przebiegu()` | Czysci pamiec wydanych faktow — dla testow i dlugo zyjacego procesu. |
 | `fakt_na_notke()` | Jeden fakt z banku dla notki — albo `None`, gdy bank ma go zostawic. |
 | `co_zadzialalo(ile)` | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. |
 | `_tabela_odbioru(naj, ile)` *(wewn.)* | Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt. |
@@ -320,7 +322,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6080 wierszy, 106 funkcji na poziomie modułu, 3 klas
+6169 wierszy, 109 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -385,6 +387,9 @@
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
 | `klik_mimo_zaslony(przycisk, nazwa, timeout)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
+| `_tresc_pola(pole)` *(wewn.)* | Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania. |
+| `oproznij_pole(page, pole, nazwa)` | Czysci pole do zera. Oddaje `True`, gdy naprawde jest puste. |
+| `wpisz_w_puste_pole(page, pole, tekst, nazwa, timeout, klikaj)` | Czysci pole, pisze, sprawdza wynik. Oddaje to, co naprawde stoi w polu. |
 | `konto_za_duze(handle)` | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
 | `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |

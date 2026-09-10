@@ -3041,6 +3041,90 @@ def klik_mimo_zaslony(przycisk, nazwa: str = "przycisk",
         return "mimo zaslony"
 
 
+def _tresc_pola(pole) -> str:
+    """Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania."""
+    try:
+        return str(pole.evaluate(
+            "el => (el.value !== undefined && el.value !== null)"
+            " ? el.value : (el.innerText || '')") or "")
+    except Exception:                                          # noqa: BLE001
+        return ""
+
+
+def oproznij_pole(page, pole, nazwa: str = "pole") -> bool:
+    """Czysci pole do zera. Oddaje `True`, gdy naprawde jest puste.
+
+    Substack TRZYMA WERSJE ROBOCZA. Pole odpowiedzi nie jest kartka, ktora
+    znika po zamknieciu przegladarki — to, co ktos w nie wpisal, wraca przy
+    nastepnym wejsciu na strone.
+    """
+    for _ in range(3):
+        if not _tresc_pola(pole).strip():
+            return True
+        try:
+            pole.click(timeout=8_000)
+            page.keyboard.press("Control+a")
+            page.keyboard.press("Delete")
+            page.keyboard.press("Backspace")
+            page.wait_for_timeout(250)
+        except Exception:                                      # noqa: BLE001
+            break
+    puste = not _tresc_pola(pole).strip()
+    if not puste:
+        print("  [%s] UWAGA: nie udalo sie oproznic pola, zostaje: %r"
+              % (nazwa, _tresc_pola(pole)[:80]), flush=True)
+    return puste
+
+
+def wpisz_w_puste_pole(page, pole, tekst: str, nazwa: str = "pole",
+                       timeout: float = 10_000, klikaj: bool = True) -> str:
+    """Czysci pole, pisze, sprawdza wynik. Oddaje to, co naprawde stoi w polu.
+
+    ## Co to naprawia — WIDZIALNE NA KONCIE
+
+    10 wrzesnia 2026 pod naszym artykulem o zamku wyszla odpowiedz o tresci:
+
+        proba sucha, nic nie wychodziproba suSomeone got a prompt back from
+        Chaos Engine and that's the whole review.cha, nic nie wychodzi
+
+    „proba sucha, nic nie wychodzi" to MOJ tekst probny z `wyslij=False`.
+    Zlozyly sie na to dwie wady naraz i obie sa tutaj:
+
+      * proba z `wyslij=False` PISALA w prawdziwe pole i zostawiala tam tekst.
+        Substack zapisal go jako wersje robocza — dwa razy, bo probe puscilem
+        dwa razy;
+      * prawdziwa odpowiedz byla dopisywana BEZ CZYSZCZENIA, w miejscu karetki,
+        czyli w srodek cudzego zdania. Stad rozciete „proba su|…|cha".
+
+    Czytelnik dostal belkot pod tekstem, ktory mial go przekonac, a wlasciciel
+    musial to reczne kasowac.
+
+    ## Dlaczego sprawdzamy PO NAPISANIU
+
+    Bo to jedyny moment, w ktorym roznica miedzy „wpisalem" a „w polu stoi to,
+    co wpisalem" jest jeszcze do zlapania. Wczesniej nie mielismy jak jej
+    zobaczyc: kod drukowal „wpisane w pole odpowiedzi: 12 słów" i to bylo cale
+    swiadectwo — liczylo slowa TEKSTU, nie zawartosc pola.
+    """
+    oproznij_pole(page, pole, nazwa)
+    # `klikaj=False` dla wywolujacych, ktorzy JUZ kliknęli i maja wlasny powod,
+    # zeby to zrobic samodzielnie — np. sciezka odpowiedzi pod artykulem, ktora
+    # przy nieudanym klinieciu odklada zrzut ukladu strony. Drugie klikniecie
+    # nic by tam nie dalo, a zaciemnialoby pomiar w dzienniku.
+    if klikaj:
+        pole.click(timeout=timeout)
+    page.keyboard.type(tekst, delay=12)
+    page.wait_for_timeout(1500)
+    w_polu = _tresc_pola(pole)
+    # POROWNANIE PO GOLYM TEKSCIE. Edytor zamienia apostrofy i lamania wiersza,
+    # wiec porownanie znak w znak oblewaloby na poprawnie wpisanej tresci.
+    if w_polu and plaski(w_polu) != plaski(tekst):
+        print("  [%s] UWAGA: w polu stoi co innego niz wpisalem"
+              " (%d znakow wobec %d) — sprawdz cudza wersje robocza"
+              % (nazwa, len(w_polu), len(tekst)), flush=True)
+    return w_polu
+
+
 def konto_za_duze(handle: str) -> bool:
     """Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS.
 
@@ -4416,10 +4500,11 @@ def wystaw_odpowiedz_pod_artykulem(
             except Exception:                          # noqa: BLE001
                 pass
             raise
-        page.keyboard.type(tekst, delay=12)
-        page.wait_for_timeout(1500)
+        w_polu = wpisz_w_puste_pole(page, pole, tekst, "odpowiedz pod artykulem",
+                                    klikaj=False)
         wynik["wpisane"] = True
         wynik["skad_pole"] = skad_pole
+        wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole odpowiedzi ({skad_pole}):"
               f" {len(tekst.split())} słów", flush=True)
 
@@ -4448,7 +4533,10 @@ def wystaw_odpowiedz_pod_artykulem(
             print("  ODPOWIEDŹ POD ARTYKUŁEM POTWIERDZONA" if wynik["wyslane"]
                   else "  KLIKNIĘTE, ALE ODPOWIEDZI NIE WIDAĆ", flush=True)
         elif not wyslij:
-            print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
+            # PROBA NIE ZOSTAWIA SLADU NA KONCIE — patrz `wpisz_w_puste_pole`.
+            # To wlasnie stad wyszedl 10 wrzesnia belkot pod naszym artykulem.
+            wynik["posprzatane"] = oproznij_pole(page, pole, "odpowiedz pod artykulem")
+            print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
     except Exception as exc:
         wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
@@ -4813,11 +4901,11 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
         if not otwarte:
             raise RuntimeError("nie otworzyłem pola odpowiedzi")
 
-        page.locator("[contenteditable=true]").first.click(timeout=10_000)
+        pole = page.locator("[contenteditable=true]").first
         page.wait_for_timeout(700)
-        page.keyboard.type(tekst, delay=12)
-        page.wait_for_timeout(1500)
+        w_polu = wpisz_w_puste_pole(page, pole, tekst, "odpowiedz w watku")
         wynik["wpisane"] = True
+        wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole odpowiedzi: {len(tekst.split())} słów", flush=True)
 
         przycisk = None
@@ -4858,7 +4946,8 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
             print("  ODPOWIEDŹ POTWIERDZONA W WĄTKU" if wynik["wyslane"]
                   else "  KLIKNIĘTE, ALE ODPOWIEDZI NIE MA W WĄTKU", flush=True)
         elif not wyslij:
-            print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
+            wynik["posprzatane"] = oproznij_pole(page, pole, "odpowiedz w watku")
+            print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
     except Exception as exc:
         wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
@@ -4961,11 +5050,10 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
             raise RuntimeError("nie znalazłem kompozytora notek")
         page.wait_for_timeout(2500)
         pole = page.locator("[contenteditable=true]").first
-        pole.click(timeout=10_000)
         page.wait_for_timeout(800)
-        page.keyboard.type(tekst, delay=12)
-        page.wait_for_timeout(1500)
+        w_polu = wpisz_w_puste_pole(page, pole, tekst, "notka")
         wynik["wpisane"] = True
+        wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole notki: {len(tekst.split())} słów", flush=True)
 
         # Tu też nie zakładamy angielskiego interfejsu.
@@ -5008,7 +5096,8 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
                          tekst=tekst[:1200], id=wynik["id"],
                          typ=typ, forma=forma, model=model)
         elif not wyslij:
-            print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
+            wynik["posprzatane"] = oproznij_pole(page, pole, "notka")
+            print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
     except Exception as exc:
         wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
@@ -5583,11 +5672,10 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
             wynik["blad"] = "nie ma pola komentarza pod tym postem"
             print(f"  {wynik['blad']} — odpuszczam", flush=True)
             return wynik
-        pole.click(timeout=8_000)
         page.wait_for_timeout(800)
-        page.keyboard.type(tekst, delay=12)
-        page.wait_for_timeout(1500)
+        w_polu = wpisz_w_puste_pole(page, pole, tekst, "komentarz", timeout=8_000)
         wynik["wpisane"] = True
+        wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole komentarza: {len(tekst.split())} słów", flush=True)
 
         # Interfejs bywa po polsku, więc szukamy obu wariantów nazwy.
@@ -5628,7 +5716,8 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
             print("  KOMENTARZ POTWIERDZONY U SUBSTACKA" if wynik["wyslane"]
                   else "  KLIKNIĘTE, ALE SUBSTACK GO NIE POKAZUJE", flush=True)
         elif not wyslij:
-            print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
+            wynik["posprzatane"] = oproznij_pole(page, pole, "komentarz")
+            print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
     except Exception as exc:
         wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)

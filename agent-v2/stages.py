@@ -8439,6 +8439,18 @@ def wez_kandydatow(ile: int = 1,
     return wziete
 
 
+# FAKTY WYDANE W TYM PROCESIE. Pamiec permanentna zna tylko notki, ktore JUZ
+# WYSZLY — a partia pisze sie w calosci przed pierwsza publikacja, wiec przy
+# drugiej notce dziennik jeszcze o pierwszej nie wie. Ta lista jest jedynym
+# miejscem, w ktorym widac, ze przed chwila wzielismy sasiada z tej samej polki.
+_FAKTY_TEGO_PRZEBIEGU: list[dict[str, Any]] = []
+
+
+def zapomnij_fakty_przebiegu() -> None:
+    """Czysci pamiec wydanych faktow — dla testow i dlugo zyjacego procesu."""
+    _FAKTY_TEGO_PRZEBIEGU.clear()
+
+
 def fakt_na_notke() -> dict[str, Any] | None:
     """Jeden fakt z banku dla notki — albo `None`, gdy bank ma go zostawic.
 
@@ -8468,8 +8480,26 @@ def fakt_na_notke() -> dict[str, Any] | None:
     a nie depesza.
     """
     try:
+        # KILKU KANDYDATOW, NIE JEDEN — i to jest cala ta poprawka.
+        #
+        # ZMIERZONE 10 wrzesnia 2026. Trzy kolejne generacje notek, kazda
+        # osobnym wywolaniem, daly TRZY NOTKI O TYM SAMYM: chinscy specjalisci
+        # po studiach uczacy modeli za grosze. Nie dlatego, ze bank byl chudy —
+        # dlatego, ze ta funkcja brala z niego POZYCJE PIERWSZA i nikt nie
+        # pytal, czy poprzednia notka nie byla o tym samym.
+        #
+        # Straznik blizniakow w `wez_kandydatow` porownuje kandydatow MIEDZY
+        # SOBA w jednej partii. Przy `ile=1` partia ma jednego czlonka, wiec
+        # straznik nie ma czego z czym porownac i nie strzela ANI RAZU.
+        #
+        # `wybierz_material` robi dokladnie to, czego tu brakowalo, i istnieje
+        # od 17 sierpnia: odrzuca fakt zderzajacy sie z dzisiejszymi notkami,
+        # z pamiecia WSZYSTKICH wystawionych i ze wspolna nazwa wlasna. Sciezka
+        # artykulu i `notki_dnia` przez nia ida; ta jedna — nowa, z 9 wrzesnia —
+        # jej nie wolala. Sygnal wytworzony i wyrzucony, ten sam ksztalt wady,
+        # co reszta tego audytu.
         wziete = wez_kandydatow(
-            1, unikaj_artykulowych=True,
+            6, unikaj_artykulowych=True,
             zostaw=int(getattr(config, "BANK_REZERWA_NA_ARTYKUL", 3)))
     except Exception as exc:            # noqa: BLE001
         # BANK NIGDY NIE ZABIJA NOTKI. Zepsuty plik indeksu ma oznaczac notke
@@ -8477,7 +8507,29 @@ def fakt_na_notke() -> dict[str, Any] | None:
         print("  [indeks] fakt na notke niedostepny (%s: %s)"
               % (type(exc).__name__, exc), flush=True)
         return None
-    return wziete[0] if wziete else None
+    if not wziete:
+        return None
+    zapas = list(wziete)
+    try:
+        wybrany = wybierz_material(
+            zapas,
+            # DZISIEJSZE: fakty juz wydane w tym przebiegu. Bez tego dwie notki
+            # jednej partii dostaja sasiadow z tej samej polki banku.
+            unikaj=[str(f.get("fact") or "") for f in _FAKTY_TEGO_PRZEBIEGU],
+            wczesniej=pamiec_wystawionych(),
+            teksty=teksty_ostatnich_notek())
+    except Exception as exc:            # noqa: BLE001
+        print("  [indeks] wybor materialu zawiodl (%s) — biore pierwszy"
+              % type(exc).__name__, flush=True)
+        wybrany = zapas.pop(0) if zapas else None
+    # NIEWYKORZYSTANI WRACAJA DO BANKU. `wez_kandydatow` znaczy jako uzyte
+    # wszystko, co wyda — sciezka artykulu spalila tak 32 oplacone kandydatury
+    # na cztery teksty (patrz `zwroc_kandydatow`). Tu wydajemy szesciu, a piszemy
+    # z jednego, wiec bez tego zwrotu bank znikalby szesc razy szybciej.
+    zwroc_kandydatow([k for k in wziete if k is not wybrany])
+    if wybrany is not None:
+        _FAKTY_TEGO_PRZEBIEGU.append(wybrany)
+    return wybrany
 
 
 # Trzy jedyne powody, dla ktorych wolno skasowac oplaconego kandydata. KOD, nie

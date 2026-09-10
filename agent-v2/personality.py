@@ -229,6 +229,68 @@ def _etykiety() -> set[str]:
     return {e for e in (_rozdziel_rubryke(t)[0] for t in (config.PERSONA_TEMATY or ())) if e}
 
 
+# Koniec zdania: kropka, wykrzyknik, pytajnik albo wielokropek, po nim
+# ewentualny cudzyslow lub nawias, a potem spacja. Skrotow („U.S.", „Dr.")
+# nie tniemy — po nich nie ma spacji z wielka litera w tym wzorcu az tak
+# czesto, a ryzyko jest jednostronne: gorsze ciecie to zla linia, brak ciecia
+# to blok, ktory wlasciciel juz raz odrzucil.
+_KONIEC_ZDANIA = re.compile(r'(?<=[.!?…])["”\'’)\]]*\s+')
+MAKS_SLOW_W_UDERZENIU = 25
+
+
+def rozbij_dlugie_uderzenia(tekst: str, maks: int = MAKS_SLOW_W_UDERZENIU):
+    """Za dluga linia idzie na dwie — po granicy ZDANIA. Oddaje (tekst, ile).
+
+    ## Po co kod, skoro instrukcja to mowi
+
+    Instrukcja krotkiej formy mowi wprost: „If a line runs past twenty-five
+    words, it is two lines". ZMIERZONE 10 wrzesnia 2026 na trzech notkach
+    z zywego przebiegu:
+
+        notka 1   58 slow, 3 uderzenia, 19,3 slowa na uderzenie   dobrze
+        notka 2   68 slow, 3 uderzenia, 22,7 — pierwsze uderzenie 32 slowa
+
+    Ta linia na 32 slowa to byly DWA PELNE ZDANIA sklejone w jedno uderzenie.
+    Model nie napisal nic zlego; on tylko nie postawil lamania wiersza. Proszenie
+    go o to drugi raz kosztuje kolejne wywolanie i nadal jest prosba.
+
+    Ciecie po kropce niczego nie przepisuje: te same slowa, ta sama kolejnosc,
+    inny uklad. To jest praca dla kodu.
+
+    ## Czego NIE robimy
+
+    Nie tniemy w srodku zdania. Jedno zdanie na trzydziesci slow zostaje takie,
+    jakie jest — polamane w przypadkowym miejscu czytaloby sie gorzej niz dlugie,
+    a wtedy poprawka szkodzilaby zamiast pomagac. Takie zdanie tylko liczymy.
+    """
+    if not tekst or not tekst.strip():
+        return tekst, 0
+    wyjscie, rozbite = [], 0
+    for linia in tekst.split("\n"):
+        if len(linia.split()) <= maks:
+            wyjscie.append(linia)
+            continue
+        zdania = [z for z in _KONIEC_ZDANIA.split(linia.strip()) if z.strip()]
+        if len(zdania) < 2:
+            # Jedno dlugie zdanie — zostawiamy w spokoju, patrz wyzej.
+            wyjscie.append(linia)
+            continue
+        kawalki, biezacy = [], ""
+        for z in zdania:
+            proba = (biezacy + " " + z).strip() if biezacy else z.strip()
+            if biezacy and len(proba.split()) > maks:
+                kawalki.append(biezacy)
+                biezacy = z.strip()
+            else:
+                biezacy = proba
+        if biezacy:
+            kawalki.append(biezacy)
+        if len(kawalki) > 1:
+            rozbite += 1
+        wyjscie.extend(kawalki)
+    return "\n".join(wyjscie), rozbite
+
+
 def _valid(text, maximum):
     if not isinstance(text, str) or not text.strip() or len(text.split()) > maximum:
         return False
@@ -382,6 +444,14 @@ def short_form(conn, run_id, kind, material):
     body = result.get("text", "")
     if not _valid(body, maximum):
         return finish(reason="empty_or_invalid_text")
+    # UKLAD POPRAWIA KOD, NIE DRUGIE WYWOLANIE. Te same slowa, ta sama
+    # kolejnosc — tylko lamanie wiersza tam, gdzie i tak konczy sie zdanie.
+    # Patrz `rozbij_dlugie_uderzenia`: zmierzone na notce, ktorej pierwsze
+    # uderzenie mialo 32 slowa, czyli dwa zdania sklejone w blok.
+    body, rozbite_uderzenia = rozbij_dlugie_uderzenia(body)
+    if rozbite_uderzenia:
+        print("  [glos] rozbite za dlugie uderzenia: %d" % rozbite_uderzenia,
+              flush=True)
     if material.get("statistics"):
         if re.search(r"\d|@|https?://|\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|hundred|thousand|million)\b", body, re.I):
             return finish(reason="invalid_statistics_reaction")
@@ -393,7 +463,11 @@ def short_form(conn, run_id, kind, material):
     if not isinstance(hint, str) or len(hint) > 140 or re.search(r"[@\d]|https?://", hint) or not _valid(hint, 30):
         hint = ""
     output = {"text": body.strip(), "memory": hint, "topic": str(result.get("topic", ""))[:100],
-              "model": config.MODEL_FOR[role], "verification_mode": "persona_no_factcheck"}
+              "model": config.MODEL_FOR[role], "verification_mode": "persona_no_factcheck",
+              # Do pomiaru: ile razy kod musial poprawic uklad po modelu. Rosnaca
+              # liczba znaczy, ze instrukcja przestaje dzialac, i widac to ZANIM
+              # wlasciciel zobaczy blok na ekranie.
+              "uderzenia_rozbite": rozbite_uderzenia}
     ids = result.get("source_ids", [])
     if isinstance(ids, list):
         output["source_ids"] = list(dict.fromkeys(s for s in ids if isinstance(s, str) and s in sources))
