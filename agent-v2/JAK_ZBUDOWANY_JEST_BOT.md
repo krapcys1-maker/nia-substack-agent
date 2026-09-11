@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 39 497 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 39 524 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 224 zestawów
-testów, 4968 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 4973 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-908 wierszy, 25 funkcji na poziomie modułu, 0 klas
+935 wierszy, 26 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -179,6 +179,7 @@ wiec nie da sie go rozjechac z kodem.
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
 | `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
 | `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
+| `_z_adresu(url)` *(wewn.)* | Slug adresu jako slowa — Substack wpisuje w niego temat. |
 | `targets(posts)` | Free topical prefilter. The writing call makes the actual reply decision. |
 | `community_candidates()` | Relevant new people need not have received a comment first. No LLM call. |
 | `small_account(profile, maximum)` | Unknown size is not evidence of a small account. No paid research. |

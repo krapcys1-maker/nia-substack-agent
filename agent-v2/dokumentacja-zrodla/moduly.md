@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-908 wierszy, 25 funkcji na poziomie modułu, 0 klas
+935 wierszy, 26 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -37,6 +37,7 @@
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
 | `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
 | `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
+| `_z_adresu(url)` *(wewn.)* | Slug adresu jako slowa — Substack wpisuje w niego temat. |
 | `targets(posts)` | Free topical prefilter. The writing call makes the actual reply decision. |
 | `community_candidates()` | Relevant new people need not have received a comment first. No LLM call. |
 | `small_account(profile, maximum)` | Unknown size is not evidence of a small account. No paid research. |

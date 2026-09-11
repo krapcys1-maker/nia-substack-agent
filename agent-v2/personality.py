@@ -823,11 +823,38 @@ def o_nas(tytul, calosc):
     return any(_ile_razy(calosc, z) >= 2 for z in znaki)
 
 
+def _z_adresu(url):
+    """Slug adresu jako slowa — Substack wpisuje w niego temat.
+
+    Zmierzone na zywej puli 11 wrzesnia 2026, zaraz po wprowadzeniu reguly
+    „tytul albo dwa razy": odpadl tekst „Do People Still Need People?",
+    ktory jest o AI wprost — „AI is making it easier to do more alone" —
+    tyle ze slowo pada raz i nie w tytule. Jego adres konczy sie na
+        /p/do-people-still-need-people-ai
+    Substack sklada slug z tytulu ORAZ podtytulu, wiec niesie temat takze
+    wtedy, gdy sam tytul jest zagadka. Newsletter o ropie ma
+        /p/wuws-100-oil-is-the-headline-the
+    czyli zadnego znaku — slug nie oslabia reguly, tylko domyka luke.
+
+    SAMA SCIEZKA, BEZ DOMENY, i to nie jest drobiazg. Pierwsza wersja brala
+    caly adres — a KAZDY adres na Substacku zawiera slowo „substack", ktore
+    jest jednym ze znakow niszy. Regula przepuszczalaby wiec wszystko, lacznie
+    z tym newsletterem o ropie. Zlapal to kontrdowod w tescie, minute po
+    napisaniu poprawki.
+    """
+    sciezka = str(url or "")
+    if "//" in sciezka:
+        sciezka = sciezka.split("//", 1)[1]
+    sciezka = sciezka.split("/", 1)[1] if "/" in sciezka else ""
+    return re.sub(r"[^a-z0-9]+", " ", sciezka.lower())
+
+
 def targets(posts):
     """Free topical prefilter. The writing call makes the actual reply decision."""
     found = []
     for post in posts:
-        tytul = " ".join(str(post.get(k, "")) for k in ("tytul", "title"))
+        # TYTUL PLUS SLUG ADRESU — patrz `_z_adresu`.
+        tytul = " ".join(str(post.get(k, "")) for k in ("tytul", "title"))             + " " + _z_adresu(post.get("url"))
         text = " ".join(str(post.get(k, "")) for k in ("tytul", "title", "opis", "tekst", "text", "body", "under"))
         if not _injection(text) and o_nas(tytul, text):
             found.append({**post, "co_dodamy": "Read the post; respond in character only if you have something to say."})

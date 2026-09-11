@@ -107,6 +107,41 @@ sprawdz("cele nadal dostaja instrukcje",
         all(x.get("co_dodamy") for x in wynik))
 
 print()
+print("=== 3b. SLUG ADRESU TEZ LICZY SIE JAK TYTUL ===")
+# ZLAPANE NA ZYWEJ PULI GODZINE PO WPROWADZENIU REGULY. Odpadl tekst, ktory
+# jest o AI wprost — „AI is making it easier to do more alone" — bo slowo
+# pada raz i nie w tytule. Adres konczyl sie na `/p/do-people-still-need-
+# people-ai`: Substack sklada slug z tytulu ORAZ podtytulu, wiec niesie temat
+# takze wtedy, gdy sam tytul jest zagadka.
+ZAGADKA = {
+    "tytul": "Do People Still Need People?",
+    "url": "https://davidkraase.substack.com/p/do-people-still-need-people-ai",
+    "opis": ("AI is making it easier to do more alone. What are we leaving "
+             "behind when the help is always available?"),
+}
+with patch.object(p.config, "ZNAKI_NISZY", ZNAKI):
+    sprawdz("tekst o AI z zagadkowym tytulem przechodzi po slugu",
+            len(p.targets([ZAGADKA])) == 1)
+# KONTRDOWOD: slug NIE oslabia reguly. Adres newslettera o ropie to
+# `/p/wuws-100-oil-is-the-headline-the` — ani jednego znaku niszy.
+ROPA_Z_ADRESEM = dict(ROPA)
+ROPA_Z_ADRESEM["url"] = ("https://edgealphaintel.substack.com/p/"
+                         "wuws-100-oil-is-the-headline-the")
+with patch.object(p.config, "ZNAKI_NISZY", ZNAKI):
+    sprawdz("ropa z adresem nadal odpada",
+            p.targets([ROPA_Z_ADRESEM]) == [])
+sprawdz("brak adresu nic nie psuje", p._z_adresu(None) == "")
+# TA SAMA PULAPKA, ZLAPANA MINUTE PO NAPISANIU POPRAWKI: pierwsza wersja
+# brala CALY adres, a kazdy adres na Substacku zawiera slowo „substack",
+# ktore jest znakiem niszy. Regula przepuszczalaby wtedy wszystko.
+sprawdz("domena NIE wchodzi do slugu",
+        "substack" not in p._z_adresu(
+            "https://edgealphaintel.substack.com/p/wuws-100-oil"),
+        p._z_adresu("https://edgealphaintel.substack.com/p/wuws-100-oil"))
+sprawdz("ale sciezka wchodzi",
+        "oil" in p._z_adresu("https://x.substack.com/p/wuws-100-oil"))
+
+print()
 print("=== 4. SILNIK BEZ KARTRIDZA NIE MA WLASNEGO TEMATU ===")
 # Pusta lista znakow znaczy „nie wiem, o czym jest ta publikacja", a nie
 # „nic nie jest na temat". Inaczej silnik bez presetu odrzucalby wszystko.
