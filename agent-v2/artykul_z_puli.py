@@ -1769,9 +1769,50 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
     # `nia-artykul.service` wskazywal caly czas na te pierwsza. Zastepnik
     # napisano, uzywano recznie i nigdy nie wpieto w zegar.
     #
-    # DOMYSLNIE WYLACZONE. Bez `--wyslij` artykul konczy na dysku, tak jak dotad.
+    # BEZ `--wyslij` ARTYKUL IDZIE DO SZKICU NA SUBSTACKU, A NIE DO SZUFLADY.
+    #
+    # Do 10 wrzesnia 2026 przebieg bez `--wyslij` konczyl sie na pliku .md
+    # i NIE DOTYKAL przegladarki ani razu. Skutek: cala druga polowa drogi —
+    # zalozenie postu, wklejenie tresci, wgranie dwoch obrazow, przycisk
+    # subskrypcji, odnalezienie przycisku publikacji — nie byla sprawdzana
+    # NIGDY. Pierwszy raz dowiadywalismy sie o niej w chwili prawdziwej
+    # publikacji, po oplaceniu researchu, pisania i dwoch obrazow.
+    #
+    # Wlasciciel nazwal to dokladnie: „przyjdzie do publikacji i sie nie
+    # opublikuje". Zmierzone tego samego wieczoru na gotowym artykule 0056:
+    # `wystaw_artykul(..., wyslij=False)` przeszlo cala droge i zostawilo
+    # prawdziwy szkic pod adresem /publish/post/215158291 — czyli sprawdzenie
+    # bylo o jedno wywolanie stad.
+    #
+    # Szkic NIE JEST publikacja: nikt go nie widzi, nie idzie mail, nie ma go
+    # w kanale. Za to po przebiegu wiadomo, czy tekst da sie w ogole wystawic —
+    # i mozna go przeczytac tam, gdzie i tak zobaczy go czytelnik.
+    #
+    # `--tylko-plik` zostawia stare zachowanie dla pracy bez sesji Substacka.
     if "--wyslij" not in sys.argv:
-        print(">> bez --wyslij: artykul zostaje na dysku", flush=True)
+        if "--tylko-plik" in sys.argv:
+            print(">> --tylko-plik: artykul zostaje na dysku", flush=True)
+            return 0
+        print(">> bez --wyslij: zakladam SZKIC na Substacku (nic nie wychodzi"
+              " w swiat; `--tylko-plik` zostawia sam plik)", flush=True)
+        try:
+            import browser as _browser
+            _w = _browser.wystaw_artykul(sciezka, wyslij=False)
+        except Exception as exc:                      # noqa: BLE001
+            print(">> szkicu nie udalo sie zalozyc (%s: %s) — plik lezy w %s"
+                  % (type(exc).__name__, str(exc)[:110], sciezka), flush=True)
+            return 0
+        if _w.get("szkic"):
+            print(">> szkic: %s" % _w["szkic"], flush=True)
+        if _w.get("blad"):
+            print(">> uwaga przy zakladaniu szkicu: %s" % _w["blad"], flush=True)
+        # PRZYCISK PUBLIKACJI SPRAWDZONY, CHOC NIEKLIKNIETY. To jedyna czesc,
+        # ktorej szkic sam z siebie nie dowodzi, a od niej zalezy, czy
+        # prawdziwy przebieg cokolwiek wystawi.
+        print(">> przycisk publikacji %s"
+              % ("znaleziony" if _w.get("przycisk_widoczny")
+                 else "NIE ZNALEZIONY — prawdziwy przebieg by nie wystawil"),
+              flush=True)
         return 0
 
     import browser
