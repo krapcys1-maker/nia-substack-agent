@@ -80,7 +80,7 @@ w `JAK_DZIALA_V2.md` (507 wywołań, $8,73); puste znaczy „nie zmierzono osobn
 | `warto_pisac` | deepseek-v4-pro | `warto_pisac.md` | 34 000 | 0,015 | `stages.warto_pisac:5942` |
 | `bibliotekarz` | deepseek-v4-pro | `bibliotekarz.md` | 40 000 | — | `stages.bibliotekarz:5778` |
 | `write` | **claude-fable-5-1** | `pisarz.md` + `WRITER_SYSTEM` (kod) | 37 600 | **0,426** | `stages.write:541` |
-| `review` | deepseek-v4-pro | `recenzent.md` | 76 000 | 0,054 | `stages.review:224` |
+| `review` | deepseek-v4-pro | `recenzent.md` | 76 000 | 0,054 | `stages.review:225` |
 | `forma` | deepseek-v4-pro | `forma.md` | 52 000 | 0,025–0,05 | `stages.ocen_forme:244` |
 | `grafika` | deepseek-v4-flash | `grafika.md` | 32 000 | 0,002 | `stages.grafika:834` |
 | `obraz` | **gpt-image-1.5** | — (opis z `grafika`) | bez sufitu | 0,040 | `stages.grafika:841`, przez `llm.obraz` |

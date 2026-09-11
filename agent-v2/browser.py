@@ -3313,12 +3313,36 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                           wait_until="domcontentloaded")
                 page.wait_for_timeout(SETTLE_MS + 3000)
-                wynik["zrobione"] = any(
+                # POTWIERDZENIEM JEST ZNIKNIECIE PRZYCISKU, NIE NAPIS
+                # „Subscribed" — bo tego napisu Substack tam nie pisze.
+                #
+                # ZMIERZONE NA ZYWO 11 wrzesnia 2026 na czterech profilach:
+                #
+                #   @becomingabuilder  zasubskrybowany dzis   -> ['Manage']
+                #   @mattgrawitch      zasubskrybowany dzis   -> ['Manage']
+                #   @rubendominguez    nigdy nie probowany    -> ['Subscribe','Manage']
+                #   @omoore            nigdy nie probowany    -> ['Subscribe','Manage']
+                #
+                # Szukalismy „Subscribed", „Subskrybujesz", „Subskrybowano"
+                # albo „Upgrade". Zaden z nich nie pada. Obie dzisiejsze
+                # subskrypcje NAPRAWDE WESZLY i obie zapisaly sie jako
+                # porazka — a `kogo_juz_subskrybujemy` zamyka uchwyt tylko
+                # przy `udane=True`, wiec weszlibysmy na te profile jeszcze raz.
+                #
+                # „Manage" NIE JEST dowodem: stoi na profilach, ktorych nie
+                # subskrybujemy. Dowodem jest BRAK przycisku „Subscribe" —
+                # i dokladnie tak potwierdza sie juz obserwowanie, w galezi
+                # `else` ponizej.
+                zostal = any(
+                    page.get_by_role("button", name=etykieta, exact=True).count()
+                    for etykieta in napisy)
+                wynik["zrobione"] = (not zostal) or any(
                     page.get_by_role("button", name=label, exact=True).count()
                     for label in subscription_labels)
                 wynik["potwierdzone"] = bool(wynik["zrobione"])
                 if not wynik["zrobione"]:
-                    wynik["blad"] = "brak potwierdzenia darmowej subskrypcji na profilu"
+                    wynik["blad"] = ("przycisk subskrypcji nadal stoi na profilu"
+                                     " — klikniecie nie doszlo")
             else:
                 wynik["zrobione"] = k.count() == 0 or not k.is_visible()
             dopisz_wynik(rodzaj, wynik, komu=handle)
