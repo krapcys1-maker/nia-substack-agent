@@ -148,5 +148,43 @@ sprawdz("artykul nie ma juz `no quota` jako polecenia",
         "no quota of jokes" not in ARTYKUL)
 
 print()
+print("=== 6. DLA KOGO TO JEST — CZLOWIEK Z KANAPY, NIE BRANZA ===")
+# Wlasciciel, 11 wrzesnia 2026: NIA ma byc jak ziomek z lawki pod blokiem,
+# a jednoczesnie madra; ma pisac dla ludzi, ktorzy o sztucznej inteligencji
+# nie wiedza nic. Wzor: Andrzej Dragan tlumaczacy fizyke kwantowa komus na
+# kanapie, kto fizyki nie zna, a slucha, bo skomplikowane rzeczy dostaje na
+# prostych przykladach z zycia.
+sprawdz("kartridz nazywa czytelnika",
+        "never used an AI tool and does not read technology news" in WSPOLNY)
+sprawdz("lawka pod blokiem jest wprost",
+        "bench outside their block of flats" in WSPOLNY)
+sprawdz("z obiema polowami: zwyczajnie i madrze",
+        "Both halves matter" in WSPOLNY)
+sprawdz("wzor nazwany po imieniu", "Andrzej Dragan" in WSPOLNY)
+sprawdz("przyklady sa z zycia, nie z branzy",
+        "padlock on a shed" in WSPOLNY and "bill at the end of a meal" in WSPOLNY)
+sprawdz("zargon dostaje porownanie albo znika",
+        "gets that comparison beside it or does not appear" in WSPOLNY)
+sprawdz("jest TEST czytelnika",
+        "never heard of this company follow what happened" in WSPOLNY)
+
+print()
+print("=== 7. RZEMIOSLO NIE JEST TEMATEM ===")
+# Zmierzone na tym, co wyszlo na konto: „I've compared corporate AI promises
+# to badly dressed men at keynotes often enough; the joke is officially
+# retired." Ksztalt bez zarzutu, temat — wlasny nawyk pisarski.
+sprawdz("zakaz pisania o wlasnym pisaniu",
+        "Never write about your own writing" in WSPOLNY)
+sprawdz("zart odchodzi w ciszy", "retired by not using it, in silence" in WSPOLNY)
+sprawdz("z pomiarem, ktory to wywolal",
+        "The joke is officially retired" in WSPOLNY)
+# KONTRDOWOD: to ma byc ZAKAZ, a nie kolejne pozwolenie. Zdanie, ktore
+# wywolalo wpadke, nie moze zostac jako polecenie.
+i_cytat = WSPOLNY.find("let a stale joke go")
+sprawdz("stare zdanie zostalo tylko jako opis wpadki",
+        i_cytat < 0 or "was read as an invitation" in WSPOLNY[i_cytat:i_cytat + 160],
+        WSPOLNY[i_cytat:i_cytat + 120] if i_cytat >= 0 else "brak")
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)
