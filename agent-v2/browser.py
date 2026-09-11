@@ -6033,6 +6033,81 @@ def read_pages(urls: list[str]) -> list[dict[str, Any]]:
     return bounded_read(urls)
 
 
+# ILE DNI AUTOR ODPOCZYWA OD NASZEGO RESTACKA. Patrz `kogo_juz_restackowalismy`.
+DNI_ODPOCZYNKU_AUTORA = 7
+
+
+def kogo_juz_restackowalismy(dni: int = DNI_ODPOCZYNKU_AUTORA) -> set[str]:
+    """Autorzy podani dalej w ostatnich `dni` dniach. Z dziennika, bez sieci.
+
+    ## Pomiar
+
+    11 wrzesnia 2026, caly dziennik: TRZYNASCIE udanych restackow, DZIESIECIU
+    roznych autorow. Jeden powtarza sie trzy razy:
+
+        Nothing Is Accidental   3        (09-10T14:58, 09-10T19:49, 09-11T12:34)
+        pozostali               po 1
+        bez zapisanego autora   2
+
+    Trzy z trzynastu to jedna publikacja — i akurat drugi projekt wlasciciela.
+    Z boku konto wyglada wtedy jak tuba jednego zrodla, a nie jak ktos, kto
+    czyta kanal.
+
+    ## Skad sie to brało
+
+    Kanal ma stala kolejnosc, a petla bierze PIERWSZEGO kandydata, ktory
+    przejdzie rewir i ocene. Kto stoi wysoko i pisze na temat, ten wraca
+    codziennie. Zadna czesc kodu nie pytala, czy juz go dzis podawalismy.
+
+    ## Granica
+
+    Siedem dni, nie „nigdy wiecej": dobry autor ma wracac, tylko nie co dzien.
+    Liczymy po nazwie autora sprowadzonej do malych liter — to jedyne, co
+    dziennik o nim trzyma.
+    """
+    import json as _json
+    from datetime import datetime, timedelta, timezone
+
+    granica = datetime.now(timezone.utc) - timedelta(days=max(1, int(dni)))
+    byli: set[str] = set()
+    try:
+        if not DZIENNIK.exists():
+            return byli
+        for linia in DZIENNIK.read_text(encoding="utf-8").splitlines():
+            linia = linia.strip()
+            if not linia:
+                continue
+            try:
+                wpis = _json.loads(linia)
+            except ValueError:
+                continue
+            if not isinstance(wpis, dict) or wpis.get("rodzaj") != "restack":
+                continue
+            if not wpis.get("udane"):
+                continue
+            kto = " ".join(str(wpis.get("komu") or "").split()).casefold()
+            # ODCISK CUDZEJ NOTKI TEZ WCHODZI. Dwa z trzynastu restackow nie
+            # maja zapisanego autora; bez tego wracalyby bez konca.
+            zrodlo = str(wpis.get("zrodlo") or "").casefold()
+            if not kto and not zrodlo:
+                continue
+            try:
+                kiedy = datetime.fromisoformat(
+                    str(wpis.get("kiedy") or "").replace("Z", "+00:00"))
+            except ValueError:
+                continue
+            if kiedy.tzinfo is None:
+                kiedy = kiedy.replace(tzinfo=timezone.utc)
+            if kiedy >= granica:
+                if kto:
+                    byli.add(kto)
+                if zrodlo:
+                    byli.add(zrodlo)
+    except OSError:
+        pass                      # brak dziennika to pusta wiedza, nie awaria
+    return byli
+
+
 def restackuj_w_kanale(
     ile: int, decyzja, wyslij: bool = False, *, url: str | None = None,
 ) -> dict[str, Any]:
@@ -6145,6 +6220,13 @@ def restackuj_w_kanale(
         # od poczatku, a juz obsluzonych poznajemy po odcisku tresci. Numer
         # pozycji przestaje cokolwiek znaczyc miedzy obrotami.
         zrobione_odciski: set = set()
+        # AUTORZY Z OSTATNICH DNI — zeby kanal nie zamienil sie w tube jednego
+        # zrodla. Patrz `kogo_juz_restackowalismy`: trzy z trzynastu restackow
+        # poszly do tej samej publikacji.
+        odpoczywaja = kogo_juz_restackowalismy()
+        if odpoczywaja:
+            print("  %d autorow odpoczywa po niedawnym restacku"
+                  % len(odpoczywaja), flush=True)
         obrotow = 0
         MAKS_OBROTOW = max(int(ile) * 6, 18)
         while wynik["restackowane"] < ile and obrotow < MAKS_OBROTOW:
@@ -6205,6 +6287,17 @@ def restackuj_w_kanale(
                     print("    pomijam (nie odczytalem tresci notki u %s)"
                           % (str((kto or {}).get("autor") or "?")[:24]),
                           flush=True)
+                    continue
+                # AUTOR Z TEGO TYGODNIA ODPOCZYWA. Nie „nigdy wiecej" — siedem
+                # dni. Dobry autor ma wracac, tylko nie codziennie.
+                autor_teraz = " ".join(
+                    str(notka.get("autor") or (kto or {}).get("autor") or "").split())
+                odcisk_zrodla = plaski(str(notka.get("tekst") or ""))[:120].casefold()
+                if ((autor_teraz and autor_teraz.casefold() in odpoczywaja)
+                        or (odcisk_zrodla and odcisk_zrodla in odpoczywaja)):
+                    wynik["odpoczywa"] = wynik.get("odpoczywa", 0) + 1
+                    print("    pomijam (%s juz byl podany dalej w tym tygodniu)"
+                          % (autor_teraz[:30] or "ta notka"), flush=True)
                     continue
                 # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
                 if not w_rewirze(notka["tekst"]):
@@ -6312,10 +6405,15 @@ def restackuj_w_kanale(
                 # `udane` powinno od niego zalezec. Nie zgaduje, jak Substack
                 # nazywa stan przycisku po restacku, i nie ruszam tego bez tej
                 # liczby.
+                # ODCISK CUDZEJ NOTKI OBOK AUTORA. Zmierzone 11 wrzesnia
+                # 2026: dwa z trzynastu restackow nie maja zapisanego autora
+                # („?" w zestawieniu), wiec odpoczynek autora nie mialby ich
+                # jak rozpoznac. Odcisk tresci dziala takze wtedy.
                 zapisz_w_dzienniku("restack", udane=True,
                                    komu=notka.get("autor", ""),
                                    slow=len(zdanie.split()),
-                                   tekst=zdanie[:300], id=numer_restacka)
+                                   tekst=zdanie[:300], id=numer_restacka,
+                                   zrodlo=plaski(str(notka.get("tekst") or ""))[:120])
                 if config.PERSONA_WLACZONA and numer_restacka:
                     import personality
                     personality.remember_interaction("restack", ocena,
@@ -6341,12 +6439,13 @@ def restackuj_w_kanale(
         # przegladac log linia po linii, zeby odpowiedziec na pytanie
         # „czemu jeden restack, skoro budzet ma cztery".
         print("  rachunek: %d znalezionych -> %d niewidocznych, %d naszych,"
-              " %d bez tresci, %d poza rewirem -> %d ocenionych,"
+              " %d bez tresci, %d odpoczywa, %d poza rewirem -> %d ocenionych,"
               " %d odmow -> %d podanych dalej"
               % (wynik["znalezione"], wynik.get("niewidoczne", 0),
                  wynik.get("nasze", 0), wynik.get("bez_tresci", 0),
-                 wynik.get("poza_rewirem", 0), wynik["rozwazone"],
-                 len(wynik["odmowy"]), wynik["restackowane"]), flush=True)
+                 wynik.get("odpoczywa", 0), wynik.get("poza_rewirem", 0),
+                 wynik["rozwazone"], len(wynik["odmowy"]),
+                 wynik["restackowane"]), flush=True)
         if not wyslij:
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)

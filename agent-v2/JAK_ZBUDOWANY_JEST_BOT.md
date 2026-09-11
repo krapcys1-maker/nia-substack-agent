@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 39 565 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 39 664 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 225 zestawów
-testów, 4989 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 226 zestawów
+testów, 5010 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -468,7 +468,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6488 wierszy, 111 funkcji na poziomie modułu, 3 klas
+6587 wierszy, 112 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -579,6 +579,7 @@ wiec nie da sie go rozjechac z kodem.
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `read_pages(urls)` | Read sources with a deadline that also covers browser shutdown. |
+| `kogo_juz_restackowalismy(dni)` | Autorzy podani dalej w ostatnich `dni` dniach. Z dziennika, bez sieci. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
@@ -8944,6 +8945,13 @@ def restackuj_w_kanale(
         # od poczatku, a juz obsluzonych poznajemy po odcisku tresci. Numer
         # pozycji przestaje cokolwiek znaczyc miedzy obrotami.
         zrobione_odciski: set = set()
+        # AUTORZY Z OSTATNICH DNI — zeby kanal nie zamienil sie w tube jednego
+        # zrodla. Patrz `kogo_juz_restackowalismy`: trzy z trzynastu restackow
+        # poszly do tej samej publikacji.
+        odpoczywaja = kogo_juz_restackowalismy()
+        if odpoczywaja:
+            print("  %d autorow odpoczywa po niedawnym restacku"
+                  % len(odpoczywaja), flush=True)
         obrotow = 0
         MAKS_OBROTOW = max(int(ile) * 6, 18)
         while wynik["restackowane"] < ile and obrotow < MAKS_OBROTOW:
@@ -9004,6 +9012,17 @@ def restackuj_w_kanale(
                     print("    pomijam (nie odczytalem tresci notki u %s)"
                           % (str((kto or {}).get("autor") or "?")[:24]),
                           flush=True)
+                    continue
+                # AUTOR Z TEGO TYGODNIA ODPOCZYWA. Nie „nigdy wiecej" — siedem
+                # dni. Dobry autor ma wracac, tylko nie codziennie.
+                autor_teraz = " ".join(
+                    str(notka.get("autor") or (kto or {}).get("autor") or "").split())
+                odcisk_zrodla = plaski(str(notka.get("tekst") or ""))[:120].casefold()
+                if ((autor_teraz and autor_teraz.casefold() in odpoczywaja)
+                        or (odcisk_zrodla and odcisk_zrodla in odpoczywaja)):
+                    wynik["odpoczywa"] = wynik.get("odpoczywa", 0) + 1
+                    print("    pomijam (%s juz byl podany dalej w tym tygodniu)"
+                          % (autor_teraz[:30] or "ta notka"), flush=True)
                     continue
                 # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
                 if not w_rewirze(notka["tekst"]):
@@ -9111,10 +9130,15 @@ def restackuj_w_kanale(
                 # `udane` powinno od niego zalezec. Nie zgaduje, jak Substack
                 # nazywa stan przycisku po restacku, i nie ruszam tego bez tej
                 # liczby.
+                # ODCISK CUDZEJ NOTKI OBOK AUTORA. Zmierzone 11 wrzesnia
+                # 2026: dwa z trzynastu restackow nie maja zapisanego autora
+                # („?" w zestawieniu), wiec odpoczynek autora nie mialby ich
+                # jak rozpoznac. Odcisk tresci dziala takze wtedy.
                 zapisz_w_dzienniku("restack", udane=True,
                                    komu=notka.get("autor", ""),
                                    slow=len(zdanie.split()),
-                                   tekst=zdanie[:300], id=numer_restacka)
+                                   tekst=zdanie[:300], id=numer_restacka,
+                                   zrodlo=plaski(str(notka.get("tekst") or ""))[:120])
                 if config.PERSONA_WLACZONA and numer_restacka:
                     import personality
                     personality.remember_interaction("restack", ocena,
@@ -9140,12 +9164,13 @@ def restackuj_w_kanale(
         # przegladac log linia po linii, zeby odpowiedziec na pytanie
         # „czemu jeden restack, skoro budzet ma cztery".
         print("  rachunek: %d znalezionych -> %d niewidocznych, %d naszych,"
-              " %d bez tresci, %d poza rewirem -> %d ocenionych,"
+              " %d bez tresci, %d odpoczywa, %d poza rewirem -> %d ocenionych,"
               " %d odmow -> %d podanych dalej"
               % (wynik["znalezione"], wynik.get("niewidoczne", 0),
                  wynik.get("nasze", 0), wynik.get("bez_tresci", 0),
-                 wynik.get("poza_rewirem", 0), wynik["rozwazone"],
-                 len(wynik["odmowy"]), wynik["restackowane"]), flush=True)
+                 wynik.get("odpoczywa", 0), wynik.get("poza_rewirem", 0),
+                 wynik["rozwazone"], len(wynik["odmowy"]),
+                 wynik["restackowane"]), flush=True)
         if not wyslij:
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)
