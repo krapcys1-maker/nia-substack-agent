@@ -4659,6 +4659,76 @@ def potwierdz_artykul(page, tytul: str) -> bool:
     return any(probka in plaski(x.get("title") or "") and x.get("post_date")
                for x in lista if isinstance(x, dict))
 
+# NAPISY NA PRZYCISKU WYKRYWANIA AI, w obu stanach. Wziete ze zrzutow
+# wlasciciela z 11 wrzesnia 2026: strona ustawien publikacji, sekcja
+# „Text Analysis", przycisk pod „Scan for AI text".
+_WYLACZ_AI = ("Disable AI detection", "Wyłącz wykrywanie AI",
+              "Turn off AI detection", "Wyłącz wykrywanie tekstu AI")
+_JUZ_WYLACZONE = ("Re-enable AI detection", "Reenable AI detection",
+                  "Włącz ponownie wykrywanie AI")
+
+
+def wylacz_wykrywanie_ai(page) -> str:
+    """Klika „Disable AI detection" na stronie ustawien publikacji.
+
+    ## Czemu to nie dzialalo
+
+    Kod istnial od dawna i szukal napisow „Wyłącz wykrywanie AI" oraz
+    „Turn off AI detection". Substack pisze na tym przycisku
+    **„Disable AI detection"** — sprawdzone na zrzucie ze strony ustawien
+    11 wrzesnia 2026. Zaden z dwoch napisow nie pasowal, wiec petla
+    konczyla sie bez klikniecia i bez slowa w logu, a ustawienie
+    `wylacz_wykrywanie_ai` bylo wlaczone od zawsze.
+
+    Zmierzone na artykule opublikowanym tego dnia: w calym logu publikacji
+    fraza „wykrywanie AI" nie pada ANI RAZU.
+
+    ## Dowod, ze zadzialalo
+
+    Po klinieciu ten sam przycisk zmienia napis na „Re-enable AI detection"
+    — tez ze zrzutu wlasciciela. To jest sprawdzenie, ktorego ta funkcja
+    nie mialaby, gdyby tylko klikala i ufala sobie. I to samo zdanie chroni
+    przed wlaczeniem wykrywania z powrotem: przycisk w stanie „Re-enable"
+    zostaje nietkniety.
+
+    Oddaje slowo do dziennika: `wylaczone`, `juz_wylaczone`, `nie_znalazlem`
+    albo `klikniete_bez_potwierdzenia`.
+    """
+    for nazwa in _JUZ_WYLACZONE:
+        k = page.get_by_role("button", name=nazwa).first
+        try:
+            if k.count() > 0 and k.is_visible():
+                print("  wykrywanie AI juz wylaczone (%r) — nie ruszam" % nazwa,
+                      flush=True)
+                return "juz_wylaczone"
+        except Exception:                              # noqa: BLE001
+            continue
+    for nazwa in _WYLACZ_AI:
+        k = page.get_by_role("button", name=nazwa).first
+        try:
+            if not (k.count() > 0 and k.is_visible()):
+                continue
+        except Exception:                              # noqa: BLE001
+            continue
+        klik_mimo_zaslony(k, "wylaczenie wykrywania AI", timeout=10_000)
+        page.wait_for_timeout(2500)
+        for potwierdzenie in _JUZ_WYLACZONE:
+            p2 = page.get_by_role("button", name=potwierdzenie).first
+            try:
+                if p2.count() > 0 and p2.is_visible():
+                    print("  wykrywanie AI wylaczone dla tego posta"
+                          " (przycisk mowi teraz %r)" % potwierdzenie, flush=True)
+                    return "wylaczone"
+            except Exception:                          # noqa: BLE001
+                continue
+        print("  UWAGA: klikniete %r, ale przycisk nie zmienil napisu —"
+              " sprawdz recznie" % nazwa, flush=True)
+        return "klikniete_bez_potwierdzenia"
+    print("  UWAGA: nie znalazlem przycisku wylaczenia wykrywania AI"
+          " (szukalem: %s)" % ", ".join(repr(n) for n in _WYLACZ_AI), flush=True)
+    return "nie_znalazlem"
+
+
 def _domknij_publikacje_artykulu(page) -> bool:
     """Complete Substack's optional subscribe-button prompt after Send."""
     for label in ("Publish without buttons", "Opublikuj bez przycisków"):
@@ -4754,13 +4824,7 @@ def wystaw_artykul(
         page.wait_for_timeout(8000)
 
         if config.WYLACZ_WYKRYWANIE_AI:
-            for nazwa in ("Wyłącz wykrywanie AI", "Turn off AI detection"):
-                k = page.get_by_role("button", name=nazwa).first
-                if k.count() > 0 and k.is_visible():
-                    k.click()
-                    page.wait_for_timeout(2500)
-                    print("  wykrywanie AI wyłączone dla tego posta", flush=True)
-                    break
+            wynik["wykrywanie_ai"] = wylacz_wykrywanie_ai(page)
 
         publikuj = None
         for nazwa in ("Wyślij teraz do wszystkich", "Send to everyone now",

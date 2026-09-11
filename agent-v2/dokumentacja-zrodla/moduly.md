@@ -322,7 +322,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6374 wierszy, 110 funkcji na poziomie modułu, 3 klas
+6438 wierszy, 111 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -413,6 +413,7 @@
 | `ustaw_oswiadczenie_ai(wyslij)` | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. |
 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. |
 | `potwierdz_artykul(page, tytul)` | Pyta Substacka, czy artykuł naprawdę jest opublikowany. |
+| `wylacz_wykrywanie_ai(page)` | Klika „Disable AI detection" na stronie ustawien publikacji. |
 | `_domknij_publikacje_artykulu(page)` *(wewn.)* | Complete Substack's optional subscribe-button prompt after Send. |
 | `_potwierdz_wysylke_artykulu(page, tytul)` *(wewn.)* | Retry reads, never the send; keep the editor open for a late prompt. |
 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | Wystawia artykuł na Substacku. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
