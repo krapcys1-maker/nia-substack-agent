@@ -2135,7 +2135,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             finally:
                 stats_page.close()
             if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
-                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                wynik.update(pominiete=True, powod=POWOD_ZA_DUZY)
                 if wyslij:
                     zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
                 return wynik

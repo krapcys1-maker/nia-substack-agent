@@ -3139,6 +3139,15 @@ def wpisz_w_puste_pole(page, pole, tekst: str, nazwa: str = "pole",
     return w_polu
 
 
+# POWOD POMINIECIA ZA ROZMIAR — JEDEN NAPIS, DWA MIEJSCA ZAPISU I JEDNO
+# CZYTANIA. `_klik_na_profilu` zapisuje go tutaj, blok subskrypcji w `run.py`
+# zapisuje go u siebie, a `run.znane_za_duze` czyta go z dziennika, zeby nie
+# mierzyc tych samych wielkich kont kazdego dnia od nowa. Trzy literaly
+# rozjechalyby sie przy pierwszej zmianie slowa i odsiew wylaczylby sie po
+# cichu — ta sama pulapka, ktora opisuje `kogo_juz_subskrybujemy`.
+POWOD_ZA_DUZY = "account exceeds the size limit or its size is unknown"
+
+
 def konto_za_duze(handle: str) -> bool:
     """Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS.
 
@@ -3284,7 +3293,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             finally:
                 stats_page.close()
             if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
-                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                wynik.update(pominiete=True, powod=POWOD_ZA_DUZY)
                 if wyslij:
                     zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
                 return wynik

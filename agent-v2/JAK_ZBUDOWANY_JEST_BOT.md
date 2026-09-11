@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 39 340 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 39 497 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 222 zestawów
-testów, 4935 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 224 zestawów
+testów, 4968 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-859 wierszy, 23 funkcji na poziomie modułu, 0 klas
+908 wierszy, 25 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -177,6 +177,8 @@ wiec nie da sie go rozjechac z kodem.
 | `_fakt_z_banku()` *(wewn.)* | Jeden fakt z banku dla tej notki, albo `None`. |
 | `notes(conn, run_id, ile, od)` | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. |
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
+| `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
+| `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
 | `targets(posts)` | Free topical prefilter. The writing call makes the actual reply decision. |
 | `community_candidates()` | Relevant new people need not have received a comment first. No LLM call. |
 | `small_account(profile, maximum)` | Unknown size is not evidence of a small account. No paid research. |
@@ -266,7 +268,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3110 wierszy, 27 funkcji na poziomie modułu, 1 klas
+3209 wierszy, 28 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -289,6 +291,7 @@ wiec nie da sie go rozjechac z kodem.
 | `reagujacy_jako_cele()` | Ludzie, ktorzy zareagowali na nasza tresc, jako CELE WPROST. Zero sieci. |
 | `_przeplot(pierwsza, druga)` *(wewn.)* | Na przemian z dwoch list; gdy jedna sie konczy, druga idzie dalej. |
 | `cele_wedlug_pierwszenstwa(historia)` | Hosty do zaczepienia, w kolejnosci pierwszenstwa. Zero sieci. |
+| `znane_za_duze()` | Uchwyty, ktore JUZ ZMIERZYLISMY jako za duze. Z dziennika, bez sieci. |
 | `powod_pustej_puli(rachunek)` | Zdanie do dziennika, gdy po odsianiu nie zostal nikt. |
 | `kogo_juz_subskrybujemy()` | Uchwyty, na ktore subskrypcja NIE MA JUZ CO wysylac. Z dziennika, bez sieci. |
 | `czy_juz_subskrybujemy(host, zamkniete, pamiec)` | Czy ten HOST wskazuje konto, na ktore nie ma juz po co wchodzic. |
@@ -464,7 +467,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6438 wierszy, 111 funkcji na poziomie modułu, 3 klas
+6447 wierszy, 111 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -8751,7 +8754,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             finally:
                 stats_page.close()
             if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
-                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                wynik.update(pominiete=True, powod=POWOD_ZA_DUZY)
                 if wyslij:
                     zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
                 return wynik

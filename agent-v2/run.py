@@ -908,6 +908,87 @@ def cele_wedlug_pierwszenstwa(historia: dict) -> tuple[list[str], dict]:
     return _przeplot(reagujacy, hosty), rachunek
 
 
+# NAPIS, PO KTORYM POZNAJEMY POMINIECIE ZA ROZMIAR. Powstaje w bloku
+# subskrypcji i jest czytany nizej — ta sama para co `kogo_juz_subskrybujemy`
+# i `browser._klik_na_profilu`, i ta sama pulapka: rozjechanie sie dwoch kopii
+# wylacza odsiew po cichu. Dlatego stala, a nie dwa literaly.
+# NAPIS POWODU MIESZKA W `browser.POWOD_ZA_DUZY` — tam powstaje, przy
+# pominieciu na cudzym profilu. NIE importujemy go tutaj na poziomie modulu:
+# testy podstawiaja pod `browser` atrapy i `from browser import ...` wywraca
+# im import calego `run` (zlapane na `test_komentarz_potwierdzony`). Siegamy
+# po niego przez modul, w miejscu uzycia.
+
+
+def znane_za_duze() -> set[str]:
+    """Uchwyty, ktore JUZ ZMIERZYLISMY jako za duze. Z dziennika, bez sieci.
+
+    ## Po co
+
+    Zmierzone 11 wrzesnia 2026 na czternastu kandydatach z prawdziwej puli,
+    przy sufcie tysiaca obserwujacych:
+
+        @rubendominguez        353 727
+        @bytebytego399569       44 668
+        @moderndata101          17 303
+        @thetechbubble          15 673
+        @valuemomentumportfolio 10 069
+        @yournamangupta          3 131
+        @systematicstrategies    2 545
+        @arthurandthefuture      1 939
+        --- miesci sie ---
+        @omoore                    149
+        @becomingabuilder           35
+        @sjbuildswithai              4
+
+    Osmiu za duzych, trzech w naszym rozmiarze. Sito dziala, tylko pula
+    prowadzi glownie do kont, dla ktorych jestesmy szumem — i KAZDEGO DNIA
+    mierzylismy tych samych osmiu od nowa, zjadajac nimi okno przegladania.
+
+    Konto raz zmierzone na 353 tysiace nie zejdzie ponizej tysiaca. Pamietamy
+    wiec ten pomiar i przy nastepnym przebiegu zaczynamy od kandydatow, o
+    ktorych jeszcze nic nie wiemy albo wiemy, ze sa w naszym rozmiarze.
+
+    ## Czego ta funkcja NIE robi
+
+    Nie skresla nikogo na zawsze. Blok subskrypcji PRZESUWA ich na koniec
+    kolejki, a nie wyrzuca — gdy w puli nie ma nikogo innego, wracaja do gry
+    i dostaja normalne sprawdzenie. Sufit i tak zapyta o aktualny rozmiar.
+
+    Nie obejmuje tez „nie ma profilu publicznego (404)". Brak profilu bywa
+    chwilowy — publikacja bez konta uzytkownika, przejsciowy blad API — a
+    „nie wiem" nie jest pomiarem i nie ma sie zapisywac jak pomiar.
+    """
+    import json as _json
+
+    import browser
+
+    duzi: set[str] = set()
+    try:
+        if not browser.DZIENNIK.exists():
+            return duzi
+        for linia in browser.DZIENNIK.read_text(encoding="utf-8").splitlines():
+            linia = linia.strip()
+            if not linia:
+                continue
+            try:
+                wpis = _json.loads(linia)
+            except ValueError:
+                continue
+            if not isinstance(wpis, dict):
+                continue
+            if wpis.get("rodzaj") not in ("subskrypcja_pominieta",
+                                          "obserwacja_pominieta"):
+                continue
+            if str(wpis.get("powod") or "") != browser.POWOD_ZA_DUZY:
+                continue
+            komu = str(wpis.get("komu") or "").strip().lstrip("@")
+            if komu:
+                duzi.add(komu.lower())
+    except OSError:
+        pass                      # brak dziennika to pusta wiedza, nie awaria
+    return duzi
+
+
 def powod_pustej_puli(rachunek: dict) -> str:
     """Zdanie do dziennika, gdy po odsianiu nie zostal nikt.
 
@@ -2081,6 +2162,24 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         zamkniete = kogo_juz_subskrybujemy()
         kandydaci = [h for h in wszyscy
                      if not czy_juz_subskrybujemy(h, zamkniete, pamiec)]
+        # ZNANI ZA DUZI NA KONIEC KOLEJKI, NIE DO KOSZA.
+        #
+        # Zmierzone 11 wrzesnia 2026 na czternastu kandydatach: osmiu mialo
+        # od 1 939 do 353 727 obserwujacych przy sufcie tysiaca, a trzech
+        # miescilo sie (149, 35 i 4). Sito dzialalo; okno przegladania zjadali
+        # jednak CI SAMI ludzie, mierzeni od nowa kazdego dnia.
+        #
+        # Przesuniecie, nie odsiew: konto moze stracic obserwujacych, a pula
+        # bywa chuda. Gdy nie ma nikogo innego, wracaja i dostaja normalne
+        # sprawdzenie rozmiaru — tyle ze dopiero wtedy.
+        duzi = znane_za_duze()
+        if duzi:
+            swiezi = [h for h in kandydaci if _slug_hosta(h) not in duzi]
+            znani = [h for h in kandydaci if _slug_hosta(h) in duzi]
+            if znani:
+                print("  [subskrypcje] %d kandydatow juz zmierzonych jako za"
+                      " duzi — ida na koniec kolejki" % len(znani), flush=True)
+            kandydaci = swiezi + znani
         print("  pula: %d hostow w historii, %d odsianych tematycznie"
               " (ostatni komentarz sprzed %s), %d z reakcja na nasza tresc;"
               " reagujacych z uchwytem %d, w puli %d (%d juz nas czyta,"
@@ -2223,7 +2322,7 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 # `_klik_na_profilu`): to samo sito, ten sam rodzaj wpisu.
                 browser.zapisz_w_dzienniku(
                     "subskrypcja_pominieta", udane=True, komu=uchwyt,
-                    powod="account exceeds the size limit or its size is unknown")
+                    powod=browser.POWOD_ZA_DUZY)
                 zostal_slad = True
                 za_duzi += 1
                 print(f"  (@{uchwyt} przekracza sufit odbiorcow — pomijam bez"

@@ -775,12 +775,61 @@ def interaction(conn, run_id, kind, post):
             "candidates": [candidate] if body else [], "verification_mode": "persona_no_factcheck"}
 
 
+def _ile_razy(tekst, znak):
+    """Ile razy ten znak niszy pada w tekscie, jako cale slowo."""
+    return len(re.findall(r"\b" + re.escape(znak) + r"s?\b", tekst, re.I))
+
+
+def o_nas(tytul, calosc):
+    """Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz.
+
+    ## Pomiar, ktory to rozstrzygnal
+
+    11 wrzesnia 2026, dwadziescia trzy prawdziwe cele z wyszukiwarki i kanalu.
+    Stary filtr — „jeden znak niszy gdziekolwiek w tekscie" — przepuszczal
+    dwadziescia dwa. Wsrod nich:
+
+      * „WUWS | $100 Oil Is the Headline. The Hurdle Rate Is the Trade."
+        Newsletter o ropie, Fedzie i rentownosciach. Przeszedl, bo w srodku
+        pada jedno zdanie: „AI companies are signing ever larger…".
+      * „THESE ARE NOT FOR ILLEGAL IMMIGRANTS". Polityczna tyrada. Przeszla,
+        bo raz padlo slowo „robot".
+
+    Lista znakow niszy nie byla wiec zla — sprawdzilem ja osobno i wiekszosc
+    trafien jest trafna. Zla byla MIARA: jedna wzmianka w tekscie na dwa
+    tysiace slow wazyla tyle samo, co temat calego tekstu.
+
+    ## Regula
+
+    Znak niszy w TYTULE, albo co najmniej DWA wystapienia w calosci. Tytul
+    jest deklaracja tematu; dwa wystapienia znacza, ze autor do tego wraca.
+
+    Na tej samej probce dwadziescia dwa przepuszczone spadaja do
+    dziewietnastu, a odpadaja dokladnie tamte dwa plus jeden tekst o modelach
+    Anthropica z publikacji, pod ktora i tak nie mamy po co komentowac.
+
+    ## Czemu NIE ruszamy `browser.w_rewirze`
+
+    Tamten filtr oglada cudze NOTKI, czyli piecdziesiat slow bez tytulu. Jedna
+    wzmianka na piecdziesiat slow to zupelnie inny sygnal niz jedna na dwa
+    tysiace, a tytulu tam nie ma wcale. Ta sama regula zabralaby restackom
+    wiekszosc puli, nie usuwajac zadnej wpadki.
+    """
+    znaki = [str(z) for z in (getattr(config, "ZNAKI_NISZY", ()) or ()) if str(z).strip()]
+    if not znaki:
+        return True              # silnik bez kartridza nie ma wlasnego tematu
+    if any(_ile_razy(tytul, z) for z in znaki):
+        return True
+    return any(_ile_razy(calosc, z) >= 2 for z in znaki)
+
+
 def targets(posts):
     """Free topical prefilter. The writing call makes the actual reply decision."""
     found = []
     for post in posts:
+        tytul = " ".join(str(post.get(k, "")) for k in ("tytul", "title"))
         text = " ".join(str(post.get(k, "")) for k in ("tytul", "title", "opis", "tekst", "text", "body", "under"))
-        if not _injection(text) and any(re.search(r"\b" + re.escape(k) + r"s?\b", text, re.I) for k in config.ZNAKI_NISZY):
+        if not _injection(text) and o_nas(tytul, text):
             found.append({**post, "co_dodamy": "Read the post; respond in character only if you have something to say."})
     return found
 
