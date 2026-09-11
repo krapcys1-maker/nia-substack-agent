@@ -429,24 +429,22 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
         # promises to badly dressed men at keynotes often enough; the joke is
         # officially retired." Ksztalt bez zarzutu, a czlowiek z kanapy nie wie
         # ani co sie stalo, ani o czym to jest.
-        "WHO YOU ARE WRITING FOR, and this decides more than the shape. "
-        "A person who has never used an AI tool and does not read technology "
-        "news. They are not stupid — they are busy, and they are curious when "
-        "you give them something to be curious about. You are the clever "
-        "friend on the bench outside their block of flats, not a columnist "
-        "for people already in the room.\n"
-        "So beat one names something that HAPPENED, in words that person can "
-        "picture: who did what, to whom, and what it cost. A number, a place, "
-        "a person, an object. Never your own habits, never the industry as an "
-        "abstraction.\n"
-        "Explain the complicated part with one everyday comparison, in the "
-        "same breath, the way you would explain it to somebody on a sofa: "
-        "a padlock on a shed, the bill at the end of a meal, somebody else "
-        "signing your name. Any term from the trade either gets that "
-        "comparison beside it or does not appear at all.\n"
-        "THE TEST: could somebody who has never heard of this company follow "
-        "what happened and why it matters? If not, the joke has nothing to "
-        "stand on.\n"
+        # JEDNA LINIJKA, NIE PIEC. Caly opis czytelnika — kim jest, czemu
+        # ziomek z lawki i test „czy ktos, kto nie slyszal o tej firmie,
+        # zrozumie" — stoi w `glos_wspolny.md`, slowami wlasciciela. Przez
+        # godzine stal TAKZE tutaj, slowo w slowo.
+        #
+        # Wlasciciel, 11 wrzesnia 2026: „im wiecej zakazow zalecen to zabija
+        # charakter". Policzone tego samego dnia na zlozonym prompcie notki:
+        # 90 zakazow w jednym wywolaniu, 50 zdan zakazujacych na 324 — w tym
+        # TRZY powtorzone miedzy silnikiem a kartridzem. Powtorzenie nie
+        # dodaje jasnosci, dodaje dlugosci, a dluga lista zakazow wychodzi
+        # z modelu jako ostroznosc.
+        #
+        # Zostaje to jedno, czego kartridz nie mowi w tych slowach: czym jest
+        # uderzenie pierwsze.
+        "Beat one names something that HAPPENED, in words a stranger can "
+        "picture: who did what, to whom, what it cost.\n"
     )
     instruction = (
         f"Write one {kind}. " + ksztalt +
@@ -476,11 +474,10 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
         # w kanale, nie wie ani co sie stalo, ani czego dotyczy — bo nic sie
         # nie stalo. „Let a stale one go" znaczylo: przestan go uzywac.
         # Model przeczytal: napisz o tym, ze przestajesz.
-        "Instructions about your own craft are never the subject. Retire a "
-        "joke by not using it, silently. Never write about your own writing, "
-        "your habits, your voice or a comparison you have decided to drop: "
-        "nothing happened, and a reader meeting that in the feed learns "
-        "nothing. "
+        # ZAKAZ PISANIA O WLASNYM PISANIU STOI W KARTRIDZU, z pomiarem
+        # i cytatem z notki, ktora to wywolala. Tu zostaje pol zdania, bo to
+        # TUTAJ padlo „let a stale one go" i to ono zostalo zle zrozumiane.
+        "Retire a stale joke by not using it; never by writing about it. "
         "context.written_moments_ago holds pieces written in this same batch, "
         "minutes ago, not yet published. They will appear beside yours. Do not "
         "reuse their SENTENCE SHAPES, not only their subjects: if one opens "
