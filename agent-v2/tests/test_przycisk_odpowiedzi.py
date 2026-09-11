@@ -196,5 +196,26 @@ sprawdz("wynik zapamietuje ten wypadek",
         'wynik["klikniecie_zabralo_ze_strony"]' in _C)
 
 print()
+print("=== ADRES: SAM ARTYKUL, BEZ `/comments` ===")
+# ZMIERZONE NA ZYWO 11 wrzesnia 2026, ten sam artykul, ta sama sesja:
+#
+#     …/p/the-lock-is-fitted-its-just-not-locked/comments
+#         -> substack.com/@nia1503032/note/p-214764038
+#         tiptap 0, contenteditable 0, textarea 0
+#
+#     …/p/the-lock-is-fitted-its-just-not-locked
+#         -> zostaje na artykule
+#         tiptap 0, contenteditable 0, textarea 1
+#
+# Doklejanie `/comments` przerzucalo nas na widok notki, ktory nie ma ANI
+# JEDNEGO pola do pisania — i stad „waiting for locator('textarea').first"
+# przez dwa dni. Na samym artykule pole jest i zawsze bylo.
+sprawdz("nie doklejamy juz /comments",
+        'url_artykulu.rstrip("/") + "/comments"' not in _C)
+sprawdz("wchodzimy na sam adres artykulu",
+        'page.goto(url_artykulu.rstrip("/"),' in _C)
+sprawdz("z pomiarem obok", "tiptap 0, contenteditable 0, textarea 1" in _C)
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)

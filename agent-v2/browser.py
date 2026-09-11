@@ -4348,7 +4348,24 @@ def wystaw_odpowiedz_pod_artykulem(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto(url_artykulu.rstrip("/") + "/comments",
+        # SAM ARTYKUL, BEZ `/comments`. To jest przyczyna dwoch dni odpowiedzi,
+        # ktore nie dotarly do nikogo.
+        #
+        # ZMIERZONE NA ZYWO 11 wrzesnia 2026, ten sam artykul, ta sama sesja:
+        #
+        #     …/p/the-lock-is-fitted-its-just-not-locked/comments
+        #         -> substack.com/@nia1503032/note/p-214764038
+        #         tiptap 0, contenteditable 0, textarea 0
+        #
+        #     …/p/the-lock-is-fitted-its-just-not-locked
+        #         -> zostaje na artykule
+        #         tiptap 0, contenteditable 0, textarea 1
+        #
+        # Doklejenie `/comments` przerzuca nas na widok notki, ktory nie ma
+        # ANI JEDNEGO pola do pisania. Szukanie pola konczylo sie tam
+        # „waiting for locator('textarea').first", a komunikat mowil o polu
+        # zamiast o stronie. Na samym artykule pole jest i zawsze bylo.
+        page.goto(url_artykulu.rstrip("/"),
                   timeout=READ_TIMEOUT_MS * 2, wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
         page.mouse.wheel(0, 12_000)
