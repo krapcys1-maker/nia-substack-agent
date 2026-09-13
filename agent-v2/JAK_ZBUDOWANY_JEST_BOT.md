@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 39 809 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 39 833 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 228 zestawów
-testów, 5050 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 229 zestawów
+testów, 5058 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -1017,7 +1017,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1152 wierszy, 13 funkcji na poziomie modułu, 0 klas
+1176 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

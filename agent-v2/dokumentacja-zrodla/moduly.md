@@ -875,7 +875,7 @@
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1152 wierszy, 13 funkcji na poziomie modułu, 0 klas
+1176 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

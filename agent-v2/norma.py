@@ -525,10 +525,11 @@ def przebiegow_dzis() -> int:
 def godziny_przebiegow() -> list:
     """Minuty od polnocy UTC, o ktorych systemd odpala agenta.
 
-    Czytane z jednostki zegara, bo tam ta lista juz jest i drugiej byc nie
-    moze. Gdy pliku nie ma (uruchomienie poza serwerem, np. na Windows),
-    zakladamy rowny rozklad — lepszy od udawania, ze cala doba jest
-    rozliczalna od pierwszej minuty.
+    Z harmonogramu presetu (`config.GODZINY_PRZEBIEGOW_UTC`), bo to z niego
+    powstaje `OnCalendar=` zainstalowanego zegara. Jednostka w `systemd/` jest
+    juz tylko zapasem. Gdy nie ma ani jednego, ani drugiego (uruchomienie poza
+    serwerem, np. na Windows), zakladamy rowny rozklad — lepszy od udawania,
+    ze cala doba jest rozliczalna od pierwszej minuty.
 
     OSZACOWANIE ZOSTAWIA SLAD (`ZEGAR_ODCZYTANY`). Ten modul opiera sie na
     zasadzie, ze liczba niebedaca pomiarem musi byc oznaczona — tylda przy
@@ -538,7 +539,30 @@ def godziny_przebiegow() -> list:
     wygladal identycznie jak przy odczytanym zegarze.
     """
     global ZEGAR_ODCZYTANY
+    # HARMONOGRAM PRESETU PRZED SZABLONEM JEDNOSTKI.
+    #
+    # ZMIERZONE NA SERWERZE 13 wrzesnia 2026, o 05:10 UTC:
+    #
+    #     STAN NA DZIS (2026-09-13, UTC) — po 1 z 5 przebiegow
+    #        (norma rozklada sie na caly dzien — do konca zostalo 4)
+    #
+    # Zainstalowany zegar `nia2-agent.timer` odpala 00:30 i 13:30, preset
+    # mowi to samo (`GODZINY_PRZEBIEGOW_UTC`), a raport czytal
+    # `agent-v2/systemd/nia-agent.timer` — SZABLON z repozytorium, ze starymi
+    # pieciu godzinami. Od 5 wrzesnia to preset buduje `OnCalendar=`
+    # (`narzedzia/jednostki.py`), wiec szablon przestal byc zegarem
+    # czegokolwiek, a raport nadal bral go za pomiar.
     minuty = []
+    for godzina in getattr(config, "GODZINY_PRZEBIEGOW_UTC", ()) or ():
+        try:
+            gg, mm = str(godzina).split(":")
+            minuty.append(int(gg) * 60 + int(mm))
+        except ValueError:
+            minuty = []
+            break
+    if minuty:
+        ZEGAR_ODCZYTANY = True
+        return sorted(minuty)
     try:
         for linia in ZEGAR.read_text(encoding="utf-8").splitlines():
             linia = linia.strip()
