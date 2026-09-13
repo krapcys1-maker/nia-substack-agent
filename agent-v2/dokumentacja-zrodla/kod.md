@@ -1142,6 +1142,10 @@ def losuj_odstep(co: str = "") -> float:
     """
     import random
 
+    koszyki = getattr(config, "ODSTEPY_WAZONE", {}).get(co)
+    if koszyki:
+        udzial, dol, gora = random.choices(koszyki, weights=[k[0] for k in koszyki])[0]
+        return random.uniform(dol, gora)
     dol, gora = config.ODSTEPY.get(co, config.ODSTEP_MIEDZY_DZIALANIAMI)
     return random.uniform(dol, gora)
 ```
@@ -1947,6 +1951,17 @@ def rytm(co: str, na_co: str, stan: dict) -> bool:
         print("  [wycofanie] %s: dwie porazki pod rzad — przerwa %.0f min"
               " zamiast zwyklej" % (co, przerwa / 60), flush=True)
 
+    # LIMIT ROZMOW NA GODZINE — komentarze i odpowiedzi razem, z dziennika.
+    # Gdy w ostatnich 60 minutach bylo ich juz `MAKS_ROZMOW_NA_GODZINE`,
+    # przerwa wydluza sie do chwili, w ktorej najstarsza z nich wypadnie z okna.
+    if co in ("komentarz", "odpowiedz") and not getattr(config, "W_TESCIE", False):
+        brakuje = _do_konca_limitu_rozmow()
+        if brakuje > przerwa:
+            print("  [rytm] %d rozmow w ostatniej godzinie — czekam %.0f min zamiast"
+                  " %.0f" % (config.MAKS_ROZMOW_NA_GODZINE, brakuje / 60, przerwa / 60),
+                  flush=True)
+            przerwa = brakuje
+
     if not zostal_czas(na_co, przerwa):
         return False
     _s.odczekaj(co, przerwa)
@@ -1971,8 +1986,8 @@ def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
 
     if _KONIEC_CZASU is None or ile <= 0:
         return ile
-    dol, gora = config.ODSTEPY.get(rodzaj, config.ODSTEP_MIEDZY_DZIALANIAMI)
-    odstep = (dol + gora) / 2
+    # SREDNIA Z KOSZYKOW, gdy przerwy sa wazone — patrz `stages.sredni_odstep`.
+    odstep = stages.sredni_odstep(rodzaj)
     zostalo = max(0.0, _KONIEC_CZASU - time.time()) * udzial
 
     # PRZERW JEST O JEDNA MNIEJ NIZ DZIALAN. Przy dwoch notkach czekamy raz, nie

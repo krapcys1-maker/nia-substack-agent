@@ -76,6 +76,9 @@ def _za_stary(post: dict) -> bool:
     wiek = _wiek_minut(post.get("data", ""))
     if wiek >= 1e9:
         return False
+    # NOTKA ZYJE GODZINY, ARTYKUL DNI — pomiar przy `config.MAKS_WIEK_NOTKI_H`.
+    if post.get("rodzaj") == "notka":
+        return wiek > getattr(config, "MAKS_WIEK_NOTKI_H", 36) * 60
     return wiek > config.MAKS_WIEK_CELU_DNI * 1440
 
 

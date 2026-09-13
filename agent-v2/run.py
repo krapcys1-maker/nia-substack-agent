@@ -317,10 +317,59 @@ def rytm(co: str, na_co: str, stan: dict) -> bool:
         print("  [wycofanie] %s: dwie porazki pod rzad — przerwa %.0f min"
               " zamiast zwyklej" % (co, przerwa / 60), flush=True)
 
+    # LIMIT ROZMOW NA GODZINE — komentarze i odpowiedzi razem, z dziennika.
+    # Gdy w ostatnich 60 minutach bylo ich juz `MAKS_ROZMOW_NA_GODZINE`,
+    # przerwa wydluza sie do chwili, w ktorej najstarsza z nich wypadnie z okna.
+    if co in ("komentarz", "odpowiedz") and not getattr(config, "W_TESCIE", False):
+        brakuje = _do_konca_limitu_rozmow()
+        if brakuje > przerwa:
+            print("  [rytm] %d rozmow w ostatniej godzinie — czekam %.0f min zamiast"
+                  " %.0f" % (config.MAKS_ROZMOW_NA_GODZINE, brakuje / 60, przerwa / 60),
+                  flush=True)
+            przerwa = brakuje
+
     if not zostal_czas(na_co, przerwa):
         return False
     _s.odczekaj(co, przerwa)
     return True
+
+
+def _do_konca_limitu_rozmow(teraz: float | None = None) -> float:
+    """Ile sekund do chwili, w ktorej kolejna rozmowa zmiesci sie w limicie godziny.
+
+    0, gdy w ostatnich 60 minutach bylo mniej rozmow niz limit. Liczy wpisy
+    `komentarz` i `odpowiedz` z dziennika — takze nieudane, bo Substack widzial
+    probe tak samo jak udane wyslanie.
+    """
+    import json as _json
+    import time as _time
+    from datetime import datetime as _dt
+
+    import browser
+
+    limit = int(getattr(config, "MAKS_ROZMOW_NA_GODZINE", 0) or 0)
+    if limit <= 0:
+        return 0.0
+    teraz = _time.time() if teraz is None else teraz
+    chwile = []
+    try:
+        linie = browser.DZIENNIK.read_text(encoding="utf-8").splitlines()[-400:]
+    except OSError:
+        return 0.0
+    for linia in linie:
+        try:
+            w = _json.loads(linia)
+            if w.get("rodzaj") not in ("komentarz", "odpowiedz"):
+                continue
+            kiedy = _dt.fromisoformat(str(w.get("kiedy"))).timestamp()
+        except (ValueError, TypeError, AttributeError):
+            continue
+        if teraz - 3600 < kiedy <= teraz:
+            chwile.append(kiedy)
+    if len(chwile) < limit:
+        return 0.0
+    chwile.sort()
+    return max(0.0, chwile[-limit] + 3600 - teraz + 30)
 
 
 def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
@@ -339,8 +388,8 @@ def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
 
     if _KONIEC_CZASU is None or ile <= 0:
         return ile
-    dol, gora = config.ODSTEPY.get(rodzaj, config.ODSTEP_MIEDZY_DZIALANIAMI)
-    odstep = (dol + gora) / 2
+    # SREDNIA Z KOSZYKOW, gdy przerwy sa wazone — patrz `stages.sredni_odstep`.
+    odstep = stages.sredni_odstep(rodzaj)
     zostalo = max(0.0, _KONIEC_CZASU - time.time()) * udzial
 
     # PRZERW JEST O JEDNA MNIEJ NIZ DZIALAN. Przy dwoch notkach czekamy raz, nie
@@ -1322,6 +1371,11 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # Przy dwóch odpowiada się obu. Przy dwustu odpowiedź pod każdym wygląda
         # jak maszyna, więc powyżej progu agent wybiera — z pierwszeństwem dla
         # niezgody, bo nieodpowiedziany zarzut zostaje ostatnim słowem.
+        # NIE KAZDEMU — szansa wg rodzaju komentarza, decyzja raz na komentarz.
+        # Patrz `config.SZANSA_ODPOWIEDZI` i `stages.zdecyduj_o_odpowiedziach`.
+        czekaja = stages.zdecyduj_o_odpowiedziach(czekaja, zapisuj=wyslij)
+        if not czekaja:
+            return
         czekaja = stages.wybierz_do_odpowiedzi(conn, run_id, czekaja)
         for c in czekaja:
             if not zostal_czas("odpowiedzi"):
@@ -1333,6 +1387,10 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 {"our_note": c["pod_czym"]})
             kandydaci = [k for k in out["candidates"] if k.get("reply")]
             if not kandydaci:
+                # MILCZENIE MODELU TEZ JEST DECYZJA — nie pytamy go o ten sam
+                # komentarz w kazdym kolejnym przebiegu.
+                stages.zapamietaj_decyzje(c, "pomin", "model nie mial nic do dodania",
+                                          zapisuj=wyslij)
                 continue
             tekst = kandydaci[0]["reply"]
             if wyslij:
@@ -1647,7 +1705,12 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             print("  [cele] po %d rundach: %d celow"
                   % (rundy, len(cele)), flush=True)
 
-        for cel in cele[: na_teraz["komentarze"]]:
+        # POD ARTYKULY TYLKO CZESC PRZYDZIALU — reszta idzie pod notki w bloku
+        # `dyskusje`, gdzie komentarz w ogole ktos widzi (pomiar przy
+        # `config.MAKS_WIEK_CELU_DNI`).
+        limit_artykulow = max(1, round(na_teraz["komentarze"]
+                                       * config.UDZIAL_KOMENTARZY_POD_ARTYKULAMI))
+        for cel in cele[: limit_artykulow]:
             if not zostal_czas("komentarze"):
                 return
             # Pytamy o prawo do komentowania PRZED pisaniem. Inaczej caly koszt

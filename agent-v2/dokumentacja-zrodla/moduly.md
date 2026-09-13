@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-935 wierszy, 26 funkcji na poziomie modułu, 0 klas
+992 wierszy, 28 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -34,6 +34,8 @@
 | `_swiat(conn, run_id)` *(wewn.)* | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. |
 | `_fakt_z_banku()` *(wewn.)* | Jeden fakt z banku dla tej notki, albo `None`. |
 | `notes(conn, run_id, ile, od)` | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. |
+| `ruch_rozmowy(kind, los)` | Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`. |
+| `ostatnie_wlasne_rozmowy(ile)` | Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika. |
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
 | `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
 | `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
@@ -127,7 +129,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3263 wierszy, 28 funkcji na poziomie modułu, 1 klas
+3326 wierszy, 29 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -139,6 +141,7 @@
 | `zostal_czas(na_co, potrzeba_s)` | Czy zdazymy jeszcze cokolwiek zrobic przed koncem czasu przebiegu. |
 | `_pod_rzad_w_bloku(co, na_co)` *(wewn.)* | Ile porazek pod rzad naliczyl TEN blok, odkad sie zaczal. |
 | `rytm(co, na_co, stan)` | Przerwa MIEDZY dwoma dzialaniami tego samego rodzaju. |
+| `_do_konca_limitu_rozmow(teraz)` *(wewn.)* | Ile sekund do chwili, w ktorej kolejna rozmowa zmiesci sie w limicie godziny. |
 | `zmiesci_sie(rodzaj, ile, udzial)` | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. |
 | `ile_przebiegow_zostalo(conn)` | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. |
 | `_po_zmianie_tematu(kiedy)` *(wewn.)* | Czy ten wpis jest z obecnej epoki konta. |
@@ -162,7 +165,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9292 wierszy, 157 funkcji na poziomie modułu, 0 klas
+9462 wierszy, 165 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -201,6 +204,14 @@
 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` *(wewn.)* | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. |
 | `sesje_dnia()` | Rozkłada dzień na kilka posiedzeń zamiast jednego ciągu. |
 | `losuj_odstep(co)` | Losuje przerwę, ale jej NIE odsypia. |
+| `sredni_odstep(co)` | Srednia przerwa tego rodzaju — z koszykow, gdy sa, inaczej srodek widelek. |
+| `rodzaj_komentarza(k)` | spam / pusty / pytanie / niezgoda / rozmowa / zwykly — bez modelu, za darmo. |
+| `_klucz_komentarza(k)` *(wewn.)* | — |
+| `_plik_decyzji()` *(wewn.)* | — |
+| `_wczytaj_decyzje(plik)` *(wewn.)* | — |
+| `_zapisz_decyzje(plik, dane, teraz)` *(wewn.)* | — |
+| `zdecyduj_o_odpowiedziach(czekaja)` | Ktore komentarze u nas dostana odpowiedz. Reszta zostaje bez — swiadomie. |
+| `zapamietaj_decyzje(k, decyzja, powod)` | Zmiana decyzji po fakcie — np. model zamilkl, wiec nie pytamy go znowu jutro. |
 | `odczekaj(co, ile)` | Przerwa po działaniu, dobrana do tego, ile ono zajmuje CZLOWIEKOWI. |
 | `_klucz_faktu(tekst)` *(wewn.)* | Odcisk faktu odporny na przestawienie słów i inną liczbę w tym samym zdaniu. |
 | `tekst_faktu(x)` | Fakt bywa slownikiem (`{"fact": ..., "url": ...}`), a bywa samym zdaniem. |
@@ -634,7 +645,7 @@
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-374 wierszy, 13 funkcji na poziomie modułu, 0 klas
+377 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -718,7 +729,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3844 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3914 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -853,7 +864,7 @@
 
 ### `wersje_modeli.py` — nowsza wersja modelu u dostawcy: wykrycie, próba na żywo, przełączenie
 
-443 wierszy, 15 funkcji na poziomie modułu, 0 klas
+446 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -875,7 +886,7 @@
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1880 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1890 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

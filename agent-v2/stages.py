@@ -1700,8 +1700,178 @@ def losuj_odstep(co: str = "") -> float:
     """
     import random
 
+    koszyki = getattr(config, "ODSTEPY_WAZONE", {}).get(co)
+    if koszyki:
+        udzial, dol, gora = random.choices(koszyki, weights=[k[0] for k in koszyki])[0]
+        return random.uniform(dol, gora)
     dol, gora = config.ODSTEPY.get(co, config.ODSTEP_MIEDZY_DZIALANIAMI)
     return random.uniform(dol, gora)
+
+
+def sredni_odstep(co: str = "") -> float:
+    """Srednia przerwa tego rodzaju — z koszykow, gdy sa, inaczej srodek widelek.
+
+    `run.zmiesci_sie` szacuje z tej liczby, ile dzialan zmiesci sie w przebiegu.
+    Srodek zewnetrznych widelek przy koszykach wazonych klamalby: dlugi, rzadki
+    koszyk przesuwalby go o kilka minut w gore i przebieg bralby mniej, niz
+    naprawde zdazy.
+    """
+    koszyki = getattr(config, "ODSTEPY_WAZONE", {}).get(co)
+    if koszyki:
+        razem = sum(k[0] for k in koszyki) or 1.0
+        return sum(k[0] * (k[1] + k[2]) / 2 for k in koszyki) / razem
+    dol, gora = config.ODSTEPY.get(co, config.ODSTEP_MIEDZY_DZIALANIAMI)
+    return (dol + gora) / 2
+
+
+# --- komu odpisujemy u siebie ------------------------------------------------
+_POCHWALA = re.compile(
+    r"^\W*(great|nice|love|loved|amazing|awesome|brilliant|fantastic|"
+    r"excellent|beautiful|so true|agreed|exactly|wow|well said|"
+    r"thanks|thank you|great (post|read|piece|point|note)|love this|"
+    r"thanks for sharing|so good|spot on|well put)\b", re.I)
+_PROMOCJA = re.compile(
+    r"(check out my|subscribe to my|my (newsletter|substack|latest post)|"
+    r"follow me|link in (my )?bio|dm me|visit my)", re.I)
+_NIEZGODA = re.compile(
+    r"(disagree|not sure|i don'?t think|i do not think|\bwrong\b|however|"
+    r"push back|not convinced|counterpoint|i'?d argue|isn'?t that|"
+    r"that'?s not)", re.I)
+
+
+def rodzaj_komentarza(k: dict[str, Any]) -> str:
+    """spam / pusty / pytanie / niezgoda / rozmowa / zwykly — bez modelu, za darmo.
+
+    Bez modelu, bo decyzja ma byc przewidywalna, sprawdzalna testem i nie moze
+    kosztowac przy kazdym przebiegu tyle, ile kosztuje sama odpowiedz.
+    """
+    tekst = str(k.get("tekst") or "").strip()
+    slowa = re.findall(r"[^\W\d_]+", tekst)
+    ma_link = bool(re.search(r"https?://|www\.|\.substack\.com", tekst, re.I))
+    if (ma_link and (_PROMOCJA.search(tekst) or len(slowa) <= 6)) or (
+            _PROMOCJA.search(tekst) and len(slowa) <= 25):
+        return "spam"
+    if len(slowa) <= 3 or (len(slowa) <= 6 and _POCHWALA.search(tekst)
+                           and "?" not in tekst):
+        return "pusty"
+    if "?" in tekst and len(slowa) >= 4:
+        return "pytanie"
+    if _NIEZGODA.search(tekst) and len(slowa) >= 6:
+        return "niezgoda"
+    if k.get("gdzie") == "komentarz_obcy":
+        return "rozmowa"
+    return "zwykly"
+
+
+def _klucz_komentarza(k: dict[str, Any]) -> str:
+    return "%s:%s" % (k.get("gdzie") or "notka", k.get("id") or k.get("pod_id") or "")
+
+
+def _plik_decyzji() -> Path:
+    return Path(config.DATA_DIR) / "decyzje_odpowiedzi.json"
+
+
+def _wczytaj_decyzje(plik: Path) -> dict[str, Any]:
+    try:
+        dane = json.loads(plik.read_text(encoding="utf-8"))
+        return dane if isinstance(dane, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _zapisz_decyzje(plik: Path, dane: dict[str, Any], teraz: datetime) -> None:
+    from datetime import timedelta
+
+    granica = (teraz - timedelta(days=30)).isoformat()
+    dane = {k: v for k, v in dane.items()
+            if isinstance(v, dict) and str(v.get("kiedy") or "") >= granica}
+    plik.parent.mkdir(parents=True, exist_ok=True)
+    tymczasowy = plik.with_suffix(".json.tmp")
+    tymczasowy.write_text(json.dumps(dane, ensure_ascii=False, indent=1), encoding="utf-8")
+    tymczasowy.replace(plik)
+
+
+def zdecyduj_o_odpowiedziach(
+    czekaja: list[dict[str, Any]], *, zapisuj: bool, los=None,
+    plik: Path | None = None, teraz: datetime | None = None,
+) -> list[dict[str, Any]]:
+    """Ktore komentarze u nas dostana odpowiedz. Reszta zostaje bez — swiadomie.
+
+    Decyzja zapada RAZ na komentarz i zostaje w `decyzje_odpowiedzi.json`
+    (tylko przy prawdziwej wysylce — proba sucha niczego nie przesadza).
+    Rozmowa w watku ma koniec: tej samej osobie pod tym samym tekstem
+    odpisujemy w tygodniu najwyzej `ROZMOWA_MAKS_ODPOWIEDZI` razy.
+    """
+    import random
+    from datetime import datetime, timedelta, timezone
+
+    # DARMOWY TEST, KTORY NIE PODAL WLASNEGO LOSU, ODPISUJE WSZYSTKIM poza
+    # spamem: testy blokow `run.dzien()` na atrapach maja byc powtarzalne,
+    # a sam mechanizm sprawdza `test_rozmowy_i_odpowiedzi.py` z podanym losem.
+    if los is None:
+        los = (lambda: 0.0) if getattr(config, "W_TESCIE", False) else random.random
+    wlasny_plik = plik is not None
+    plik = plik or _plik_decyzji()
+    teraz = teraz or datetime.now(timezone.utc)
+    dane = _wczytaj_decyzje(plik)
+    tydzien = (teraz - timedelta(days=7)).isoformat()
+    szanse = getattr(config, "SZANSA_ODPOWIEDZI", {})
+    wybrane: list[dict[str, Any]] = []
+    zmiana = False
+    for k in czekaja:
+        klucz = _klucz_komentarza(k)
+        stara = dane.get(klucz)
+        if isinstance(stara, dict):
+            if stara.get("decyzja") == "odpisz":
+                wybrane.append(k)
+            continue
+        typ = rodzaj_komentarza(k)
+        szansa = float(szanse.get(typ, 0.6))
+        # ILE RAZY JUZ ODPISALISMY TEJ OSOBIE POD TYM TEKSTEM W TYM TYGODNIU.
+        autor = str(k.get("autor") or "").strip().casefold()
+        miejsce = str(k.get("url") or k.get("pod_id") or "")
+        wczesniej = sum(1 for v in dane.values()
+                        if isinstance(v, dict) and v.get("decyzja") == "odpisz"
+                        and str(v.get("autor") or "").casefold() == autor and autor
+                        and str(v.get("miejsce") or "") == miejsce
+                        and str(v.get("kiedy") or "") >= tydzien)
+        if wczesniej >= getattr(config, "ROZMOWA_MAKS_ODPOWIEDZI", 2):
+            szansa = 0.0
+        elif wczesniej:
+            szansa = min(szansa, getattr(config, "ROZMOWA_SZANSA_DALEJ", 0.4))
+        decyzja = "odpisz" if los() < szansa else "pomin"
+        print("  [odpowiedzi] %s %s (%s, szansa %d%%%s): %s"
+              % ("ODPISUJE" if decyzja == "odpisz" else "pomijam", k.get("autor") or "?",
+                 typ, round(szansa * 100),
+                 ", %d. raz w tym watku" % (wczesniej + 1) if wczesniej else "",
+                 str(k.get("tekst") or "")[:60].replace("\n", " ")), flush=True)
+        dane[klucz] = {"decyzja": decyzja, "typ": typ, "szansa": szansa,
+                       "kiedy": teraz.isoformat(timespec="seconds"),
+                       "autor": k.get("autor") or "", "miejsce": miejsce}
+        zmiana = True
+        if decyzja == "odpisz":
+            wybrane.append(k)
+    # Darmowy test bez wlasnego pliku nie pisze do danych instancji.
+    if zmiana and zapisuj and (wlasny_plik or not getattr(config, "W_TESCIE", False)):
+        _zapisz_decyzje(plik, dane, teraz)
+    return wybrane
+
+
+def zapamietaj_decyzje(k: dict[str, Any], decyzja: str, powod: str, *,
+                       zapisuj: bool, plik: Path | None = None) -> None:
+    """Zmiana decyzji po fakcie — np. model zamilkl, wiec nie pytamy go znowu jutro."""
+    if not zapisuj or (plik is None and getattr(config, "W_TESCIE", False)):
+        return
+    from datetime import datetime, timezone
+
+    plik = plik or _plik_decyzji()
+    teraz = datetime.now(timezone.utc)
+    dane = _wczytaj_decyzje(plik)
+    wpis = dict(dane.get(_klucz_komentarza(k)) or {})
+    wpis.update(decyzja=decyzja, powod=powod, kiedy=teraz.isoformat(timespec="seconds"),
+                autor=k.get("autor") or "", miejsce=str(k.get("url") or k.get("pod_id") or ""))
+    dane[_klucz_komentarza(k)] = wpis
+    _zapisz_decyzje(plik, dane, teraz)
 
 
 def odczekaj(co: str = "", ile: float | None = None) -> None:

@@ -510,6 +510,16 @@ def main() -> int:
             return 1
     conn = db.connect()
     run_id = db.start_run(conn, "artykul-z-puli")
+    # NOWSZE WERSJE MODELI PRZED PISANIEM — ta sama kontrola, co na starcie
+    # dnia (`run.dzien`). Pisarz artykulu to najdrozszy model w bocie; nowa
+    # wersja ma wejsc do tego tekstu, a nie do nastepnego. Awaria sprawdzenia
+    # nie zatrzymuje artykulu — stare modele nadal chodza.
+    try:
+        import wersje_modeli
+        wersje_modeli.sprawdz_i_przelacz(conn, run_id)
+    except Exception as exc:                                   # noqa: BLE001
+        print(">> sprawdzenie wersji modeli padlo: %s: %s"
+              % (type(exc).__name__, exc), flush=True)
     try:
         kod = _przebieg(conn, run_id)
     except BaseException as exc:

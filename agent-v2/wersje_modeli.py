@@ -19,7 +19,7 @@ dziewietnascie rol padloby naraz — bez slowa o przyczynie.
 
 ## Co robi
 
-Raz na dobe, na starcie dnia pracy (`run.py --dzien`), albo na zadanie:
+Na starcie kazdego przebiegu (dnia i artykulu), albo na zadanie:
 
 1. pyta dostawcow o liste modeli — zwykle GET, za darmo;
 2. dla kazdego modelu, ktorego UZYWAMY, szuka nastepcy w TEJ SAMEJ rodzinie:
@@ -66,9 +66,12 @@ from typing import Any
 # „partially initialized module 'wersje_modeli' has no attribute 'zastosuj'".
 # Kazda funkcja siega po `config` sama, kiedy juz jest zaladowany.
 
-# Odpowiedz dostawcow jest wazna dobe: modele wychodza co tygodnie, nie co
-# godziny, a dwa przebiegi dziennie nie maja po co pytac dwa razy.
-WAZNE_GODZIN = 24
+# PRZY KAZDYM PRZEBIEGU, NIE RAZ NA DOBE — decyzja wlasciciela z 13 wrzesnia
+# 2026: nowy model ma wchodzic od razu. Pytanie o liste nic nie kosztuje.
+# Najblizsze okna przebiegow stoja 2 h 40 min od siebie (11:00 i 13:40 UTC),
+# wiec dwie godziny waznosci znacza „kazdy przebieg pyta"; dzien i artykul nie
+# chodza naraz, bo biora ten sam zamek.
+WAZNE_GODZIN = 2
 
 # Rola, na ktorej idzie proba nastepcy. Ma wlasny sufit tokenow i jest
 # mechaniczna (bez myslenia na DeepSeeku) — patrz `config.MAX_TOKENS`.

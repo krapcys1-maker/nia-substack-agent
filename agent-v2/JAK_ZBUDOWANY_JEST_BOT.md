@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 40 330 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 40 706 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 230 zestawów
-testów, 5119 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 231 zestawów
+testów, 5169 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-935 wierszy, 26 funkcji na poziomie modułu, 0 klas
+992 wierszy, 28 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -176,6 +176,8 @@ wiec nie da sie go rozjechac z kodem.
 | `_swiat(conn, run_id)` *(wewn.)* | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. |
 | `_fakt_z_banku()` *(wewn.)* | Jeden fakt z banku dla tej notki, albo `None`. |
 | `notes(conn, run_id, ile, od)` | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. |
+| `ruch_rozmowy(kind, los)` | Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`. |
+| `ostatnie_wlasne_rozmowy(ile)` | Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika. |
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
 | `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
 | `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
@@ -269,7 +271,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3263 wierszy, 28 funkcji na poziomie modułu, 1 klas
+3326 wierszy, 29 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -281,6 +283,7 @@ wiec nie da sie go rozjechac z kodem.
 | `zostal_czas(na_co, potrzeba_s)` | Czy zdazymy jeszcze cokolwiek zrobic przed koncem czasu przebiegu. |
 | `_pod_rzad_w_bloku(co, na_co)` *(wewn.)* | Ile porazek pod rzad naliczyl TEN blok, odkad sie zaczal. |
 | `rytm(co, na_co, stan)` | Przerwa MIEDZY dwoma dzialaniami tego samego rodzaju. |
+| `_do_konca_limitu_rozmow(teraz)` *(wewn.)* | Ile sekund do chwili, w ktorej kolejna rozmowa zmiesci sie w limicie godziny. |
 | `zmiesci_sie(rodzaj, ile, udzial)` | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. |
 | `ile_przebiegow_zostalo(conn)` | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. |
 | `_po_zmianie_tematu(kiedy)` *(wewn.)* | Czy ten wpis jest z obecnej epoki konta. |
@@ -304,7 +307,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9292 wierszy, 157 funkcji na poziomie modułu, 0 klas
+9462 wierszy, 165 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -343,6 +346,14 @@ wiec nie da sie go rozjechac z kodem.
 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` *(wewn.)* | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. |
 | `sesje_dnia()` | Rozkłada dzień na kilka posiedzeń zamiast jednego ciągu. |
 | `losuj_odstep(co)` | Losuje przerwę, ale jej NIE odsypia. |
+| `sredni_odstep(co)` | Srednia przerwa tego rodzaju — z koszykow, gdy sa, inaczej srodek widelek. |
+| `rodzaj_komentarza(k)` | spam / pusty / pytanie / niezgoda / rozmowa / zwykly — bez modelu, za darmo. |
+| `_klucz_komentarza(k)` *(wewn.)* | — |
+| `_plik_decyzji()` *(wewn.)* | — |
+| `_wczytaj_decyzje(plik)` *(wewn.)* | — |
+| `_zapisz_decyzje(plik, dane, teraz)` *(wewn.)* | — |
+| `zdecyduj_o_odpowiedziach(czekaja)` | Ktore komentarze u nas dostana odpowiedz. Reszta zostaje bez — swiadomie. |
+| `zapamietaj_decyzje(k, decyzja, powod)` | Zmiana decyzji po fakcie — np. model zamilkl, wiec nie pytamy go znowu jutro. |
 | `odczekaj(co, ile)` | Przerwa po działaniu, dobrana do tego, ile ono zajmuje CZLOWIEKOWI. |
 | `_klucz_faktu(tekst)` *(wewn.)* | Odcisk faktu odporny na przestawienie słów i inną liczbę w tym samym zdaniu. |
 | `tekst_faktu(x)` | Fakt bywa slownikiem (`{"fact": ..., "url": ...}`), a bywa samym zdaniem. |
@@ -776,7 +787,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-374 wierszy, 13 funkcji na poziomie modułu, 0 klas
+377 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -860,7 +871,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3844 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3914 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -995,7 +1006,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `wersje_modeli.py` — nowsza wersja modelu u dostawcy: wykrycie, próba na żywo, przełączenie
 
-443 wierszy, 15 funkcji na poziomie modułu, 0 klas
+446 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1017,7 +1028,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1880 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1890 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -7785,6 +7796,10 @@ def losuj_odstep(co: str = "") -> float:
     """
     import random
 
+    koszyki = getattr(config, "ODSTEPY_WAZONE", {}).get(co)
+    if koszyki:
+        udzial, dol, gora = random.choices(koszyki, weights=[k[0] for k in koszyki])[0]
+        return random.uniform(dol, gora)
     dol, gora = config.ODSTEPY.get(co, config.ODSTEP_MIEDZY_DZIALANIAMI)
     return random.uniform(dol, gora)
 ```
@@ -8590,6 +8605,17 @@ def rytm(co: str, na_co: str, stan: dict) -> bool:
         print("  [wycofanie] %s: dwie porazki pod rzad — przerwa %.0f min"
               " zamiast zwyklej" % (co, przerwa / 60), flush=True)
 
+    # LIMIT ROZMOW NA GODZINE — komentarze i odpowiedzi razem, z dziennika.
+    # Gdy w ostatnich 60 minutach bylo ich juz `MAKS_ROZMOW_NA_GODZINE`,
+    # przerwa wydluza sie do chwili, w ktorej najstarsza z nich wypadnie z okna.
+    if co in ("komentarz", "odpowiedz") and not getattr(config, "W_TESCIE", False):
+        brakuje = _do_konca_limitu_rozmow()
+        if brakuje > przerwa:
+            print("  [rytm] %d rozmow w ostatniej godzinie — czekam %.0f min zamiast"
+                  " %.0f" % (config.MAKS_ROZMOW_NA_GODZINE, brakuje / 60, przerwa / 60),
+                  flush=True)
+            przerwa = brakuje
+
     if not zostal_czas(na_co, przerwa):
         return False
     _s.odczekaj(co, przerwa)
@@ -8614,8 +8640,8 @@ def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
 
     if _KONIEC_CZASU is None or ile <= 0:
         return ile
-    dol, gora = config.ODSTEPY.get(rodzaj, config.ODSTEP_MIEDZY_DZIALANIAMI)
-    odstep = (dol + gora) / 2
+    # SREDNIA Z KOSZYKOW, gdy przerwy sa wazone — patrz `stages.sredni_odstep`.
+    odstep = stages.sredni_odstep(rodzaj)
     zostalo = max(0.0, _KONIEC_CZASU - time.time()) * udzial
 
     # PRZERW JEST O JEDNA MNIEJ NIZ DZIALAN. Przy dwoch notkach czekamy raz, nie
@@ -13105,13 +13131,22 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `SKAUT_UDZIAL_Z_KANALOW` | `0.75` | Jaka czesc tematow skauta ma wychodzic z kanalow, ktore konto obserwuje. Decyzja wlasciciela z 30 sierpnia, po pomiarze: przed nia z kanalow |
 | `ROZBIEG_DNI` | `30` | — |
 | `ODSTEPY` | `{ # 45-90 MIN, nie 10-25. Zmierzone na profi` | Odstepy miedzy dzialaniami, w sekundach. Pietnascie polubien w dziewiecdziesiat sekund to nie jest czytanie i kazdy system to widzi. Odstepy |
+| `ODSTEPY_WAZONE` | `{ "komentarz": ((0.20, 300, 420), (0.70, 420` | PRZERWY PRZY ROZMOWACH NIE SA ROWNOMIERNE. Czlowiek odpisuje zwykle po kilku minutach, czasem od razu po przeczytaniu, czasem wraca po pol g |
+| `MAKS_ROZMOW_NA_GODZINE` | `4` | NAJWIECEJ ROZMOW NA GODZINE — komentarze i odpowiedzi razem, w kazdym oknie szescdziesieciu minut. Przy 20-30 komentarzach dziennie srednia  |
+| `SZANSA_ODPOWIEDZI` | `{ "pytanie": 0.90, # ktos o cos zapytal "nie` | KOMU ODPISUJEMY U SIEBIE — NIE KAZDEMU. Szansa odpowiedzi wg rodzaju komentarza (`stages.rodzaj_komentarza`). Odpowiedz pod kazdym komentarz |
+| `ROZMOWA_MAKS_ODPOWIEDZI` | `2` | ROZMOWA W WATKU MA KONIEC. Tej samej osobie pod tym samym tekstem odpisujemy w tygodniu najwyzej tyle razy; druga odpowiedz ma juz mniejsza  |
+| `ROZMOWA_SZANSA_DALEJ` | `0.40` | — |
+| `RUCHY_ROZMOWY` | `{ "comment": (("puenta", 0.55), ("pytanie", ` | JAK KONCZY SIE TEN KONKRETNY KOMENTARZ ALBO ODPOWIEDZ. Losowane za kazdym razem (`personality.ruch_rozmowy`): puenta  — trzy uderzenia, osta |
+| `OSTATNIE_WLASNE_DO_PROMPTU` | `10` | Ile wlasnych, juz opublikowanych komentarzy i odpowiedzi widzi model przy pisaniu nastepnego — zeby nie wracaly te same obrazy i te same zak |
 | `ODSTEP_MIEDZY_DZIALANIAMI` | `(45, 180)` | — |
 | `ZWLOKA_PRZED_NOTKAMI` | `(0, 900)` | ZWLOKA PRZED PIERWSZA NOTKA PRZEBIEGU. Bez niej pierwsza notka wychodzila zawsze kilka minut po starcie zegara, wiec piec razy dziennie o te |
 | `UDZIAL_CZASU_NA_NOTKI` | `0.60` | ILE CZASU PRZEBIEGU WOLNO ZJESC SAMYM NOTKOM. Rozdzielnik dzienny nie wiedzial nic o czasie: dzielil norme tak, jakby dzialania byly natychm |
 | `CZAS_DZIALANIA_S` | `240` | Ile trwa samo dzialanie poza przerwa: napisanie, sprawdzenie faktow, wystawienie i potwierdzenie u zrodla. Z realnych przebiegow. |
 | `MIN_WIEK_POSTA_MIN` | `(90, 900)` | NIE KOMENTUJEMY SWIEZYCH POSTOW. Wlasciciel opisal to najlepiej: napisal notke i piec sekund pozniej ktos odpisal ogolnikowa zgoda — i to zd |
 | `MIN_WIEK_NOTKI_MIN` | `(20, 90)` | NOTKA TO NIE ARTYKUL i zyje godziny, nie dni. Ten sam prog co dla artykulow oznaczal, ze pod notki wchodzilismy zawsze PO koncu rozmowy: prz |
-| `MAKS_WIEK_CELU_DNI` | `21` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
+| `MAKS_WIEK_CELU_DNI` | `3` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
+| `MAKS_WIEK_NOTKI_H` | `36` | NOTKA: 36 GODZIN. Z tych samych czternastu komentarzy pod notkami najwiecej wyswietlen mialy te pod notkami sprzed 6 i 11 godzin (27 i 77);  |
+| `UDZIAL_KOMENTARZY_POD_ARTYKULAMI` | `0.4` | ILE Z PRZYDZIALU PRZEBIEGU IDZIE POD ARTYKULY. Reszta idzie pod notki, bo tam — patrz pomiar wyzej — komentarz w ogole ktos widzi. Blok arty |
 | `KOMFORTOWO_KOMENTARZY` | `25` | ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto |
 | `ODSTEP_DNI_NA_PUBLIKACJE` | `4` | Ile dni odstepu przed kolejnym komentarzem pod TA SAMA publikacja. Komentarz pod kazdym kolejnym tekstem tej samej osoby to drugi najczyteln |
 | `NISZA` | `""` | HASLA, KTORYMI AGENT SZUKA NOWYCH KONT. Kanal czytelnika pokazuje tylko to, co juz znamy, wiec sam z siebie nie przyprowadzi nikogo nowego — |

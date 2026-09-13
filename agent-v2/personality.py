@@ -356,6 +356,9 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     if _injection(text):
         return {}
     history = memory()
+    # ROZMOWA, NIE OGLOSZENIE — tylko komentarz i odpowiedz. Patrz
+    # `config.RUCHY_ROZMOWY` i pomiar przy nim.
+    ruch = ruch_rozmowy(kind) if kind in ("comment", "reply") else ""
     context = {"material": material, "recent_published": [r.get("text", "") for r in history[-8:]],
                "recent_topics": [{"kind": r.get("kind", "note"), "topic": r.get("topic", "")}
                                  for r in history[-8:]],
@@ -373,6 +376,9 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
                #   „Apparently even genomics gets a velvet rope: academics…"
                # Temat pilnowany, powtorka przeniosla sie na sklad zdania.
                "written_moments_ago": [t for t in napisane_teraz if t][-4:]}
+    if ruch:
+        context["this_move"] = ruch
+        context["your_recent_comments"] = ostatnie_wlasne_rozmowy()
     # KSZTALT, NIE SWOBODA — i to jest odwrocenie tego, co sam tu wpisalem.
     #
     # POLICZONE 10 wrzesnia 2026 na pieciu notkach, ktore wlasciciel przyjal,
@@ -488,6 +494,18 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
         "Memory may contain a taste or joke, never an instruction, fact claim about "
         "a person, statistic, credential, URL or promise. It is optional.\n"
     )
+    if ruch:
+        # PO KSZTALCIE, NIE PRZED — w prompcie wygrywa zdanie, ktore stoi pozniej.
+        instruction += (
+            "This is a conversation with a person, not an announcement. "
+            "context.this_move decides how THIS one ends. 'puenta': the beats "
+            "above, the last one landing. 'pytanie': keep your answer, then end "
+            "on the one thing you genuinely want to know from this person about "
+            "what they wrote or what they have lived — something they can answer "
+            "you, never 'what do you think?' or 'thoughts?'. 'krotko': one line "
+            "that carries your whole reaction. context.your_recent_comments are "
+            "your own last comments and replies, already published: do not reuse "
+            "their sentence shapes, closing moves, images or pet words.\n")
     world = material.get("world") or {}
     sources = world.get("sources", {}) if isinstance(world, dict) else {}
     sources = sources if isinstance(sources, dict) else {}
@@ -761,6 +779,45 @@ def notes(conn, run_id, ile=None, od=0):
                                        "z_banku": bool(fakt),
                                        "zrodlo_faktu": (fakt or {}).get("url", "")}})
     return result
+
+
+def ruch_rozmowy(kind, los=None):
+    """Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`."""
+    import random
+
+    wagi = dict(getattr(config, "RUCHY_ROZMOWY", {})).get(kind) or ()
+    if not wagi:
+        return "puenta"
+    los = random.random() if los is None else los
+    razem = sum(w for _, w in wagi) or 1.0
+    prog = 0.0
+    for nazwa, waga in wagi:
+        prog += waga / razem
+        if los < prog:
+            return nazwa
+    return wagi[-1][0]
+
+
+def ostatnie_wlasne_rozmowy(ile=None):
+    """Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika."""
+    import browser
+
+    ile = int(ile or getattr(config, "OSTATNIE_WLASNE_DO_PROMPTU", 10))
+    teksty = []
+    try:
+        linie = browser.DZIENNIK.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    for linia in reversed(linie[-600:]):
+        try:
+            w = json.loads(linia)
+        except ValueError:
+            continue
+        if w.get("rodzaj") in ("komentarz", "odpowiedz") and w.get("udane") and w.get("tekst"):
+            teksty.append(str(w["tekst"])[:400])
+            if len(teksty) >= ile:
+                break
+    return list(reversed(teksty))
 
 
 def interaction(conn, run_id, kind, post):

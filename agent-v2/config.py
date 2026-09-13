@@ -2543,6 +2543,56 @@ ODSTEPY = {
     # zadnej — a to widac na profilu tak samo, jak widac bylo notki parami.
     "restack":    (600, 1800),   # 10-30 min
 }
+
+# PRZERWY PRZY ROZMOWACH NIE SA ROWNOMIERNE. Czlowiek odpisuje zwykle po kilku
+# minutach, czasem od razu po przeczytaniu, czasem wraca po pol godzinie —
+# `random.uniform(5, 15)` wyglada na osi czasu jak metronom z szumem. Koszyki
+# (udzial, od, do) w sekundach; DOLNA GRANICA NADAL PIEC MINUT, bo to decyzja
+# wlasciciela opisana przy `ODSTEPY` i pilnowana w `test_rytm.py`. Srednia:
+# komentarz okolo 11 minut, odpowiedz 10 — tyle co dotad, inny rozklad.
+ODSTEPY_WAZONE = {
+    "komentarz": ((0.20, 300, 420), (0.70, 420, 840), (0.10, 1080, 1800)),
+    "odpowiedz": ((0.25, 300, 420), (0.65, 420, 780), (0.10, 900, 1500)),
+}
+# NAJWIECEJ ROZMOW NA GODZINE — komentarze i odpowiedzi razem, w kazdym oknie
+# szescdziesieciu minut. Przy 20-30 komentarzach dziennie srednia to niecale
+# trzy na godzine aktywnosci; limit ucina tylko zageszczenia.
+MAKS_ROZMOW_NA_GODZINE = 4
+
+# KOMU ODPISUJEMY U SIEBIE — NIE KAZDEMU. Szansa odpowiedzi wg rodzaju
+# komentarza (`stages.rodzaj_komentarza`). Odpowiedz pod kazdym komentarzem,
+# w podobnym czasie i zawsze pelnym zdaniem, pachnie automatem nawet przy
+# dobrym modelu. Decyzja zapada RAZ na komentarz i zostaje zapamietana —
+# inaczej kolejne przebiegi losowalyby od nowa, az wyszlaby odpowiedz.
+SZANSA_ODPOWIEDZI = {
+    "pytanie": 0.90,     # ktos o cos zapytal
+    "niezgoda": 0.85,    # zarzut bez odpowiedzi zostaje ostatnim slowem
+    "rozmowa": 0.70,     # ktos odpisal na NASZ komentarz u siebie albo u innych
+    "zwykly": 0.60,
+    "pusty": 0.20,       # „great post", emoji, trzy slowa
+    "spam": 0.0,
+}
+# ROZMOWA W WATKU MA KONIEC. Tej samej osobie pod tym samym tekstem odpisujemy
+# w tygodniu najwyzej tyle razy; druga odpowiedz ma juz mniejsza szanse.
+ROZMOWA_MAKS_ODPOWIEDZI = 2
+ROZMOWA_SZANSA_DALEJ = 0.40
+
+# JAK KONCZY SIE TEN KONKRETNY KOMENTARZ ALBO ODPOWIEDZ. Losowane za kazdym
+# razem (`personality.ruch_rozmowy`):
+#   puenta  — trzy uderzenia, ostatnie w kogos;
+#   pytanie — koniec, na ktory ta osoba moze odpowiedziec: to, czego NIA
+#             naprawde chce sie od niej dowiedziec;
+#   krotko  — jedna linia.
+# Zmierzone 13 wrzesnia 2026: 31 komentarzy, prawie wszystkie konczyly sie
+# zdaniem wycelowanym w autora, odpowiedz przyszla pod CZTEREMA. Z trzynastu
+# odpowiedzi u nas rozmowe ciagnely dalej te, ktore zostawialy cos otwartego.
+RUCHY_ROZMOWY = {
+    "comment": (("puenta", 0.55), ("pytanie", 0.30), ("krotko", 0.15)),
+    "reply": (("puenta", 0.35), ("pytanie", 0.40), ("krotko", 0.25)),
+}
+# Ile wlasnych, juz opublikowanych komentarzy i odpowiedzi widzi model przy
+# pisaniu nastepnego — zeby nie wracaly te same obrazy i te same zakonczenia.
+OSTATNIE_WLASNE_DO_PROMPTU = 10
 ODSTEP_MIEDZY_DZIALANIAMI = (45, 180)   # zapas dla czynnosci bez wlasnego wpisu
 
 # ZWLOKA PRZED PIERWSZA NOTKA PRZEBIEGU. Bez niej pierwsza notka wychodzila
@@ -2605,7 +2655,27 @@ MIN_WIEK_NOTKI_MIN = (20, 90)       # od dwudziestu minut do poltorej godziny
 # samego dnia, artykul czyta sie tygodniami; trzy tygodnie to granica, za
 # ktora komentarz jest juz rozmowa z pustym pokojem. Nieznana data nie
 # blokuje (jak przy dolnej granicy).
-MAKS_WIEK_CELU_DNI = 21
+#
+# TRZY TYGODNIE TO BYL PUSTY POKOJ, NIE GRANICA. Zmierzone 13 wrzesnia 2026 na
+# 28 naszych komentarzach ze statystykami (8-13 wrzesnia):
+#
+#     pod ARTYKULAMI   14 komentarzy   18 wyswietlen razem   srednio 1,3
+#     pod NOTKAMI      14 komentarzy  157 wyswietlen razem   srednio 11,2
+#
+# Artykuly, pod ktore szly komentarze, mialy 6-20 dni (ByteByteGo: doba,
+# a16z: 12 dni, The Eel-Filled Hovercraft: 18 dni) i komentarz pod nimi mial
+# zero, jedno albo dwa wyswietlenia. Jedyny komentarz pod artykulem, ktory
+# dostal odpowiedz i polubienie, stal pod tekstem sprzed 17 godzin. Wiec
+# artykul: trzy dni. Notka zyje godziny — ma wlasna granice nizej.
+MAKS_WIEK_CELU_DNI = 3
+# NOTKA: 36 GODZIN. Z tych samych czternastu komentarzy pod notkami najwiecej
+# wyswietlen mialy te pod notkami sprzed 6 i 11 godzin (27 i 77); pod notkami
+# sprzed 9-19 dni po 1-4.
+MAKS_WIEK_NOTKI_H = 36
+# ILE Z PRZYDZIALU PRZEBIEGU IDZIE POD ARTYKULY. Reszta idzie pod notki, bo
+# tam — patrz pomiar wyzej — komentarz w ogole ktos widzi. Blok artykulow stoi
+# w dniu PRZED blokiem notek, wiec bez tego udzialu zabieral caly przydzial.
+UDZIAL_KOMENTARZY_POD_ARTYKULAMI = 0.4
 
 # ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala
 # posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto dwudziesty

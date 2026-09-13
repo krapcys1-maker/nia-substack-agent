@@ -232,6 +232,12 @@ def swiat(slad, martwe_hosty, czekajace=()):
             "otwarcie": "Delivery charges are the margin",
             "postawa": "CIEKAWOSC"},
         zbierz_pytania=lambda czekaja: None,
+        # KOMU ODPISAC (od 13 wrzesnia 2026) — tu kazdemu: ten test mierzy
+        # liczenie wyslanych odpowiedzi, a decyzje sprawdza
+        # `test_rozmowy_i_odpowiedzi.py`.
+        zdecyduj_o_odpowiedziach=lambda czekaja, zapisuj: list(czekaja),
+        zapamietaj_decyzje=lambda *a, **k: None,
+        sredni_odstep=stages.sredni_odstep,
         wybierz_do_odpowiedzi=lambda conn, run_id, lista: list(lista),
         reply_to=lambda conn, run_id, co, ctx: {
             "candidates": [{"reply": "Krotka odpowiedz na zarzut."}]},
@@ -245,6 +251,10 @@ def swiat(slad, martwe_hosty, czekajace=()):
         """Prawdziwy config, ale z ustalona pora i wlasnym katalogiem danych."""
 
         DATA_DIR = kat
+        # CALY PRZYDZIAL POD ARTYKULY, jak przed 13 wrzesnia 2026. Ten test
+        # liczy komentarze, ktore wyszly albo nie; podzial miedzy artykuly
+        # a notki sprawdza `test_rozmowy_i_odpowiedzi.py`.
+        UDZIAL_KOMENTARZY_POD_ARTYKULAMI = 1.0
 
         def __getattr__(self, nazwa):
             return getattr(config, nazwa)
