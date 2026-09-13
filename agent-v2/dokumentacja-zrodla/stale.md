@@ -144,6 +144,7 @@
 | `OKNO_PUBLIKACJI_ET` | `(6, 22)` | TWARDE OKNO PUBLIKACJI, w czasie CZYTELNIKOW. Agent wystawil notki o 03:57 i 04:00 UTC — czyli 23:57 i polnoc w Nowym Jorku. Tekst wrzucony, |
 | `WORST_NOTE_DAYS` | `("monday", "friday")` | — |
 | `NOTEK_PROMUJACYCH` | `3` | Rozkład na tydzień: pięć notek dziennie, dzień publikacji artykułu ma własny. Ile notek promuje jeden artykul i przez ile dni. Decyzja wlasc |
+| `PROMOCJA_ODSTEP_H` | `20` | NAJKROTSZY ODSTEP MIEDZY NOTKAMI PROMUJACYMI TEN SAM ARTYKUL, w godzinach. „Jedna na dobe" liczy dobe w UTC, a przebieg o 00:30 UTC to jeszc |
 | `OKNO_PROMOCJI_DNI` | `7` | PO ILU DNIACH ARTYKUL PRZESTAJE BYC PROMOWANY, nawet jesli nie wybral swoich trzech notek. `artykul_do_promocji` sam nazwal ten problem w do |
 | `DATA_PRZESTAWIENIA` | `""` | DZIEN, W KTORYM TO KONTO OSTATNI RAZ ZMIENILO TEMAT. Nie jest to data historyczna dla ozdoby — czyta ja `stages.wez_kandydatow` i odrzuca ka |
 | `BANK_UDZIAL_ARTYKULOW` | `0.33` | Jaka czesc banku moze niesc znacznik „na artykul". Pytany po kolei „czy to unioslo by artykul", model mowi tak prawie zawsze — ta sama degen |

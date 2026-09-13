@@ -345,6 +345,11 @@ def wczytaj(dni: int):
                 continue
             if not isinstance(w, dict) or w.get("rodzaj") not in RODZAJE:
                 continue
+            # NOTKA PROMUJACA NIE WCHODZI DO NORMY NOTEK — idzie ponad nia
+            # (decyzja wlasciciela z 13 wrzesnia 2026). Ta sama regula stoi
+            # w `browser.z_dziennika_dzis`, ktory rozdziela przydzial dnia.
+            if w.get("rodzaj") == "notka" and w.get("typ") == "promocja":
+                continue
             dzien = str(w.get("kiedy") or "")[:10]
             if not dzien or dzien < granica or not _poprawna_data(dzien):
                 continue

@@ -3864,7 +3864,7 @@ _POLA_Z_KSZTALTU = _pola_ksztaltu(KSZTALT_CIEKAWOSTEK)
 PROMOCJA = config.DATA_DIR / "promocja.json"
 
 
-def zakwestionuj_promocje(url: str, powod: str) -> None:
+def zakwestionuj_promocje(url: str, powod: str, skad: str = "sprawdzenie faktow") -> None:
     """Artykul, ktorego notka promujaca odpadla na sprawdzeniu faktow.
 
     ODRZUCENIE NOTKI PROMUJACEJ JEST DOWODEM O ARTYKULE, NIE O NOTCE. Taka
@@ -3896,8 +3896,8 @@ def zakwestionuj_promocje(url: str, powod: str) -> None:
         PROMOCJA.parent.mkdir(parents=True, exist_ok=True)
         PROMOCJA.write_text(json.dumps(dane, ensure_ascii=False, indent=1),
                             encoding="utf-8")
-        print("  [promocja] ZDJETY Z KOLEJKI (sprawdzenie faktow): %s"
-              % str(powod or "")[:120], flush=True)
+        print("  [promocja] ZDJETY Z KOLEJKI (%s): %s"
+              % (skad, str(powod or "")[:120]), flush=True)
         return
 
 
@@ -4045,12 +4045,21 @@ def artykul_do_promocji() -> dict[str, Any] | None:
 
     dzis = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     kolejka = wczytaj_promocje()
-    if any(a.get("ostatnia") == dzis for a in kolejka):
-        return None             # dzisiejsza notka promujaca juz poszla
     granica = (datetime.now(timezone.utc)
                - timedelta(days=config.OKNO_PROMOCJI_DNI)).strftime("%Y-%m-%d")
     moja = getattr(config, "INSTANCJA", "")
+    # WYJATEK OD „JEDNEJ NA DOBE": ARTYKUL SWIEZSZY OD TEGO, KTORY DZIS POSZEDL.
+    # Decyzja wlasciciela z 13 wrzesnia 2026: notka promujaca wychodzi W DNIU
+    # publikacji. Artykul wychodzi o 16:30, a poranny przebieg moze juz wystawic
+    # ostatnia notke starszego tekstu — przy regule „cokolwiek dzis, to koniec"
+    # nowy artykul czekalby do jutra. Idziemy wiec od najswiezszego: dzisiejsza
+    # notka NOWSZEGO (albo tego samego) artykulu zamyka dzien, notka STARSZEGO —
+    # nie. Druga strona zostaje: starszy nie dostaje drugiej notki w dniu,
+    # w ktorym nowszy juz swoja wystawil.
+    nowszy_dzis = False
     for a in reversed(kolejka):
+        if a.get("ostatnia") == dzis:
+            nowszy_dzis = True
         if a.get("wystawione", 0) >= config.NOTEK_PROMUJACYCH:
             continue
         # PROMUJEMY TYLKO WLASNE. Artykul z innej instancji (inny preset, inny
@@ -4070,6 +4079,18 @@ def artykul_do_promocji() -> dict[str, Any] | None:
         # kolejny przebieg po prostu losuje jeszcze raz.
         if a.get("zakwestionowany"):
             continue
+        if nowszy_dzis:
+            return None         # dzisiejsza notka promujaca juz poszla
+        # ODSTEP OD POPRZEDNIEJ NOTKI TEGO ARTYKULU — patrz
+        # `config.PROMOCJA_ODSTEP_H`. Najswiezszy czeka, starszy nie wskakuje
+        # na jego miejsce: to jest jego dzien, tylko jeszcze nie jego godzina.
+        try:
+            poprzednia = datetime.fromisoformat(str(a.get("ostatnia_kiedy") or ""))
+        except ValueError:
+            poprzednia = None
+        if poprzednia and (datetime.now(timezone.utc) - poprzednia
+                           < timedelta(hours=config.PROMOCJA_ODSTEP_H)):
+            return None
         return a
     return None
 
@@ -4094,6 +4115,7 @@ def odhacz_promocje(url: str, tekst: str = "") -> None:
         if a.get("url") == url:
             a["wystawione"] = a.get("wystawione", 0) + 1
             a["ostatnia"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            a["ostatnia_kiedy"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
             if tekst:
                 a.setdefault("powiedziane", []).append(str(tekst)[:400])
     PROMOCJA.write_text(json.dumps(dane, ensure_ascii=False, indent=1),

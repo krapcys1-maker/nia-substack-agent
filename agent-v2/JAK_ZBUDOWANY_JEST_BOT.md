@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 40 761 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 40 976 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 232 zestawów
-testów, 5220 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 233 zestawów
+testów, 5257 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-1007 wierszy, 28 funkcji na poziomie modułu, 0 klas
+1046 wierszy, 29 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -178,6 +178,7 @@ wiec nie da sie go rozjechac z kodem.
 | `notes(conn, run_id, ile, od)` | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. |
 | `ruch_rozmowy(kind, los)` | Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`. |
 | `ostatnie_wlasne_rozmowy(ile)` | Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika. |
+| `notka_promujaca(conn, run_id, artykul)` | Notka promujaca NASZ artykul — ta sama droga, co kazda notka persony. |
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
 | `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
 | `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
@@ -271,7 +272,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3326 wierszy, 29 funkcji na poziomie modułu, 1 klas
+3419 wierszy, 30 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -284,6 +285,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_pod_rzad_w_bloku(co, na_co)` *(wewn.)* | Ile porazek pod rzad naliczyl TEN blok, odkad sie zaczal. |
 | `rytm(co, na_co, stan)` | Przerwa MIEDZY dwoma dzialaniami tego samego rodzaju. |
 | `_do_konca_limitu_rozmow(teraz)` *(wewn.)* | Ile sekund do chwili, w ktorej kolejna rozmowa zmiesci sie w limicie godziny. |
+| `promuj_artykul(conn, run_id, wyslij, rytm_stanu)` | Jedna notka promujaca swiezy artykul — PONAD dzienny przydzial notek. |
 | `zmiesci_sie(rodzaj, ile, udzial)` | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. |
 | `ile_przebiegow_zostalo(conn)` | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. |
 | `_po_zmianie_tematu(kiedy)` *(wewn.)* | Czy ten wpis jest z obecnej epoki konta. |
@@ -307,7 +309,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9462 wierszy, 165 funkcji na poziomie modułu, 0 klas
+9484 wierszy, 165 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -386,7 +388,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_opis_typu(note_type)` *(wewn.)* | Opis typu, a przy MYSLI takze PRZYDZIELONY ksztalt. |
 | `note(conn, run_id, note_type, evidence, link, note_form, etap)` | Jedna notka danego typu i danej FORMY — do szuflady. |
 | `_pola_ksztaltu(ksztalt, pomin)` *(wewn.)* | Nazwy pol z kontraktu na odpowiedz, bez klucza opakowujacego. |
-| `zakwestionuj_promocje(url, powod)` | Artykul, ktorego notka promujaca odpadla na sprawdzeniu faktow. |
+| `zakwestionuj_promocje(url, powod, skad)` | Artykul, ktorego notka promujaca odpadla na sprawdzeniu faktow. |
 | `zapamietaj_niewystawiony(sciezka, powod)` | Zapisuje, ze gotowy artykul lezy na dysku i nie poszedl w swiat. |
 | `niewystawiony_artykul()` | Artykul czekajacy na ponowna probe, albo None. NIGDY nie rzuca. |
 | `odnotuj_probe_artykulu(powod)` | Podbija licznik prob i oddaje nowa wartosc. Zero, gdy znacznika nie ma. |
@@ -479,7 +481,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6689 wierszy, 112 funkcji na poziomie modułu, 3 klas
+6736 wierszy, 113 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -586,6 +588,7 @@ wiec nie da sie go rozjechac z kodem.
 | `uchwyt_publikacji(host)` | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. |
 | `juz_sie_odezwalismy(page, url)` | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. |
 | `bez_znacznikow(html)` | Sam tekst, bez HTML-a. Do promptu notki promujacej szlo 9000 znakow |
+| `artykul_opublikowany(url)` | Czy artykul nadal wisi na naszej publikacji. None = nie da sie sprawdzic. |
 | `potwierdz_adres_artykulu(page, tytul)` | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. |
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
@@ -871,7 +874,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3918 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3927 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1050,7 +1053,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1176 wierszy, 13 funkcji na poziomie modułu, 0 klas
+1181 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -8075,12 +8078,21 @@ def artykul_do_promocji() -> dict[str, Any] | None:
 
     dzis = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     kolejka = wczytaj_promocje()
-    if any(a.get("ostatnia") == dzis for a in kolejka):
-        return None             # dzisiejsza notka promujaca juz poszla
     granica = (datetime.now(timezone.utc)
                - timedelta(days=config.OKNO_PROMOCJI_DNI)).strftime("%Y-%m-%d")
     moja = getattr(config, "INSTANCJA", "")
+    # WYJATEK OD „JEDNEJ NA DOBE": ARTYKUL SWIEZSZY OD TEGO, KTORY DZIS POSZEDL.
+    # Decyzja wlasciciela z 13 wrzesnia 2026: notka promujaca wychodzi W DNIU
+    # publikacji. Artykul wychodzi o 16:30, a poranny przebieg moze juz wystawic
+    # ostatnia notke starszego tekstu — przy regule „cokolwiek dzis, to koniec"
+    # nowy artykul czekalby do jutra. Idziemy wiec od najswiezszego: dzisiejsza
+    # notka NOWSZEGO (albo tego samego) artykulu zamyka dzien, notka STARSZEGO —
+    # nie. Druga strona zostaje: starszy nie dostaje drugiej notki w dniu,
+    # w ktorym nowszy juz swoja wystawil.
+    nowszy_dzis = False
     for a in reversed(kolejka):
+        if a.get("ostatnia") == dzis:
+            nowszy_dzis = True
         if a.get("wystawione", 0) >= config.NOTEK_PROMUJACYCH:
             continue
         # PROMUJEMY TYLKO WLASNE. Artykul z innej instancji (inny preset, inny
@@ -8100,6 +8112,18 @@ def artykul_do_promocji() -> dict[str, Any] | None:
         # kolejny przebieg po prostu losuje jeszcze raz.
         if a.get("zakwestionowany"):
             continue
+        if nowszy_dzis:
+            return None         # dzisiejsza notka promujaca juz poszla
+        # ODSTEP OD POPRZEDNIEJ NOTKI TEGO ARTYKULU — patrz
+        # `config.PROMOCJA_ODSTEP_H`. Najswiezszy czeka, starszy nie wskakuje
+        # na jego miejsce: to jest jego dzien, tylko jeszcze nie jego godzina.
+        try:
+            poprzednia = datetime.fromisoformat(str(a.get("ostatnia_kiedy") or ""))
+        except ValueError:
+            poprzednia = None
+        if poprzednia and (datetime.now(timezone.utc) - poprzednia
+                           < timedelta(hours=config.PROMOCJA_ODSTEP_H)):
+            return None
         return a
     return None
 ```
@@ -13084,6 +13108,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `OKNO_PUBLIKACJI_ET` | `(6, 22)` | TWARDE OKNO PUBLIKACJI, w czasie CZYTELNIKOW. Agent wystawil notki o 03:57 i 04:00 UTC — czyli 23:57 i polnoc w Nowym Jorku. Tekst wrzucony, |
 | `WORST_NOTE_DAYS` | `("monday", "friday")` | — |
 | `NOTEK_PROMUJACYCH` | `3` | Rozkład na tydzień: pięć notek dziennie, dzień publikacji artykułu ma własny. Ile notek promuje jeden artykul i przez ile dni. Decyzja wlasc |
+| `PROMOCJA_ODSTEP_H` | `20` | NAJKROTSZY ODSTEP MIEDZY NOTKAMI PROMUJACYMI TEN SAM ARTYKUL, w godzinach. „Jedna na dobe" liczy dobe w UTC, a przebieg o 00:30 UTC to jeszc |
 | `OKNO_PROMOCJI_DNI` | `7` | PO ILU DNIACH ARTYKUL PRZESTAJE BYC PROMOWANY, nawet jesli nie wybral swoich trzech notek. `artykul_do_promocji` sam nazwal ten problem w do |
 | `DATA_PRZESTAWIENIA` | `""` | DZIEN, W KTORYM TO KONTO OSTATNI RAZ ZMIENILO TEMAT. Nie jest to data historyczna dla ozdoby — czyta ja `stages.wez_kandydatow` i odrzuca ka |
 | `BANK_UDZIAL_ARTYKULOW` | `0.33` | Jaka czesc banku moze niesc znacznik „na artykul". Pytany po kolei „czy to unioslo by artykul", model mowi tak prawie zawsze — ta sama degen |

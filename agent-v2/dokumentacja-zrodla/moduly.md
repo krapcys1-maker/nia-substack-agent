@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-1007 wierszy, 28 funkcji na poziomie modułu, 0 klas
+1046 wierszy, 29 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -36,6 +36,7 @@
 | `notes(conn, run_id, ile, od)` | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. |
 | `ruch_rozmowy(kind, los)` | Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`. |
 | `ostatnie_wlasne_rozmowy(ile)` | Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika. |
+| `notka_promujaca(conn, run_id, artykul)` | Notka promujaca NASZ artykul — ta sama droga, co kazda notka persony. |
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
 | `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
 | `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
@@ -129,7 +130,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3326 wierszy, 29 funkcji na poziomie modułu, 1 klas
+3419 wierszy, 30 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -142,6 +143,7 @@
 | `_pod_rzad_w_bloku(co, na_co)` *(wewn.)* | Ile porazek pod rzad naliczyl TEN blok, odkad sie zaczal. |
 | `rytm(co, na_co, stan)` | Przerwa MIEDZY dwoma dzialaniami tego samego rodzaju. |
 | `_do_konca_limitu_rozmow(teraz)` *(wewn.)* | Ile sekund do chwili, w ktorej kolejna rozmowa zmiesci sie w limicie godziny. |
+| `promuj_artykul(conn, run_id, wyslij, rytm_stanu)` | Jedna notka promujaca swiezy artykul — PONAD dzienny przydzial notek. |
 | `zmiesci_sie(rodzaj, ile, udzial)` | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. |
 | `ile_przebiegow_zostalo(conn)` | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. |
 | `_po_zmianie_tematu(kiedy)` *(wewn.)* | Czy ten wpis jest z obecnej epoki konta. |
@@ -165,7 +167,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9462 wierszy, 165 funkcji na poziomie modułu, 0 klas
+9484 wierszy, 165 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -244,7 +246,7 @@
 | `_opis_typu(note_type)` *(wewn.)* | Opis typu, a przy MYSLI takze PRZYDZIELONY ksztalt. |
 | `note(conn, run_id, note_type, evidence, link, note_form, etap)` | Jedna notka danego typu i danej FORMY — do szuflady. |
 | `_pola_ksztaltu(ksztalt, pomin)` *(wewn.)* | Nazwy pol z kontraktu na odpowiedz, bez klucza opakowujacego. |
-| `zakwestionuj_promocje(url, powod)` | Artykul, ktorego notka promujaca odpadla na sprawdzeniu faktow. |
+| `zakwestionuj_promocje(url, powod, skad)` | Artykul, ktorego notka promujaca odpadla na sprawdzeniu faktow. |
 | `zapamietaj_niewystawiony(sciezka, powod)` | Zapisuje, ze gotowy artykul lezy na dysku i nie poszedl w swiat. |
 | `niewystawiony_artykul()` | Artykul czekajacy na ponowna probe, albo None. NIGDY nie rzuca. |
 | `odnotuj_probe_artykulu(powod)` | Podbija licznik prob i oddaje nowa wartosc. Zero, gdy znacznika nie ma. |
@@ -337,7 +339,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6689 wierszy, 112 funkcji na poziomie modułu, 3 klas
+6736 wierszy, 113 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -444,6 +446,7 @@
 | `uchwyt_publikacji(host)` | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. |
 | `juz_sie_odezwalismy(page, url)` | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. |
 | `bez_znacznikow(html)` | Sam tekst, bez HTML-a. Do promptu notki promujacej szlo 9000 znakow |
+| `artykul_opublikowany(url)` | Czy artykul nadal wisi na naszej publikacji. None = nie da sie sprawdzic. |
 | `potwierdz_adres_artykulu(page, tytul)` | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. |
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
@@ -729,7 +732,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3918 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3927 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -908,7 +911,7 @@
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1176 wierszy, 13 funkcji na poziomie modułu, 0 klas
+1181 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

@@ -93,7 +93,12 @@ try:
     print("=== 4. ZRODLEM DECYZJI JEST DZIENNIK, NIE KANAL PROFILU ===")
     src = pathlib.Path("agent-v2/browser.py").read_text(encoding="utf-8")
     poczatek = src.find("def ile_dzis_wystawione")
-    ciało = src[poczatek:poczatek + 3000]
+    # CALE CIALO FUNKCJI, do nastepnej definicji. Okno 3000 znakow ucinalo
+    # meldunek „praca reczna", gdy nad nim doszly dwie linie komentarza
+    # (notka promujaca w porownaniu, 13 wrzesnia 2026) — sprawdzenie oblewalo
+    # przy kodzie, ktory robi dokladnie to, czego pilnuje.
+    koniec = src.find("\ndef ", poczatek + 1)
+    ciało = src[poczatek:koniec if koniec > 0 else None]
 
     sprawdz("wynik startuje z dziennika",
             "wynik = z_dziennika_dzis()" in ciało, ciało[:200])
