@@ -2122,8 +2122,29 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         if rodzaj == "subskrypcja" and any(
                 page.get_by_role("button", name=label, exact=True).count()
                 for label in subscription_labels):
-            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
-            print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
+            # TO JEST WYNIK I MUSI ZOSTAC W DZIENNIKU.
+            #
+            # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, przebieg z 13:30:
+            #
+            #     (przerwa 13.6 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #     ...
+            #     (przerwa 10.0 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #
+            # Dwie z czterech prob tego przebiegu, dzien skonczony na 2/4.
+            # Ta galaz wracala bez slowa w dzienniku, a
+            # `kogo_juz_subskrybujemy` zamyka tylko to, co w dzienniku stoi —
+            # wiec te same profile mogly wracac w kolejnych przebiegach.
+            # Wpis idzie jako POMINIECIE, nie jako subskrypcja: niczego dzis
+            # nie kliknelismy i do normy dnia to sie nie liczy.
+            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True,
+                         powod=POWOD_JUZ_SUBSKRYBOWANY)
+            print(f"  darmowa subskrypcja u @{handle} juz aktywna — nie zmieniam"
+                  f" planu", flush=True)
+            if wyslij:
+                zapisz_w_dzienniku("subskrypcja_pominieta", udane=True,
+                                   komu=handle, powod=POWOD_JUZ_SUBSKRYBOWANY)
             return wynik
         if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
             import personality

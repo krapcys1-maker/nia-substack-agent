@@ -1065,7 +1065,19 @@ def kogo_juz_subskrybujemy() -> set[str]:
                 wpis = _json.loads(linia)
             except ValueError:
                 continue
-            if not isinstance(wpis, dict) or wpis.get("rodzaj") != "subskrypcja":
+            if not isinstance(wpis, dict):
+                continue
+            # PROFIL, KTORY SAM POWIEDZIAL „JUZ SUBSKRYBUJESZ". Taki wpis idzie
+            # jako pominiecie, bo niczego wtedy nie kliknelismy — ale kolejne
+            # wejscie da dokladnie ten sam wynik, wiec zamyka uchwyt tak samo.
+            # Zmierzone 12 wrzesnia 2026: dwie z czterech prob przebiegu.
+            if (wpis.get("rodzaj") == "subskrypcja_pominieta"
+                    and wpis.get("powod") == browser.POWOD_JUZ_SUBSKRYBOWANY):
+                komu = str(wpis.get("komu") or "").strip().lstrip("@")
+                if komu:
+                    zamkniete.add(komu)
+                continue
+            if wpis.get("rodzaj") != "subskrypcja":
                 continue
             komu = str(wpis.get("komu") or "").strip().lstrip("@")
             if not komu:
@@ -2248,6 +2260,11 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         limit_ogladania = max(
             na_teraz["subskrypcje"] + ZAPAS_NA_ODPADY,
             int(getattr(config, "SUBSKRYPCJE_MAKS_OGLADANYCH", 40)))
+        # PRZERWA ODCZEKANA, A NIC NIE KLIKNIETE. Nastepny kandydat nie czeka
+        # drugi raz: od ostatniego publicznego dzialania minela juz cala
+        # przerwa, bo profil, na ktorym ja wydalismy, niczego nie przyjal.
+        przerwa_odczekana = False
+        juz_nasi = 0
         for host in kandydaci:
             if proby >= na_teraz["subskrypcje"]:
                 break
@@ -2329,9 +2346,31 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                       f" przerwy i bez zuzycia proby)", flush=True)
                 continue
             if wyslij:
-                if not rytm("komentarz", "subskrypcje", rytm_stanu):
-                    break
-                browser.zasubskrybuj(uchwyt, wyslij=True)
+                if not przerwa_odczekana:
+                    if not rytm("komentarz", "subskrypcje", rytm_stanu):
+                        break
+                przerwa_odczekana = False
+                wynik_profilu = browser.zasubskrybuj(uchwyt, wyslij=True) or {}
+                # PROFIL NICZEGO NIE PRZYJAL — SLOT ZOSTAJE.
+                #
+                # Zmierzone 12 wrzesnia 2026: dwa z czterech slotow przebiegu
+                # poszly na profile, ktore same odpowiedzialy „juz
+                # subskrybujesz". Wynik tego wywolania nikt tu nie czytal, wiec
+                # takie wejscie liczylo sie jak subskrypcja do limitu przebiegu,
+                # a jak porazka nigdzie. Pominiecie nie jest proba — ta sama
+                # zasada, co przy sicie rozmiaru wyzej.
+                if wynik_profilu.get("pominiete"):
+                    zamkniete.add(uchwyt)
+                    if wynik_profilu.get("juz_subskrybowany"):
+                        juz_nasi += 1
+                    else:
+                        za_duzi += 1
+                    zostal_slad = True
+                    przerwa_odczekana = True
+                    print(f"  (@{uchwyt}: profil niczego nie przyjal —"
+                          f" {wynik_profilu.get('powod') or 'pominiete'};"
+                          f" slot zostaje dla nastepnego)", flush=True)
+                    continue
                 rytm_stanu["komentarz"] = True
                 # PROBA LICZY SIE TAKZE WTEDY, GDY PROFIL ODMOWIL. Weszlismy
                 # na cudza strone i dostalismy odpowiedz — to jest zuzyty slot.
@@ -2360,6 +2399,10 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # subskrybowac", a naprawde bylo: „pula podaje wylacznie konta
         # kilkadziesiat razy wieksze od sufitu". To dwie rozne usterki i tylko
         # jedna z nich naprawia sie w tym pliku.
+        if juz_nasi:
+            print("  [subskrypcje] %d profili odpowiedzialo, ze juz je"
+                  " subskrybujemy — zapamietane, slotow nie zjadly" % juz_nasi,
+                  flush=True)
         if za_duzi:
             print("  [subskrypcje] %d z %d obejrzanych przekraczalo sufit %s"
                   " odbiorcow%s"

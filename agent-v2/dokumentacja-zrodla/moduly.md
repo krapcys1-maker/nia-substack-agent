@@ -127,7 +127,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3209 wierszy, 28 funkcji na poziomie modułu, 1 klas
+3252 wierszy, 28 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -326,7 +326,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6664 wierszy, 112 funkcji na poziomie modułu, 3 klas
+6689 wierszy, 112 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|

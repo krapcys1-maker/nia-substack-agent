@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 39 741 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **37 plików**, 39 809 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 227 zestawów
-testów, 5026 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 228 zestawów
+testów, 5050 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -269,7 +269,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3209 wierszy, 28 funkcji na poziomie modułu, 1 klas
+3252 wierszy, 28 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -468,7 +468,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6664 wierszy, 112 funkcji na poziomie modułu, 3 klas
+6689 wierszy, 112 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -8743,8 +8743,29 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         if rodzaj == "subskrypcja" and any(
                 page.get_by_role("button", name=label, exact=True).count()
                 for label in subscription_labels):
-            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
-            print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
+            # TO JEST WYNIK I MUSI ZOSTAC W DZIENNIKU.
+            #
+            # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, przebieg z 13:30:
+            #
+            #     (przerwa 13.6 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #     ...
+            #     (przerwa 10.0 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #
+            # Dwie z czterech prob tego przebiegu, dzien skonczony na 2/4.
+            # Ta galaz wracala bez slowa w dzienniku, a
+            # `kogo_juz_subskrybujemy` zamyka tylko to, co w dzienniku stoi —
+            # wiec te same profile mogly wracac w kolejnych przebiegach.
+            # Wpis idzie jako POMINIECIE, nie jako subskrypcja: niczego dzis
+            # nie kliknelismy i do normy dnia to sie nie liczy.
+            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True,
+                         powod=POWOD_JUZ_SUBSKRYBOWANY)
+            print(f"  darmowa subskrypcja u @{handle} juz aktywna — nie zmieniam"
+                  f" planu", flush=True)
+            if wyslij:
+                zapisz_w_dzienniku("subskrypcja_pominieta", udane=True,
+                                   komu=handle, powod=POWOD_JUZ_SUBSKRYBOWANY)
             return wynik
         if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
             import personality
