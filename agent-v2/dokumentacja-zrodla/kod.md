@@ -2251,7 +2251,8 @@ def restackuj_w_kanale(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto(url or "https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
+        adres_kanalu = url or "https://substack.com/"
+        page.goto(adres_kanalu, timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
 
@@ -2274,33 +2275,42 @@ def restackuj_w_kanale(
         # Przewijamy, dopoki przybywa przyciskow i dopoki nie mamy ich
         # wyraznie wiecej niz budzet. Stop na braku przyrostu, zeby nie
         # przewijac w nieskonczonosc kanalu, ktory sie skonczyl.
+        def doladuj(cel_przyciskow: int) -> int:
+            """Przewija, dopoki przybywa przyciskow i jest ich mniej niz cel.
+
+            Oddaje liczbe SPRZED przewijania, zeby wydruk pokazal przyrost.
+            """
+            przed = przyciski.count()
+            poprzednio = -1
+            for krok in range(8):
+                teraz = przyciski.count()
+                if teraz >= cel_przyciskow or teraz == poprzednio:
+                    break
+                poprzednio = teraz
+                # `mouse.wheel` wymaga, zeby wskaznik stal nad przewijanym
+                # obszarem, a po wejsciu na strone stoi w rogu — zmierzone
+                # 10 wrzesnia: blok restackow widzial 5 notek, a ten sam kanal
+                # przewiniety przez `scrollBy` oddal 15. Robimy jedno i drugie,
+                # bo `scrollBy` nie dziala tam, gdzie przewija sie kontener,
+                # a nie okno.
+                try:
+                    page.evaluate("window.scrollBy(0, 1600)")
+                except Exception:                      # noqa: BLE001
+                    pass
+                page.mouse.move(600, 500)
+                page.mouse.wheel(0, 1400)
+                page.wait_for_timeout(1400)
+            return przed
+
         cel = max(int(ile) * 4, 12)
-        poprzednio = -1
-        for krok in range(8):
-            teraz = przyciski.count()
-            if teraz >= cel or teraz == poprzednio:
-                break
-            poprzednio = teraz
-            # `mouse.wheel` wymaga, zeby wskaznik stal nad przewijanym
-            # obszarem, a po wejsciu na strone stoi w rogu — zmierzone
-            # 10 wrzesnia: blok restackow widzial 5 notek, a ten sam kanal
-            # przewiniety przez `scrollBy` oddal 15. Robimy jedno i drugie,
-            # bo `scrollBy` nie dziala tam, gdzie przewija sie kontener,
-            # a nie okno.
-            try:
-                page.evaluate("window.scrollBy(0, 1600)")
-            except Exception:                          # noqa: BLE001
-                pass
-            page.mouse.move(600, 500)
-            page.mouse.wheel(0, 1400)
-            page.wait_for_timeout(1400)
-        if przyciski.count() > (poprzednio if poprzednio >= 0 else 0):
+        przed_przewinieciem = doladuj(cel)
+        if przyciski.count() > przed_przewinieciem:
             print("  kanal przewiniety: %d -> %d notek"
-                  % (max(0, poprzednio), przyciski.count()), flush=True)
+                  % (przed_przewinieciem, przyciski.count()), flush=True)
         wynik["znalezione"] = przyciski.count()
         print(f"  notek w kanale do rozwazenia: {wynik['znalezione']}", flush=True)
 
-        # PO RESTACKU KANAL SIE PRZERYSOWUJE, WIEC INDEKSY TRACA WAZNOSC.
+        # PO RESTACKU INDEKSY TRACILY WAZNOSC.
         #
         # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dzieki rachunkowi dolozonemu
         # tego samego dnia:
@@ -2314,15 +2324,19 @@ def restackuj_w_kanale(
         #     rachunek: 5 znalezionych -> 4 niewidocznych -> 1 podanych dalej
         #
         # Pierwszy restack przechodzi, a wszystkie pozostale pozycje z tej samej
-        # listy staja sie niewidoczne. Substack po podaniu dalej przestawia
-        # kanal: nasza notka wchodzi na gore, oryginal sie zwija, a `nth(i)`
-        # wskazuje w prozne miejsce. Osobny pomiar tego samego dnia pokazal, ze
-        # przy samym OTWARCIU i zamknieciu okna lista przezywa w calosci —
+        # listy staja sie niewidoczne. Osobny pomiar tego samego dnia pokazal,
+        # ze przy samym OTWARCIU i zamknieciu okna lista przezywa w calosci —
         # rozbija ja dopiero prawdziwa publikacja.
         #
-        # Dlatego po kazdym udanym restacku pobieramy liste OD NOWA i idziemy
-        # od poczatku, a juz obsluzonych poznajemy po odcisku tresci. Numer
-        # pozycji przestaje cokolwiek znaczyc miedzy obrotami.
+        # SPROSTOWANIE 13 wrzesnia 2026. Wtedy uznalem, ze to Substack
+        # przestawia kanal po podaniu dalej. Nie przestawial. Po publikacji
+        # petla pytala o numer naszej notki, a `api_json` czyta API, WCHODZAC
+        # na adres JSON — ta sama karta, na ktorej stal kanal. Stad pozycje
+        # „niewidoczne" 10 wrzesnia i zero przyciskow 12 wrzesnia. Numer
+        # czytamy teraz w osobnej karcie, patrz nizej.
+        #
+        # Odcisk tresci zostaje, bo jest poprawny niezaleznie od przyczyny:
+        # obsluzonych poznajemy po tym, co napisali, a nie po numerze pozycji.
         zrobione_odciski: set = set()
         # AUTORZY Z OSTATNICH DNI — zeby kanal nie zamienil sie w tube jednego
         # zrodla. Patrz `kogo_juz_restackowalismy`: trzy z trzynastu restackow
@@ -2333,24 +2347,62 @@ def restackuj_w_kanale(
                   % len(odpoczywaja), flush=True)
         obrotow = 0
         MAKS_OBROTOW = max(int(ile) * 6, 18)
+        doladowan = 0
+        MAKS_DOLADOWAN = 2
         while wynik["restackowane"] < ile and obrotow < MAKS_OBROTOW:
             obrotow += 1
-            ile_teraz = przyciski.count()
             kandydat = None
             odcisk_kandydata = ""
-            for i in range(ile_teraz):
-                probny = przyciski.nth(i)
-                try:
-                    if not probny.is_visible():
+            while kandydat is None:
+                ile_teraz = przyciski.count()
+                skan = {"niewidoczne": 0, "bez_tekstu": 0, "juz_byly": 0, "blad": 0}
+                for i in range(ile_teraz):
+                    probny = przyciski.nth(i)
+                    try:
+                        if not probny.is_visible():
+                            skan["niewidoczne"] += 1
+                            continue
+                        wstepna = _notka_przy_przycisku(probny)
+                    except Exception:                  # noqa: BLE001
+                        skan["blad"] += 1
                         continue
-                    wstepna = _notka_przy_przycisku(probny)
-                except Exception:                      # noqa: BLE001
-                    continue
-                odcisk = plaski(str(wstepna.get("tekst") or ""))[:120]
-                if not odcisk or odcisk in zrobione_odciski:
-                    continue
-                kandydat, odcisk_kandydata = probny, odcisk
-                break
+                    odcisk = plaski(str(wstepna.get("tekst") or ""))[:120]
+                    if not odcisk:
+                        skan["bez_tekstu"] += 1
+                        continue
+                    if odcisk in zrobione_odciski:
+                        skan["juz_byly"] += 1
+                        continue
+                    kandydat, odcisk_kandydata = probny, odcisk
+                    break
+                if kandydat is not None:
+                    break
+                # SKAN PUSTY — MOWIMY, Z CZEGO. „Nie ma nowych notek" przy
+                # pietnastu w kanale to wynik, ktory trzeba umiec rozlozyc.
+                print("    (skan: %d przyciskow -> %d niewidocznych, %d bez"
+                      " tekstu, %d juz obsluzonych, %d bledow odczytu)"
+                      % (ile_teraz, skan["niewidoczne"], skan["bez_tekstu"],
+                         skan["juz_byly"], skan["blad"]), flush=True)
+                if doladowan >= MAKS_DOLADOWAN:
+                    break
+                # KANAL WYCZERPANY TO NIE KONIEC NORMY. Najpierw przewijamy
+                # glebiej na tej samej stronie — to nic nie kosztuje i nie
+                # gubi miejsca. Dopiero gdy nic nie przybywa (albo kanalu
+                # w ogole nie ma na stronie), wchodzimy na niego od nowa.
+                # Obsluzone notki i tak odpadna po odcisku, a sufit dwoch
+                # doladowan nie pozwala krecic sie w kolko po pustym kanale.
+                doladowan += 1
+                if ile_teraz:
+                    doladuj(ile_teraz + 12)
+                if przyciski.count() <= ile_teraz:
+                    page.keyboard.press("Escape")
+                    page.goto(adres_kanalu, timeout=READ_TIMEOUT_MS * 2,
+                              wait_until="domcontentloaded")
+                    page.wait_for_timeout(SETTLE_MS + 6000)
+                    doladuj(max(cel, ile_teraz + 12))
+                print("    kanal doladowany (%d/%d): %d -> %d notek"
+                      % (doladowan, MAKS_DOLADOWAN, ile_teraz, przyciski.count()),
+                      flush=True)
             if kandydat is None:
                 print("    (nie ma juz nowych notek do rozwazenia)", flush=True)
                 break
@@ -2477,11 +2529,36 @@ def restackuj_w_kanale(
                 # zmierzyc — a to najcenniejszy sygnal, jaki mamy: w badaniu
                 # 9 641 notek restack konwertowal dwunastokrotnie lepiej niz
                 # polubienie.
+                #
+                # NUMER CZYTAMY W OSOBNEJ KARCIE, NIE NA KANALE.
+                #
+                # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, oba przebiegi dnia:
+                #
+                #     notek w kanale do rozwazenia: 15
+                #     RESTACK u Kai Marek ...
+                #     podane dalej 1/3
+                #     (nie ma juz nowych notek do rozwazenia)
+                #
+                # `numer_naszej_notki` pyta API przez `api_json`, a ta funkcja
+                # WCHODZI na adres JSON — tak dziala z serwera, patrz jej opis.
+                # Dostawala `page`, wiec kanal znikal spod petli i nastepny obrot
+                # liczyl zero przyciskow. Tak bylo od pierwszego commita (4
+                # wrzesnia) i to jest ten „dokladnie jeden restack na przebieg"
+                # z pomiarow 7-10 wrzesnia. Proba sucha tego nie widziala, bo
+                # o numer nie pyta — robila cztery restacki z rzedu.
                 numer_restacka = ""
+                karta_numeru = None
                 try:
-                    numer_restacka = numer_naszej_notki(page, zdanie, prob=2)
+                    karta_numeru = context.new_page()
+                    numer_restacka = numer_naszej_notki(karta_numeru, zdanie, prob=2)
                 except Exception:
                     pass
+                finally:
+                    if karta_numeru is not None and karta_numeru is not page:
+                        try:
+                            karta_numeru.close()
+                        except Exception:              # noqa: BLE001
+                            pass
                 # OTWARTE, SWIADOMIE NIETKNIETE: `udane=True` ponizej opiera sie
                 # na samym lancuchu klikniec, a nie na potwierdzeniu. To jest ta
                 # sama doktryna „klikniecie nie jest dowodem", ktora obowiazuje
