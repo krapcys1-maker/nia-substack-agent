@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 40 732 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 40 747 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 231 zestawów
-testów, 5174 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 5176 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-992 wierszy, 28 funkcji na poziomie modułu, 0 klas
+1007 wierszy, 28 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

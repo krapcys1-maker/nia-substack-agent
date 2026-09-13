@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-992 wierszy, 28 funkcji na poziomie modułu, 0 klas
+1007 wierszy, 28 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

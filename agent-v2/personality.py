@@ -452,6 +452,25 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
         "Beat one names something that HAPPENED, in words a stranger can "
         "picture: who did what, to whom, what it cost.\n"
     )
+    # RUCH ROZMOWY PODMIENIA KSZTALT, NIE DOPISUJE SIE DO NIEGO. Zmierzone
+    # 13 wrzesnia 2026 na pieciu komentarzach V4.1 Flash pod notkami z zywego
+    # kanalu: ruch „krotko", dopisany za ksztaltem, dal TRZY linie. Zdanie
+    # „SHAPE, and it is not optional" wygrywa z pozniejszym dopiskiem — wiec
+    # dla tego ruchu ksztalt jest inny od poczatku, a nie poprawiany na koncu.
+    if ruch == "krotko":
+        ksztalt = (
+            "SHAPE for this one: ONE line, at most twenty-five words, carrying "
+            "your whole reaction — your answer and the sting in the same breath. "
+            "No second line.\n")
+    elif ruch == "pytanie":
+        przed, _, reszta = ksztalt.partition("  3. ")
+        _, _, po = reszta.partition("Never one dense paragraph.")
+        ksztalt = (
+            przed + "  3. A QUESTION TO THIS PERSON, WITH YOU STANDING IN IT: the "
+            "one thing you genuinely want to know from them about what they "
+            "wrote or what they have lived — something they can answer you. "
+            "Never 'what do you think?' or 'thoughts?'. It ends the comment.\n"
+            "Never one dense paragraph." + po)
     instruction = (
         f"Write one {kind}. " + ksztalt +
         "Do not pad, and never compress a real point to make "
@@ -497,15 +516,11 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     if ruch:
         # PO KSZTALCIE, NIE PRZED — w prompcie wygrywa zdanie, ktore stoi pozniej.
         instruction += (
-            "This is a conversation with a person, not an announcement. "
-            "context.this_move decides how THIS one ends. 'puenta': the beats "
-            "above, the last one landing. 'pytanie': keep your answer, then end "
-            "on the one thing you genuinely want to know from this person about "
-            "what they wrote or what they have lived — something they can answer "
-            "you, never 'what do you think?' or 'thoughts?'. 'krotko': one line "
-            "that carries your whole reaction. context.your_recent_comments are "
-            "your own last comments and replies, already published: do not reuse "
-            "their sentence shapes, closing moves, images or pet words.\n")
+            "This is a conversation with a person, not an announcement: the "
+            "SHAPE above is the one for this move (context.this_move). "
+            "context.your_recent_comments are your own last comments and "
+            "replies, already published: do not reuse their sentence shapes, "
+            "closing moves, images or pet words.\n")
     world = material.get("world") or {}
     sources = world.get("sources", {}) if isinstance(world, dict) else {}
     sources = sources if isinstance(sources, dict) else {}

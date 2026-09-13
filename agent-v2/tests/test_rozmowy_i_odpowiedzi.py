@@ -275,23 +275,40 @@ try:
     # JEDYNA POPRAWNA DROGA do podstawienia katalogu danych — patrz
     # `test_komplet_sciezek.py`. Szkice persony trafia do katalogu testu.
     stare_dane = config.uzyj_katalogu_danych(KAT / "dane")
+    oryg_ruch = personality.ruch_rozmowy
+    prompty = {}
     try:
-        personality.short_form(None, None, "comment",
-                               {"text": "Someone wrote about agent loops.", "author": "Kai"})
+        for ruch in ("puenta", "pytanie", "krotko"):
+            personality.ruch_rozmowy = lambda kind, los=None, r=ruch: r
+            zlapane.clear()
+            personality.short_form(None, None, "comment",
+                                   {"text": "Someone wrote about agent loops.", "author": "Kai"})
+            prompty[ruch] = (zlapane.get("comment") or [""])[0]
+        personality.ruch_rozmowy = oryg_ruch
+        zlapane.clear()
         personality.short_form(None, None, "note", {"text": "A fact."})
+        prompt_n = (zlapane.get("note") or [""])[0]
     finally:
+        personality.ruch_rozmowy = oryg_ruch
         personality.llm.call = oryg_call
         config.przywroc_katalog_danych(stare_dane)
-    prompt_k = (zlapane.get("comment") or [""])[0]
-    prompt_n = (zlapane.get("note") or [""])[0]
-    sprawdz("komentarz dostaje ruch rozmowy", '"this_move"' in prompt_k, prompt_k[-300:])
+    prompt_k = prompty["puenta"]
+    sprawdz("komentarz dostaje ruch rozmowy", '"this_move": "puenta"' in prompt_k,
+            prompt_k[-300:])
     sprawdz("i wlasne ostatnie teksty", "Ostatnia odpowiedz" in prompt_k)
-    sprawdz("instrukcja ruchu stoi PO ksztalcie (wygrywa pozniejsza)",
-            0 <= prompt_k.find("three or four SHORT LINES")
-            < prompt_k.find("context.this_move decides"))
-    sprawdz("pytanie nie moze byc pytaniem z szablonu", "never 'what do you think?'" in prompt_k)
-    sprawdz("notka NIE dostaje ruchu rozmowy", prompt_n and '"this_move"' not in prompt_n,
-            prompt_n[-200:])
+    sprawdz("puenta: trzy uderzenia, ostatnie wycelowane",
+            "three or four SHORT LINES" in prompt_k and "A LINE AIMED AT SOMEBODY" in prompt_k)
+    sprawdz("pytanie: trzecie uderzenie to pytanie do tej osoby, nie strzal",
+            "A QUESTION TO THIS PERSON" in prompty["pytanie"]
+            and "A LINE AIMED AT SOMEBODY" not in prompty["pytanie"])
+    sprawdz("pytanie nie moze byc pytaniem z szablonu",
+            "Never 'what do you think?'" in prompty["pytanie"])
+    # POMIAR, KTORY TO WYMUSIL: dopisek „krotko" za ksztaltem dal trzy linie.
+    sprawdz("krotko: ksztalt jednej linii ZAMIAST trzech, nie obok",
+            "ONE line, at most twenty-five words" in prompty["krotko"]
+            and "three or four SHORT LINES" not in prompty["krotko"])
+    sprawdz("notka NIE dostaje ruchu rozmowy", prompt_n and '"this_move"' not in prompt_n
+            and "three or four SHORT LINES" in prompt_n, prompt_n[-200:])
 finally:
     browser.DZIENNIK = stary_dziennik
 
