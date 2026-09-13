@@ -1025,11 +1025,33 @@ def aktywacja_nadal_wazna(cfg: Any) -> str:
         return "wskaznik aktywacji jest nieczytelny (%s)" % exc
     if dane is None:
         return "preset %r zostal odlaczony po starcie tego procesu" % akt.preset.nazwa
-    if (str(dane.get("odcisk") or "") != akt.preset.odcisk
-            or str(dane.get("instancja") or "") != akt.instancja):
-        return ("aktywacja zmienila sie po starcie tego procesu: wskaznik ma %r/%r, "
-                "proces ma %r/%r" % (dane.get("preset"), dane.get("instancja"),
-                                    akt.preset.nazwa, akt.instancja))
+    # KOMUNIKAT MA NAZWAC TO, CO SIE NAPRAWDE ROZNI.
+    #
+    # Porownujemy ODCISK i INSTANCJE, a zdanie drukowalo NAZWE presetu
+    # i instancje. Gdy zmienil sie sam odcisk — czyli w najczestszym przypadku,
+    # po poprawieniu promptu i przepieciu — wychodzilo z tego:
+    #
+    #     wskaznik ma 'nia-serwer'/'nia-serwer', proces ma 'nia-serwer'/'nia-serwer'
+    #
+    # Dwie identyczne pary podane jako roznica. Zmierzone na produkcji
+    # 10 wrzesnia 2026: przepiecie presetu w trakcie przebiegu zabilo go
+    # slusznie, ale komunikat wygladal na wlasny blad i kosztowal kwadrans
+    # szukania nie tam, gdzie trzeba.
+    inny_odcisk = str(dane.get("odcisk") or "") != akt.preset.odcisk
+    inna_instancja = str(dane.get("instancja") or "") != akt.instancja
+    if inny_odcisk or inna_instancja:
+        czesci = []
+        if inna_instancja:
+            czesci.append("instancja: wskaznik ma %r, proces ma %r"
+                          % (dane.get("instancja"), akt.instancja))
+        if inny_odcisk:
+            czesci.append(
+                "odcisk presetu %r: wskaznik ma %s, proces ma %s"
+                " (ktos przepiac preset po starcie tego przebiegu)"
+                % (akt.preset.nazwa,
+                   str(dane.get("odcisk") or "brak")[:12],
+                   str(akt.preset.odcisk or "brak")[:12]))
+        return "aktywacja zmienila sie po starcie tego procesu: " + "; ".join(czesci)
     return ""
 
 

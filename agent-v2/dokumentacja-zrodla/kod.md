@@ -421,10 +421,132 @@ def discovery(
         ) or "(none yet - this is the first article of this account)"),
     )
     real_urls: list[str] = []
-    text = llm.call(
-        "discovery", DISCOVERY_SYSTEM, prompt,
-        conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
-    )
+    # PIERWSZE WYWOLANIE TEZ POD OSLONA, i to jest drugi regres tej samej
+    # poprawki, zlapany na produkcji. Ratunek nizej siedzial za `if not
+    # real_urls`, wiec dzialal tylko wtedy, gdy pierwsze wywolanie WROCILO.
+    # A ono nie wracalo: `llm.Truncated: Search completed without usable text
+    # or URLs` leci z `llm.call`, czyli przebieg umieral przed ratunkiem.
+    # Trzy przebiegi artykulu pod rzad zginely dokladnie tak.
+    text = ""
+    try:
+        text = llm.call(
+            "discovery", DISCOVERY_SYSTEM, prompt,
+            conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
+        )
+    except Exception as exc:                # noqa: BLE001
+        print("  [dyskoveria] pierwsza proba padla (%s: %s)"
+              % (type(exc).__name__, str(exc)[:90]), flush=True)
+    # ZERO WYSZUKIWAN — PYTAMY DRUGI RAZ, ZANIM ZABIJEMY ARTYKUL.
+    #
+    # `tool_choice: "auto"` znaczy, ze model MOZE nie siegnac po narzedzie, i
+    # czasem nie siega. Zmierzone na logach serwera:
+    #
+    #     8 wrzesnia   szukania=18, 12       wejscie 325k / 91k tokenow
+    #     9 wrzesnia   szukania=15, 6        wejscie 132k / 30k
+    #     10 wrzesnia  szukania=0, 0         wejscie 1288 / 1357
+    #
+    # Liczba tokenow wejscia jest tu dowodem: przy prawdziwym szukaniu wracaja
+    # wyniki i wejscie idzie w setki tysiecy. Dzis model odpowiedzial od reki
+    # z pamieci, DWA RAZY POD RZAD, i straznik dwa razy sluszenie wywalil caly
+    # przebieg artykulu — po oplaceniu tematu, pytan i klasyfikacji.
+    #
+    # Wymuszenie `{"type": "web_search"}` NIE jest odpowiedzia i zostalo juz raz
+    # sprawdzone na zywo: model wolal narzedzie w kolko, 15 wyszukiwan i ani
+    # jednego zdania odpowiedzi (patrz `llm._deepseek`). Powtorzenie tego samego
+    # zapytania kosztuje 0,003 USD i jest jedyna roznica miedzy artykulem
+    # a brakiem artykulu.
+    if not real_urls:
+        print("  [dyskoveria] zero wyszukiwan — model odpowiedzial z pamieci."
+              " Pytam drugi raz.", flush=True)
+        # POWTORKA NIE MA PRAWA POGORSZYC SYTUACJI, i to jest wlasny regres
+        # zlapany na produkcji godzine po napisaniu tej poprawki. Druga proba
+        # rzucila `llm.Truncated: Search completed without usable text or URLs`
+        # i zabila przebieg wyjatkiem, ktory NIC nie mowi o przyczynie — gorzej
+        # niz straznik nizej, ktory nazywa rzecz po imieniu.
+        #
+        # Ratunek ma prawo nie zadzialac. Nie ma prawa zamienic czytelnej
+        # diagnozy w niezrozumialy blad.
+        try:
+            text = llm.call(
+                "discovery", DISCOVERY_SYSTEM, prompt,
+                conn=conn, run_id=run_id, web_search=True,
+                collect_urls=real_urls,
+            ) or text
+        except Exception as exc:            # noqa: BLE001
+            print("  [dyskoveria] druga proba tez nie szukala (%s: %s)"
+                  % (type(exc).__name__, str(exc)[:90]), flush=True)
+
+    # AWARIA DOSTAWCY NIE MA KASOWAC ARTYKULU. Ostatnie wyjscie, drogie i glosne.
+    #
+    # ZMIERZONE NA SERWERZE 10 wrzesnia 2026, gole wywolanie z jednym zdaniem
+    # polecenia „You MUST use the web_search tool before answering":
+    #     deepseek-v4-flash   wej=103  wyj=91   zero adresow, `Truncated`
+    #     claude-opus-5       wej=38463 wyj=2230 szukania=2, 19 adresow
+    # Dwa dni wczesniej ten sam deepseek robil po 12-18 wyszukiwan na wywolanie.
+    # To nie jest nasz blad ani zly prompt — to niedostepne narzedzie po stronie
+    # dostawcy, i trwalo caly dzien.
+    #
+    # CENA JEST PRAWDZIWA I DLATEGO TO JEST OSTATNIE WYJSCIE, nie pierwsze:
+    # tamto jedno wywolanie Opusa kosztowalo 0,27 USD wobec 0,0005 na deepseeku.
+    # Wchodzi wylacznie wtedy, gdy skonfigurowany model nie szukal DWA RAZY,
+    # czyli w dniu awarii — a wtedy wybor stoi miedzy drozszym artykulem
+    # a brakiem artykulu, i wlasciciel wybral drozszy artykul.
+    zapasowy = getattr(config, "MODEL_ZAPASOWY_WYSZUKIWANIA", config.CLAUDE)
+    if not real_urls and config.MODEL_FOR.get("discovery") != zapasowy:
+        # NIE ZJADAMY BUDZETU PISARZA NA RESEARCH.
+        #
+        # Pierwsza wersja tego wyjscia zrobila dokladnie to: awaryjne odkrycie
+        # na Opusie kosztowalo 0,68 USD przy `RUN_LIMIT_USD` 1,50, reszta
+        # etapow dobila do 1,05, a pisarz padl z `BudgetExceeded`. Zaplacilismy
+        # za material i nie dostalismy tekstu — najgorszy mozliwy wynik, gorszy
+        # niz brak artykulu, bo brak artykulu jest darmowy.
+        rezerwa = float(getattr(config, "REZERWA_NA_PISARZA_USD", 0.60))
+        # SZACUNEK MA SZACOWAC TE RZECZ, KTORA SZACUJE. Pierwsza wersja brala
+        # tu `rezerwa` takze jako koszt wyszukiwania i odmawiala przy 1,18 USD
+        # w przebiegu, choc 0,35 na research plus 0,60 na pisarza miescilo sie
+        # tam bez trudu.
+        koszt = float(getattr(config, "KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD", 0.40))
+        try:
+            zostalo = db.available_budget(conn, run_id)
+        except Exception:                   # noqa: BLE001
+            zostalo = float("inf")
+        if zostalo - koszt < rezerwa:
+            print("  [dyskoveria] awaryjne wyszukiwanie WSTRZYMANE: w przebiegu"
+                  " zostalo %.2f USD, samo wyszukiwanie kosztuje okolo %.2f,"
+                  " a pisarzowi trzeba zostawic %.2f. Lepiej nie zaczynac, niz"
+                  " zaplacic za material i nie napisac tekstu."
+                  % (zostalo, koszt, rezerwa), flush=True)
+            raise ValueError(
+                "wyszukiwanie u dostawcy nie dziala, a na awaryjne (model %s)"
+                " nie ma budzetu w tym przebiegu: zostalo %.2f USD, potrzeba"
+                " %.2f na research i %.2f na pisarza"
+                % (zapasowy, zostalo, koszt, rezerwa))
+        poprzedni = config.MODEL_FOR["discovery"]
+        print("  [dyskoveria] %s nie wyszukuje — PRZECHODZE NA %s. To jest"
+              " DROZSZE (zmierzone: 0,27 USD wobec 0,0005) i dzieje sie tylko"
+              " przy awarii wyszukiwania u dostawcy."
+              % (poprzedni, zapasowy), flush=True)
+        config.MODEL_FOR["discovery"] = zapasowy
+        # MNIEJ WYSZUKIWAN NA DROGIM MODELU. Osiem kosztowalo 0,68 USD, bo
+        # kazde dokłada wyniki do wejscia nastepnej tury, a wejscie Opusa to
+        # 5 USD za milion tokenow. To jest sufit DNIA AWARII, nie normalny tryb.
+        ile_szukan = config.DISCOVERY_MAX_SEARCHES
+        config.DISCOVERY_MAX_SEARCHES = int(getattr(
+            config, "DISCOVERY_MAX_SEARCHES_ZAPASOWE", ile_szukan))
+        try:
+            text = llm.call(
+                "discovery", DISCOVERY_SYSTEM, prompt,
+                conn=conn, run_id=run_id, web_search=True,
+                collect_urls=real_urls,
+            ) or text
+        except Exception as exc:            # noqa: BLE001
+            print("  [dyskoveria] model zapasowy tez zawiodl (%s: %s)"
+                  % (type(exc).__name__, str(exc)[:90]), flush=True)
+        finally:
+            # ROUTING WRACA NA MIEJSCE. Bez tego jedna awaria dostawcy
+            # przestawialaby caly przebieg na najdrozszy model po cichu.
+            config.MODEL_FOR["discovery"] = poprzedni
+            config.DISCOVERY_MAX_SEARCHES = ile_szukan
     try:
         data = llm.parse_json(text)
     except Exception:
@@ -1020,6 +1142,10 @@ def losuj_odstep(co: str = "") -> float:
     """
     import random
 
+    koszyki = getattr(config, "ODSTEPY_WAZONE", {}).get(co)
+    if koszyki:
+        udzial, dol, gora = random.choices(koszyki, weights=[k[0] for k in koszyki])[0]
+        return random.uniform(dol, gora)
     dol, gora = config.ODSTEPY.get(co, config.ODSTEP_MIEDZY_DZIALANIAMI)
     return random.uniform(dol, gora)
 ```
@@ -1825,6 +1951,17 @@ def rytm(co: str, na_co: str, stan: dict) -> bool:
         print("  [wycofanie] %s: dwie porazki pod rzad — przerwa %.0f min"
               " zamiast zwyklej" % (co, przerwa / 60), flush=True)
 
+    # LIMIT ROZMOW NA GODZINE — komentarze i odpowiedzi razem, z dziennika.
+    # Gdy w ostatnich 60 minutach bylo ich juz `MAKS_ROZMOW_NA_GODZINE`,
+    # przerwa wydluza sie do chwili, w ktorej najstarsza z nich wypadnie z okna.
+    if co in ("komentarz", "odpowiedz") and not getattr(config, "W_TESCIE", False):
+        brakuje = _do_konca_limitu_rozmow()
+        if brakuje > przerwa:
+            print("  [rytm] %d rozmow w ostatniej godzinie — czekam %.0f min zamiast"
+                  " %.0f" % (config.MAKS_ROZMOW_NA_GODZINE, brakuje / 60, przerwa / 60),
+                  flush=True)
+            przerwa = brakuje
+
     if not zostal_czas(na_co, przerwa):
         return False
     _s.odczekaj(co, przerwa)
@@ -1849,8 +1986,8 @@ def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
 
     if _KONIEC_CZASU is None or ile <= 0:
         return ile
-    dol, gora = config.ODSTEPY.get(rodzaj, config.ODSTEP_MIEDZY_DZIALANIAMI)
-    odstep = (dol + gora) / 2
+    # SREDNIA Z KOSZYKOW, gdy przerwy sa wazone — patrz `stages.sredni_odstep`.
+    odstep = stages.sredni_odstep(rodzaj)
     zostalo = max(0.0, _KONIEC_CZASU - time.time()) * udzial
 
     # PRZERW JEST O JEDNA MNIEJ NIZ DZIALAN. Przy dwoch notkach czekamy raz, nie
@@ -2000,8 +2137,29 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         if rodzaj == "subskrypcja" and any(
                 page.get_by_role("button", name=label, exact=True).count()
                 for label in subscription_labels):
-            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
-            print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
+            # TO JEST WYNIK I MUSI ZOSTAC W DZIENNIKU.
+            #
+            # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, przebieg z 13:30:
+            #
+            #     (przerwa 13.6 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #     ...
+            #     (przerwa 10.0 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #
+            # Dwie z czterech prob tego przebiegu, dzien skonczony na 2/4.
+            # Ta galaz wracala bez slowa w dzienniku, a
+            # `kogo_juz_subskrybujemy` zamyka tylko to, co w dzienniku stoi —
+            # wiec te same profile mogly wracac w kolejnych przebiegach.
+            # Wpis idzie jako POMINIECIE, nie jako subskrypcja: niczego dzis
+            # nie kliknelismy i do normy dnia to sie nie liczy.
+            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True,
+                         powod=POWOD_JUZ_SUBSKRYBOWANY)
+            print(f"  darmowa subskrypcja u @{handle} juz aktywna — nie zmieniam"
+                  f" planu", flush=True)
+            if wyslij:
+                zapisz_w_dzienniku("subskrypcja_pominieta", udane=True,
+                                   komu=handle, powod=POWOD_JUZ_SUBSKRYBOWANY)
             return wynik
         if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
             import personality
@@ -2013,7 +2171,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             finally:
                 stats_page.close()
             if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
-                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                wynik.update(pominiete=True, powod=POWOD_ZA_DUZY)
                 if wyslij:
                     zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
                 return wynik
@@ -2033,12 +2191,36 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                           wait_until="domcontentloaded")
                 page.wait_for_timeout(SETTLE_MS + 3000)
-                wynik["zrobione"] = any(
+                # POTWIERDZENIEM JEST ZNIKNIECIE PRZYCISKU, NIE NAPIS
+                # „Subscribed" — bo tego napisu Substack tam nie pisze.
+                #
+                # ZMIERZONE NA ZYWO 11 wrzesnia 2026 na czterech profilach:
+                #
+                #   @becomingabuilder  zasubskrybowany dzis   -> ['Manage']
+                #   @mattgrawitch      zasubskrybowany dzis   -> ['Manage']
+                #   @rubendominguez    nigdy nie probowany    -> ['Subscribe','Manage']
+                #   @omoore            nigdy nie probowany    -> ['Subscribe','Manage']
+                #
+                # Szukalismy „Subscribed", „Subskrybujesz", „Subskrybowano"
+                # albo „Upgrade". Zaden z nich nie pada. Obie dzisiejsze
+                # subskrypcje NAPRAWDE WESZLY i obie zapisaly sie jako
+                # porazka — a `kogo_juz_subskrybujemy` zamyka uchwyt tylko
+                # przy `udane=True`, wiec weszlibysmy na te profile jeszcze raz.
+                #
+                # „Manage" NIE JEST dowodem: stoi na profilach, ktorych nie
+                # subskrybujemy. Dowodem jest BRAK przycisku „Subscribe" —
+                # i dokladnie tak potwierdza sie juz obserwowanie, w galezi
+                # `else` ponizej.
+                zostal = any(
+                    page.get_by_role("button", name=etykieta, exact=True).count()
+                    for etykieta in napisy)
+                wynik["zrobione"] = (not zostal) or any(
                     page.get_by_role("button", name=label, exact=True).count()
                     for label in subscription_labels)
                 wynik["potwierdzone"] = bool(wynik["zrobione"])
                 if not wynik["zrobione"]:
-                    wynik["blad"] = "brak potwierdzenia darmowej subskrypcji na profilu"
+                    wynik["blad"] = ("przycisk subskrypcji nadal stoi na profilu"
+                                     " — klikniecie nie doszlo")
             else:
                 wynik["zrobione"] = k.count() == 0 or not k.is_visible()
             dopisz_wynik(rodzaj, wynik, komu=handle)
@@ -2105,28 +2287,209 @@ def restackuj_w_kanale(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto(url or "https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
+        adres_kanalu = url or "https://substack.com/"
+        page.goto(adres_kanalu, timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
 
         przyciski = page.get_by_role("button", name="Restack")
+        # KANAL TRZEBA PRZEWINAC, ZEBY W OGOLE ISTNIAL.
+        #
+        # Substack doladowuje notki dopiero przy przewijaniu. Ten blok wchodzil
+        # na kanal, czekal i liczyl przyciski — czyli widzial JEDEN EKRAN.
+        #
+        # ZMIERZONE NA ZYWO 10 wrzesnia 2026, ten sam kanal, ta sama sesja,
+        # w odstepie minuty:
+        #     bez przewijania      4 przyciski
+        #     po trzech przewinieciach  14 przyciskow
+        #
+        # Skutek widac w normie: restacki chodzily na 42 procent, dokladnie
+        # jeden na przebieg przy budzecie dwoch do czterech. Z czterech
+        # kandydatow jeden wypadal poza rewirem, kilka odrzucal model i
+        # zostawal jeden. Pula nie byla chuda — byla nieodczytana.
+        #
+        # Przewijamy, dopoki przybywa przyciskow i dopoki nie mamy ich
+        # wyraznie wiecej niz budzet. Stop na braku przyrostu, zeby nie
+        # przewijac w nieskonczonosc kanalu, ktory sie skonczyl.
+        def doladuj(cel_przyciskow: int) -> int:
+            """Przewija, dopoki przybywa przyciskow i jest ich mniej niz cel.
+
+            Oddaje liczbe SPRZED przewijania, zeby wydruk pokazal przyrost.
+            """
+            przed = przyciski.count()
+            poprzednio = -1
+            for krok in range(8):
+                teraz = przyciski.count()
+                if teraz >= cel_przyciskow or teraz == poprzednio:
+                    break
+                poprzednio = teraz
+                # `mouse.wheel` wymaga, zeby wskaznik stal nad przewijanym
+                # obszarem, a po wejsciu na strone stoi w rogu — zmierzone
+                # 10 wrzesnia: blok restackow widzial 5 notek, a ten sam kanal
+                # przewiniety przez `scrollBy` oddal 15. Robimy jedno i drugie,
+                # bo `scrollBy` nie dziala tam, gdzie przewija sie kontener,
+                # a nie okno.
+                try:
+                    page.evaluate("window.scrollBy(0, 1600)")
+                except Exception:                      # noqa: BLE001
+                    pass
+                page.mouse.move(600, 500)
+                page.mouse.wheel(0, 1400)
+                page.wait_for_timeout(1400)
+            return przed
+
+        cel = max(int(ile) * 4, 12)
+        przed_przewinieciem = doladuj(cel)
+        if przyciski.count() > przed_przewinieciem:
+            print("  kanal przewiniety: %d -> %d notek"
+                  % (przed_przewinieciem, przyciski.count()), flush=True)
         wynik["znalezione"] = przyciski.count()
         print(f"  notek w kanale do rozwazenia: {wynik['znalezione']}", flush=True)
 
-        for i in range(min(ile * 4, przyciski.count())):
-            if wynik["restackowane"] >= ile:
+        # PO RESTACKU INDEKSY TRACILY WAZNOSC.
+        #
+        # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dzieki rachunkowi dolozonemu
+        # tego samego dnia:
+        #
+        #     notek w kanale do rozwazenia: 5
+        #     RESTACK u Chelsea Salamone ... podane dalej 1/2
+        #     pomijam (przycisk niewidoczny, pozycja 1)
+        #     pomijam (przycisk niewidoczny, pozycja 2)
+        #     pomijam (przycisk niewidoczny, pozycja 3)
+        #     pomijam (przycisk niewidoczny, pozycja 4)
+        #     rachunek: 5 znalezionych -> 4 niewidocznych -> 1 podanych dalej
+        #
+        # Pierwszy restack przechodzi, a wszystkie pozostale pozycje z tej samej
+        # listy staja sie niewidoczne. Osobny pomiar tego samego dnia pokazal,
+        # ze przy samym OTWARCIU i zamknieciu okna lista przezywa w calosci —
+        # rozbija ja dopiero prawdziwa publikacja.
+        #
+        # SPROSTOWANIE 13 wrzesnia 2026. Wtedy uznalem, ze to Substack
+        # przestawia kanal po podaniu dalej. Nie przestawial. Po publikacji
+        # petla pytala o numer naszej notki, a `api_json` czyta API, WCHODZAC
+        # na adres JSON — ta sama karta, na ktorej stal kanal. Stad pozycje
+        # „niewidoczne" 10 wrzesnia i zero przyciskow 12 wrzesnia. Numer
+        # czytamy teraz w osobnej karcie, patrz nizej.
+        #
+        # Odcisk tresci zostaje, bo jest poprawny niezaleznie od przyczyny:
+        # obsluzonych poznajemy po tym, co napisali, a nie po numerze pozycji.
+        zrobione_odciski: set = set()
+        # AUTORZY Z OSTATNICH DNI — zeby kanal nie zamienil sie w tube jednego
+        # zrodla. Patrz `kogo_juz_restackowalismy`: trzy z trzynastu restackow
+        # poszly do tej samej publikacji.
+        odpoczywaja = kogo_juz_restackowalismy()
+        if odpoczywaja:
+            print("  %d autorow odpoczywa po niedawnym restacku"
+                  % len(odpoczywaja), flush=True)
+        obrotow = 0
+        MAKS_OBROTOW = max(int(ile) * 6, 18)
+        doladowan = 0
+        MAKS_DOLADOWAN = 2
+        while wynik["restackowane"] < ile and obrotow < MAKS_OBROTOW:
+            obrotow += 1
+            kandydat = None
+            odcisk_kandydata = ""
+            while kandydat is None:
+                ile_teraz = przyciski.count()
+                skan = {"niewidoczne": 0, "bez_tekstu": 0, "juz_byly": 0, "blad": 0}
+                for i in range(ile_teraz):
+                    probny = przyciski.nth(i)
+                    try:
+                        if not probny.is_visible():
+                            skan["niewidoczne"] += 1
+                            continue
+                        wstepna = _notka_przy_przycisku(probny)
+                    except Exception:                  # noqa: BLE001
+                        skan["blad"] += 1
+                        continue
+                    odcisk = plaski(str(wstepna.get("tekst") or ""))[:120]
+                    if not odcisk:
+                        skan["bez_tekstu"] += 1
+                        continue
+                    if odcisk in zrobione_odciski:
+                        skan["juz_byly"] += 1
+                        continue
+                    kandydat, odcisk_kandydata = probny, odcisk
+                    break
+                if kandydat is not None:
+                    break
+                # SKAN PUSTY — MOWIMY, Z CZEGO. „Nie ma nowych notek" przy
+                # pietnastu w kanale to wynik, ktory trzeba umiec rozlozyc.
+                print("    (skan: %d przyciskow -> %d niewidocznych, %d bez"
+                      " tekstu, %d juz obsluzonych, %d bledow odczytu)"
+                      % (ile_teraz, skan["niewidoczne"], skan["bez_tekstu"],
+                         skan["juz_byly"], skan["blad"]), flush=True)
+                if doladowan >= MAKS_DOLADOWAN:
+                    break
+                # KANAL WYCZERPANY TO NIE KONIEC NORMY. Najpierw przewijamy
+                # glebiej na tej samej stronie — to nic nie kosztuje i nie
+                # gubi miejsca. Dopiero gdy nic nie przybywa (albo kanalu
+                # w ogole nie ma na stronie), wchodzimy na niego od nowa.
+                # Obsluzone notki i tak odpadna po odcisku, a sufit dwoch
+                # doladowan nie pozwala krecic sie w kolko po pustym kanale.
+                doladowan += 1
+                if ile_teraz:
+                    doladuj(ile_teraz + 12)
+                if przyciski.count() <= ile_teraz:
+                    page.keyboard.press("Escape")
+                    page.goto(adres_kanalu, timeout=READ_TIMEOUT_MS * 2,
+                              wait_until="domcontentloaded")
+                    page.wait_for_timeout(SETTLE_MS + 6000)
+                    doladuj(max(cel, ile_teraz + 12))
+                print("    kanal doladowany (%d/%d): %d -> %d notek"
+                      % (doladowan, MAKS_DOLADOWAN, ile_teraz, przyciski.count()),
+                      flush=True)
+            if kandydat is None:
+                print("    (nie ma juz nowych notek do rozwazenia)", flush=True)
                 break
-            kandydat = przyciski.nth(i)
+            zrobione_odciski.add(odcisk_kandydata)
             try:
+                # TRZY CICHE ODPADY, TERAZ GLOSNE.
+                #
+                # ZMIERZONE na produkcji 7-10 wrzesnia 2026: restacki chodza na
+                # 42 procent normy, a dziennie wychodzi DOKLADNIE JEDEN przy
+                # budzecie czterech. W logu stalo za kazdym razem to samo:
+                #
+                #     notek w kanale do rozwazenia: 6
+                #     [restack] claude-opus-5 ... (jedno wywolanie)
+                #     podane dalej 1/2
+                #
+                # Szesciu kandydatow, JEDNO pytanie do modelu. Pieciu odpadalo
+                # przed ocena i nie zostawialo po sobie ani slowa, bo wszystkie
+                # trzy odsiewy konczyly sie golym `continue`. Z zewnatrz
+                # wygladalo to jak pusty kanal, a kanal pusty nie byl.
+                #
+                # Nie zgaduje, ktory z tych trzech odsiewow to robi — od tego
+                # jest pomiar. Kazdy mowi teraz o sobie i trafia do licznika.
                 if not kandydat.is_visible():
+                    wynik["niewidoczne"] = wynik.get("niewidoczne", 0) + 1
+                    print("    pomijam (przycisk zniknal miedzy wyborem"
+                          " a klinieciem)", flush=True)
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.
                 kto = _autor_przy_przycisku(kandydat)
                 if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    wynik["nasze"] = wynik.get("nasze", 0) + 1
+                    print("    pomijam (to nasza wlasna notka)", flush=True)
                     continue
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
+                    wynik["bez_tresci"] = wynik.get("bez_tresci", 0) + 1
+                    print("    pomijam (nie odczytalem tresci notki u %s)"
+                          % (str((kto or {}).get("autor") or "?")[:24]),
+                          flush=True)
+                    continue
+                # AUTOR Z TEGO TYGODNIA ODPOCZYWA. Nie „nigdy wiecej" — siedem
+                # dni. Dobry autor ma wracac, tylko nie codziennie.
+                autor_teraz = " ".join(
+                    str(notka.get("autor") or (kto or {}).get("autor") or "").split())
+                odcisk_zrodla = plaski(str(notka.get("tekst") or ""))[:120].casefold()
+                if ((autor_teraz and autor_teraz.casefold() in odpoczywaja)
+                        or (odcisk_zrodla and odcisk_zrodla in odpoczywaja)):
+                    wynik["odpoczywa"] = wynik.get("odpoczywa", 0) + 1
+                    print("    pomijam (%s juz byl podany dalej w tym tygodniu)"
+                          % (autor_teraz[:30] or "ta notka"), flush=True)
                     continue
                 # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
                 if not w_rewirze(notka["tekst"]):
@@ -2202,11 +2565,36 @@ def restackuj_w_kanale(
                 # zmierzyc — a to najcenniejszy sygnal, jaki mamy: w badaniu
                 # 9 641 notek restack konwertowal dwunastokrotnie lepiej niz
                 # polubienie.
+                #
+                # NUMER CZYTAMY W OSOBNEJ KARCIE, NIE NA KANALE.
+                #
+                # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, oba przebiegi dnia:
+                #
+                #     notek w kanale do rozwazenia: 15
+                #     RESTACK u Kai Marek ...
+                #     podane dalej 1/3
+                #     (nie ma juz nowych notek do rozwazenia)
+                #
+                # `numer_naszej_notki` pyta API przez `api_json`, a ta funkcja
+                # WCHODZI na adres JSON — tak dziala z serwera, patrz jej opis.
+                # Dostawala `page`, wiec kanal znikal spod petli i nastepny obrot
+                # liczyl zero przyciskow. Tak bylo od pierwszego commita (4
+                # wrzesnia) i to jest ten „dokladnie jeden restack na przebieg"
+                # z pomiarow 7-10 wrzesnia. Proba sucha tego nie widziala, bo
+                # o numer nie pyta — robila cztery restacki z rzedu.
                 numer_restacka = ""
+                karta_numeru = None
                 try:
-                    numer_restacka = numer_naszej_notki(page, zdanie, prob=2)
+                    karta_numeru = context.new_page()
+                    numer_restacka = numer_naszej_notki(karta_numeru, zdanie, prob=2)
                 except Exception:
                     pass
+                finally:
+                    if karta_numeru is not None and karta_numeru is not page:
+                        try:
+                            karta_numeru.close()
+                        except Exception:              # noqa: BLE001
+                            pass
                 # OTWARTE, SWIADOMIE NIETKNIETE: `udane=True` ponizej opiera sie
                 # na samym lancuchu klikniec, a nie na potwierdzeniu. To jest ta
                 # sama doktryna „klikniecie nie jest dowodem", ktora obowiazuje
@@ -2234,10 +2622,15 @@ def restackuj_w_kanale(
                 # `udane` powinno od niego zalezec. Nie zgaduje, jak Substack
                 # nazywa stan przycisku po restacku, i nie ruszam tego bez tej
                 # liczby.
+                # ODCISK CUDZEJ NOTKI OBOK AUTORA. Zmierzone 11 wrzesnia
+                # 2026: dwa z trzynastu restackow nie maja zapisanego autora
+                # („?" w zestawieniu), wiec odpoczynek autora nie mialby ich
+                # jak rozpoznac. Odcisk tresci dziala takze wtedy.
                 zapisz_w_dzienniku("restack", udane=True,
                                    komu=notka.get("autor", ""),
                                    slow=len(zdanie.split()),
-                                   tekst=zdanie[:300], id=numer_restacka)
+                                   tekst=zdanie[:300], id=numer_restacka,
+                                   zrodlo=plaski(str(notka.get("tekst") or ""))[:120])
                 if config.PERSONA_WLACZONA and numer_restacka:
                     import personality
                     personality.remember_interaction("restack", ocena,
@@ -2259,6 +2652,17 @@ def restackuj_w_kanale(
                     page.wait_for_timeout(600)
                 except Exception:
                     pass
+        # RACHUNEK CALEGO BLOKU, ZAWSZE. Bez tego jednego zdania trzeba
+        # przegladac log linia po linii, zeby odpowiedziec na pytanie
+        # „czemu jeden restack, skoro budzet ma cztery".
+        print("  rachunek: %d znalezionych -> %d niewidocznych, %d naszych,"
+              " %d bez tresci, %d odpoczywa, %d poza rewirem -> %d ocenionych,"
+              " %d odmow -> %d podanych dalej"
+              % (wynik["znalezione"], wynik.get("niewidoczne", 0),
+                 wynik.get("nasze", 0), wynik.get("bez_tresci", 0),
+                 wynik.get("odpoczywa", 0), wynik.get("poza_rewirem", 0),
+                 wynik["rozwazone"], len(wynik["odmowy"]),
+                 wynik["restackowane"]), flush=True)
         if not wyslij:
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)

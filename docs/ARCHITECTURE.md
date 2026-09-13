@@ -3,7 +3,7 @@
 Two pipelines, one process, twenty-four modules. This document is the map: what
 each directory holds, what each module does, and how a run actually proceeds.
 
-For the complete function-level inventory — 789 functions with line numbers,
+For the complete function-level inventory — 830 functions with line numbers,
 cost markers and call edges — see [FUNCTION_MAP.md](FUNCTION_MAP.md), which is
 generated from the abstract syntax tree.
 
@@ -24,7 +24,7 @@ agent-v2/              the bot. Everything that runs is here
   db.py                four tables, narrow column migrations
   gates.py             deterministic checks on finished text
   prompts/             27 prompt files, read from disk on every call
-  tests/               211 free tests, 9 paid ones in tests/platne/
+  tests/               231 free tests, 9 paid ones in tests/platne/
   systemd/             three services, three timers
   dokumentacja-zrodla/ the generator for the reconstruction document
   data/                database, journal, session — gitignored, never committed
@@ -45,7 +45,7 @@ research has already been paid for.
 |---|---|---|---|---|
 | `stages.py` | 7,226 | ~3,320 | 43% | every model stage |
 | `browser.py` | 5,131 | ~2,470 | 41% | the entire Substack layer |
-| `run.py` | 2,843 | ~1,211 | 49% | orchestration |
+| `run.py` | 2,843 | ~1,226 | 49% | orchestration |
 | `config.py` | 2,714 | ~900 | 57% | settings, with reasons |
 
 That prose is not decoration. It records what was measured and why a number is
@@ -244,7 +244,7 @@ without a denominator is not a measurement.
 
 ## What is universal and what is not
 
-Measured across the 789 functions:
+Measured across the 830 functions:
 
 | layer | functions | portable? |
 |---|---|---|

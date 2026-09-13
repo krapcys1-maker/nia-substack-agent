@@ -1700,8 +1700,178 @@ def losuj_odstep(co: str = "") -> float:
     """
     import random
 
+    koszyki = getattr(config, "ODSTEPY_WAZONE", {}).get(co)
+    if koszyki:
+        udzial, dol, gora = random.choices(koszyki, weights=[k[0] for k in koszyki])[0]
+        return random.uniform(dol, gora)
     dol, gora = config.ODSTEPY.get(co, config.ODSTEP_MIEDZY_DZIALANIAMI)
     return random.uniform(dol, gora)
+
+
+def sredni_odstep(co: str = "") -> float:
+    """Srednia przerwa tego rodzaju — z koszykow, gdy sa, inaczej srodek widelek.
+
+    `run.zmiesci_sie` szacuje z tej liczby, ile dzialan zmiesci sie w przebiegu.
+    Srodek zewnetrznych widelek przy koszykach wazonych klamalby: dlugi, rzadki
+    koszyk przesuwalby go o kilka minut w gore i przebieg bralby mniej, niz
+    naprawde zdazy.
+    """
+    koszyki = getattr(config, "ODSTEPY_WAZONE", {}).get(co)
+    if koszyki:
+        razem = sum(k[0] for k in koszyki) or 1.0
+        return sum(k[0] * (k[1] + k[2]) / 2 for k in koszyki) / razem
+    dol, gora = config.ODSTEPY.get(co, config.ODSTEP_MIEDZY_DZIALANIAMI)
+    return (dol + gora) / 2
+
+
+# --- komu odpisujemy u siebie ------------------------------------------------
+_POCHWALA = re.compile(
+    r"^\W*(great|nice|love|loved|amazing|awesome|brilliant|fantastic|"
+    r"excellent|beautiful|so true|agreed|exactly|wow|well said|"
+    r"thanks|thank you|great (post|read|piece|point|note)|love this|"
+    r"thanks for sharing|so good|spot on|well put)\b", re.I)
+_PROMOCJA = re.compile(
+    r"(check out my|subscribe to my|my (newsletter|substack|latest post)|"
+    r"follow me|link in (my )?bio|dm me|visit my)", re.I)
+_NIEZGODA = re.compile(
+    r"(disagree|not sure|i don'?t think|i do not think|\bwrong\b|however|"
+    r"push back|not convinced|counterpoint|i'?d argue|isn'?t that|"
+    r"that'?s not)", re.I)
+
+
+def rodzaj_komentarza(k: dict[str, Any]) -> str:
+    """spam / pusty / pytanie / niezgoda / rozmowa / zwykly — bez modelu, za darmo.
+
+    Bez modelu, bo decyzja ma byc przewidywalna, sprawdzalna testem i nie moze
+    kosztowac przy kazdym przebiegu tyle, ile kosztuje sama odpowiedz.
+    """
+    tekst = str(k.get("tekst") or "").strip()
+    slowa = re.findall(r"[^\W\d_]+", tekst)
+    ma_link = bool(re.search(r"https?://|www\.|\.substack\.com", tekst, re.I))
+    if (ma_link and (_PROMOCJA.search(tekst) or len(slowa) <= 6)) or (
+            _PROMOCJA.search(tekst) and len(slowa) <= 25):
+        return "spam"
+    if len(slowa) <= 3 or (len(slowa) <= 6 and _POCHWALA.search(tekst)
+                           and "?" not in tekst):
+        return "pusty"
+    if "?" in tekst and len(slowa) >= 4:
+        return "pytanie"
+    if _NIEZGODA.search(tekst) and len(slowa) >= 6:
+        return "niezgoda"
+    if k.get("gdzie") == "komentarz_obcy":
+        return "rozmowa"
+    return "zwykly"
+
+
+def _klucz_komentarza(k: dict[str, Any]) -> str:
+    return "%s:%s" % (k.get("gdzie") or "notka", k.get("id") or k.get("pod_id") or "")
+
+
+def _plik_decyzji() -> Path:
+    return Path(config.DATA_DIR) / "decyzje_odpowiedzi.json"
+
+
+def _wczytaj_decyzje(plik: Path) -> dict[str, Any]:
+    try:
+        dane = json.loads(plik.read_text(encoding="utf-8"))
+        return dane if isinstance(dane, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _zapisz_decyzje(plik: Path, dane: dict[str, Any], teraz: datetime) -> None:
+    from datetime import timedelta
+
+    granica = (teraz - timedelta(days=30)).isoformat()
+    dane = {k: v for k, v in dane.items()
+            if isinstance(v, dict) and str(v.get("kiedy") or "") >= granica}
+    plik.parent.mkdir(parents=True, exist_ok=True)
+    tymczasowy = plik.with_suffix(".json.tmp")
+    tymczasowy.write_text(json.dumps(dane, ensure_ascii=False, indent=1), encoding="utf-8")
+    tymczasowy.replace(plik)
+
+
+def zdecyduj_o_odpowiedziach(
+    czekaja: list[dict[str, Any]], *, zapisuj: bool, los=None,
+    plik: Path | None = None, teraz: datetime | None = None,
+) -> list[dict[str, Any]]:
+    """Ktore komentarze u nas dostana odpowiedz. Reszta zostaje bez — swiadomie.
+
+    Decyzja zapada RAZ na komentarz i zostaje w `decyzje_odpowiedzi.json`
+    (tylko przy prawdziwej wysylce — proba sucha niczego nie przesadza).
+    Rozmowa w watku ma koniec: tej samej osobie pod tym samym tekstem
+    odpisujemy w tygodniu najwyzej `ROZMOWA_MAKS_ODPOWIEDZI` razy.
+    """
+    import random
+    from datetime import datetime, timedelta, timezone
+
+    # DARMOWY TEST, KTORY NIE PODAL WLASNEGO LOSU, ODPISUJE WSZYSTKIM poza
+    # spamem: testy blokow `run.dzien()` na atrapach maja byc powtarzalne,
+    # a sam mechanizm sprawdza `test_rozmowy_i_odpowiedzi.py` z podanym losem.
+    if los is None:
+        los = (lambda: 0.0) if getattr(config, "W_TESCIE", False) else random.random
+    wlasny_plik = plik is not None
+    plik = plik or _plik_decyzji()
+    teraz = teraz or datetime.now(timezone.utc)
+    dane = _wczytaj_decyzje(plik)
+    tydzien = (teraz - timedelta(days=7)).isoformat()
+    szanse = getattr(config, "SZANSA_ODPOWIEDZI", {})
+    wybrane: list[dict[str, Any]] = []
+    zmiana = False
+    for k in czekaja:
+        klucz = _klucz_komentarza(k)
+        stara = dane.get(klucz)
+        if isinstance(stara, dict):
+            if stara.get("decyzja") == "odpisz":
+                wybrane.append(k)
+            continue
+        typ = rodzaj_komentarza(k)
+        szansa = float(szanse.get(typ, 0.6))
+        # ILE RAZY JUZ ODPISALISMY TEJ OSOBIE POD TYM TEKSTEM W TYM TYGODNIU.
+        autor = str(k.get("autor") or "").strip().casefold()
+        miejsce = str(k.get("url") or k.get("pod_id") or "")
+        wczesniej = sum(1 for v in dane.values()
+                        if isinstance(v, dict) and v.get("decyzja") == "odpisz"
+                        and str(v.get("autor") or "").casefold() == autor and autor
+                        and str(v.get("miejsce") or "") == miejsce
+                        and str(v.get("kiedy") or "") >= tydzien)
+        if wczesniej >= getattr(config, "ROZMOWA_MAKS_ODPOWIEDZI", 2):
+            szansa = 0.0
+        elif wczesniej:
+            szansa = min(szansa, getattr(config, "ROZMOWA_SZANSA_DALEJ", 0.4))
+        decyzja = "odpisz" if los() < szansa else "pomin"
+        print("  [odpowiedzi] %s %s (%s, szansa %d%%%s): %s"
+              % ("ODPISUJE" if decyzja == "odpisz" else "pomijam", k.get("autor") or "?",
+                 typ, round(szansa * 100),
+                 ", %d. raz w tym watku" % (wczesniej + 1) if wczesniej else "",
+                 str(k.get("tekst") or "")[:60].replace("\n", " ")), flush=True)
+        dane[klucz] = {"decyzja": decyzja, "typ": typ, "szansa": szansa,
+                       "kiedy": teraz.isoformat(timespec="seconds"),
+                       "autor": k.get("autor") or "", "miejsce": miejsce}
+        zmiana = True
+        if decyzja == "odpisz":
+            wybrane.append(k)
+    # Darmowy test bez wlasnego pliku nie pisze do danych instancji.
+    if zmiana and zapisuj and (wlasny_plik or not getattr(config, "W_TESCIE", False)):
+        _zapisz_decyzje(plik, dane, teraz)
+    return wybrane
+
+
+def zapamietaj_decyzje(k: dict[str, Any], decyzja: str, powod: str, *,
+                       zapisuj: bool, plik: Path | None = None) -> None:
+    """Zmiana decyzji po fakcie — np. model zamilkl, wiec nie pytamy go znowu jutro."""
+    if not zapisuj or (plik is None and getattr(config, "W_TESCIE", False)):
+        return
+    from datetime import datetime, timezone
+
+    plik = plik or _plik_decyzji()
+    teraz = datetime.now(timezone.utc)
+    dane = _wczytaj_decyzje(plik)
+    wpis = dict(dane.get(_klucz_komentarza(k)) or {})
+    wpis.update(decyzja=decyzja, powod=powod, kiedy=teraz.isoformat(timespec="seconds"),
+                autor=k.get("autor") or "", miejsce=str(k.get("url") or k.get("pod_id") or ""))
+    dane[_klucz_komentarza(k)] = wpis
+    _zapisz_decyzje(plik, dane, teraz)
 
 
 def odczekaj(co: str = "", ile: float | None = None) -> None:
@@ -6249,10 +6419,132 @@ def discovery(
         ) or "(none yet - this is the first article of this account)"),
     )
     real_urls: list[str] = []
-    text = llm.call(
-        "discovery", DISCOVERY_SYSTEM, prompt,
-        conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
-    )
+    # PIERWSZE WYWOLANIE TEZ POD OSLONA, i to jest drugi regres tej samej
+    # poprawki, zlapany na produkcji. Ratunek nizej siedzial za `if not
+    # real_urls`, wiec dzialal tylko wtedy, gdy pierwsze wywolanie WROCILO.
+    # A ono nie wracalo: `llm.Truncated: Search completed without usable text
+    # or URLs` leci z `llm.call`, czyli przebieg umieral przed ratunkiem.
+    # Trzy przebiegi artykulu pod rzad zginely dokladnie tak.
+    text = ""
+    try:
+        text = llm.call(
+            "discovery", DISCOVERY_SYSTEM, prompt,
+            conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
+        )
+    except Exception as exc:                # noqa: BLE001
+        print("  [dyskoveria] pierwsza proba padla (%s: %s)"
+              % (type(exc).__name__, str(exc)[:90]), flush=True)
+    # ZERO WYSZUKIWAN — PYTAMY DRUGI RAZ, ZANIM ZABIJEMY ARTYKUL.
+    #
+    # `tool_choice: "auto"` znaczy, ze model MOZE nie siegnac po narzedzie, i
+    # czasem nie siega. Zmierzone na logach serwera:
+    #
+    #     8 wrzesnia   szukania=18, 12       wejscie 325k / 91k tokenow
+    #     9 wrzesnia   szukania=15, 6        wejscie 132k / 30k
+    #     10 wrzesnia  szukania=0, 0         wejscie 1288 / 1357
+    #
+    # Liczba tokenow wejscia jest tu dowodem: przy prawdziwym szukaniu wracaja
+    # wyniki i wejscie idzie w setki tysiecy. Dzis model odpowiedzial od reki
+    # z pamieci, DWA RAZY POD RZAD, i straznik dwa razy sluszenie wywalil caly
+    # przebieg artykulu — po oplaceniu tematu, pytan i klasyfikacji.
+    #
+    # Wymuszenie `{"type": "web_search"}` NIE jest odpowiedzia i zostalo juz raz
+    # sprawdzone na zywo: model wolal narzedzie w kolko, 15 wyszukiwan i ani
+    # jednego zdania odpowiedzi (patrz `llm._deepseek`). Powtorzenie tego samego
+    # zapytania kosztuje 0,003 USD i jest jedyna roznica miedzy artykulem
+    # a brakiem artykulu.
+    if not real_urls:
+        print("  [dyskoveria] zero wyszukiwan — model odpowiedzial z pamieci."
+              " Pytam drugi raz.", flush=True)
+        # POWTORKA NIE MA PRAWA POGORSZYC SYTUACJI, i to jest wlasny regres
+        # zlapany na produkcji godzine po napisaniu tej poprawki. Druga proba
+        # rzucila `llm.Truncated: Search completed without usable text or URLs`
+        # i zabila przebieg wyjatkiem, ktory NIC nie mowi o przyczynie — gorzej
+        # niz straznik nizej, ktory nazywa rzecz po imieniu.
+        #
+        # Ratunek ma prawo nie zadzialac. Nie ma prawa zamienic czytelnej
+        # diagnozy w niezrozumialy blad.
+        try:
+            text = llm.call(
+                "discovery", DISCOVERY_SYSTEM, prompt,
+                conn=conn, run_id=run_id, web_search=True,
+                collect_urls=real_urls,
+            ) or text
+        except Exception as exc:            # noqa: BLE001
+            print("  [dyskoveria] druga proba tez nie szukala (%s: %s)"
+                  % (type(exc).__name__, str(exc)[:90]), flush=True)
+
+    # AWARIA DOSTAWCY NIE MA KASOWAC ARTYKULU. Ostatnie wyjscie, drogie i glosne.
+    #
+    # ZMIERZONE NA SERWERZE 10 wrzesnia 2026, gole wywolanie z jednym zdaniem
+    # polecenia „You MUST use the web_search tool before answering":
+    #     deepseek-v4-flash   wej=103  wyj=91   zero adresow, `Truncated`
+    #     claude-opus-5       wej=38463 wyj=2230 szukania=2, 19 adresow
+    # Dwa dni wczesniej ten sam deepseek robil po 12-18 wyszukiwan na wywolanie.
+    # To nie jest nasz blad ani zly prompt — to niedostepne narzedzie po stronie
+    # dostawcy, i trwalo caly dzien.
+    #
+    # CENA JEST PRAWDZIWA I DLATEGO TO JEST OSTATNIE WYJSCIE, nie pierwsze:
+    # tamto jedno wywolanie Opusa kosztowalo 0,27 USD wobec 0,0005 na deepseeku.
+    # Wchodzi wylacznie wtedy, gdy skonfigurowany model nie szukal DWA RAZY,
+    # czyli w dniu awarii — a wtedy wybor stoi miedzy drozszym artykulem
+    # a brakiem artykulu, i wlasciciel wybral drozszy artykul.
+    zapasowy = getattr(config, "MODEL_ZAPASOWY_WYSZUKIWANIA", config.CLAUDE)
+    if not real_urls and config.MODEL_FOR.get("discovery") != zapasowy:
+        # NIE ZJADAMY BUDZETU PISARZA NA RESEARCH.
+        #
+        # Pierwsza wersja tego wyjscia zrobila dokladnie to: awaryjne odkrycie
+        # na Opusie kosztowalo 0,68 USD przy `RUN_LIMIT_USD` 1,50, reszta
+        # etapow dobila do 1,05, a pisarz padl z `BudgetExceeded`. Zaplacilismy
+        # za material i nie dostalismy tekstu — najgorszy mozliwy wynik, gorszy
+        # niz brak artykulu, bo brak artykulu jest darmowy.
+        rezerwa = float(getattr(config, "REZERWA_NA_PISARZA_USD", 0.60))
+        # SZACUNEK MA SZACOWAC TE RZECZ, KTORA SZACUJE. Pierwsza wersja brala
+        # tu `rezerwa` takze jako koszt wyszukiwania i odmawiala przy 1,18 USD
+        # w przebiegu, choc 0,35 na research plus 0,60 na pisarza miescilo sie
+        # tam bez trudu.
+        koszt = float(getattr(config, "KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD", 0.40))
+        try:
+            zostalo = db.available_budget(conn, run_id)
+        except Exception:                   # noqa: BLE001
+            zostalo = float("inf")
+        if zostalo - koszt < rezerwa:
+            print("  [dyskoveria] awaryjne wyszukiwanie WSTRZYMANE: w przebiegu"
+                  " zostalo %.2f USD, samo wyszukiwanie kosztuje okolo %.2f,"
+                  " a pisarzowi trzeba zostawic %.2f. Lepiej nie zaczynac, niz"
+                  " zaplacic za material i nie napisac tekstu."
+                  % (zostalo, koszt, rezerwa), flush=True)
+            raise ValueError(
+                "wyszukiwanie u dostawcy nie dziala, a na awaryjne (model %s)"
+                " nie ma budzetu w tym przebiegu: zostalo %.2f USD, potrzeba"
+                " %.2f na research i %.2f na pisarza"
+                % (zapasowy, zostalo, koszt, rezerwa))
+        poprzedni = config.MODEL_FOR["discovery"]
+        print("  [dyskoveria] %s nie wyszukuje — PRZECHODZE NA %s. To jest"
+              " DROZSZE (zmierzone: 0,27 USD wobec 0,0005) i dzieje sie tylko"
+              " przy awarii wyszukiwania u dostawcy."
+              % (poprzedni, zapasowy), flush=True)
+        config.MODEL_FOR["discovery"] = zapasowy
+        # MNIEJ WYSZUKIWAN NA DROGIM MODELU. Osiem kosztowalo 0,68 USD, bo
+        # kazde dokłada wyniki do wejscia nastepnej tury, a wejscie Opusa to
+        # 5 USD za milion tokenow. To jest sufit DNIA AWARII, nie normalny tryb.
+        ile_szukan = config.DISCOVERY_MAX_SEARCHES
+        config.DISCOVERY_MAX_SEARCHES = int(getattr(
+            config, "DISCOVERY_MAX_SEARCHES_ZAPASOWE", ile_szukan))
+        try:
+            text = llm.call(
+                "discovery", DISCOVERY_SYSTEM, prompt,
+                conn=conn, run_id=run_id, web_search=True,
+                collect_urls=real_urls,
+            ) or text
+        except Exception as exc:            # noqa: BLE001
+            print("  [dyskoveria] model zapasowy tez zawiodl (%s: %s)"
+                  % (type(exc).__name__, str(exc)[:90]), flush=True)
+        finally:
+            # ROUTING WRACA NA MIEJSCE. Bez tego jedna awaria dostawcy
+            # przestawialaby caly przebieg na najdrozszy model po cichu.
+            config.MODEL_FOR["discovery"] = poprzedni
+            config.DISCOVERY_MAX_SEARCHES = ile_szukan
     try:
         data = llm.parse_json(text)
     except Exception:
@@ -8439,6 +8731,18 @@ def wez_kandydatow(ile: int = 1,
     return wziete
 
 
+# FAKTY WYDANE W TYM PROCESIE. Pamiec permanentna zna tylko notki, ktore JUZ
+# WYSZLY — a partia pisze sie w calosci przed pierwsza publikacja, wiec przy
+# drugiej notce dziennik jeszcze o pierwszej nie wie. Ta lista jest jedynym
+# miejscem, w ktorym widac, ze przed chwila wzielismy sasiada z tej samej polki.
+_FAKTY_TEGO_PRZEBIEGU: list[dict[str, Any]] = []
+
+
+def zapomnij_fakty_przebiegu() -> None:
+    """Czysci pamiec wydanych faktow — dla testow i dlugo zyjacego procesu."""
+    _FAKTY_TEGO_PRZEBIEGU.clear()
+
+
 def fakt_na_notke() -> dict[str, Any] | None:
     """Jeden fakt z banku dla notki — albo `None`, gdy bank ma go zostawic.
 
@@ -8468,8 +8772,26 @@ def fakt_na_notke() -> dict[str, Any] | None:
     a nie depesza.
     """
     try:
+        # KILKU KANDYDATOW, NIE JEDEN — i to jest cala ta poprawka.
+        #
+        # ZMIERZONE 10 wrzesnia 2026. Trzy kolejne generacje notek, kazda
+        # osobnym wywolaniem, daly TRZY NOTKI O TYM SAMYM: chinscy specjalisci
+        # po studiach uczacy modeli za grosze. Nie dlatego, ze bank byl chudy —
+        # dlatego, ze ta funkcja brala z niego POZYCJE PIERWSZA i nikt nie
+        # pytal, czy poprzednia notka nie byla o tym samym.
+        #
+        # Straznik blizniakow w `wez_kandydatow` porownuje kandydatow MIEDZY
+        # SOBA w jednej partii. Przy `ile=1` partia ma jednego czlonka, wiec
+        # straznik nie ma czego z czym porownac i nie strzela ANI RAZU.
+        #
+        # `wybierz_material` robi dokladnie to, czego tu brakowalo, i istnieje
+        # od 17 sierpnia: odrzuca fakt zderzajacy sie z dzisiejszymi notkami,
+        # z pamiecia WSZYSTKICH wystawionych i ze wspolna nazwa wlasna. Sciezka
+        # artykulu i `notki_dnia` przez nia ida; ta jedna — nowa, z 9 wrzesnia —
+        # jej nie wolala. Sygnal wytworzony i wyrzucony, ten sam ksztalt wady,
+        # co reszta tego audytu.
         wziete = wez_kandydatow(
-            1, unikaj_artykulowych=True,
+            6, unikaj_artykulowych=True,
             zostaw=int(getattr(config, "BANK_REZERWA_NA_ARTYKUL", 3)))
     except Exception as exc:            # noqa: BLE001
         # BANK NIGDY NIE ZABIJA NOTKI. Zepsuty plik indeksu ma oznaczac notke
@@ -8477,7 +8799,29 @@ def fakt_na_notke() -> dict[str, Any] | None:
         print("  [indeks] fakt na notke niedostepny (%s: %s)"
               % (type(exc).__name__, exc), flush=True)
         return None
-    return wziete[0] if wziete else None
+    if not wziete:
+        return None
+    zapas = list(wziete)
+    try:
+        wybrany = wybierz_material(
+            zapas,
+            # DZISIEJSZE: fakty juz wydane w tym przebiegu. Bez tego dwie notki
+            # jednej partii dostaja sasiadow z tej samej polki banku.
+            unikaj=[str(f.get("fact") or "") for f in _FAKTY_TEGO_PRZEBIEGU],
+            wczesniej=pamiec_wystawionych(),
+            teksty=teksty_ostatnich_notek())
+    except Exception as exc:            # noqa: BLE001
+        print("  [indeks] wybor materialu zawiodl (%s) — biore pierwszy"
+              % type(exc).__name__, flush=True)
+        wybrany = zapas.pop(0) if zapas else None
+    # NIEWYKORZYSTANI WRACAJA DO BANKU. `wez_kandydatow` znaczy jako uzyte
+    # wszystko, co wyda — sciezka artykulu spalila tak 32 oplacone kandydatury
+    # na cztery teksty (patrz `zwroc_kandydatow`). Tu wydajemy szesciu, a piszemy
+    # z jednego, wiec bez tego zwrotu bank znikalby szesc razy szybciej.
+    zwroc_kandydatow([k for k in wziete if k is not wybrany])
+    if wybrany is not None:
+        _FAKTY_TEGO_PRZEBIEGU.append(wybrany)
+    return wybrany
 
 
 # Trzy jedyne powody, dla ktorych wolno skasowac oplaconego kandydata. KOD, nie

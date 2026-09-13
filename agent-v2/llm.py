@@ -197,6 +197,30 @@ _EFFORT_BEZ_SKUTKU: set[str] = set()
 _WYSZUKIWANIE_BEZ_WPISU: set[str] = set()
 
 
+def _powod_urwania(zdarzenie: dict) -> str:
+    """POWOD urwania odpowiedzi, nie pierwsze 300 znakow calego zdarzenia.
+
+    Stalo tu `json.dumps(... or zdarzenie)[:300]`. Przy `response.incomplete`
+    ani `response.error`, ani `error` nie istnieja, wiec zrzucalismy CALE
+    zdarzenie, a limit trzystu znakow ucinal je dokladnie na
+    `"incomplete_details": {"reason": "` — czyli tuz przed jedynym polem,
+    ktore cokolwiek mowi.
+
+    Zmierzone dwa razy 10 wrzesnia 2026 na pisarzu artykulu: obie awarie
+    nie do zdiagnozowania, bo powod lezal jeden znak za ucieciem.
+    """
+    odp = zdarzenie.get("response") or {}
+    powod = (odp.get("incomplete_details") or {}).get("reason")
+    tresc = (odp.get("error")
+             or ({"urwane": powod,
+                  "status": odp.get("status"),
+                  "wyjscie_tokenow": (odp.get("usage") or {}).get("output_tokens")}
+                 if powod else None)
+             or zdarzenie.get("error")
+             or zdarzenie)
+    return json.dumps(tresc, ensure_ascii=False)[:300]
+
+
 def _narzedzie_wyszukiwania(model: str) -> str:
     """Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu."""
     nazwa, uwaga = config.narzedzie_wyszukiwania(model)
@@ -398,9 +422,7 @@ def _call_deepseek_responses(
                 payload = zdarzenie.get("response") or {}
                 runtime.capture(payload.get("usage"), "responses")
             elif typ in ("response.failed", "response.incomplete", "error"):
-                blad_strumienia = json.dumps(
-                    zdarzenie.get("response", {}).get("error")
-                    or zdarzenie.get("error") or zdarzenie)[:300]
+                blad_strumienia = _powod_urwania(zdarzenie)
                 payload = zdarzenie.get("response") or {}
                 runtime.capture(payload.get("usage"), "responses")
     runtime.capture((payload or {}).get("usage"), "responses")
@@ -528,9 +550,7 @@ def _call_openai_responses(
                 payload = zdarzenie.get("response") or {}
                 runtime.capture(payload.get("usage"), "responses")
             elif typ in ("response.failed", "response.incomplete", "error"):
-                blad_strumienia = json.dumps(
-                    zdarzenie.get("response", {}).get("error")
-                    or zdarzenie.get("error") or zdarzenie)[:300]
+                blad_strumienia = _powod_urwania(zdarzenie)
                 payload = zdarzenie.get("response") or {}
                 runtime.capture(payload.get("usage"), "responses")
     runtime.capture((payload or {}).get("usage"), "responses")

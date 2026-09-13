@@ -174,3 +174,11 @@ narzedzia/dawne-slownictwo.txt
 # `narzedzia/jednostki.py`. WYTWOR, nie zrodlo: zrodlem sa szablony
 # w agent-v2/systemd/, a te powstaja z nich przy kazdym uruchomieniu.
 agent-v2/systemd/dla-tej-instalacji/
+
+# LOKALNE ARCHIWUM, NIE CZESC PRODUKTU. 11 wrzesnia 2026 dysk mial dwadziescia
+# folderow `D:\Nia bot-<temat>-<data>` — worktree gita po pracy Codexa, razem
+# okolo 900 MB. Wszystkie ich commity byly juz w `main`, ale piec trzymalo
+# NIEZACOMMITOWANE zmiany. Zanim foldery poszly, roznice i nowe pliki trafily
+# tutaj. To kopia bezpieczenstwa dla jednego komputera, a nie material dla
+# kogos, kto forkuje to repozytorium.
+kopie/

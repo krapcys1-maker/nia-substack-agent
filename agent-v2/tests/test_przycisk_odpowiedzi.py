@@ -31,9 +31,9 @@ dziesiec sekund i padal, bo Substack rysuje tu ProseMirror, czyli
 
 ## Sprawdzone na zywo
 
-9 wrzesnia 2026, artykul o zamku, komentarz „Chaos Engine", `wyslij=False`:
+9 wrzesnia 2026, artykul o zamku, komentarz „Autor X", `wyslij=False`:
 
-    przycisk odpowiedzi znaleziony przy komentarzu 'Chaos Engine'
+    przycisk odpowiedzi znaleziony przy komentarzu 'Autor X'
         (aria-label w kontenerze autora)
     wpisane w pole odpowiedzi (edytor tiptap): 5 slow
     (nie wysylam — tryb sprawdzenia)
@@ -135,6 +135,86 @@ i_w = CIALO.index("naprawde_wyslac(wyslij")
 i_goto = CIALO.index("page.goto(")
 sprawdz("i stoi przed pierwszym wejsciem na strone", i_w < i_goto,
         (i_w, i_goto))
+
+print()
+print("=== POLE ODPOWIEDZI: CZEKAMY, AZ SIE ZAMONTUJE ===")
+# ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, odpowiedz pod naszym artykulem:
+#     przycisk odpowiedzi znaleziony przy komentarzu 'Autor X'
+#     BLAD: TimeoutError: Locator.click ... waiting for locator("textarea").first
+# Trzy drogi do pola sprawdzaly sie w JEDNYM obrocie, tuz po klinieciu.
+# Substack montuje edytor tiptap asynchronicznie, wiec zadna jeszcze nie
+# istniala i szukanie spadalo na `textarea`, ktorej tam nie ma wcale.
+# Tego samego dnia rano ta sama funkcja znalazla tiptap bez trudu — to wyscig,
+# nie brak drogi.
+import ast as _ast
+_ZR = io.open("agent-v2/browser.py", encoding="utf-8").read()
+_C = ""
+for _w in _ast.walk(_ast.parse(_ZR)):
+    if isinstance(_w, _ast.FunctionDef) and _w.name == "wystaw_odpowiedz_pod_artykulem":
+        _C = _ast.get_source_segment(_ZR, _w) or ""
+sprawdz("szukanie pola ponawia sie", "for podejscie in range(" in _C)
+sprawdz("z przerwa miedzy podejsciami",
+        "page.wait_for_timeout(1500)" in _C)
+sprawdz("kolejnosc drog bez zmian",
+        _C.find("edytor tiptap") < _C.find("edytor contenteditable") < _C.find("pole tekstowe"))
+sprawdz("ostatnia deska nadal na koncu", "ostatnia deska" in _C)
+sprawdz("i mowi, gdy pole pojawilo sie z opoznieniem",
+        "pole odpowiedzi pojawilo sie po" in _C)
+
+print()
+print("=== KLIKNIECIE, KTORE ZABIERA ZE STRONY ===")
+# ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dwa przebiegi pod rzad. Adres byl
+# poprawny — nasz artykul o zamku — przycisk znaleziony, a odlozony zrzut
+# ukladu okazal sie CUDZA STRONA:
+#     <title>(9) Autor X (@autor-x): "😱"</title>
+#     canonical: substack.com/profile/900000001-chaos-engine/note/c-900000002
+#     zero `contenteditable`, zero `textarea`, 16 przyciskow „Comment"
+# Klikniety element byl odnosnikiem do wlasnej strony komentarza, nie
+# przyciskiem odpowiedzi. Szukanie pola szlo juz po cudzym profilu i konczylo
+# sie „waiting for locator('textarea').first" — czyli diagnoza mowila
+# o brakujacym polu zamiast o zlej stronie.
+import browser as _b   # noqa: E402
+sprawdz("kotwica i ukosnik to ta sama strona",
+        not _b._inna_strona("https://x.substack.com/p/lock",
+                            "https://x.substack.com/p/lock/#comment-1"))
+sprawdz("znaczniki w adresie to ta sama strona",
+        not _b._inna_strona("https://x.substack.com/p/lock",
+                            "https://x.substack.com/p/lock?utm=1"))
+sprawdz("cudzy profil to INNA strona",
+        _b._inna_strona("https://x.substack.com/p/lock",
+                        "https://substack.com/profile/1-ktos/note/c-2"))
+sprawdz("pusty adres nie wywoluje falszywego alarmu",
+        not _b._inna_strona("", "https://substack.com/x"))
+sprawdz("sprawdzenie jest w sciezce odpowiedzi",
+        "_inna_strona(adres_przed, page.url)" in _C)
+sprawdz("i mowi glosno, dokad nas zabralo",
+        "klikniecie przenioslo nas z" in _C)
+sprawdz("wracamy na artykul", "page.goto(adres_przed" in _C)
+sprawdz("i probujemy pola komentarza pod artykulem",
+        "Write a comment" in _C)
+sprawdz("wynik zapamietuje ten wypadek",
+        'wynik["klikniecie_zabralo_ze_strony"]' in _C)
+
+print()
+print("=== ADRES: SAM ARTYKUL, BEZ `/comments` ===")
+# ZMIERZONE NA ZYWO 11 wrzesnia 2026, ten sam artykul, ta sama sesja:
+#
+#     …/p/the-lock-is-fitted-its-just-not-locked/comments
+#         -> substack.com/@nia1503032/note/p-214764038
+#         tiptap 0, contenteditable 0, textarea 0
+#
+#     …/p/the-lock-is-fitted-its-just-not-locked
+#         -> zostaje na artykule
+#         tiptap 0, contenteditable 0, textarea 1
+#
+# Doklejanie `/comments` przerzucalo nas na widok notki, ktory nie ma ANI
+# JEDNEGO pola do pisania — i stad „waiting for locator('textarea').first"
+# przez dwa dni. Na samym artykule pole jest i zawsze bylo.
+sprawdz("nie doklejamy juz /comments",
+        'url_artykulu.rstrip("/") + "/comments"' not in _C)
+sprawdz("wchodzimy na sam adres artykulu",
+        'page.goto(url_artykulu.rstrip("/"),' in _C)
+sprawdz("z pomiarem obok", "tiptap 0, contenteditable 0, textarea 1" in _C)
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))

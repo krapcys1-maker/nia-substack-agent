@@ -317,10 +317,59 @@ def rytm(co: str, na_co: str, stan: dict) -> bool:
         print("  [wycofanie] %s: dwie porazki pod rzad — przerwa %.0f min"
               " zamiast zwyklej" % (co, przerwa / 60), flush=True)
 
+    # LIMIT ROZMOW NA GODZINE — komentarze i odpowiedzi razem, z dziennika.
+    # Gdy w ostatnich 60 minutach bylo ich juz `MAKS_ROZMOW_NA_GODZINE`,
+    # przerwa wydluza sie do chwili, w ktorej najstarsza z nich wypadnie z okna.
+    if co in ("komentarz", "odpowiedz") and not getattr(config, "W_TESCIE", False):
+        brakuje = _do_konca_limitu_rozmow()
+        if brakuje > przerwa:
+            print("  [rytm] %d rozmow w ostatniej godzinie — czekam %.0f min zamiast"
+                  " %.0f" % (config.MAKS_ROZMOW_NA_GODZINE, brakuje / 60, przerwa / 60),
+                  flush=True)
+            przerwa = brakuje
+
     if not zostal_czas(na_co, przerwa):
         return False
     _s.odczekaj(co, przerwa)
     return True
+
+
+def _do_konca_limitu_rozmow(teraz: float | None = None) -> float:
+    """Ile sekund do chwili, w ktorej kolejna rozmowa zmiesci sie w limicie godziny.
+
+    0, gdy w ostatnich 60 minutach bylo mniej rozmow niz limit. Liczy wpisy
+    `komentarz` i `odpowiedz` z dziennika — takze nieudane, bo Substack widzial
+    probe tak samo jak udane wyslanie.
+    """
+    import json as _json
+    import time as _time
+    from datetime import datetime as _dt
+
+    import browser
+
+    limit = int(getattr(config, "MAKS_ROZMOW_NA_GODZINE", 0) or 0)
+    if limit <= 0:
+        return 0.0
+    teraz = _time.time() if teraz is None else teraz
+    chwile = []
+    try:
+        linie = browser.DZIENNIK.read_text(encoding="utf-8").splitlines()[-400:]
+    except OSError:
+        return 0.0
+    for linia in linie:
+        try:
+            w = _json.loads(linia)
+            if w.get("rodzaj") not in ("komentarz", "odpowiedz"):
+                continue
+            kiedy = _dt.fromisoformat(str(w.get("kiedy"))).timestamp()
+        except (ValueError, TypeError, AttributeError):
+            continue
+        if teraz - 3600 < kiedy <= teraz:
+            chwile.append(kiedy)
+    if len(chwile) < limit:
+        return 0.0
+    chwile.sort()
+    return max(0.0, chwile[-limit] + 3600 - teraz + 30)
 
 
 def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
@@ -339,8 +388,8 @@ def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
 
     if _KONIEC_CZASU is None or ile <= 0:
         return ile
-    dol, gora = config.ODSTEPY.get(rodzaj, config.ODSTEP_MIEDZY_DZIALANIAMI)
-    odstep = (dol + gora) / 2
+    # SREDNIA Z KOSZYKOW, gdy przerwy sa wazone — patrz `stages.sredni_odstep`.
+    odstep = stages.sredni_odstep(rodzaj)
     zostalo = max(0.0, _KONIEC_CZASU - time.time()) * udzial
 
     # PRZERW JEST O JEDNA MNIEJ NIZ DZIALAN. Przy dwoch notkach czekamy raz, nie
@@ -908,6 +957,87 @@ def cele_wedlug_pierwszenstwa(historia: dict) -> tuple[list[str], dict]:
     return _przeplot(reagujacy, hosty), rachunek
 
 
+# NAPIS, PO KTORYM POZNAJEMY POMINIECIE ZA ROZMIAR. Powstaje w bloku
+# subskrypcji i jest czytany nizej — ta sama para co `kogo_juz_subskrybujemy`
+# i `browser._klik_na_profilu`, i ta sama pulapka: rozjechanie sie dwoch kopii
+# wylacza odsiew po cichu. Dlatego stala, a nie dwa literaly.
+# NAPIS POWODU MIESZKA W `browser.POWOD_ZA_DUZY` — tam powstaje, przy
+# pominieciu na cudzym profilu. NIE importujemy go tutaj na poziomie modulu:
+# testy podstawiaja pod `browser` atrapy i `from browser import ...` wywraca
+# im import calego `run` (zlapane na `test_komentarz_potwierdzony`). Siegamy
+# po niego przez modul, w miejscu uzycia.
+
+
+def znane_za_duze() -> set[str]:
+    """Uchwyty, ktore JUZ ZMIERZYLISMY jako za duze. Z dziennika, bez sieci.
+
+    ## Po co
+
+    Zmierzone 11 wrzesnia 2026 na czternastu kandydatach z prawdziwej puli,
+    przy sufcie tysiaca obserwujacych:
+
+        @rubendominguez        353 727
+        @bytebytego399569       44 668
+        @moderndata101          17 303
+        @thetechbubble          15 673
+        @valuemomentumportfolio 10 069
+        @yournamangupta          3 131
+        @systematicstrategies    2 545
+        @arthurandthefuture      1 939
+        --- miesci sie ---
+        @omoore                    149
+        @becomingabuilder           35
+        @sjbuildswithai              4
+
+    Osmiu za duzych, trzech w naszym rozmiarze. Sito dziala, tylko pula
+    prowadzi glownie do kont, dla ktorych jestesmy szumem — i KAZDEGO DNIA
+    mierzylismy tych samych osmiu od nowa, zjadajac nimi okno przegladania.
+
+    Konto raz zmierzone na 353 tysiace nie zejdzie ponizej tysiaca. Pamietamy
+    wiec ten pomiar i przy nastepnym przebiegu zaczynamy od kandydatow, o
+    ktorych jeszcze nic nie wiemy albo wiemy, ze sa w naszym rozmiarze.
+
+    ## Czego ta funkcja NIE robi
+
+    Nie skresla nikogo na zawsze. Blok subskrypcji PRZESUWA ich na koniec
+    kolejki, a nie wyrzuca — gdy w puli nie ma nikogo innego, wracaja do gry
+    i dostaja normalne sprawdzenie. Sufit i tak zapyta o aktualny rozmiar.
+
+    Nie obejmuje tez „nie ma profilu publicznego (404)". Brak profilu bywa
+    chwilowy — publikacja bez konta uzytkownika, przejsciowy blad API — a
+    „nie wiem" nie jest pomiarem i nie ma sie zapisywac jak pomiar.
+    """
+    import json as _json
+
+    import browser
+
+    duzi: set[str] = set()
+    try:
+        if not browser.DZIENNIK.exists():
+            return duzi
+        for linia in browser.DZIENNIK.read_text(encoding="utf-8").splitlines():
+            linia = linia.strip()
+            if not linia:
+                continue
+            try:
+                wpis = _json.loads(linia)
+            except ValueError:
+                continue
+            if not isinstance(wpis, dict):
+                continue
+            if wpis.get("rodzaj") not in ("subskrypcja_pominieta",
+                                          "obserwacja_pominieta"):
+                continue
+            if str(wpis.get("powod") or "") != browser.POWOD_ZA_DUZY:
+                continue
+            komu = str(wpis.get("komu") or "").strip().lstrip("@")
+            if komu:
+                duzi.add(komu.lower())
+    except OSError:
+        pass                      # brak dziennika to pusta wiedza, nie awaria
+    return duzi
+
+
 def powod_pustej_puli(rachunek: dict) -> str:
     """Zdanie do dziennika, gdy po odsianiu nie zostal nikt.
 
@@ -984,7 +1114,19 @@ def kogo_juz_subskrybujemy() -> set[str]:
                 wpis = _json.loads(linia)
             except ValueError:
                 continue
-            if not isinstance(wpis, dict) or wpis.get("rodzaj") != "subskrypcja":
+            if not isinstance(wpis, dict):
+                continue
+            # PROFIL, KTORY SAM POWIEDZIAL „JUZ SUBSKRYBUJESZ". Taki wpis idzie
+            # jako pominiecie, bo niczego wtedy nie kliknelismy — ale kolejne
+            # wejscie da dokladnie ten sam wynik, wiec zamyka uchwyt tak samo.
+            # Zmierzone 12 wrzesnia 2026: dwie z czterech prob przebiegu.
+            if (wpis.get("rodzaj") == "subskrypcja_pominieta"
+                    and wpis.get("powod") == browser.POWOD_JUZ_SUBSKRYBOWANY):
+                komu = str(wpis.get("komu") or "").strip().lstrip("@")
+                if komu:
+                    zamkniete.add(komu)
+                continue
+            if wpis.get("rodzaj") != "subskrypcja":
                 continue
             komu = str(wpis.get("komu") or "").strip().lstrip("@")
             if not komu:
@@ -1045,6 +1187,17 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
     global _KONIEC_CZASU
     _KONIEC_CZASU = time.time() + max(
         60, config.LIMIT_CZASU_PRZEBIEGU_S - config.ZAPAS_CZASU_S)
+
+    # NOWSZE WERSJE MODELI, RAZ NA DOBE, PRZED PIERWSZYM PLATNYM ETAPEM.
+    # 13 wrzesnia 2026 DeepSeek przestal podawac `deepseek-v4-flash`, na ktorym
+    # stalo dziewietnascie rol — patrz `wersje_modeli`. Awaria sprawdzenia nie
+    # zatrzymuje dnia: stare modele nadal chodza, a jutro sprawdzimy znowu.
+    try:
+        import wersje_modeli
+        wersje_modeli.sprawdz_i_przelacz(conn, run_id)
+    except Exception as exc:                                   # noqa: BLE001
+        print("  [modele] sprawdzenie wersji padlo: %s: %s"
+              % (type(exc).__name__, exc), flush=True)
 
     budzet = stages.budzet_dnia(conn)
 
@@ -1218,6 +1371,11 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         # Przy dwóch odpowiada się obu. Przy dwustu odpowiedź pod każdym wygląda
         # jak maszyna, więc powyżej progu agent wybiera — z pierwszeństwem dla
         # niezgody, bo nieodpowiedziany zarzut zostaje ostatnim słowem.
+        # NIE KAZDEMU — szansa wg rodzaju komentarza, decyzja raz na komentarz.
+        # Patrz `config.SZANSA_ODPOWIEDZI` i `stages.zdecyduj_o_odpowiedziach`.
+        czekaja = stages.zdecyduj_o_odpowiedziach(czekaja, zapisuj=wyslij)
+        if not czekaja:
+            return
         czekaja = stages.wybierz_do_odpowiedzi(conn, run_id, czekaja)
         for c in czekaja:
             if not zostal_czas("odpowiedzi"):
@@ -1229,6 +1387,10 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 {"our_note": c["pod_czym"]})
             kandydaci = [k for k in out["candidates"] if k.get("reply")]
             if not kandydaci:
+                # MILCZENIE MODELU TEZ JEST DECYZJA — nie pytamy go o ten sam
+                # komentarz w kazdym kolejnym przebiegu.
+                stages.zapamietaj_decyzje(c, "pomin", "model nie mial nic do dodania",
+                                          zapisuj=wyslij)
                 continue
             tekst = kandydaci[0]["reply"]
             if wyslij:
@@ -1543,7 +1705,12 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             print("  [cele] po %d rundach: %d celow"
                   % (rundy, len(cele)), flush=True)
 
-        for cel in cele[: na_teraz["komentarze"]]:
+        # POD ARTYKULY TYLKO CZESC PRZYDZIALU — reszta idzie pod notki w bloku
+        # `dyskusje`, gdzie komentarz w ogole ktos widzi (pomiar przy
+        # `config.MAKS_WIEK_CELU_DNI`).
+        limit_artykulow = max(1, round(na_teraz["komentarze"]
+                                       * config.UDZIAL_KOMENTARZY_POD_ARTYKULAMI))
+        for cel in cele[: limit_artykulow]:
             if not zostal_czas("komentarze"):
                 return
             # Pytamy o prawo do komentowania PRZED pisaniem. Inaczej caly koszt
@@ -2081,6 +2248,24 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         zamkniete = kogo_juz_subskrybujemy()
         kandydaci = [h for h in wszyscy
                      if not czy_juz_subskrybujemy(h, zamkniete, pamiec)]
+        # ZNANI ZA DUZI NA KONIEC KOLEJKI, NIE DO KOSZA.
+        #
+        # Zmierzone 11 wrzesnia 2026 na czternastu kandydatach: osmiu mialo
+        # od 1 939 do 353 727 obserwujacych przy sufcie tysiaca, a trzech
+        # miescilo sie (149, 35 i 4). Sito dzialalo; okno przegladania zjadali
+        # jednak CI SAMI ludzie, mierzeni od nowa kazdego dnia.
+        #
+        # Przesuniecie, nie odsiew: konto moze stracic obserwujacych, a pula
+        # bywa chuda. Gdy nie ma nikogo innego, wracaja i dostaja normalne
+        # sprawdzenie rozmiaru — tyle ze dopiero wtedy.
+        duzi = znane_za_duze()
+        if duzi:
+            swiezi = [h for h in kandydaci if _slug_hosta(h) not in duzi]
+            znani = [h for h in kandydaci if _slug_hosta(h) in duzi]
+            if znani:
+                print("  [subskrypcje] %d kandydatow juz zmierzonych jako za"
+                      " duzi — ida na koniec kolejki" % len(znani), flush=True)
+            kandydaci = swiezi + znani
         print("  pula: %d hostow w historii, %d odsianych tematycznie"
               " (ostatni komentarz sprzed %s), %d z reakcja na nasza tresc;"
               " reagujacych z uchwytem %d, w puli %d (%d juz nas czyta,"
@@ -2120,10 +2305,48 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
         ZAPAS_NA_ODPADY = 4
         proby = 0
         z_pamieci = 0
+        za_duzi = 0
+        obejrzani = 0
         zostal_slad = False
-        for host in kandydaci[: na_teraz["subskrypcje"] + ZAPAS_NA_ODPADY]:
+        # OKNO LICZY SIE W TYM, CO KOSZTUJE, NIE W OBEJRZANYCH KANDYDATACH.
+        #
+        # Stalo tu `kandydaci[: na_teraz["subskrypcje"] + ZAPAS_NA_ODPADY]`,
+        # czyli osiem pozycji z gory listy, i to wystarczylo, zeby subskrypcje
+        # stanely na ZERZE. Zmierzone na produkcji 7-10 wrzesnia 2026:
+        #
+        #     norma           4 subskrypcje dziennie
+        #     wykonanie       0% przez trzy doby, 10 „nieudanych" prob
+        #     powod           kazdy kandydat z osmiu przekraczal sufit
+        #
+        # Sufit to 1000 odbiorcow. Konta, ktore pula podawala, mialy 134 438,
+        # 131 684, 90 381 i 3 758 obserwujacych — od czterech do stu trzydziestu
+        # razy za duzo. Cztery kolejne w ogole nie maja profilu uzytkownika
+        # (to publikacje, nie ludzie) i tez odpadaly.
+        #
+        # Pominiecie za rozmiar NIC NIE KOSZTUJE: to odczyt publicznego JSON-a,
+        # bez przegladarki, bez przerwy rytmu i bez zuzycia slotu — mowi o tym
+        # komentarz przy samym sprawdzeniu. Okno przycinane po takich
+        # pominieciach mierzy wiec cos, co jest darmowe, i zamyka blok, zanim
+        # dojdzie do pierwszego kandydata we wlasciwym rozmiarze.
+        #
+        # Zostaje GORNA GRANICA, bo `uchwyt_publikacji` bywa zapytaniem do API
+        # i jeden przebieg nie ma obchodzic calej puli.
+        limit_ogladania = max(
+            na_teraz["subskrypcje"] + ZAPAS_NA_ODPADY,
+            int(getattr(config, "SUBSKRYPCJE_MAKS_OGLADANYCH", 40)))
+        # PRZERWA ODCZEKANA, A NIC NIE KLIKNIETE. Nastepny kandydat nie czeka
+        # drugi raz: od ostatniego publicznego dzialania minela juz cala
+        # przerwa, bo profil, na ktorym ja wydalismy, niczego nie przyjal.
+        przerwa_odczekana = False
+        juz_nasi = 0
+        for host in kandydaci:
             if proby >= na_teraz["subskrypcje"]:
                 break
+            if obejrzani >= limit_ogladania:
+                print("  (obejrzalem %d kandydatow i konczę na dzis — reszta"
+                      " puli poczeka)" % obejrzani, flush=True)
+                break
+            obejrzani += 1
             if not zostal_czas("subskrypcje"):
                 break
             uchwyt = browser.uchwyt_publikacji(host)
@@ -2190,15 +2413,38 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 # `_klik_na_profilu`): to samo sito, ten sam rodzaj wpisu.
                 browser.zapisz_w_dzienniku(
                     "subskrypcja_pominieta", udane=True, komu=uchwyt,
-                    powod="account exceeds the size limit or its size is unknown")
+                    powod=browser.POWOD_ZA_DUZY)
                 zostal_slad = True
+                za_duzi += 1
                 print(f"  (@{uchwyt} przekracza sufit odbiorcow — pomijam bez"
                       f" przerwy i bez zuzycia proby)", flush=True)
                 continue
             if wyslij:
-                if not rytm("komentarz", "subskrypcje", rytm_stanu):
-                    break
-                browser.zasubskrybuj(uchwyt, wyslij=True)
+                if not przerwa_odczekana:
+                    if not rytm("komentarz", "subskrypcje", rytm_stanu):
+                        break
+                przerwa_odczekana = False
+                wynik_profilu = browser.zasubskrybuj(uchwyt, wyslij=True) or {}
+                # PROFIL NICZEGO NIE PRZYJAL — SLOT ZOSTAJE.
+                #
+                # Zmierzone 12 wrzesnia 2026: dwa z czterech slotow przebiegu
+                # poszly na profile, ktore same odpowiedzialy „juz
+                # subskrybujesz". Wynik tego wywolania nikt tu nie czytal, wiec
+                # takie wejscie liczylo sie jak subskrypcja do limitu przebiegu,
+                # a jak porazka nigdzie. Pominiecie nie jest proba — ta sama
+                # zasada, co przy sicie rozmiaru wyzej.
+                if wynik_profilu.get("pominiete"):
+                    zamkniete.add(uchwyt)
+                    if wynik_profilu.get("juz_subskrybowany"):
+                        juz_nasi += 1
+                    else:
+                        za_duzi += 1
+                    zostal_slad = True
+                    przerwa_odczekana = True
+                    print(f"  (@{uchwyt}: profil niczego nie przyjal —"
+                          f" {wynik_profilu.get('powod') or 'pominiete'};"
+                          f" slot zostaje dla nastepnego)", flush=True)
+                    continue
                 rytm_stanu["komentarz"] = True
                 # PROBA LICZY SIE TAKZE WTEDY, GDY PROFIL ODMOWIL. Weszlismy
                 # na cudza strone i dostalismy odpowiedz — to jest zuzyty slot.
@@ -2220,6 +2466,23 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 "subskrypcja_pominieta", udane=True,
                 powod="pominietych %d z %d kandydatow: juz ich subskrybujemy"
                       " wedlug dziennika" % (z_pamieci, len(kandydaci)))
+        # CALA PULA ZA DUZA TO WLASNA DIAGNOZA, nie brak okazji.
+        #
+        # Przez trzy doby blok konczyl sie zerem i w dzienniku zostawaly same
+        # pojedyncze pominiecia. Z boku wygladalo to jak „nie bylo kogo
+        # subskrybowac", a naprawde bylo: „pula podaje wylacznie konta
+        # kilkadziesiat razy wieksze od sufitu". To dwie rozne usterki i tylko
+        # jedna z nich naprawia sie w tym pliku.
+        if juz_nasi:
+            print("  [subskrypcje] %d profili odpowiedzialo, ze juz je"
+                  " subskrybujemy — zapamietane, slotow nie zjadly" % juz_nasi,
+                  flush=True)
+        if za_duzi:
+            print("  [subskrypcje] %d z %d obejrzanych przekraczalo sufit %s"
+                  " odbiorcow%s"
+                  % (za_duzi, obejrzani, config.SUBSKRYPCJE_MAX_ODBIORCOW,
+                     " — pula nie zawiera kont w naszym rozmiarze" if not proby
+                     else ""), flush=True)
 
     # --- 4. polubienia: najtańszy uczciwy sygnał ------------------------------
     def polubienia() -> None:

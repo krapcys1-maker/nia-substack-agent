@@ -3041,6 +3041,117 @@ def klik_mimo_zaslony(przycisk, nazwa: str = "przycisk",
         return "mimo zaslony"
 
 
+def _inna_strona(przed: str, teraz: str) -> bool:
+    """Czy przegladarka zmienila STRONE, a nie tylko kotwice albo ukosnik.
+
+    Odpowiedz pod artykulem otwiera pole w miejscu; przejscie na inny adres
+    znaczy, ze klikniety element byl odnosnikiem, nie przyciskiem — patrz
+    `wystaw_odpowiedz_pod_artykulem`.
+    """
+    def goly(u: str) -> str:
+        u = str(u or "").split("#")[0].split("?")[0]
+        return u.rstrip("/").lower()
+    a, b = goly(przed), goly(teraz)
+    return bool(a) and bool(b) and a != b
+
+
+def _tresc_pola(pole) -> str:
+    """Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania."""
+    try:
+        return str(pole.evaluate(
+            "el => (el.value !== undefined && el.value !== null)"
+            " ? el.value : (el.innerText || '')") or "")
+    except Exception:                                          # noqa: BLE001
+        return ""
+
+
+def oproznij_pole(page, pole, nazwa: str = "pole") -> bool:
+    """Czysci pole do zera. Oddaje `True`, gdy naprawde jest puste.
+
+    Substack TRZYMA WERSJE ROBOCZA. Pole odpowiedzi nie jest kartka, ktora
+    znika po zamknieciu przegladarki — to, co ktos w nie wpisal, wraca przy
+    nastepnym wejsciu na strone.
+    """
+    for _ in range(3):
+        if not _tresc_pola(pole).strip():
+            return True
+        try:
+            pole.click(timeout=8_000)
+            page.keyboard.press("Control+a")
+            page.keyboard.press("Delete")
+            page.keyboard.press("Backspace")
+            page.wait_for_timeout(250)
+        except Exception:                                      # noqa: BLE001
+            break
+    puste = not _tresc_pola(pole).strip()
+    if not puste:
+        print("  [%s] UWAGA: nie udalo sie oproznic pola, zostaje: %r"
+              % (nazwa, _tresc_pola(pole)[:80]), flush=True)
+    return puste
+
+
+def wpisz_w_puste_pole(page, pole, tekst: str, nazwa: str = "pole",
+                       timeout: float = 10_000, klikaj: bool = True) -> str:
+    """Czysci pole, pisze, sprawdza wynik. Oddaje to, co naprawde stoi w polu.
+
+    ## Co to naprawia — WIDZIALNE NA KONCIE
+
+    10 wrzesnia 2026 pod naszym artykulem o zamku wyszla odpowiedz o tresci:
+
+        proba sucha, nic nie wychodziproba suSomeone got a prompt back from
+        Autor X and that's the whole review.cha, nic nie wychodzi
+
+    „proba sucha, nic nie wychodzi" to MOJ tekst probny z `wyslij=False`.
+    Zlozyly sie na to dwie wady naraz i obie sa tutaj:
+
+      * proba z `wyslij=False` PISALA w prawdziwe pole i zostawiala tam tekst.
+        Substack zapisal go jako wersje robocza — dwa razy, bo probe puscilem
+        dwa razy;
+      * prawdziwa odpowiedz byla dopisywana BEZ CZYSZCZENIA, w miejscu karetki,
+        czyli w srodek cudzego zdania. Stad rozciete „proba su|…|cha".
+
+    Czytelnik dostal belkot pod tekstem, ktory mial go przekonac, a wlasciciel
+    musial to reczne kasowac.
+
+    ## Dlaczego sprawdzamy PO NAPISANIU
+
+    Bo to jedyny moment, w ktorym roznica miedzy „wpisalem" a „w polu stoi to,
+    co wpisalem" jest jeszcze do zlapania. Wczesniej nie mielismy jak jej
+    zobaczyc: kod drukowal „wpisane w pole odpowiedzi: 12 słów" i to bylo cale
+    swiadectwo — liczylo slowa TEKSTU, nie zawartosc pola.
+    """
+    oproznij_pole(page, pole, nazwa)
+    # `klikaj=False` dla wywolujacych, ktorzy JUZ kliknęli i maja wlasny powod,
+    # zeby to zrobic samodzielnie — np. sciezka odpowiedzi pod artykulem, ktora
+    # przy nieudanym klinieciu odklada zrzut ukladu strony. Drugie klikniecie
+    # nic by tam nie dalo, a zaciemnialoby pomiar w dzienniku.
+    if klikaj:
+        pole.click(timeout=timeout)
+    page.keyboard.type(tekst, delay=12)
+    page.wait_for_timeout(1500)
+    w_polu = _tresc_pola(pole)
+    # POROWNANIE PO GOLYM TEKSCIE. Edytor zamienia apostrofy i lamania wiersza,
+    # wiec porownanie znak w znak oblewaloby na poprawnie wpisanej tresci.
+    if w_polu and plaski(w_polu) != plaski(tekst):
+        print("  [%s] UWAGA: w polu stoi co innego niz wpisalem"
+              " (%d znakow wobec %d) — sprawdz cudza wersje robocza"
+              % (nazwa, len(w_polu), len(tekst)), flush=True)
+    return w_polu
+
+
+# POWOD POMINIECIA ZA ROZMIAR — JEDEN NAPIS, DWA MIEJSCA ZAPISU I JEDNO
+# CZYTANIA. `_klik_na_profilu` zapisuje go tutaj, blok subskrypcji w `run.py`
+# zapisuje go u siebie, a `run.znane_za_duze` czyta go z dziennika, zeby nie
+# mierzyc tych samych wielkich kont kazdego dnia od nowa. Trzy literaly
+# rozjechalyby sie przy pierwszej zmianie slowa i odsiew wylaczylby sie po
+# cichu — ta sama pulapka, ktora opisuje `kogo_juz_subskrybujemy`.
+POWOD_ZA_DUZY = "account exceeds the size limit or its size is unknown"
+
+# SUBSKRYPCJA, KTORA JUZ JEST — tez jeden napis na zapis i odczyt. Zapisuje go
+# `_klik_na_profilu`, czyta `run.kogo_juz_subskrybujemy`. Patrz tam.
+POWOD_JUZ_SUBSKRYBOWANY = "free subscription already active on the profile"
+
+
 def konto_za_duze(handle: str) -> bool:
     """Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS.
 
@@ -3173,8 +3284,29 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         if rodzaj == "subskrypcja" and any(
                 page.get_by_role("button", name=label, exact=True).count()
                 for label in subscription_labels):
-            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
-            print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
+            # TO JEST WYNIK I MUSI ZOSTAC W DZIENNIKU.
+            #
+            # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, przebieg z 13:30:
+            #
+            #     (przerwa 13.6 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #     ...
+            #     (przerwa 10.0 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #
+            # Dwie z czterech prob tego przebiegu, dzien skonczony na 2/4.
+            # Ta galaz wracala bez slowa w dzienniku, a
+            # `kogo_juz_subskrybujemy` zamyka tylko to, co w dzienniku stoi —
+            # wiec te same profile mogly wracac w kolejnych przebiegach.
+            # Wpis idzie jako POMINIECIE, nie jako subskrypcja: niczego dzis
+            # nie kliknelismy i do normy dnia to sie nie liczy.
+            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True,
+                         powod=POWOD_JUZ_SUBSKRYBOWANY)
+            print(f"  darmowa subskrypcja u @{handle} juz aktywna — nie zmieniam"
+                  f" planu", flush=True)
+            if wyslij:
+                zapisz_w_dzienniku("subskrypcja_pominieta", udane=True,
+                                   komu=handle, powod=POWOD_JUZ_SUBSKRYBOWANY)
             return wynik
         if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
             import personality
@@ -3186,7 +3318,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             finally:
                 stats_page.close()
             if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
-                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                wynik.update(pominiete=True, powod=POWOD_ZA_DUZY)
                 if wyslij:
                     zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
                 return wynik
@@ -3206,12 +3338,36 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                           wait_until="domcontentloaded")
                 page.wait_for_timeout(SETTLE_MS + 3000)
-                wynik["zrobione"] = any(
+                # POTWIERDZENIEM JEST ZNIKNIECIE PRZYCISKU, NIE NAPIS
+                # „Subscribed" — bo tego napisu Substack tam nie pisze.
+                #
+                # ZMIERZONE NA ZYWO 11 wrzesnia 2026 na czterech profilach:
+                #
+                #   @becomingabuilder  zasubskrybowany dzis   -> ['Manage']
+                #   @mattgrawitch      zasubskrybowany dzis   -> ['Manage']
+                #   @rubendominguez    nigdy nie probowany    -> ['Subscribe','Manage']
+                #   @omoore            nigdy nie probowany    -> ['Subscribe','Manage']
+                #
+                # Szukalismy „Subscribed", „Subskrybujesz", „Subskrybowano"
+                # albo „Upgrade". Zaden z nich nie pada. Obie dzisiejsze
+                # subskrypcje NAPRAWDE WESZLY i obie zapisaly sie jako
+                # porazka — a `kogo_juz_subskrybujemy` zamyka uchwyt tylko
+                # przy `udane=True`, wiec weszlibysmy na te profile jeszcze raz.
+                #
+                # „Manage" NIE JEST dowodem: stoi na profilach, ktorych nie
+                # subskrybujemy. Dowodem jest BRAK przycisku „Subscribe" —
+                # i dokladnie tak potwierdza sie juz obserwowanie, w galezi
+                # `else` ponizej.
+                zostal = any(
+                    page.get_by_role("button", name=etykieta, exact=True).count()
+                    for etykieta in napisy)
+                wynik["zrobione"] = (not zostal) or any(
                     page.get_by_role("button", name=label, exact=True).count()
                     for label in subscription_labels)
                 wynik["potwierdzone"] = bool(wynik["zrobione"])
                 if not wynik["zrobione"]:
-                    wynik["blad"] = "brak potwierdzenia darmowej subskrypcji na profilu"
+                    wynik["blad"] = ("przycisk subskrypcji nadal stoi na profilu"
+                                     " — klikniecie nie doszlo")
             else:
                 wynik["zrobione"] = k.count() == 0 or not k.is_visible()
             dopisz_wynik(rodzaj, wynik, komu=handle)
@@ -4241,7 +4397,24 @@ def wystaw_odpowiedz_pod_artykulem(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto(url_artykulu.rstrip("/") + "/comments",
+        # SAM ARTYKUL, BEZ `/comments`. To jest przyczyna dwoch dni odpowiedzi,
+        # ktore nie dotarly do nikogo.
+        #
+        # ZMIERZONE NA ZYWO 11 wrzesnia 2026, ten sam artykul, ta sama sesja:
+        #
+        #     …/p/the-lock-is-fitted-its-just-not-locked/comments
+        #         -> substack.com/@nia1503032/note/p-214764038
+        #         tiptap 0, contenteditable 0, textarea 0
+        #
+        #     …/p/the-lock-is-fitted-its-just-not-locked
+        #         -> zostaje na artykule
+        #         tiptap 0, contenteditable 0, textarea 1
+        #
+        # Doklejenie `/comments` przerzuca nas na widok notki, ktory nie ma
+        # ANI JEDNEGO pola do pisania. Szukanie pola konczylo sie tam
+        # „waiting for locator('textarea').first", a komunikat mowil o polu
+        # zamiast o stronie. Na samym artykule pole jest i zawsze bylo.
+        page.goto(url_artykulu.rstrip("/"),
                   timeout=READ_TIMEOUT_MS * 2, wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
         page.mouse.wheel(0, 12_000)
@@ -4365,8 +4538,53 @@ def wystaw_odpowiedz_pod_artykulem(
         print(f"  przycisk odpowiedzi znaleziony przy komentarzu {autor!r}"
               f" ({skad})", flush=True)
         wynik["skad_przycisk"] = skad
+        # KLIKNIECIE MA OTWIERAC POLE, A NIE ZABIERAC NAS ZE STRONY.
+        #
+        # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dwa przebiegi pod rzad.
+        # Adres byl poprawny — nasz artykul o zamku — przycisk znaleziony
+        # („aria-label w kontenerze autora"), a odlozony zrzut ukladu okazal
+        # sie CUDZA STRONA:
+        #
+        #     <title>(9) Autor X (@autor-x): "😱"</title>
+        #     canonical: substack.com/profile/900000001-chaos-engine/note/c-900000002
+        #     zero `contenteditable`, zero `textarea`, 16 przyciskow „Comment"
+        #
+        # Czyli klikniety element nie byl przyciskiem odpowiedzi, tylko
+        # odnosnikiem do wlasnej strony tego komentarza. Szukanie pola
+        # odbywalo sie juz na cudzym profilu, gdzie zadnego pola nie ma —
+        # i konczylo sie „waiting for locator('textarea').first". Model
+        # napisal odpowiedz, zaplacilismy za nia, czytelnik nie dostal nic.
+        #
+        # Wracamy i probujemy dalej. Adres sprawdzamy PRZED szukaniem pola,
+        # bo inaczej diagnoza mowi o brakujacym polu zamiast o zlej stronie.
+        adres_przed = page.url
         przycisk.click(timeout=15_000)
         page.wait_for_timeout(3000)
+        if _inna_strona(adres_przed, page.url):
+            print("  UWAGA: klikniecie przenioslo nas z %s na %s — wracam"
+                  % (adres_przed[:70], page.url[:70]), flush=True)
+            wynik["klikniecie_zabralo_ze_strony"] = page.url[:200]
+            try:
+                page.goto(adres_przed, wait_until="domcontentloaded",
+                          timeout=READ_TIMEOUT_MS)
+                page.wait_for_timeout(SETTLE_MS)
+            except Exception as exc:                   # noqa: BLE001
+                print("  (nie udalo sie wrocic: %s)" % type(exc).__name__,
+                      flush=True)
+            # Na wlasnej stronie artykulu pole komentarza stoi na dole i jest
+            # zwyklym polem watku — odpowiedz trafia pod ten sam tekst, tylko
+            # bez zagniezdzenia. Lepsze niz cisza.
+            for napis in ("Write a comment", "Napisz komentarz", "Add a comment"):
+                kand = page.get_by_text(napis, exact=False).first
+                try:
+                    if kand.count() > 0 and kand.is_visible():
+                        kand.click(timeout=8000)
+                        page.wait_for_timeout(2000)
+                        print("  otwarte pole komentarza pod artykulem (%r)"
+                              % napis, flush=True)
+                        break
+                except Exception:                      # noqa: BLE001
+                    continue
 
         # POLE ODPOWIEDZI TO EDYTOR, NIE `textarea`.
         #
@@ -4380,18 +4598,43 @@ def wystaw_odpowiedz_pod_artykulem(
         # edytor na stronie, na koncu `textarea` — gdyby Substack gdzies
         # jeszcze go uzywal. Kazda droga mowi o sobie w dzienniku, zeby przy
         # nastepnej zmianie ukladu bylo wiadomo, ktora akurat zadziala.
+        # POCZEKAJ, AZ EDYTOR SIE POJAWI — a nie pytaj o niego natychmiast.
+        #
+        # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, odpowiedz pod naszym wlasnym
+        # artykulem: przycisk odpowiedzi znaleziony, a zaraz potem
+        #
+        #     BLAD: TimeoutError: Locator.click: Timeout 10000ms exceeded.
+        #     Call log: - waiting for locator("textarea").first
+        #
+        # Trzy drogi do pola sprawdzaly sie w jednym obrocie, tuz po klinieciu
+        # w „Comment". Substack montuje edytor tiptap asynchronicznie, wiec
+        # w tym momencie zadna z trzech jeszcze nie istniala i szukanie spadalo
+        # na ostatnia deske — `textarea`, ktorej na tej stronie nie ma wcale.
+        # Model napisal odpowiedz, zaplacilismy za nia, a czytelnik nie dostal
+        # nic. Tego samego dnia rano ta sama funkcja znalazla „edytor tiptap"
+        # bez trudu, wiec to jest wyscig, nie brak drogi.
+        #
+        # Czekamy krotko i pytamy kilka razy zamiast raz. Kolejnosc drog
+        # zostaje ta sama.
         pole, skad_pole = None, ""
-        for opis, lokator in (
-                ("edytor tiptap", page.locator(".tiptap[contenteditable='true']")),
-                ("edytor contenteditable", page.locator("[contenteditable='true']")),
-                ("pole tekstowe", page.locator("textarea"))):
-            try:
-                kand = lokator.last
-                if kand.count() > 0 and kand.is_visible():
-                    pole, skad_pole = kand, opis
-                    break
-            except Exception:                          # noqa: BLE001
-                continue
+        for podejscie in range(6):
+            for opis, lokator in (
+                    ("edytor tiptap", page.locator(".tiptap[contenteditable='true']")),
+                    ("edytor contenteditable", page.locator("[contenteditable='true']")),
+                    ("pole tekstowe", page.locator("textarea"))):
+                try:
+                    kand = lokator.last
+                    if kand.count() > 0 and kand.is_visible():
+                        pole, skad_pole = kand, opis
+                        break
+                except Exception:                      # noqa: BLE001
+                    continue
+            if pole is not None:
+                if podejscie:
+                    print("  pole odpowiedzi pojawilo sie po %.1f s"
+                          % (podejscie * 1.5), flush=True)
+                break
+            page.wait_for_timeout(1500)
         if pole is None:
             # OSTATNIA DESKA — DOKLADNIE TO, CO BYLO WCZESNIEJ.
             #
@@ -4416,10 +4659,11 @@ def wystaw_odpowiedz_pod_artykulem(
             except Exception:                          # noqa: BLE001
                 pass
             raise
-        page.keyboard.type(tekst, delay=12)
-        page.wait_for_timeout(1500)
+        w_polu = wpisz_w_puste_pole(page, pole, tekst, "odpowiedz pod artykulem",
+                                    klikaj=False)
         wynik["wpisane"] = True
         wynik["skad_pole"] = skad_pole
+        wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole odpowiedzi ({skad_pole}):"
               f" {len(tekst.split())} słów", flush=True)
 
@@ -4448,7 +4692,10 @@ def wystaw_odpowiedz_pod_artykulem(
             print("  ODPOWIEDŹ POD ARTYKUŁEM POTWIERDZONA" if wynik["wyslane"]
                   else "  KLIKNIĘTE, ALE ODPOWIEDZI NIE WIDAĆ", flush=True)
         elif not wyslij:
-            print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
+            # PROBA NIE ZOSTAWIA SLADU NA KONCIE — patrz `wpisz_w_puste_pole`.
+            # To wlasnie stad wyszedl 10 wrzesnia belkot pod naszym artykulem.
+            wynik["posprzatane"] = oproznij_pole(page, pole, "odpowiedz pod artykulem")
+            print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
     except Exception as exc:
         wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
@@ -4486,6 +4733,76 @@ def potwierdz_artykul(page, tytul: str) -> bool:
     lista = dane if isinstance(dane, list) else (dane or {}).get("posts") or []
     return any(probka in plaski(x.get("title") or "") and x.get("post_date")
                for x in lista if isinstance(x, dict))
+
+# NAPISY NA PRZYCISKU WYKRYWANIA AI, w obu stanach. Wziete ze zrzutow
+# wlasciciela z 11 wrzesnia 2026: strona ustawien publikacji, sekcja
+# „Text Analysis", przycisk pod „Scan for AI text".
+_WYLACZ_AI = ("Disable AI detection", "Wyłącz wykrywanie AI",
+              "Turn off AI detection", "Wyłącz wykrywanie tekstu AI")
+_JUZ_WYLACZONE = ("Re-enable AI detection", "Reenable AI detection",
+                  "Włącz ponownie wykrywanie AI")
+
+
+def wylacz_wykrywanie_ai(page) -> str:
+    """Klika „Disable AI detection" na stronie ustawien publikacji.
+
+    ## Czemu to nie dzialalo
+
+    Kod istnial od dawna i szukal napisow „Wyłącz wykrywanie AI" oraz
+    „Turn off AI detection". Substack pisze na tym przycisku
+    **„Disable AI detection"** — sprawdzone na zrzucie ze strony ustawien
+    11 wrzesnia 2026. Zaden z dwoch napisow nie pasowal, wiec petla
+    konczyla sie bez klikniecia i bez slowa w logu, a ustawienie
+    `wylacz_wykrywanie_ai` bylo wlaczone od zawsze.
+
+    Zmierzone na artykule opublikowanym tego dnia: w calym logu publikacji
+    fraza „wykrywanie AI" nie pada ANI RAZU.
+
+    ## Dowod, ze zadzialalo
+
+    Po klinieciu ten sam przycisk zmienia napis na „Re-enable AI detection"
+    — tez ze zrzutu wlasciciela. To jest sprawdzenie, ktorego ta funkcja
+    nie mialaby, gdyby tylko klikala i ufala sobie. I to samo zdanie chroni
+    przed wlaczeniem wykrywania z powrotem: przycisk w stanie „Re-enable"
+    zostaje nietkniety.
+
+    Oddaje slowo do dziennika: `wylaczone`, `juz_wylaczone`, `nie_znalazlem`
+    albo `klikniete_bez_potwierdzenia`.
+    """
+    for nazwa in _JUZ_WYLACZONE:
+        k = page.get_by_role("button", name=nazwa).first
+        try:
+            if k.count() > 0 and k.is_visible():
+                print("  wykrywanie AI juz wylaczone (%r) — nie ruszam" % nazwa,
+                      flush=True)
+                return "juz_wylaczone"
+        except Exception:                              # noqa: BLE001
+            continue
+    for nazwa in _WYLACZ_AI:
+        k = page.get_by_role("button", name=nazwa).first
+        try:
+            if not (k.count() > 0 and k.is_visible()):
+                continue
+        except Exception:                              # noqa: BLE001
+            continue
+        klik_mimo_zaslony(k, "wylaczenie wykrywania AI", timeout=10_000)
+        page.wait_for_timeout(2500)
+        for potwierdzenie in _JUZ_WYLACZONE:
+            p2 = page.get_by_role("button", name=potwierdzenie).first
+            try:
+                if p2.count() > 0 and p2.is_visible():
+                    print("  wykrywanie AI wylaczone dla tego posta"
+                          " (przycisk mowi teraz %r)" % potwierdzenie, flush=True)
+                    return "wylaczone"
+            except Exception:                          # noqa: BLE001
+                continue
+        print("  UWAGA: klikniete %r, ale przycisk nie zmienil napisu —"
+              " sprawdz recznie" % nazwa, flush=True)
+        return "klikniete_bez_potwierdzenia"
+    print("  UWAGA: nie znalazlem przycisku wylaczenia wykrywania AI"
+          " (szukalem: %s)" % ", ".join(repr(n) for n in _WYLACZ_AI), flush=True)
+    return "nie_znalazlem"
+
 
 def _domknij_publikacje_artykulu(page) -> bool:
     """Complete Substack's optional subscribe-button prompt after Send."""
@@ -4582,13 +4899,7 @@ def wystaw_artykul(
         page.wait_for_timeout(8000)
 
         if config.WYLACZ_WYKRYWANIE_AI:
-            for nazwa in ("Wyłącz wykrywanie AI", "Turn off AI detection"):
-                k = page.get_by_role("button", name=nazwa).first
-                if k.count() > 0 and k.is_visible():
-                    k.click()
-                    page.wait_for_timeout(2500)
-                    print("  wykrywanie AI wyłączone dla tego posta", flush=True)
-                    break
+            wynik["wykrywanie_ai"] = wylacz_wykrywanie_ai(page)
 
         publikuj = None
         for nazwa in ("Wyślij teraz do wszystkich", "Send to everyone now",
@@ -4813,11 +5124,11 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
         if not otwarte:
             raise RuntimeError("nie otworzyłem pola odpowiedzi")
 
-        page.locator("[contenteditable=true]").first.click(timeout=10_000)
+        pole = page.locator("[contenteditable=true]").first
         page.wait_for_timeout(700)
-        page.keyboard.type(tekst, delay=12)
-        page.wait_for_timeout(1500)
+        w_polu = wpisz_w_puste_pole(page, pole, tekst, "odpowiedz w watku")
         wynik["wpisane"] = True
+        wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole odpowiedzi: {len(tekst.split())} słów", flush=True)
 
         przycisk = None
@@ -4858,7 +5169,8 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
             print("  ODPOWIEDŹ POTWIERDZONA W WĄTKU" if wynik["wyslane"]
                   else "  KLIKNIĘTE, ALE ODPOWIEDZI NIE MA W WĄTKU", flush=True)
         elif not wyslij:
-            print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
+            wynik["posprzatane"] = oproznij_pole(page, pole, "odpowiedz w watku")
+            print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
     except Exception as exc:
         wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
@@ -4961,11 +5273,10 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
             raise RuntimeError("nie znalazłem kompozytora notek")
         page.wait_for_timeout(2500)
         pole = page.locator("[contenteditable=true]").first
-        pole.click(timeout=10_000)
         page.wait_for_timeout(800)
-        page.keyboard.type(tekst, delay=12)
-        page.wait_for_timeout(1500)
+        w_polu = wpisz_w_puste_pole(page, pole, tekst, "notka")
         wynik["wpisane"] = True
+        wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole notki: {len(tekst.split())} słów", flush=True)
 
         # Tu też nie zakładamy angielskiego interfejsu.
@@ -5008,7 +5319,8 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
                          tekst=tekst[:1200], id=wynik["id"],
                          typ=typ, forma=forma, model=model)
         elif not wyslij:
-            print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
+            wynik["posprzatane"] = oproznij_pole(page, pole, "notka")
+            print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
     except Exception as exc:
         wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
@@ -5583,11 +5895,10 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
             wynik["blad"] = "nie ma pola komentarza pod tym postem"
             print(f"  {wynik['blad']} — odpuszczam", flush=True)
             return wynik
-        pole.click(timeout=8_000)
         page.wait_for_timeout(800)
-        page.keyboard.type(tekst, delay=12)
-        page.wait_for_timeout(1500)
+        w_polu = wpisz_w_puste_pole(page, pole, tekst, "komentarz", timeout=8_000)
         wynik["wpisane"] = True
+        wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole komentarza: {len(tekst.split())} słów", flush=True)
 
         # Interfejs bywa po polsku, więc szukamy obu wariantów nazwy.
@@ -5628,7 +5939,8 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
             print("  KOMENTARZ POTWIERDZONY U SUBSTACKA" if wynik["wyslane"]
                   else "  KLIKNIĘTE, ALE SUBSTACK GO NIE POKAZUJE", flush=True)
         elif not wyslij:
-            print("  (nie wysyłam — tryb sprawdzenia)", flush=True)
+            wynik["posprzatane"] = oproznij_pole(page, pole, "komentarz")
+            print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
     except Exception as exc:
         wynik["blad"] = opis_bledu(exc)
         print(f"  BŁĄD: {wynik['blad']}", flush=True)
@@ -5746,6 +6058,81 @@ def read_pages(urls: list[str]) -> list[dict[str, Any]]:
     return bounded_read(urls)
 
 
+# ILE DNI AUTOR ODPOCZYWA OD NASZEGO RESTACKA. Patrz `kogo_juz_restackowalismy`.
+DNI_ODPOCZYNKU_AUTORA = 7
+
+
+def kogo_juz_restackowalismy(dni: int = DNI_ODPOCZYNKU_AUTORA) -> set[str]:
+    """Autorzy podani dalej w ostatnich `dni` dniach. Z dziennika, bez sieci.
+
+    ## Pomiar
+
+    11 wrzesnia 2026, caly dziennik: TRZYNASCIE udanych restackow, DZIESIECIU
+    roznych autorow. Jeden powtarza sie trzy razy:
+
+        Publikacja A   3        (09-10T14:58, 09-10T19:49, 09-11T12:34)
+        pozostali               po 1
+        bez zapisanego autora   2
+
+    Trzy z trzynastu to jedna publikacja — i akurat drugi projekt wlasciciela.
+    Z boku konto wyglada wtedy jak tuba jednego zrodla, a nie jak ktos, kto
+    czyta kanal.
+
+    ## Skad sie to brało
+
+    Kanal ma stala kolejnosc, a petla bierze PIERWSZEGO kandydata, ktory
+    przejdzie rewir i ocene. Kto stoi wysoko i pisze na temat, ten wraca
+    codziennie. Zadna czesc kodu nie pytala, czy juz go dzis podawalismy.
+
+    ## Granica
+
+    Siedem dni, nie „nigdy wiecej": dobry autor ma wracac, tylko nie co dzien.
+    Liczymy po nazwie autora sprowadzonej do malych liter — to jedyne, co
+    dziennik o nim trzyma.
+    """
+    import json as _json
+    from datetime import datetime, timedelta, timezone
+
+    granica = datetime.now(timezone.utc) - timedelta(days=max(1, int(dni)))
+    byli: set[str] = set()
+    try:
+        if not DZIENNIK.exists():
+            return byli
+        for linia in DZIENNIK.read_text(encoding="utf-8").splitlines():
+            linia = linia.strip()
+            if not linia:
+                continue
+            try:
+                wpis = _json.loads(linia)
+            except ValueError:
+                continue
+            if not isinstance(wpis, dict) or wpis.get("rodzaj") != "restack":
+                continue
+            if not wpis.get("udane"):
+                continue
+            kto = " ".join(str(wpis.get("komu") or "").split()).casefold()
+            # ODCISK CUDZEJ NOTKI TEZ WCHODZI. Dwa z trzynastu restackow nie
+            # maja zapisanego autora; bez tego wracalyby bez konca.
+            zrodlo = str(wpis.get("zrodlo") or "").casefold()
+            if not kto and not zrodlo:
+                continue
+            try:
+                kiedy = datetime.fromisoformat(
+                    str(wpis.get("kiedy") or "").replace("Z", "+00:00"))
+            except ValueError:
+                continue
+            if kiedy.tzinfo is None:
+                kiedy = kiedy.replace(tzinfo=timezone.utc)
+            if kiedy >= granica:
+                if kto:
+                    byli.add(kto)
+                if zrodlo:
+                    byli.add(zrodlo)
+    except OSError:
+        pass                      # brak dziennika to pusta wiedza, nie awaria
+    return byli
+
+
 def restackuj_w_kanale(
     ile: int, decyzja, wyslij: bool = False, *, url: str | None = None,
 ) -> dict[str, Any]:
@@ -5785,28 +6172,209 @@ def restackuj_w_kanale(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto(url or "https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
+        adres_kanalu = url or "https://substack.com/"
+        page.goto(adres_kanalu, timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
 
         przyciski = page.get_by_role("button", name="Restack")
+        # KANAL TRZEBA PRZEWINAC, ZEBY W OGOLE ISTNIAL.
+        #
+        # Substack doladowuje notki dopiero przy przewijaniu. Ten blok wchodzil
+        # na kanal, czekal i liczyl przyciski — czyli widzial JEDEN EKRAN.
+        #
+        # ZMIERZONE NA ZYWO 10 wrzesnia 2026, ten sam kanal, ta sama sesja,
+        # w odstepie minuty:
+        #     bez przewijania      4 przyciski
+        #     po trzech przewinieciach  14 przyciskow
+        #
+        # Skutek widac w normie: restacki chodzily na 42 procent, dokladnie
+        # jeden na przebieg przy budzecie dwoch do czterech. Z czterech
+        # kandydatow jeden wypadal poza rewirem, kilka odrzucal model i
+        # zostawal jeden. Pula nie byla chuda — byla nieodczytana.
+        #
+        # Przewijamy, dopoki przybywa przyciskow i dopoki nie mamy ich
+        # wyraznie wiecej niz budzet. Stop na braku przyrostu, zeby nie
+        # przewijac w nieskonczonosc kanalu, ktory sie skonczyl.
+        def doladuj(cel_przyciskow: int) -> int:
+            """Przewija, dopoki przybywa przyciskow i jest ich mniej niz cel.
+
+            Oddaje liczbe SPRZED przewijania, zeby wydruk pokazal przyrost.
+            """
+            przed = przyciski.count()
+            poprzednio = -1
+            for krok in range(8):
+                teraz = przyciski.count()
+                if teraz >= cel_przyciskow or teraz == poprzednio:
+                    break
+                poprzednio = teraz
+                # `mouse.wheel` wymaga, zeby wskaznik stal nad przewijanym
+                # obszarem, a po wejsciu na strone stoi w rogu — zmierzone
+                # 10 wrzesnia: blok restackow widzial 5 notek, a ten sam kanal
+                # przewiniety przez `scrollBy` oddal 15. Robimy jedno i drugie,
+                # bo `scrollBy` nie dziala tam, gdzie przewija sie kontener,
+                # a nie okno.
+                try:
+                    page.evaluate("window.scrollBy(0, 1600)")
+                except Exception:                      # noqa: BLE001
+                    pass
+                page.mouse.move(600, 500)
+                page.mouse.wheel(0, 1400)
+                page.wait_for_timeout(1400)
+            return przed
+
+        cel = max(int(ile) * 4, 12)
+        przed_przewinieciem = doladuj(cel)
+        if przyciski.count() > przed_przewinieciem:
+            print("  kanal przewiniety: %d -> %d notek"
+                  % (przed_przewinieciem, przyciski.count()), flush=True)
         wynik["znalezione"] = przyciski.count()
         print(f"  notek w kanale do rozwazenia: {wynik['znalezione']}", flush=True)
 
-        for i in range(min(ile * 4, przyciski.count())):
-            if wynik["restackowane"] >= ile:
+        # PO RESTACKU INDEKSY TRACILY WAZNOSC.
+        #
+        # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dzieki rachunkowi dolozonemu
+        # tego samego dnia:
+        #
+        #     notek w kanale do rozwazenia: 5
+        #     RESTACK u Chelsea Salamone ... podane dalej 1/2
+        #     pomijam (przycisk niewidoczny, pozycja 1)
+        #     pomijam (przycisk niewidoczny, pozycja 2)
+        #     pomijam (przycisk niewidoczny, pozycja 3)
+        #     pomijam (przycisk niewidoczny, pozycja 4)
+        #     rachunek: 5 znalezionych -> 4 niewidocznych -> 1 podanych dalej
+        #
+        # Pierwszy restack przechodzi, a wszystkie pozostale pozycje z tej samej
+        # listy staja sie niewidoczne. Osobny pomiar tego samego dnia pokazal,
+        # ze przy samym OTWARCIU i zamknieciu okna lista przezywa w calosci —
+        # rozbija ja dopiero prawdziwa publikacja.
+        #
+        # SPROSTOWANIE 13 wrzesnia 2026. Wtedy uznalem, ze to Substack
+        # przestawia kanal po podaniu dalej. Nie przestawial. Po publikacji
+        # petla pytala o numer naszej notki, a `api_json` czyta API, WCHODZAC
+        # na adres JSON — ta sama karta, na ktorej stal kanal. Stad pozycje
+        # „niewidoczne" 10 wrzesnia i zero przyciskow 12 wrzesnia. Numer
+        # czytamy teraz w osobnej karcie, patrz nizej.
+        #
+        # Odcisk tresci zostaje, bo jest poprawny niezaleznie od przyczyny:
+        # obsluzonych poznajemy po tym, co napisali, a nie po numerze pozycji.
+        zrobione_odciski: set = set()
+        # AUTORZY Z OSTATNICH DNI — zeby kanal nie zamienil sie w tube jednego
+        # zrodla. Patrz `kogo_juz_restackowalismy`: trzy z trzynastu restackow
+        # poszly do tej samej publikacji.
+        odpoczywaja = kogo_juz_restackowalismy()
+        if odpoczywaja:
+            print("  %d autorow odpoczywa po niedawnym restacku"
+                  % len(odpoczywaja), flush=True)
+        obrotow = 0
+        MAKS_OBROTOW = max(int(ile) * 6, 18)
+        doladowan = 0
+        MAKS_DOLADOWAN = 2
+        while wynik["restackowane"] < ile and obrotow < MAKS_OBROTOW:
+            obrotow += 1
+            kandydat = None
+            odcisk_kandydata = ""
+            while kandydat is None:
+                ile_teraz = przyciski.count()
+                skan = {"niewidoczne": 0, "bez_tekstu": 0, "juz_byly": 0, "blad": 0}
+                for i in range(ile_teraz):
+                    probny = przyciski.nth(i)
+                    try:
+                        if not probny.is_visible():
+                            skan["niewidoczne"] += 1
+                            continue
+                        wstepna = _notka_przy_przycisku(probny)
+                    except Exception:                  # noqa: BLE001
+                        skan["blad"] += 1
+                        continue
+                    odcisk = plaski(str(wstepna.get("tekst") or ""))[:120]
+                    if not odcisk:
+                        skan["bez_tekstu"] += 1
+                        continue
+                    if odcisk in zrobione_odciski:
+                        skan["juz_byly"] += 1
+                        continue
+                    kandydat, odcisk_kandydata = probny, odcisk
+                    break
+                if kandydat is not None:
+                    break
+                # SKAN PUSTY — MOWIMY, Z CZEGO. „Nie ma nowych notek" przy
+                # pietnastu w kanale to wynik, ktory trzeba umiec rozlozyc.
+                print("    (skan: %d przyciskow -> %d niewidocznych, %d bez"
+                      " tekstu, %d juz obsluzonych, %d bledow odczytu)"
+                      % (ile_teraz, skan["niewidoczne"], skan["bez_tekstu"],
+                         skan["juz_byly"], skan["blad"]), flush=True)
+                if doladowan >= MAKS_DOLADOWAN:
+                    break
+                # KANAL WYCZERPANY TO NIE KONIEC NORMY. Najpierw przewijamy
+                # glebiej na tej samej stronie — to nic nie kosztuje i nie
+                # gubi miejsca. Dopiero gdy nic nie przybywa (albo kanalu
+                # w ogole nie ma na stronie), wchodzimy na niego od nowa.
+                # Obsluzone notki i tak odpadna po odcisku, a sufit dwoch
+                # doladowan nie pozwala krecic sie w kolko po pustym kanale.
+                doladowan += 1
+                if ile_teraz:
+                    doladuj(ile_teraz + 12)
+                if przyciski.count() <= ile_teraz:
+                    page.keyboard.press("Escape")
+                    page.goto(adres_kanalu, timeout=READ_TIMEOUT_MS * 2,
+                              wait_until="domcontentloaded")
+                    page.wait_for_timeout(SETTLE_MS + 6000)
+                    doladuj(max(cel, ile_teraz + 12))
+                print("    kanal doladowany (%d/%d): %d -> %d notek"
+                      % (doladowan, MAKS_DOLADOWAN, ile_teraz, przyciski.count()),
+                      flush=True)
+            if kandydat is None:
+                print("    (nie ma juz nowych notek do rozwazenia)", flush=True)
                 break
-            kandydat = przyciski.nth(i)
+            zrobione_odciski.add(odcisk_kandydata)
             try:
+                # TRZY CICHE ODPADY, TERAZ GLOSNE.
+                #
+                # ZMIERZONE na produkcji 7-10 wrzesnia 2026: restacki chodza na
+                # 42 procent normy, a dziennie wychodzi DOKLADNIE JEDEN przy
+                # budzecie czterech. W logu stalo za kazdym razem to samo:
+                #
+                #     notek w kanale do rozwazenia: 6
+                #     [restack] claude-opus-5 ... (jedno wywolanie)
+                #     podane dalej 1/2
+                #
+                # Szesciu kandydatow, JEDNO pytanie do modelu. Pieciu odpadalo
+                # przed ocena i nie zostawialo po sobie ani slowa, bo wszystkie
+                # trzy odsiewy konczyly sie golym `continue`. Z zewnatrz
+                # wygladalo to jak pusty kanal, a kanal pusty nie byl.
+                #
+                # Nie zgaduje, ktory z tych trzech odsiewow to robi — od tego
+                # jest pomiar. Kazdy mowi teraz o sobie i trafia do licznika.
                 if not kandydat.is_visible():
+                    wynik["niewidoczne"] = wynik.get("niewidoczne", 0) + 1
+                    print("    pomijam (przycisk zniknal miedzy wyborem"
+                          " a klinieciem)", flush=True)
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.
                 kto = _autor_przy_przycisku(kandydat)
                 if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    wynik["nasze"] = wynik.get("nasze", 0) + 1
+                    print("    pomijam (to nasza wlasna notka)", flush=True)
                     continue
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
+                    wynik["bez_tresci"] = wynik.get("bez_tresci", 0) + 1
+                    print("    pomijam (nie odczytalem tresci notki u %s)"
+                          % (str((kto or {}).get("autor") or "?")[:24]),
+                          flush=True)
+                    continue
+                # AUTOR Z TEGO TYGODNIA ODPOCZYWA. Nie „nigdy wiecej" — siedem
+                # dni. Dobry autor ma wracac, tylko nie codziennie.
+                autor_teraz = " ".join(
+                    str(notka.get("autor") or (kto or {}).get("autor") or "").split())
+                odcisk_zrodla = plaski(str(notka.get("tekst") or ""))[:120].casefold()
+                if ((autor_teraz and autor_teraz.casefold() in odpoczywaja)
+                        or (odcisk_zrodla and odcisk_zrodla in odpoczywaja)):
+                    wynik["odpoczywa"] = wynik.get("odpoczywa", 0) + 1
+                    print("    pomijam (%s juz byl podany dalej w tym tygodniu)"
+                          % (autor_teraz[:30] or "ta notka"), flush=True)
                     continue
                 # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
                 if not w_rewirze(notka["tekst"]):
@@ -5882,11 +6450,36 @@ def restackuj_w_kanale(
                 # zmierzyc — a to najcenniejszy sygnal, jaki mamy: w badaniu
                 # 9 641 notek restack konwertowal dwunastokrotnie lepiej niz
                 # polubienie.
+                #
+                # NUMER CZYTAMY W OSOBNEJ KARCIE, NIE NA KANALE.
+                #
+                # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, oba przebiegi dnia:
+                #
+                #     notek w kanale do rozwazenia: 15
+                #     RESTACK u Kai Marek ...
+                #     podane dalej 1/3
+                #     (nie ma juz nowych notek do rozwazenia)
+                #
+                # `numer_naszej_notki` pyta API przez `api_json`, a ta funkcja
+                # WCHODZI na adres JSON — tak dziala z serwera, patrz jej opis.
+                # Dostawala `page`, wiec kanal znikal spod petli i nastepny obrot
+                # liczyl zero przyciskow. Tak bylo od pierwszego commita (4
+                # wrzesnia) i to jest ten „dokladnie jeden restack na przebieg"
+                # z pomiarow 7-10 wrzesnia. Proba sucha tego nie widziala, bo
+                # o numer nie pyta — robila cztery restacki z rzedu.
                 numer_restacka = ""
+                karta_numeru = None
                 try:
-                    numer_restacka = numer_naszej_notki(page, zdanie, prob=2)
+                    karta_numeru = context.new_page()
+                    numer_restacka = numer_naszej_notki(karta_numeru, zdanie, prob=2)
                 except Exception:
                     pass
+                finally:
+                    if karta_numeru is not None and karta_numeru is not page:
+                        try:
+                            karta_numeru.close()
+                        except Exception:              # noqa: BLE001
+                            pass
                 # OTWARTE, SWIADOMIE NIETKNIETE: `udane=True` ponizej opiera sie
                 # na samym lancuchu klikniec, a nie na potwierdzeniu. To jest ta
                 # sama doktryna „klikniecie nie jest dowodem", ktora obowiazuje
@@ -5914,10 +6507,15 @@ def restackuj_w_kanale(
                 # `udane` powinno od niego zalezec. Nie zgaduje, jak Substack
                 # nazywa stan przycisku po restacku, i nie ruszam tego bez tej
                 # liczby.
+                # ODCISK CUDZEJ NOTKI OBOK AUTORA. Zmierzone 11 wrzesnia
+                # 2026: dwa z trzynastu restackow nie maja zapisanego autora
+                # („?" w zestawieniu), wiec odpoczynek autora nie mialby ich
+                # jak rozpoznac. Odcisk tresci dziala takze wtedy.
                 zapisz_w_dzienniku("restack", udane=True,
                                    komu=notka.get("autor", ""),
                                    slow=len(zdanie.split()),
-                                   tekst=zdanie[:300], id=numer_restacka)
+                                   tekst=zdanie[:300], id=numer_restacka,
+                                   zrodlo=plaski(str(notka.get("tekst") or ""))[:120])
                 if config.PERSONA_WLACZONA and numer_restacka:
                     import personality
                     personality.remember_interaction("restack", ocena,
@@ -5939,6 +6537,17 @@ def restackuj_w_kanale(
                     page.wait_for_timeout(600)
                 except Exception:
                     pass
+        # RACHUNEK CALEGO BLOKU, ZAWSZE. Bez tego jednego zdania trzeba
+        # przegladac log linia po linii, zeby odpowiedziec na pytanie
+        # „czemu jeden restack, skoro budzet ma cztery".
+        print("  rachunek: %d znalezionych -> %d niewidocznych, %d naszych,"
+              " %d bez tresci, %d odpoczywa, %d poza rewirem -> %d ocenionych,"
+              " %d odmow -> %d podanych dalej"
+              % (wynik["znalezione"], wynik.get("niewidoczne", 0),
+                 wynik.get("nasze", 0), wynik.get("bez_tresci", 0),
+                 wynik.get("odpoczywa", 0), wynik.get("poza_rewirem", 0),
+                 wynik["rozwazone"], len(wynik["odmowy"]),
+                 wynik["restackowane"]), flush=True)
         if not wyslij:
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)

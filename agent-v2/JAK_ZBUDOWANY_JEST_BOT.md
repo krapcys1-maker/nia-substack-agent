@@ -49,14 +49,14 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 38 397 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 40 761 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 37 plików zamiast dziesięciu.** Najbliższe usunięciu:
+**WADA — 38 plików zamiast dziesięciu.** Najbliższe usunięciu:
 `style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 211 zestawów
-testów, 4712 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 231 zestawów
+testów, 5176 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-670 wierszy, 22 funkcji na poziomie modułu, 0 klas
+1007 wierszy, 28 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -170,12 +170,18 @@ wiec nie da sie go rozjechac z kodem.
 | `_system(kind)` *(wewn.)* | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. |
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
-| `_valid(text, maximum)` *(wewn.)* | — |
-| `short_form(conn, run_id, kind, material)` | One paid decision: respond, or remain silent. No paid repair attempts. |
+| `rozbij_dlugie_uderzenia(tekst, maks)` | Za dluga linia idzie na dwie — po granicy ZDANIA. Oddaje (tekst, ile). |
+| `_valid(text, maximum, dozwolone_adresy)` *(wewn.)* | `dozwolone_adresy` — adresy, ktore SAMI podalismy w materiale. |
+| `short_form(conn, run_id, kind, material, napisane_teraz)` | One paid decision: respond, or remain silent. No paid repair attempts. |
 | `_swiat(conn, run_id)` *(wewn.)* | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. |
 | `_fakt_z_banku()` *(wewn.)* | Jeden fakt z banku dla tej notki, albo `None`. |
 | `notes(conn, run_id, ile, od)` | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. |
+| `ruch_rozmowy(kind, los)` | Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`. |
+| `ostatnie_wlasne_rozmowy(ile)` | Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika. |
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
+| `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
+| `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
+| `_z_adresu(url)` *(wewn.)* | Slug adresu jako slowa — Substack wpisuje w niego temat. |
 | `targets(posts)` | Free topical prefilter. The writing call makes the actual reply decision. |
 | `community_candidates()` | Relevant new people need not have received a comment first. No LLM call. |
 | `small_account(profile, maximum)` | Unknown size is not evidence of a small account. No paid research. |
@@ -265,7 +271,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3063 wierszy, 27 funkcji na poziomie modułu, 1 klas
+3326 wierszy, 29 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -277,6 +283,7 @@ wiec nie da sie go rozjechac z kodem.
 | `zostal_czas(na_co, potrzeba_s)` | Czy zdazymy jeszcze cokolwiek zrobic przed koncem czasu przebiegu. |
 | `_pod_rzad_w_bloku(co, na_co)` *(wewn.)* | Ile porazek pod rzad naliczyl TEN blok, odkad sie zaczal. |
 | `rytm(co, na_co, stan)` | Przerwa MIEDZY dwoma dzialaniami tego samego rodzaju. |
+| `_do_konca_limitu_rozmow(teraz)` *(wewn.)* | Ile sekund do chwili, w ktorej kolejna rozmowa zmiesci sie w limicie godziny. |
 | `zmiesci_sie(rodzaj, ile, udzial)` | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. |
 | `ile_przebiegow_zostalo(conn)` | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. |
 | `_po_zmianie_tematu(kiedy)` *(wewn.)* | Czy ten wpis jest z obecnej epoki konta. |
@@ -288,6 +295,7 @@ wiec nie da sie go rozjechac z kodem.
 | `reagujacy_jako_cele()` | Ludzie, ktorzy zareagowali na nasza tresc, jako CELE WPROST. Zero sieci. |
 | `_przeplot(pierwsza, druga)` *(wewn.)* | Na przemian z dwoch list; gdy jedna sie konczy, druga idzie dalej. |
 | `cele_wedlug_pierwszenstwa(historia)` | Hosty do zaczepienia, w kolejnosci pierwszenstwa. Zero sieci. |
+| `znane_za_duze()` | Uchwyty, ktore JUZ ZMIERZYLISMY jako za duze. Z dziennika, bez sieci. |
 | `powod_pustej_puli(rachunek)` | Zdanie do dziennika, gdy po odsianiu nie zostal nikt. |
 | `kogo_juz_subskrybujemy()` | Uchwyty, na ktore subskrypcja NIE MA JUZ CO wysylac. Z dziennika, bez sieci. |
 | `czy_juz_subskrybujemy(host, zamkniete, pamiec)` | Czy ten HOST wskazuje konto, na ktore nie ma juz po co wchodzic. |
@@ -299,7 +307,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9118 wierszy, 156 funkcji na poziomie modułu, 0 klas
+9462 wierszy, 165 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -338,6 +346,14 @@ wiec nie da sie go rozjechac z kodem.
 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` *(wewn.)* | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. |
 | `sesje_dnia()` | Rozkłada dzień na kilka posiedzeń zamiast jednego ciągu. |
 | `losuj_odstep(co)` | Losuje przerwę, ale jej NIE odsypia. |
+| `sredni_odstep(co)` | Srednia przerwa tego rodzaju — z koszykow, gdy sa, inaczej srodek widelek. |
+| `rodzaj_komentarza(k)` | spam / pusty / pytanie / niezgoda / rozmowa / zwykly — bez modelu, za darmo. |
+| `_klucz_komentarza(k)` *(wewn.)* | — |
+| `_plik_decyzji()` *(wewn.)* | — |
+| `_wczytaj_decyzje(plik)` *(wewn.)* | — |
+| `_zapisz_decyzje(plik, dane, teraz)` *(wewn.)* | — |
+| `zdecyduj_o_odpowiedziach(czekaja)` | Ktore komentarze u nas dostana odpowiedz. Reszta zostaje bez — swiadomie. |
+| `zapamietaj_decyzje(k, decyzja, powod)` | Zmiana decyzji po fakcie — np. model zamilkl, wiec nie pytamy go znowu jutro. |
 | `odczekaj(co, ile)` | Przerwa po działaniu, dobrana do tego, ile ono zajmuje CZLOWIEKOWI. |
 | `_klucz_faktu(tekst)` *(wewn.)* | Odcisk faktu odporny na przestawienie słów i inną liczbę w tym samym zdaniu. |
 | `tekst_faktu(x)` | Fakt bywa slownikiem (`{"fact": ..., "url": ...}`), a bywa samym zdaniem. |
@@ -446,6 +462,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_to_aktualizacja(nowy, stary)` *(wewn.)* | TO SAMO ZDANIE, INNE LICZBY — czyli nowe ustalenie, nie powtorka. |
 | `dopisz_kandydatow(kandydaci)` | Przepuszcza kandydatow przez bramke i dokłada do indeksu. |
 | `wez_kandydatow(ile, na_artykul, unikaj_artykulowych, zostaw)` | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. |
+| `zapomnij_fakty_przebiegu()` | Czysci pamiec wydanych faktow — dla testow i dlugo zyjacego procesu. |
 | `fakt_na_notke()` | Jeden fakt z banku dla notki — albo `None`, gdy bank ma go zostawic. |
 | `co_zadzialalo(ile)` | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. |
 | `_tabela_odbioru(naj, ile)` *(wewn.)* | Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt. |
@@ -462,7 +479,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6080 wierszy, 106 funkcji na poziomie modułu, 3 klas
+6689 wierszy, 112 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -527,6 +544,10 @@ wiec nie da sie go rozjechac z kodem.
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
 | `klik_mimo_zaslony(przycisk, nazwa, timeout)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
+| `_inna_strona(przed, teraz)` *(wewn.)* | Czy przegladarka zmienila STRONE, a nie tylko kotwice albo ukosnik. |
+| `_tresc_pola(pole)` *(wewn.)* | Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania. |
+| `oproznij_pole(page, pole, nazwa)` | Czysci pole do zera. Oddaje `True`, gdy naprawde jest puste. |
+| `wpisz_w_puste_pole(page, pole, tekst, nazwa, timeout, klikaj)` | Czysci pole, pisze, sprawdza wynik. Oddaje to, co naprawde stoi w polu. |
 | `konto_za_duze(handle)` | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
 | `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |
@@ -549,6 +570,7 @@ wiec nie da sie go rozjechac z kodem.
 | `ustaw_oswiadczenie_ai(wyslij)` | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. |
 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. |
 | `potwierdz_artykul(page, tytul)` | Pyta Substacka, czy artykuł naprawdę jest opublikowany. |
+| `wylacz_wykrywanie_ai(page)` | Klika „Disable AI detection" na stronie ustawien publikacji. |
 | `_domknij_publikacje_artykulu(page)` *(wewn.)* | Complete Substack's optional subscribe-button prompt after Send. |
 | `_potwierdz_wysylke_artykulu(page, tytul)` *(wewn.)* | Retry reads, never the send; keep the editor open for a late prompt. |
 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | Wystawia artykuł na Substacku. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
@@ -568,6 +590,7 @@ wiec nie da sie go rozjechac z kodem.
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `read_pages(urls)` | Read sources with a deadline that also covers browser shutdown. |
+| `kogo_juz_restackowalismy(dni)` | Autorzy podani dalej w ostatnich `dni` dniach. Z dziennika, bez sieci. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
@@ -575,12 +598,13 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1214 wierszy, 22 funkcji na poziomie modułu, 4 klas
+1234 wierszy, 23 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
 | `_dostawca(model)` *(wewn.)* | Czyj to model. JEDNO miejsce, zeby nie rozjechalo sie z kontrola kluczy. |
 | `_preflight(purpose, conn, run_id)` *(wewn.)* | Warunki, które decydują, czy wywołanie może się w ogóle udać. |
+| `_powod_urwania(zdarzenie)` *(wewn.)* | POWOD urwania odpowiedzi, nie pierwsze 300 znakow calego zdarzenia. |
 | `_narzedzie_wyszukiwania(model)` *(wewn.)* | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. |
 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` *(wewn.)* | — |
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
@@ -716,7 +740,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1115 wierszy, 40 funkcji na poziomie modułu, 4 klas
+1137 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -763,7 +787,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-374 wierszy, 13 funkcji na poziomie modułu, 0 klas
+399 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -847,7 +871,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3726 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3918 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -980,9 +1004,31 @@ wiec nie da sie go rozjechac z kodem.
 | `pobierz(conn, run_id, wymus)` | Aktualny stan modeli. Z pliku, gdy swiezy; inaczej pyta na nowo. |
 | `jako_tekst(dane)` | Stan modeli w postaci, ktora wchodzi do promptu. |
 
+### `wersje_modeli.py` — nowsza wersja modelu u dostawcy: wykrycie, próba na żywo, przełączenie
+
+446 wierszy, 15 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `plik()` | Stan w danych INSTANCJI — kazde konto ma wlasne zamiany i wlasna historie. |
+| `rozbierz(model)` | Dostawca, rodzina i wersja z nazwy modelu; None, gdy nazwa nie pasuje. |
+| `nastepca(model, lista)` | (nastepca albo None, dlaczego) — tylko z tej samej rodziny i tylko z listy. |
+| `modele_w_uzyciu(cfg)` | Modele tekstowe, na ktorych naprawde chodzimy: role plus modele zapasowe. |
+| `lista_modeli(dostawca)` | Identyfikatory, ktore dostawca dzis podaje. None = nie wiem (brak klucza, siec). |
+| `zarejestruj(cfg, stary, nowy)` | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. |
+| `przestaw(cfg, stary, nowy)` | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. Oddaje liste miejsc. |
+| `wczytaj()` | — |
+| `zapisz(dane)` | — |
+| `_koniec_lancucha(zamiany, model)` *(wewn.)* | a -> b, a pozniej b -> c: model `a` ma trafic od razu na `c`. |
+| `zastosuj(cfg)` | Naklada zapisane zamiany na zaladowana konfiguracje. Bez sieci i bez kosztu. |
+| `sprawdz_na_zywo(nowy)` | Jedno male wywolanie nastepcy przez `llm.call` — ta sama droga co produkcja. |
+| `sprawdz_i_przelacz(conn, run_id)` | Raz na dobe: listy dostawcow, nastepcy, proba na zywo, zapis zamian. |
+| `cofnij(model)` | Usuwa zamiane `model -> ...`. Nastepny start procesu chodzi po staremu. |
+| `main(argv)` | — |
+
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1822 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1904 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1004,7 +1050,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1152 wierszy, 13 funkcji na poziomie modułu, 0 klas
+1176 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -7029,10 +7075,132 @@ def discovery(
         ) or "(none yet - this is the first article of this account)"),
     )
     real_urls: list[str] = []
-    text = llm.call(
-        "discovery", DISCOVERY_SYSTEM, prompt,
-        conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
-    )
+    # PIERWSZE WYWOLANIE TEZ POD OSLONA, i to jest drugi regres tej samej
+    # poprawki, zlapany na produkcji. Ratunek nizej siedzial za `if not
+    # real_urls`, wiec dzialal tylko wtedy, gdy pierwsze wywolanie WROCILO.
+    # A ono nie wracalo: `llm.Truncated: Search completed without usable text
+    # or URLs` leci z `llm.call`, czyli przebieg umieral przed ratunkiem.
+    # Trzy przebiegi artykulu pod rzad zginely dokladnie tak.
+    text = ""
+    try:
+        text = llm.call(
+            "discovery", DISCOVERY_SYSTEM, prompt,
+            conn=conn, run_id=run_id, web_search=True, collect_urls=real_urls,
+        )
+    except Exception as exc:                # noqa: BLE001
+        print("  [dyskoveria] pierwsza proba padla (%s: %s)"
+              % (type(exc).__name__, str(exc)[:90]), flush=True)
+    # ZERO WYSZUKIWAN — PYTAMY DRUGI RAZ, ZANIM ZABIJEMY ARTYKUL.
+    #
+    # `tool_choice: "auto"` znaczy, ze model MOZE nie siegnac po narzedzie, i
+    # czasem nie siega. Zmierzone na logach serwera:
+    #
+    #     8 wrzesnia   szukania=18, 12       wejscie 325k / 91k tokenow
+    #     9 wrzesnia   szukania=15, 6        wejscie 132k / 30k
+    #     10 wrzesnia  szukania=0, 0         wejscie 1288 / 1357
+    #
+    # Liczba tokenow wejscia jest tu dowodem: przy prawdziwym szukaniu wracaja
+    # wyniki i wejscie idzie w setki tysiecy. Dzis model odpowiedzial od reki
+    # z pamieci, DWA RAZY POD RZAD, i straznik dwa razy sluszenie wywalil caly
+    # przebieg artykulu — po oplaceniu tematu, pytan i klasyfikacji.
+    #
+    # Wymuszenie `{"type": "web_search"}` NIE jest odpowiedzia i zostalo juz raz
+    # sprawdzone na zywo: model wolal narzedzie w kolko, 15 wyszukiwan i ani
+    # jednego zdania odpowiedzi (patrz `llm._deepseek`). Powtorzenie tego samego
+    # zapytania kosztuje 0,003 USD i jest jedyna roznica miedzy artykulem
+    # a brakiem artykulu.
+    if not real_urls:
+        print("  [dyskoveria] zero wyszukiwan — model odpowiedzial z pamieci."
+              " Pytam drugi raz.", flush=True)
+        # POWTORKA NIE MA PRAWA POGORSZYC SYTUACJI, i to jest wlasny regres
+        # zlapany na produkcji godzine po napisaniu tej poprawki. Druga proba
+        # rzucila `llm.Truncated: Search completed without usable text or URLs`
+        # i zabila przebieg wyjatkiem, ktory NIC nie mowi o przyczynie — gorzej
+        # niz straznik nizej, ktory nazywa rzecz po imieniu.
+        #
+        # Ratunek ma prawo nie zadzialac. Nie ma prawa zamienic czytelnej
+        # diagnozy w niezrozumialy blad.
+        try:
+            text = llm.call(
+                "discovery", DISCOVERY_SYSTEM, prompt,
+                conn=conn, run_id=run_id, web_search=True,
+                collect_urls=real_urls,
+            ) or text
+        except Exception as exc:            # noqa: BLE001
+            print("  [dyskoveria] druga proba tez nie szukala (%s: %s)"
+                  % (type(exc).__name__, str(exc)[:90]), flush=True)
+
+    # AWARIA DOSTAWCY NIE MA KASOWAC ARTYKULU. Ostatnie wyjscie, drogie i glosne.
+    #
+    # ZMIERZONE NA SERWERZE 10 wrzesnia 2026, gole wywolanie z jednym zdaniem
+    # polecenia „You MUST use the web_search tool before answering":
+    #     deepseek-v4-flash   wej=103  wyj=91   zero adresow, `Truncated`
+    #     claude-opus-5       wej=38463 wyj=2230 szukania=2, 19 adresow
+    # Dwa dni wczesniej ten sam deepseek robil po 12-18 wyszukiwan na wywolanie.
+    # To nie jest nasz blad ani zly prompt — to niedostepne narzedzie po stronie
+    # dostawcy, i trwalo caly dzien.
+    #
+    # CENA JEST PRAWDZIWA I DLATEGO TO JEST OSTATNIE WYJSCIE, nie pierwsze:
+    # tamto jedno wywolanie Opusa kosztowalo 0,27 USD wobec 0,0005 na deepseeku.
+    # Wchodzi wylacznie wtedy, gdy skonfigurowany model nie szukal DWA RAZY,
+    # czyli w dniu awarii — a wtedy wybor stoi miedzy drozszym artykulem
+    # a brakiem artykulu, i wlasciciel wybral drozszy artykul.
+    zapasowy = getattr(config, "MODEL_ZAPASOWY_WYSZUKIWANIA", config.CLAUDE)
+    if not real_urls and config.MODEL_FOR.get("discovery") != zapasowy:
+        # NIE ZJADAMY BUDZETU PISARZA NA RESEARCH.
+        #
+        # Pierwsza wersja tego wyjscia zrobila dokladnie to: awaryjne odkrycie
+        # na Opusie kosztowalo 0,68 USD przy `RUN_LIMIT_USD` 1,50, reszta
+        # etapow dobila do 1,05, a pisarz padl z `BudgetExceeded`. Zaplacilismy
+        # za material i nie dostalismy tekstu — najgorszy mozliwy wynik, gorszy
+        # niz brak artykulu, bo brak artykulu jest darmowy.
+        rezerwa = float(getattr(config, "REZERWA_NA_PISARZA_USD", 0.60))
+        # SZACUNEK MA SZACOWAC TE RZECZ, KTORA SZACUJE. Pierwsza wersja brala
+        # tu `rezerwa` takze jako koszt wyszukiwania i odmawiala przy 1,18 USD
+        # w przebiegu, choc 0,35 na research plus 0,60 na pisarza miescilo sie
+        # tam bez trudu.
+        koszt = float(getattr(config, "KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD", 0.40))
+        try:
+            zostalo = db.available_budget(conn, run_id)
+        except Exception:                   # noqa: BLE001
+            zostalo = float("inf")
+        if zostalo - koszt < rezerwa:
+            print("  [dyskoveria] awaryjne wyszukiwanie WSTRZYMANE: w przebiegu"
+                  " zostalo %.2f USD, samo wyszukiwanie kosztuje okolo %.2f,"
+                  " a pisarzowi trzeba zostawic %.2f. Lepiej nie zaczynac, niz"
+                  " zaplacic za material i nie napisac tekstu."
+                  % (zostalo, koszt, rezerwa), flush=True)
+            raise ValueError(
+                "wyszukiwanie u dostawcy nie dziala, a na awaryjne (model %s)"
+                " nie ma budzetu w tym przebiegu: zostalo %.2f USD, potrzeba"
+                " %.2f na research i %.2f na pisarza"
+                % (zapasowy, zostalo, koszt, rezerwa))
+        poprzedni = config.MODEL_FOR["discovery"]
+        print("  [dyskoveria] %s nie wyszukuje — PRZECHODZE NA %s. To jest"
+              " DROZSZE (zmierzone: 0,27 USD wobec 0,0005) i dzieje sie tylko"
+              " przy awarii wyszukiwania u dostawcy."
+              % (poprzedni, zapasowy), flush=True)
+        config.MODEL_FOR["discovery"] = zapasowy
+        # MNIEJ WYSZUKIWAN NA DROGIM MODELU. Osiem kosztowalo 0,68 USD, bo
+        # kazde dokłada wyniki do wejscia nastepnej tury, a wejscie Opusa to
+        # 5 USD za milion tokenow. To jest sufit DNIA AWARII, nie normalny tryb.
+        ile_szukan = config.DISCOVERY_MAX_SEARCHES
+        config.DISCOVERY_MAX_SEARCHES = int(getattr(
+            config, "DISCOVERY_MAX_SEARCHES_ZAPASOWE", ile_szukan))
+        try:
+            text = llm.call(
+                "discovery", DISCOVERY_SYSTEM, prompt,
+                conn=conn, run_id=run_id, web_search=True,
+                collect_urls=real_urls,
+            ) or text
+        except Exception as exc:            # noqa: BLE001
+            print("  [dyskoveria] model zapasowy tez zawiodl (%s: %s)"
+                  % (type(exc).__name__, str(exc)[:90]), flush=True)
+        finally:
+            # ROUTING WRACA NA MIEJSCE. Bez tego jedna awaria dostawcy
+            # przestawialaby caly przebieg na najdrozszy model po cichu.
+            config.MODEL_FOR["discovery"] = poprzedni
+            config.DISCOVERY_MAX_SEARCHES = ile_szukan
     try:
         data = llm.parse_json(text)
     except Exception:
@@ -7628,6 +7796,10 @@ def losuj_odstep(co: str = "") -> float:
     """
     import random
 
+    koszyki = getattr(config, "ODSTEPY_WAZONE", {}).get(co)
+    if koszyki:
+        udzial, dol, gora = random.choices(koszyki, weights=[k[0] for k in koszyki])[0]
+        return random.uniform(dol, gora)
     dol, gora = config.ODSTEPY.get(co, config.ODSTEP_MIEDZY_DZIALANIAMI)
     return random.uniform(dol, gora)
 ```
@@ -8433,6 +8605,17 @@ def rytm(co: str, na_co: str, stan: dict) -> bool:
         print("  [wycofanie] %s: dwie porazki pod rzad — przerwa %.0f min"
               " zamiast zwyklej" % (co, przerwa / 60), flush=True)
 
+    # LIMIT ROZMOW NA GODZINE — komentarze i odpowiedzi razem, z dziennika.
+    # Gdy w ostatnich 60 minutach bylo ich juz `MAKS_ROZMOW_NA_GODZINE`,
+    # przerwa wydluza sie do chwili, w ktorej najstarsza z nich wypadnie z okna.
+    if co in ("komentarz", "odpowiedz") and not getattr(config, "W_TESCIE", False):
+        brakuje = _do_konca_limitu_rozmow()
+        if brakuje > przerwa:
+            print("  [rytm] %d rozmow w ostatniej godzinie — czekam %.0f min zamiast"
+                  " %.0f" % (config.MAKS_ROZMOW_NA_GODZINE, brakuje / 60, przerwa / 60),
+                  flush=True)
+            przerwa = brakuje
+
     if not zostal_czas(na_co, przerwa):
         return False
     _s.odczekaj(co, przerwa)
@@ -8457,8 +8640,8 @@ def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
 
     if _KONIEC_CZASU is None or ile <= 0:
         return ile
-    dol, gora = config.ODSTEPY.get(rodzaj, config.ODSTEP_MIEDZY_DZIALANIAMI)
-    odstep = (dol + gora) / 2
+    # SREDNIA Z KOSZYKOW, gdy przerwy sa wazone — patrz `stages.sredni_odstep`.
+    odstep = stages.sredni_odstep(rodzaj)
     zostalo = max(0.0, _KONIEC_CZASU - time.time()) * udzial
 
     # PRZERW JEST O JEDNA MNIEJ NIZ DZIALAN. Przy dwoch notkach czekamy raz, nie
@@ -8608,8 +8791,29 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
         if rodzaj == "subskrypcja" and any(
                 page.get_by_role("button", name=label, exact=True).count()
                 for label in subscription_labels):
-            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True)
-            print("  darmowa subskrypcja juz aktywna — nie zmieniam planu", flush=True)
+            # TO JEST WYNIK I MUSI ZOSTAC W DZIENNIKU.
+            #
+            # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, przebieg z 13:30:
+            #
+            #     (przerwa 13.6 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #     ...
+            #     (przerwa 10.0 min przed kolejnym działaniem)
+            #     darmowa subskrypcja juz aktywna — nie zmieniam planu
+            #
+            # Dwie z czterech prob tego przebiegu, dzien skonczony na 2/4.
+            # Ta galaz wracala bez slowa w dzienniku, a
+            # `kogo_juz_subskrybujemy` zamyka tylko to, co w dzienniku stoi —
+            # wiec te same profile mogly wracac w kolejnych przebiegach.
+            # Wpis idzie jako POMINIECIE, nie jako subskrypcja: niczego dzis
+            # nie kliknelismy i do normy dnia to sie nie liczy.
+            wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True,
+                         powod=POWOD_JUZ_SUBSKRYBOWANY)
+            print(f"  darmowa subskrypcja u @{handle} juz aktywna — nie zmieniam"
+                  f" planu", flush=True)
+            if wyslij:
+                zapisz_w_dzienniku("subskrypcja_pominieta", udane=True,
+                                   komu=handle, powod=POWOD_JUZ_SUBSKRYBOWANY)
             return wynik
         if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
             import personality
@@ -8621,7 +8825,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             finally:
                 stats_page.close()
             if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
-                wynik.update(pominiete=True, powod="account exceeds the size limit or its size is unknown")
+                wynik.update(pominiete=True, powod=POWOD_ZA_DUZY)
                 if wyslij:
                     zapisz_w_dzienniku("subskrypcja_pominieta", udane=True, komu=handle, powod=wynik["powod"])
                 return wynik
@@ -8641,12 +8845,36 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 page.goto(f"https://substack.com/@{handle}", timeout=READ_TIMEOUT_MS * 2,
                           wait_until="domcontentloaded")
                 page.wait_for_timeout(SETTLE_MS + 3000)
-                wynik["zrobione"] = any(
+                # POTWIERDZENIEM JEST ZNIKNIECIE PRZYCISKU, NIE NAPIS
+                # „Subscribed" — bo tego napisu Substack tam nie pisze.
+                #
+                # ZMIERZONE NA ZYWO 11 wrzesnia 2026 na czterech profilach:
+                #
+                #   @becomingabuilder  zasubskrybowany dzis   -> ['Manage']
+                #   @mattgrawitch      zasubskrybowany dzis   -> ['Manage']
+                #   @rubendominguez    nigdy nie probowany    -> ['Subscribe','Manage']
+                #   @omoore            nigdy nie probowany    -> ['Subscribe','Manage']
+                #
+                # Szukalismy „Subscribed", „Subskrybujesz", „Subskrybowano"
+                # albo „Upgrade". Zaden z nich nie pada. Obie dzisiejsze
+                # subskrypcje NAPRAWDE WESZLY i obie zapisaly sie jako
+                # porazka — a `kogo_juz_subskrybujemy` zamyka uchwyt tylko
+                # przy `udane=True`, wiec weszlibysmy na te profile jeszcze raz.
+                #
+                # „Manage" NIE JEST dowodem: stoi na profilach, ktorych nie
+                # subskrybujemy. Dowodem jest BRAK przycisku „Subscribe" —
+                # i dokladnie tak potwierdza sie juz obserwowanie, w galezi
+                # `else` ponizej.
+                zostal = any(
+                    page.get_by_role("button", name=etykieta, exact=True).count()
+                    for etykieta in napisy)
+                wynik["zrobione"] = (not zostal) or any(
                     page.get_by_role("button", name=label, exact=True).count()
                     for label in subscription_labels)
                 wynik["potwierdzone"] = bool(wynik["zrobione"])
                 if not wynik["zrobione"]:
-                    wynik["blad"] = "brak potwierdzenia darmowej subskrypcji na profilu"
+                    wynik["blad"] = ("przycisk subskrypcji nadal stoi na profilu"
+                                     " — klikniecie nie doszlo")
             else:
                 wynik["zrobione"] = k.count() == 0 or not k.is_visible()
             dopisz_wynik(rodzaj, wynik, komu=handle)
@@ -8713,28 +8941,209 @@ def restackuj_w_kanale(
         # zostawilby proces Chromium przy zyciu.
         if wyslij:
             wymagaj_wlasciwego_konta(page)
-        page.goto(url or "https://substack.com/", timeout=READ_TIMEOUT_MS * 2,
+        adres_kanalu = url or "https://substack.com/"
+        page.goto(adres_kanalu, timeout=READ_TIMEOUT_MS * 2,
                   wait_until="domcontentloaded")
         page.wait_for_timeout(SETTLE_MS + 6000)
 
         przyciski = page.get_by_role("button", name="Restack")
+        # KANAL TRZEBA PRZEWINAC, ZEBY W OGOLE ISTNIAL.
+        #
+        # Substack doladowuje notki dopiero przy przewijaniu. Ten blok wchodzil
+        # na kanal, czekal i liczyl przyciski — czyli widzial JEDEN EKRAN.
+        #
+        # ZMIERZONE NA ZYWO 10 wrzesnia 2026, ten sam kanal, ta sama sesja,
+        # w odstepie minuty:
+        #     bez przewijania      4 przyciski
+        #     po trzech przewinieciach  14 przyciskow
+        #
+        # Skutek widac w normie: restacki chodzily na 42 procent, dokladnie
+        # jeden na przebieg przy budzecie dwoch do czterech. Z czterech
+        # kandydatow jeden wypadal poza rewirem, kilka odrzucal model i
+        # zostawal jeden. Pula nie byla chuda — byla nieodczytana.
+        #
+        # Przewijamy, dopoki przybywa przyciskow i dopoki nie mamy ich
+        # wyraznie wiecej niz budzet. Stop na braku przyrostu, zeby nie
+        # przewijac w nieskonczonosc kanalu, ktory sie skonczyl.
+        def doladuj(cel_przyciskow: int) -> int:
+            """Przewija, dopoki przybywa przyciskow i jest ich mniej niz cel.
+
+            Oddaje liczbe SPRZED przewijania, zeby wydruk pokazal przyrost.
+            """
+            przed = przyciski.count()
+            poprzednio = -1
+            for krok in range(8):
+                teraz = przyciski.count()
+                if teraz >= cel_przyciskow or teraz == poprzednio:
+                    break
+                poprzednio = teraz
+                # `mouse.wheel` wymaga, zeby wskaznik stal nad przewijanym
+                # obszarem, a po wejsciu na strone stoi w rogu — zmierzone
+                # 10 wrzesnia: blok restackow widzial 5 notek, a ten sam kanal
+                # przewiniety przez `scrollBy` oddal 15. Robimy jedno i drugie,
+                # bo `scrollBy` nie dziala tam, gdzie przewija sie kontener,
+                # a nie okno.
+                try:
+                    page.evaluate("window.scrollBy(0, 1600)")
+                except Exception:                      # noqa: BLE001
+                    pass
+                page.mouse.move(600, 500)
+                page.mouse.wheel(0, 1400)
+                page.wait_for_timeout(1400)
+            return przed
+
+        cel = max(int(ile) * 4, 12)
+        przed_przewinieciem = doladuj(cel)
+        if przyciski.count() > przed_przewinieciem:
+            print("  kanal przewiniety: %d -> %d notek"
+                  % (przed_przewinieciem, przyciski.count()), flush=True)
         wynik["znalezione"] = przyciski.count()
         print(f"  notek w kanale do rozwazenia: {wynik['znalezione']}", flush=True)
 
-        for i in range(min(ile * 4, przyciski.count())):
-            if wynik["restackowane"] >= ile:
+        # PO RESTACKU INDEKSY TRACILY WAZNOSC.
+        #
+        # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dzieki rachunkowi dolozonemu
+        # tego samego dnia:
+        #
+        #     notek w kanale do rozwazenia: 5
+        #     RESTACK u Chelsea Salamone ... podane dalej 1/2
+        #     pomijam (przycisk niewidoczny, pozycja 1)
+        #     pomijam (przycisk niewidoczny, pozycja 2)
+        #     pomijam (przycisk niewidoczny, pozycja 3)
+        #     pomijam (przycisk niewidoczny, pozycja 4)
+        #     rachunek: 5 znalezionych -> 4 niewidocznych -> 1 podanych dalej
+        #
+        # Pierwszy restack przechodzi, a wszystkie pozostale pozycje z tej samej
+        # listy staja sie niewidoczne. Osobny pomiar tego samego dnia pokazal,
+        # ze przy samym OTWARCIU i zamknieciu okna lista przezywa w calosci —
+        # rozbija ja dopiero prawdziwa publikacja.
+        #
+        # SPROSTOWANIE 13 wrzesnia 2026. Wtedy uznalem, ze to Substack
+        # przestawia kanal po podaniu dalej. Nie przestawial. Po publikacji
+        # petla pytala o numer naszej notki, a `api_json` czyta API, WCHODZAC
+        # na adres JSON — ta sama karta, na ktorej stal kanal. Stad pozycje
+        # „niewidoczne" 10 wrzesnia i zero przyciskow 12 wrzesnia. Numer
+        # czytamy teraz w osobnej karcie, patrz nizej.
+        #
+        # Odcisk tresci zostaje, bo jest poprawny niezaleznie od przyczyny:
+        # obsluzonych poznajemy po tym, co napisali, a nie po numerze pozycji.
+        zrobione_odciski: set = set()
+        # AUTORZY Z OSTATNICH DNI — zeby kanal nie zamienil sie w tube jednego
+        # zrodla. Patrz `kogo_juz_restackowalismy`: trzy z trzynastu restackow
+        # poszly do tej samej publikacji.
+        odpoczywaja = kogo_juz_restackowalismy()
+        if odpoczywaja:
+            print("  %d autorow odpoczywa po niedawnym restacku"
+                  % len(odpoczywaja), flush=True)
+        obrotow = 0
+        MAKS_OBROTOW = max(int(ile) * 6, 18)
+        doladowan = 0
+        MAKS_DOLADOWAN = 2
+        while wynik["restackowane"] < ile and obrotow < MAKS_OBROTOW:
+            obrotow += 1
+            kandydat = None
+            odcisk_kandydata = ""
+            while kandydat is None:
+                ile_teraz = przyciski.count()
+                skan = {"niewidoczne": 0, "bez_tekstu": 0, "juz_byly": 0, "blad": 0}
+                for i in range(ile_teraz):
+                    probny = przyciski.nth(i)
+                    try:
+                        if not probny.is_visible():
+                            skan["niewidoczne"] += 1
+                            continue
+                        wstepna = _notka_przy_przycisku(probny)
+                    except Exception:                  # noqa: BLE001
+                        skan["blad"] += 1
+                        continue
+                    odcisk = plaski(str(wstepna.get("tekst") or ""))[:120]
+                    if not odcisk:
+                        skan["bez_tekstu"] += 1
+                        continue
+                    if odcisk in zrobione_odciski:
+                        skan["juz_byly"] += 1
+                        continue
+                    kandydat, odcisk_kandydata = probny, odcisk
+                    break
+                if kandydat is not None:
+                    break
+                # SKAN PUSTY — MOWIMY, Z CZEGO. „Nie ma nowych notek" przy
+                # pietnastu w kanale to wynik, ktory trzeba umiec rozlozyc.
+                print("    (skan: %d przyciskow -> %d niewidocznych, %d bez"
+                      " tekstu, %d juz obsluzonych, %d bledow odczytu)"
+                      % (ile_teraz, skan["niewidoczne"], skan["bez_tekstu"],
+                         skan["juz_byly"], skan["blad"]), flush=True)
+                if doladowan >= MAKS_DOLADOWAN:
+                    break
+                # KANAL WYCZERPANY TO NIE KONIEC NORMY. Najpierw przewijamy
+                # glebiej na tej samej stronie — to nic nie kosztuje i nie
+                # gubi miejsca. Dopiero gdy nic nie przybywa (albo kanalu
+                # w ogole nie ma na stronie), wchodzimy na niego od nowa.
+                # Obsluzone notki i tak odpadna po odcisku, a sufit dwoch
+                # doladowan nie pozwala krecic sie w kolko po pustym kanale.
+                doladowan += 1
+                if ile_teraz:
+                    doladuj(ile_teraz + 12)
+                if przyciski.count() <= ile_teraz:
+                    page.keyboard.press("Escape")
+                    page.goto(adres_kanalu, timeout=READ_TIMEOUT_MS * 2,
+                              wait_until="domcontentloaded")
+                    page.wait_for_timeout(SETTLE_MS + 6000)
+                    doladuj(max(cel, ile_teraz + 12))
+                print("    kanal doladowany (%d/%d): %d -> %d notek"
+                      % (doladowan, MAKS_DOLADOWAN, ile_teraz, przyciski.count()),
+                      flush=True)
+            if kandydat is None:
+                print("    (nie ma juz nowych notek do rozwazenia)", flush=True)
                 break
-            kandydat = przyciski.nth(i)
+            zrobione_odciski.add(odcisk_kandydata)
             try:
+                # TRZY CICHE ODPADY, TERAZ GLOSNE.
+                #
+                # ZMIERZONE na produkcji 7-10 wrzesnia 2026: restacki chodza na
+                # 42 procent normy, a dziennie wychodzi DOKLADNIE JEDEN przy
+                # budzecie czterech. W logu stalo za kazdym razem to samo:
+                #
+                #     notek w kanale do rozwazenia: 6
+                #     [restack] claude-opus-5 ... (jedno wywolanie)
+                #     podane dalej 1/2
+                #
+                # Szesciu kandydatow, JEDNO pytanie do modelu. Pieciu odpadalo
+                # przed ocena i nie zostawialo po sobie ani slowa, bo wszystkie
+                # trzy odsiewy konczyly sie golym `continue`. Z zewnatrz
+                # wygladalo to jak pusty kanal, a kanal pusty nie byl.
+                #
+                # Nie zgaduje, ktory z tych trzech odsiewow to robi — od tego
+                # jest pomiar. Kazdy mowi teraz o sobie i trafia do licznika.
                 if not kandydat.is_visible():
+                    wynik["niewidoczne"] = wynik.get("niewidoczne", 0) + 1
+                    print("    pomijam (przycisk zniknal miedzy wyborem"
+                          " a klinieciem)", flush=True)
                     continue
                 # Tresc notki bierzemy z KONTENERA wokol przycisku. Bez niej
                 # decyzja bylaby losowaniem, a nie ocena.
                 kto = _autor_przy_przycisku(kandydat)
                 if (kto or {}).get("uchwyt", "").casefold() == config.SUBSTACK_HANDLE.casefold():
+                    wynik["nasze"] = wynik.get("nasze", 0) + 1
+                    print("    pomijam (to nasza wlasna notka)", flush=True)
                     continue
                 notka = _notka_przy_przycisku(kandydat)
                 if not notka.get("tekst"):
+                    wynik["bez_tresci"] = wynik.get("bez_tresci", 0) + 1
+                    print("    pomijam (nie odczytalem tresci notki u %s)"
+                          % (str((kto or {}).get("autor") or "?")[:24]),
+                          flush=True)
+                    continue
+                # AUTOR Z TEGO TYGODNIA ODPOCZYWA. Nie „nigdy wiecej" — siedem
+                # dni. Dobry autor ma wracac, tylko nie codziennie.
+                autor_teraz = " ".join(
+                    str(notka.get("autor") or (kto or {}).get("autor") or "").split())
+                odcisk_zrodla = plaski(str(notka.get("tekst") or ""))[:120].casefold()
+                if ((autor_teraz and autor_teraz.casefold() in odpoczywaja)
+                        or (odcisk_zrodla and odcisk_zrodla in odpoczywaja)):
+                    wynik["odpoczywa"] = wynik.get("odpoczywa", 0) + 1
+                    print("    pomijam (%s juz byl podany dalej w tym tygodniu)"
+                          % (autor_teraz[:30] or "ta notka"), flush=True)
                     continue
                 # POZA REWIREM BEZ MODELU — patrz `w_rewirze`.
                 if not w_rewirze(notka["tekst"]):
@@ -8810,11 +9219,36 @@ def restackuj_w_kanale(
                 # zmierzyc — a to najcenniejszy sygnal, jaki mamy: w badaniu
                 # 9 641 notek restack konwertowal dwunastokrotnie lepiej niz
                 # polubienie.
+                #
+                # NUMER CZYTAMY W OSOBNEJ KARCIE, NIE NA KANALE.
+                #
+                # ZMIERZONE NA PRODUKCJI 12 wrzesnia 2026, oba przebiegi dnia:
+                #
+                #     notek w kanale do rozwazenia: 15
+                #     RESTACK u Kai Marek ...
+                #     podane dalej 1/3
+                #     (nie ma juz nowych notek do rozwazenia)
+                #
+                # `numer_naszej_notki` pyta API przez `api_json`, a ta funkcja
+                # WCHODZI na adres JSON — tak dziala z serwera, patrz jej opis.
+                # Dostawala `page`, wiec kanal znikal spod petli i nastepny obrot
+                # liczyl zero przyciskow. Tak bylo od pierwszego commita (4
+                # wrzesnia) i to jest ten „dokladnie jeden restack na przebieg"
+                # z pomiarow 7-10 wrzesnia. Proba sucha tego nie widziala, bo
+                # o numer nie pyta — robila cztery restacki z rzedu.
                 numer_restacka = ""
+                karta_numeru = None
                 try:
-                    numer_restacka = numer_naszej_notki(page, zdanie, prob=2)
+                    karta_numeru = context.new_page()
+                    numer_restacka = numer_naszej_notki(karta_numeru, zdanie, prob=2)
                 except Exception:
                     pass
+                finally:
+                    if karta_numeru is not None and karta_numeru is not page:
+                        try:
+                            karta_numeru.close()
+                        except Exception:              # noqa: BLE001
+                            pass
                 # OTWARTE, SWIADOMIE NIETKNIETE: `udane=True` ponizej opiera sie
                 # na samym lancuchu klikniec, a nie na potwierdzeniu. To jest ta
                 # sama doktryna „klikniecie nie jest dowodem", ktora obowiazuje
@@ -8842,10 +9276,15 @@ def restackuj_w_kanale(
                 # `udane` powinno od niego zalezec. Nie zgaduje, jak Substack
                 # nazywa stan przycisku po restacku, i nie ruszam tego bez tej
                 # liczby.
+                # ODCISK CUDZEJ NOTKI OBOK AUTORA. Zmierzone 11 wrzesnia
+                # 2026: dwa z trzynastu restackow nie maja zapisanego autora
+                # („?" w zestawieniu), wiec odpoczynek autora nie mialby ich
+                # jak rozpoznac. Odcisk tresci dziala takze wtedy.
                 zapisz_w_dzienniku("restack", udane=True,
                                    komu=notka.get("autor", ""),
                                    slow=len(zdanie.split()),
-                                   tekst=zdanie[:300], id=numer_restacka)
+                                   tekst=zdanie[:300], id=numer_restacka,
+                                   zrodlo=plaski(str(notka.get("tekst") or ""))[:120])
                 if config.PERSONA_WLACZONA and numer_restacka:
                     import personality
                     personality.remember_interaction("restack", ocena,
@@ -8867,6 +9306,17 @@ def restackuj_w_kanale(
                     page.wait_for_timeout(600)
                 except Exception:
                     pass
+        # RACHUNEK CALEGO BLOKU, ZAWSZE. Bez tego jednego zdania trzeba
+        # przegladac log linia po linii, zeby odpowiedziec na pytanie
+        # „czemu jeden restack, skoro budzet ma cztery".
+        print("  rachunek: %d znalezionych -> %d niewidocznych, %d naszych,"
+              " %d bez tresci, %d odpoczywa, %d poza rewirem -> %d ocenionych,"
+              " %d odmow -> %d podanych dalej"
+              % (wynik["znalezione"], wynik.get("niewidoczne", 0),
+                 wynik.get("nasze", 0), wynik.get("bez_tresci", 0),
+                 wynik.get("odpoczywa", 0), wynik.get("poza_rewirem", 0),
+                 wynik["rozwazone"], len(wynik["odmowy"]),
+                 wynik["restackowane"]), flush=True)
         if not wyslij:
             print(f"  (nie klikam — tryb sprawdzenia; podalbym dalej"
                   f" {wynik['restackowane']})", flush=True)
@@ -12531,6 +12981,8 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `GPT_ASTRA` | `"gpt-6-astra"` | — |
 | `DEEPSEEK` | `"deepseek-v4-flash"` | — |
 | `DEEPSEEK_PRO` | `"deepseek-v4-pro"` | — |
+| `DEEPSEEK_FLASH` | `"deepseek-flash"` | NASTEPCA FLASHA U DOSTAWCY. Od wrzesnia 2026 DeepSeek podaje na liscie modeli `deepseek-flash` (DeepSeek-V4.1-Flash), a `deepseek-v4-flash`  |
+| `MODELE_SAME_NA_NOWSZE` | `True` | NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na  |
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |
 | `OPENAI_BASE_URL` | `"https://api.openai.com/v1"` | — |
@@ -12550,6 +13002,11 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `MNOZNIK_POZA_SZCZYTEM` | `1.0` | — |
 | `WEB_SEARCH_TOOL` | `{ CLAUDE: "web_search_20260209", SONNET: "we` | Filtrowanie dynamiczne (`_20260209`) jest na Opusie i Sonnecie 5. |
 | `NAJNOWSZE_WYSZUKIWANIE` | `"web_search_20260209"` | Wersja narzedzia wyszukiwania dla modelu Anthropic, z galezia awaryjna. |
+| `MODEL_ZAPASOWY_WYSZUKIWANIA` | `CLAUDE` | MODEL, PO KTORY SIEGAMY, GDY WYSZUKIWANIE U DOSTAWCY PADNIE. 10 wrzesnia 2026 narzedzie `web_search` DeepSeeka przestalo cokolwiek oddawac n |
+| `REZERWA_NA_PISARZA_USD` | `0.60` | ILE ZOSTAWIC PISARZOWI, ZANIM SIEGNIEMY PO DROGIE WYSZUKIWANIE. 10 wrzesnia 2026 awaryjne odkrycie na Opusie kosztowalo 0,68 USD przy `RUN_L |
+| `DISCOVERY_MAX_SEARCHES_ZAPASOWE` | `4` | ILE WYSZUKIWAN WOLNO MODELOWI ZAPASOWEMU. Awaryjne odkrycie na Opusie 10 wrzesnia 2026: osiem wyszukiwan, 99 851 tokenow wejscia, 4 097 wyjs |
+| `KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD` | `0.80` | ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac. ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 8 |
+| `SUBSKRYPCJE_MAKS_OGLADANYCH` | `40` | ILU KANDYDATOW WOLNO OBEJRZEC W JEDNYM PRZEBIEGU SUBSKRYPCJI. Do 10 wrzesnia 2026 okno mialo osiem pozycji — cztery sloty plus zapas na odpa |
 | `WEB_SEARCH_USD_PER_1K` | `10.00` | Wyszukiwanie po stronie Anthropic: USD za 1000 zapytań. |
 | `SUFIT_PODNIESIONY_NA` | `""` | — |
 | `SUFIT_PODNIESIONY_RAZY` | `2.0` | O ILE PODNOSI SIE SUFIT W DNIU PRACY PRZY WLASCICIELU. Mnoznik, nie druga liczba: sufit dzienny jest polem konfiguracji, a wpisana tu kwota  |
@@ -12594,7 +13051,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `CHARS_PER_TOKEN` | `3.5` | Zachowawczo, żeby sufit był raczej za duży niż za mały. Zmierzone na starym agencie: CJK 2,19x, cyrylica 1,41x; dla angielskiego 3,5 znaku n |
 | `JSON_OVERHEAD_TOKENS` | `1200` | Ile tokenów zajmuje rusztowanie JSON-a, klucze i pola opisowe poza samą treścią. |
 | `THINKING_HEADROOM_TOKENS` | `28000` | Myślenie na Opusie 5 jest domyślnie włączone, liczy się jak tokeny wyjściowe i NIE jest częścią kontraktu — więc sufit wyliczony z samego ko |
-| `EFFORT` | `{ "scout": "medium", "discovery": "medium", ` | Głębokość myślenia. Jawnie, bo domyślne `high` na Opusie 5 potrafi podwoić rachunek za wyjście bez pytania. TO JEST POKRETLO WYLACZNIE DLA M |
+| `EFFORT` | `{ "nowszy_model": "low", "scout": "medium", ` | Głębokość myślenia. Jawnie, bo domyślne `high` na Opusie 5 potrafi podwoić rachunek za wyjście bez pytania. TO JEST POKRETLO WYLACZNIE DLA M |
 | `MAX_TOKENS` | `{ # 6 tematow: tytul, pytanie, ZLAMANE PRZEK` | — |
 | `NOTE_MIN_WORDS` | `33` | --- notki i komentarze ------------------------------------------------------ Zmierzone na publicznych analizach Substacka: 33-64 słowa dają |
 | `NOTE_MAX_WORDS` | `64` | — |
@@ -12674,13 +13131,23 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `SKAUT_UDZIAL_Z_KANALOW` | `0.75` | Jaka czesc tematow skauta ma wychodzic z kanalow, ktore konto obserwuje. Decyzja wlasciciela z 30 sierpnia, po pomiarze: przed nia z kanalow |
 | `ROZBIEG_DNI` | `30` | — |
 | `ODSTEPY` | `{ # 45-90 MIN, nie 10-25. Zmierzone na profi` | Odstepy miedzy dzialaniami, w sekundach. Pietnascie polubien w dziewiecdziesiat sekund to nie jest czytanie i kazdy system to widzi. Odstepy |
+| `ODSTEPY_WAZONE` | `{ "komentarz": ((0.20, 300, 420), (0.70, 420` | PRZERWY PRZY ROZMOWACH NIE SA ROWNOMIERNE. Czlowiek odpisuje zwykle po kilku minutach, czasem od razu po przeczytaniu, czasem wraca po pol g |
+| `MAKS_ROZMOW_NA_GODZINE` | `4` | NAJWIECEJ ROZMOW NA GODZINE — komentarze i odpowiedzi razem, w kazdym oknie szescdziesieciu minut. Przy 20-30 komentarzach dziennie srednia  |
+| `SZANSA_ODPOWIEDZI` | `{ "pytanie": 0.90, # ktos o cos zapytal "nie` | KOMU ODPISUJEMY U SIEBIE — NIE KAZDEMU. Szansa odpowiedzi wg rodzaju komentarza (`stages.rodzaj_komentarza`). Odpowiedz pod kazdym komentarz |
+| `ROZMOWA_MAKS_ODPOWIEDZI` | `2` | ROZMOWA W WATKU MA KONIEC. Tej samej osobie pod tym samym tekstem odpisujemy w tygodniu najwyzej tyle razy; druga odpowiedz ma juz mniejsza  |
+| `ROZMOWA_SZANSA_DALEJ` | `0.40` | — |
+| `RUCHY_ROZMOWY` | `{ "comment": (("puenta", 0.55), ("pytanie", ` | JAK KONCZY SIE TEN KONKRETNY KOMENTARZ ALBO ODPOWIEDZ. Losowane za kazdym razem (`personality.ruch_rozmowy`): puenta  — trzy uderzenia, osta |
+| `OSTATNIE_WLASNE_DO_PROMPTU` | `10` | Ile wlasnych, juz opublikowanych komentarzy i odpowiedzi widzi model przy pisaniu nastepnego — zeby nie wracaly te same obrazy i te same zak |
 | `ODSTEP_MIEDZY_DZIALANIAMI` | `(45, 180)` | — |
 | `ZWLOKA_PRZED_NOTKAMI` | `(0, 900)` | ZWLOKA PRZED PIERWSZA NOTKA PRZEBIEGU. Bez niej pierwsza notka wychodzila zawsze kilka minut po starcie zegara, wiec piec razy dziennie o te |
 | `UDZIAL_CZASU_NA_NOTKI` | `0.60` | ILE CZASU PRZEBIEGU WOLNO ZJESC SAMYM NOTKOM. Rozdzielnik dzienny nie wiedzial nic o czasie: dzielil norme tak, jakby dzialania byly natychm |
 | `CZAS_DZIALANIA_S` | `240` | Ile trwa samo dzialanie poza przerwa: napisanie, sprawdzenie faktow, wystawienie i potwierdzenie u zrodla. Z realnych przebiegow. |
 | `MIN_WIEK_POSTA_MIN` | `(90, 900)` | NIE KOMENTUJEMY SWIEZYCH POSTOW. Wlasciciel opisal to najlepiej: napisal notke i piec sekund pozniej ktos odpisal ogolnikowa zgoda — i to zd |
 | `MIN_WIEK_NOTKI_MIN` | `(20, 90)` | NOTKA TO NIE ARTYKUL i zyje godziny, nie dni. Ten sam prog co dla artykulow oznaczal, ze pod notki wchodzilismy zawsze PO koncu rozmowy: prz |
-| `MAKS_WIEK_CELU_DNI` | `21` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
+| `MAKS_WIEK_CELU_DNI` | `3` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
+| `MAKS_WIEK_NOTKI_H` | `36` | NOTKA: 36 GODZIN. Z tych samych czternastu komentarzy pod notkami najwiecej wyswietlen mialy te pod notkami sprzed 6 i 11 godzin (27 i 77);  |
+| `UDZIAL_KOMENTARZY_POD_ARTYKULAMI` | `0.4` | ILE Z PRZYDZIALU PRZEBIEGU IDZIE POD ARTYKULY. Reszta idzie pod notki, bo tam — patrz pomiar wyzej — komentarz w ogole ktos widzi. Blok arty |
+| `STRONY_KANALU_NOTEK` | `6` | ILE STRON KANALU `for-you` CZYTAMY PO NOTKI DO DYSKUSJI — patrz `kanal.notki_z_kanalu`. Jedna strona to okolo czterech notek, szesc — okolo  |
 | `KOMFORTOWO_KOMENTARZY` | `25` | ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto |
 | `ODSTEP_DNI_NA_PUBLIKACJE` | `4` | Ile dni odstepu przed kolejnym komentarzem pod TA SAMA publikacja. Komentarz pod kazdym kolejnym tekstem tej samej osoby to drugi najczyteln |
 | `NISZA` | `""` | HASLA, KTORYMI AGENT SZUKA NOWYCH KONT. Kanal czytelnika pokazuje tylko to, co juz znamy, wiec sam z siebie nie przyprowadzi nikogo nowego — |
@@ -12731,7 +13198,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
-| `PRICING_VERSION` | `"rates-2026-09-06"` | Published rates checked 2026-09-06; invoice verification is separate. |
+| `PRICING_VERSION` | `"rates-2026-09-13"` | Published rates checked 2026-09-13; invoice verification is separate. |
 | `PRICING_SOURCES` | `{ "deepseek": "https://api-docs.deepseek.com` | — |
 | `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. CIEKAWOSTKI DOSTALY 600 s, NIE 300 — z awarii, nie z ostroznosci. 8 wrz |
 | `ROLE_DEADLINE_S` | `{"write": 480, "scout": 300, "synthesis": 30` | — |

@@ -13,7 +13,7 @@
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-670 wierszy, 22 funkcji na poziomie modułu, 0 klas
+1007 wierszy, 28 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -28,12 +28,18 @@
 | `_system(kind)` *(wewn.)* | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. |
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
-| `_valid(text, maximum)` *(wewn.)* | — |
-| `short_form(conn, run_id, kind, material)` | One paid decision: respond, or remain silent. No paid repair attempts. |
+| `rozbij_dlugie_uderzenia(tekst, maks)` | Za dluga linia idzie na dwie — po granicy ZDANIA. Oddaje (tekst, ile). |
+| `_valid(text, maximum, dozwolone_adresy)` *(wewn.)* | `dozwolone_adresy` — adresy, ktore SAMI podalismy w materiale. |
+| `short_form(conn, run_id, kind, material, napisane_teraz)` | One paid decision: respond, or remain silent. No paid repair attempts. |
 | `_swiat(conn, run_id)` *(wewn.)* | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. |
 | `_fakt_z_banku()` *(wewn.)* | Jeden fakt z banku dla tej notki, albo `None`. |
 | `notes(conn, run_id, ile, od)` | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. |
+| `ruch_rozmowy(kind, los)` | Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`. |
+| `ostatnie_wlasne_rozmowy(ile)` | Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika. |
 | `interaction(conn, run_id, kind, post)` | Adapt persona JSON to the existing browser publication contracts. |
+| `_ile_razy(tekst, znak)` *(wewn.)* | Ile razy ten znak niszy pada w tekscie, jako cale slowo. |
+| `o_nas(tytul, calosc)` | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. |
+| `_z_adresu(url)` *(wewn.)* | Slug adresu jako slowa — Substack wpisuje w niego temat. |
 | `targets(posts)` | Free topical prefilter. The writing call makes the actual reply decision. |
 | `community_candidates()` | Relevant new people need not have received a comment first. No LLM call. |
 | `small_account(profile, maximum)` | Unknown size is not evidence of a small account. No paid research. |
@@ -123,7 +129,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3063 wierszy, 27 funkcji na poziomie modułu, 1 klas
+3326 wierszy, 29 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -135,6 +141,7 @@
 | `zostal_czas(na_co, potrzeba_s)` | Czy zdazymy jeszcze cokolwiek zrobic przed koncem czasu przebiegu. |
 | `_pod_rzad_w_bloku(co, na_co)` *(wewn.)* | Ile porazek pod rzad naliczyl TEN blok, odkad sie zaczal. |
 | `rytm(co, na_co, stan)` | Przerwa MIEDZY dwoma dzialaniami tego samego rodzaju. |
+| `_do_konca_limitu_rozmow(teraz)` *(wewn.)* | Ile sekund do chwili, w ktorej kolejna rozmowa zmiesci sie w limicie godziny. |
 | `zmiesci_sie(rodzaj, ile, udzial)` | Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu. |
 | `ile_przebiegow_zostalo(conn)` | Ile przebiegow dnia jeszcze bedzie, wliczajac biezacy. |
 | `_po_zmianie_tematu(kiedy)` *(wewn.)* | Czy ten wpis jest z obecnej epoki konta. |
@@ -146,6 +153,7 @@
 | `reagujacy_jako_cele()` | Ludzie, ktorzy zareagowali na nasza tresc, jako CELE WPROST. Zero sieci. |
 | `_przeplot(pierwsza, druga)` *(wewn.)* | Na przemian z dwoch list; gdy jedna sie konczy, druga idzie dalej. |
 | `cele_wedlug_pierwszenstwa(historia)` | Hosty do zaczepienia, w kolejnosci pierwszenstwa. Zero sieci. |
+| `znane_za_duze()` | Uchwyty, ktore JUZ ZMIERZYLISMY jako za duze. Z dziennika, bez sieci. |
 | `powod_pustej_puli(rachunek)` | Zdanie do dziennika, gdy po odsianiu nie zostal nikt. |
 | `kogo_juz_subskrybujemy()` | Uchwyty, na ktore subskrypcja NIE MA JUZ CO wysylac. Z dziennika, bez sieci. |
 | `czy_juz_subskrybujemy(host, zamkniete, pamiec)` | Czy ten HOST wskazuje konto, na ktore nie ma juz po co wchodzic. |
@@ -157,7 +165,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9118 wierszy, 156 funkcji na poziomie modułu, 0 klas
+9462 wierszy, 165 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -196,6 +204,14 @@
 | `_zapisz_budzet_dnia(dzien, budzet, rozbieg)` *(wewn.)* | Zapisuje, ile agent SOBIE ZALOZYL na ten dzien. |
 | `sesje_dnia()` | Rozkłada dzień na kilka posiedzeń zamiast jednego ciągu. |
 | `losuj_odstep(co)` | Losuje przerwę, ale jej NIE odsypia. |
+| `sredni_odstep(co)` | Srednia przerwa tego rodzaju — z koszykow, gdy sa, inaczej srodek widelek. |
+| `rodzaj_komentarza(k)` | spam / pusty / pytanie / niezgoda / rozmowa / zwykly — bez modelu, za darmo. |
+| `_klucz_komentarza(k)` *(wewn.)* | — |
+| `_plik_decyzji()` *(wewn.)* | — |
+| `_wczytaj_decyzje(plik)` *(wewn.)* | — |
+| `_zapisz_decyzje(plik, dane, teraz)` *(wewn.)* | — |
+| `zdecyduj_o_odpowiedziach(czekaja)` | Ktore komentarze u nas dostana odpowiedz. Reszta zostaje bez — swiadomie. |
+| `zapamietaj_decyzje(k, decyzja, powod)` | Zmiana decyzji po fakcie — np. model zamilkl, wiec nie pytamy go znowu jutro. |
 | `odczekaj(co, ile)` | Przerwa po działaniu, dobrana do tego, ile ono zajmuje CZLOWIEKOWI. |
 | `_klucz_faktu(tekst)` *(wewn.)* | Odcisk faktu odporny na przestawienie słów i inną liczbę w tym samym zdaniu. |
 | `tekst_faktu(x)` | Fakt bywa slownikiem (`{"fact": ..., "url": ...}`), a bywa samym zdaniem. |
@@ -304,6 +320,7 @@
 | `_to_aktualizacja(nowy, stary)` *(wewn.)* | TO SAMO ZDANIE, INNE LICZBY — czyli nowe ustalenie, nie powtorka. |
 | `dopisz_kandydatow(kandydaci)` | Przepuszcza kandydatow przez bramke i dokłada do indeksu. |
 | `wez_kandydatow(ile, na_artykul, unikaj_artykulowych, zostaw)` | Wyjmuje kandydatow gotowych do pisania i ZNACZY ich jako uzytych. |
+| `zapomnij_fakty_przebiegu()` | Czysci pamiec wydanych faktow — dla testow i dlugo zyjacego procesu. |
 | `fakt_na_notke()` | Jeden fakt z banku dla notki — albo `None`, gdy bank ma go zostawic. |
 | `co_zadzialalo(ile)` | NASZE wlasne notki z ZMIERZONYM odbiorem — material dla sedziego banku. |
 | `_tabela_odbioru(naj, ile)` *(wewn.)* | Najlepiej i najgorzej przyjete notki, gotowe do wklejenia w prompt. |
@@ -320,7 +337,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6080 wierszy, 106 funkcji na poziomie modułu, 3 klas
+6689 wierszy, 112 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -385,6 +402,10 @@
 | `potwierdz_polubienie(uchwyt, przed)` | Czy przycisk po klknieciu wyglada inaczej niz przed nim. |
 | `polub_w_kanale(ile, wyslij)` | Polubienia w kanale czytelnika. |
 | `klik_mimo_zaslony(przycisk, nazwa, timeout)` | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. |
+| `_inna_strona(przed, teraz)` *(wewn.)* | Czy przegladarka zmienila STRONE, a nie tylko kotwice albo ukosnik. |
+| `_tresc_pola(pole)` *(wewn.)* | Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania. |
+| `oproznij_pole(page, pole, nazwa)` | Czysci pole do zera. Oddaje `True`, gdy naprawde jest puste. |
+| `wpisz_w_puste_pole(page, pole, tekst, nazwa, timeout, klikaj)` | Czysci pole, pisze, sprawdza wynik. Oddaje to, co naprawde stoi w polu. |
 | `konto_za_duze(handle)` | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. |
 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` *(wewn.)* | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. |
 | `_wybierz_darmowy_plan(page)` *(wewn.)* | Finish an explicitly free plan; never select a paid/default plan. |
@@ -407,6 +428,7 @@
 | `ustaw_oswiadczenie_ai(wyslij)` | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. |
 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. |
 | `potwierdz_artykul(page, tytul)` | Pyta Substacka, czy artykuł naprawdę jest opublikowany. |
+| `wylacz_wykrywanie_ai(page)` | Klika „Disable AI detection" na stronie ustawien publikacji. |
 | `_domknij_publikacje_artykulu(page)` *(wewn.)* | Complete Substack's optional subscribe-button prompt after Send. |
 | `_potwierdz_wysylke_artykulu(page, tytul)` *(wewn.)* | Retry reads, never the send; keep the editor open for a late prompt. |
 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | Wystawia artykuł na Substacku. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
@@ -426,6 +448,7 @@
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `read_pages(urls)` | Read sources with a deadline that also covers browser shutdown. |
+| `kogo_juz_restackowalismy(dni)` | Autorzy podani dalej w ostatnich `dni` dniach. Z dziennika, bez sieci. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
 | `_notka_przy_przycisku(przycisk)` *(wewn.)* | Tresc i autor notki, przy ktorej stoi ten przycisk. |
@@ -433,12 +456,13 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1214 wierszy, 22 funkcji na poziomie modułu, 4 klas
+1234 wierszy, 23 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
 | `_dostawca(model)` *(wewn.)* | Czyj to model. JEDNO miejsce, zeby nie rozjechalo sie z kontrola kluczy. |
 | `_preflight(purpose, conn, run_id)` *(wewn.)* | Warunki, które decydują, czy wywołanie może się w ogóle udać. |
+| `_powod_urwania(zdarzenie)` *(wewn.)* | POWOD urwania odpowiedzi, nie pierwsze 300 znakow calego zdarzenia. |
 | `_narzedzie_wyszukiwania(model)` *(wewn.)* | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. |
 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` *(wewn.)* | — |
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
@@ -574,7 +598,7 @@
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1115 wierszy, 40 funkcji na poziomie modułu, 4 klas
+1137 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -621,7 +645,7 @@
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-374 wierszy, 13 funkcji na poziomie modułu, 0 klas
+399 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -705,7 +729,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3726 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3918 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -838,9 +862,31 @@
 | `pobierz(conn, run_id, wymus)` | Aktualny stan modeli. Z pliku, gdy swiezy; inaczej pyta na nowo. |
 | `jako_tekst(dane)` | Stan modeli w postaci, ktora wchodzi do promptu. |
 
+### `wersje_modeli.py` — nowsza wersja modelu u dostawcy: wykrycie, próba na żywo, przełączenie
+
+446 wierszy, 15 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `plik()` | Stan w danych INSTANCJI — kazde konto ma wlasne zamiany i wlasna historie. |
+| `rozbierz(model)` | Dostawca, rodzina i wersja z nazwy modelu; None, gdy nazwa nie pasuje. |
+| `nastepca(model, lista)` | (nastepca albo None, dlaczego) — tylko z tej samej rodziny i tylko z listy. |
+| `modele_w_uzyciu(cfg)` | Modele tekstowe, na ktorych naprawde chodzimy: role plus modele zapasowe. |
+| `lista_modeli(dostawca)` | Identyfikatory, ktore dostawca dzis podaje. None = nie wiem (brak klucza, siec). |
+| `zarejestruj(cfg, stary, nowy)` | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. |
+| `przestaw(cfg, stary, nowy)` | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. Oddaje liste miejsc. |
+| `wczytaj()` | — |
+| `zapisz(dane)` | — |
+| `_koniec_lancucha(zamiany, model)` *(wewn.)* | a -> b, a pozniej b -> c: model `a` ma trafic od razu na `c`. |
+| `zastosuj(cfg)` | Naklada zapisane zamiany na zaladowana konfiguracje. Bez sieci i bez kosztu. |
+| `sprawdz_na_zywo(nowy)` | Jedno male wywolanie nastepcy przez `llm.call` — ta sama droga co produkcja. |
+| `sprawdz_i_przelacz(conn, run_id)` | Raz na dobe: listy dostawcow, nastepcy, proba na zywo, zapis zamian. |
+| `cofnij(model)` | Usuwa zamiane `model -> ...`. Nastepny start procesu chodzi po staremu. |
+| `main(argv)` | — |
+
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1822 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1904 wierszy, 15 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -862,7 +908,7 @@
 
 ### `norma.py` — licznik produkcji: ile agent wystawil wobec normy dziennej
 
-1152 wierszy, 13 funkcji na poziomie modułu, 0 klas
+1176 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

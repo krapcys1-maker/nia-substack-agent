@@ -74,6 +74,7 @@ MODULY = [
     ("korpus_kanalow.py", "o czym mówi się w tym tygodniu — zaczyn tematów, nigdy źródło"),
     ("tekst_strony.py", "treść wskazanego artykułu zamiast menu strony — odczyt bez modelu"),
     ("aktualne_modele.py", "jakie modele istnieją DZIŚ; pytane na żywo, nie z pamięci"),
+    ("wersje_modeli.py", "nowsza wersja modelu u dostawcy: wykrycie, próba na żywo, przełączenie"),
     ("artykul_z_puli.py", "artykuł bierze temat z tej samej puli, co notki"),
     ("norma.py", "licznik produkcji: ile agent wystawil wobec normy dziennej"),
     ("audyt_tematow.py", "audyt segmentu tematow na zywych danych: jedenascie etapow, od kanalow po zwrot do puli"),

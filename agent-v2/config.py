@@ -187,6 +187,20 @@ GPT_LUNA = "gpt-5.6-luna"
 GPT_ASTRA = "gpt-6-astra"
 DEEPSEEK = "deepseek-v4-flash"
 DEEPSEEK_PRO = "deepseek-v4-pro"  # ma server-side web_search przez /responses
+# NASTEPCA FLASHA U DOSTAWCY. Od wrzesnia 2026 DeepSeek podaje na liscie modeli
+# `deepseek-flash` (DeepSeek-V4.1-Flash), a `deepseek-v4-flash` juz nie — stara
+# nazwa jest tylko przyjmowana i trafia w ten sam model. Przejscie robi
+# `wersje_modeli`, nie ta stala: patrz tam, jak to zmierzono.
+DEEPSEEK_FLASH = "deepseek-flash"
+
+# NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe
+# pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na zywo
+# i zapisuje zamiane; `wersje_modeli.zastosuj` naklada ja przy starcie
+# procesu. `False` zostawia sam raport. Model z `MODELE_NIE_RUSZAJ` zostaje
+# na swojej wersji, nawet gdy wyjdzie nowsza — na przyklad glos, ktory
+# wlasciciel dopiero co skalibrowal.
+MODELE_SAME_NA_NOWSZE = True
+MODELE_NIE_RUSZAJ: tuple[str, ...] = ()
 
 # Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po
 # pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a etapy
@@ -327,6 +341,10 @@ MODEL_FOR = {
     # to jest cala jego wartosc. Ten sam, co sprawdzanie faktow, bo robi
     # dokladnie to samo: konfrontuje pamiec ze swiatem.
     "aktualne_modele": DEEPSEEK,
+    # Proba nastepcy modelu — `wersje_modeli.sprawdz_na_zywo` podstawia tu
+    # sprawdzany model na czas jednego wywolania. Wartosc ponizej nie chodzi
+    # nigdy sama.
+    "nowszy_model": DEEPSEEK,
     "curiosity": DEEPSEEK,
     "grafika": DEEPSEEK,
     "cele": DEEPSEEK,
@@ -376,7 +394,7 @@ DEEPSEEK_EFFORT = "low"
 # ($0,095) za werdykt strukturalny — wiecej niz samo pisanie ($0,066).
 DEEPSEEK_BEZ_MYSLENIA = frozenset({
     "feasibility", "classify", "bank", "cele", "restack", "grafika", "fedreg",
-    "forma",
+    "forma", "nowszy_model",
 })
 
 # Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override
@@ -464,6 +482,11 @@ PRICING = {
     # — dostawca podaje ich liczbe w kazdej odpowiedzi, wiec nie zgadujemy.
     DEEPSEEK: {"in": 0.22, "out": 0.66, "cache": 0.007, "verified": True},
     DEEPSEEK_PRO: {"in": 0.66, "out": 1.98, "cache": 0.022, "verified": True},
+    # DEEPSEEK-V4.1-FLASH, CENNIK DOSTAWCY Z 13 wrzesnia 2026 — poza szczytem
+    # 0,15 / 0,60, cache 0,003; w szczycie dwa razy tyle, jak u poprzednika.
+    # Taniej niz V4 (0,22 / 0,66 / 0,007), wiec ksiegowanie po starej nazwie
+    # zawyzalo koszt. `verified: False`, dopoki nie przyjdzie faktura.
+    DEEPSEEK_FLASH: {"in": 0.15, "out": 0.60, "cache": 0.003, "verified": False},
     # STAWKI OPENAI ODCZYTANE Z CENNIKA 7 wrzesnia 2026, NIE Z FAKTURY.
     # Sol ma cene PROMOCYJNA, gwarantowana przez dostawce „co najmniej do
     # 21 listopada 2026" — czyli ta liczba ma date waznosci, w odroznieniu od
@@ -596,6 +619,81 @@ WEB_SEARCH_TOOL = {
 
 # Wersja narzedzia wyszukiwania dla modelu Anthropic, z galezia awaryjna.
 NAJNOWSZE_WYSZUKIWANIE = "web_search_20260209"
+
+# MODEL, PO KTORY SIEGAMY, GDY WYSZUKIWANIE U DOSTAWCY PADNIE.
+#
+# 10 wrzesnia 2026 narzedzie `web_search` DeepSeeka przestalo cokolwiek
+# oddawac na caly dzien. Zmierzone na tym samym poleceniu:
+#     deepseek-v4-flash   wej=103   wyj=91    zero adresow
+#     claude-opus-5       wej=38463 wyj=2230  szukania=2, 19 adresow
+# Dwa dni wczesniej ten sam deepseek robil po 12-18 wyszukiwan na wywolanie.
+#
+# `stages.discovery` siega tu DOPIERO po dwoch pustych probach i mowi o tym
+# glosno, bo roznica ceny jest prawdziwa: 0,27 USD wobec 0,0005. To jest wybor
+# miedzy drozszym artykulem a brakiem artykulu.
+MODEL_ZAPASOWY_WYSZUKIWANIA = CLAUDE
+
+# ILE ZOSTAWIC PISARZOWI, ZANIM SIEGNIEMY PO DROGIE WYSZUKIWANIE.
+#
+# 10 wrzesnia 2026 awaryjne odkrycie na Opusie kosztowalo 0,68 USD przy
+# `RUN_LIMIT_USD` 1,50. Reszta etapow dobila do 1,05 i na pisarza zostalo
+# 0,45 — za malo na rezerwacje, wiec przebieg padl z `BudgetExceeded` PO
+# oplaceniu researchu. Zaplacilismy za material i nie dostalismy tekstu.
+#
+# Zmierzone na czterech ostatnich udanych wywolaniach pisarza:
+#     gpt-6-astra       0,4331 / 0,4700 / 0,2465 USD
+#     claude-fable-5-1  0,3952 USD
+#     srednio 0,3862, najdrozszy 0,4700
+# Prog 0,60 miesci najdrozszy zmierzony przypadek z zapasem na sprawdzenia.
+REZERWA_NA_PISARZA_USD = 0.60
+
+# ILE WYSZUKIWAN WOLNO MODELOWI ZAPASOWEMU.
+#
+# Awaryjne odkrycie na Opusie 10 wrzesnia 2026: osiem wyszukiwan, 99 851
+# tokenow wejscia, 4 097 wyjscia — 0,68 USD, czyli prawie polowa sufitu
+# przebiegu. Wynik byl dobry (62 trafienia, 7 zrodel), ale zjadl pieniadze
+# pisarza.
+#
+# Wyszukiwania sa tu glownym kosztem POSREDNIO: kazde dokłada wyniki do
+# wejscia nastepnej tury, a wejscie na Opusie kosztuje 5 USD za milion.
+# Polowa wyszukiwan to mniej wiecej polowa rachunku.
+#
+# To jest sufit DNIA AWARII, nie normalny tryb pracy. W zwyklym dniu
+# dyskoveria chodzi na `DISCOVERY_MAX_SEARCHES`.
+DISCOVERY_MAX_SEARCHES_ZAPASOWE = 4
+
+# ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac.
+#
+# ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 851
+# tokenow wejscia, 4 097 wyjscia — 0,68 USD.
+#
+# ZALOZENIE „polowa wyszukiwan to polowa rachunku" OKAZALO SIE FALSZYWE i to
+# jest poprawka po pomiarze, nie po namysle. Przy `DISCOVERY_MAX_SEARCHES_
+# ZAPASOWE` = 4 zmierzone wywolania kosztowaly 0,43 i 0,76 USD, bo wejscie
+# urosło do 57 852 i 119 277 tokenow — model czyta CALE strony, ktore znajdzie,
+# i cztery obszerne trafienia potrafia wazyc wiecej niz osiem krotkich.
+# Bierzemy 0,80, czyli najdrozszy zmierzony przypadek.
+#
+# Pierwsza wersja tej bramki brala tu `REZERWA_NA_PISARZA_USD` jako szacunek
+# kosztu wyszukiwania i przez to odmawiala przy 1,18 USD w przebiegu, choc
+# 0,35 na research plus 0,60 na pisarza spokojnie sie tam miescilo. Szacunek
+# ma byc szacunkiem tej rzeczy, ktora szacuje.
+KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD = 0.80
+
+# ILU KANDYDATOW WOLNO OBEJRZEC W JEDNYM PRZEBIEGU SUBSKRYPCJI.
+#
+# Do 10 wrzesnia 2026 okno mialo osiem pozycji — cztery sloty plus zapas na
+# odpady — i liczylo takze pominiecia za rozmiar, ktore NIC nie kosztuja
+# (odczyt publicznego JSON-a, bez przegladarki i bez przerwy rytmu).
+#
+# Zmierzone na produkcji: sufit 1000 odbiorcow, a pula podawala konta
+# ze 134 438, 131 684, 90 381 i 3 758 obserwujacymi oraz cztery publikacje
+# bez profilu uzytkownika. Osiem obejrzanych, osiem pominiec, ZERO prob —
+# przez trzy doby z rzedu, przy normie czterech subskrypcji dziennie.
+#
+# Granica zostaje, bo `uchwyt_publikacji` bywa zapytaniem do API i jeden
+# przebieg nie ma obchodzic calej puli.
+SUBSKRYPCJE_MAKS_OGLADANYCH = 40
 
 
 def narzedzie_wyszukiwania(model: str) -> tuple[str, str]:
@@ -1075,6 +1173,7 @@ THINKING_HEADROOM_TOKENS = 28000
 # przepiecia etapu na Claude. Zeby jednak nie byly cicha ozdoba, `llm.call`
 # mowi RAZ NA PROCES, ktory wpis nie zadzialal i dlaczego.
 EFFORT = {
+    "nowszy_model": "low",
     "scout": "medium",
     "discovery": "medium",
     "synthesis": "high",
@@ -1155,6 +1254,10 @@ MAX_TOKENS = {
     # Pytanie o stan modeli wraca lista kilkunastu pozycji z datami —
     # krotka odpowiedz, ale wyszukiwanie dokłada do wyjscia swoje rundy.
     "aktualne_modele": 16000,
+    # PROBA NASTEPCY: odpowiedz to jedno slowo, ale sufit wyznacza tez termin
+    # (`timeout_for`). 1000 tokenow to 24 sekundy na odpowiedz; 64 dawaloby
+    # 1,5 sekundy i proba padalaby na czasie, a nie na modelu.
+    "nowszy_model": 1000,
     "curiosity": 24000,
     "grafika": 4000,
     "cele": 6000,
@@ -2440,6 +2543,56 @@ ODSTEPY = {
     # zadnej — a to widac na profilu tak samo, jak widac bylo notki parami.
     "restack":    (600, 1800),   # 10-30 min
 }
+
+# PRZERWY PRZY ROZMOWACH NIE SA ROWNOMIERNE. Czlowiek odpisuje zwykle po kilku
+# minutach, czasem od razu po przeczytaniu, czasem wraca po pol godzinie —
+# `random.uniform(5, 15)` wyglada na osi czasu jak metronom z szumem. Koszyki
+# (udzial, od, do) w sekundach; DOLNA GRANICA NADAL PIEC MINUT, bo to decyzja
+# wlasciciela opisana przy `ODSTEPY` i pilnowana w `test_rytm.py`. Srednia:
+# komentarz okolo 11 minut, odpowiedz 10 — tyle co dotad, inny rozklad.
+ODSTEPY_WAZONE = {
+    "komentarz": ((0.20, 300, 420), (0.70, 420, 840), (0.10, 1080, 1800)),
+    "odpowiedz": ((0.25, 300, 420), (0.65, 420, 780), (0.10, 900, 1500)),
+}
+# NAJWIECEJ ROZMOW NA GODZINE — komentarze i odpowiedzi razem, w kazdym oknie
+# szescdziesieciu minut. Przy 20-30 komentarzach dziennie srednia to niecale
+# trzy na godzine aktywnosci; limit ucina tylko zageszczenia.
+MAKS_ROZMOW_NA_GODZINE = 4
+
+# KOMU ODPISUJEMY U SIEBIE — NIE KAZDEMU. Szansa odpowiedzi wg rodzaju
+# komentarza (`stages.rodzaj_komentarza`). Odpowiedz pod kazdym komentarzem,
+# w podobnym czasie i zawsze pelnym zdaniem, pachnie automatem nawet przy
+# dobrym modelu. Decyzja zapada RAZ na komentarz i zostaje zapamietana —
+# inaczej kolejne przebiegi losowalyby od nowa, az wyszlaby odpowiedz.
+SZANSA_ODPOWIEDZI = {
+    "pytanie": 0.90,     # ktos o cos zapytal
+    "niezgoda": 0.85,    # zarzut bez odpowiedzi zostaje ostatnim slowem
+    "rozmowa": 0.70,     # ktos odpisal na NASZ komentarz u siebie albo u innych
+    "zwykly": 0.60,
+    "pusty": 0.20,       # „great post", emoji, trzy slowa
+    "spam": 0.0,
+}
+# ROZMOWA W WATKU MA KONIEC. Tej samej osobie pod tym samym tekstem odpisujemy
+# w tygodniu najwyzej tyle razy; druga odpowiedz ma juz mniejsza szanse.
+ROZMOWA_MAKS_ODPOWIEDZI = 2
+ROZMOWA_SZANSA_DALEJ = 0.40
+
+# JAK KONCZY SIE TEN KONKRETNY KOMENTARZ ALBO ODPOWIEDZ. Losowane za kazdym
+# razem (`personality.ruch_rozmowy`):
+#   puenta  — trzy uderzenia, ostatnie w kogos;
+#   pytanie — koniec, na ktory ta osoba moze odpowiedziec: to, czego NIA
+#             naprawde chce sie od niej dowiedziec;
+#   krotko  — jedna linia.
+# Zmierzone 13 wrzesnia 2026: 31 komentarzy, prawie wszystkie konczyly sie
+# zdaniem wycelowanym w autora, odpowiedz przyszla pod CZTEREMA. Z trzynastu
+# odpowiedzi u nas rozmowe ciagnely dalej te, ktore zostawialy cos otwartego.
+RUCHY_ROZMOWY = {
+    "comment": (("puenta", 0.55), ("pytanie", 0.30), ("krotko", 0.15)),
+    "reply": (("puenta", 0.35), ("pytanie", 0.40), ("krotko", 0.25)),
+}
+# Ile wlasnych, juz opublikowanych komentarzy i odpowiedzi widzi model przy
+# pisaniu nastepnego — zeby nie wracaly te same obrazy i te same zakonczenia.
+OSTATNIE_WLASNE_DO_PROMPTU = 10
 ODSTEP_MIEDZY_DZIALANIAMI = (45, 180)   # zapas dla czynnosci bez wlasnego wpisu
 
 # ZWLOKA PRZED PIERWSZA NOTKA PRZEBIEGU. Bez niej pierwsza notka wychodzila
@@ -2502,7 +2655,31 @@ MIN_WIEK_NOTKI_MIN = (20, 90)       # od dwudziestu minut do poltorej godziny
 # samego dnia, artykul czyta sie tygodniami; trzy tygodnie to granica, za
 # ktora komentarz jest juz rozmowa z pustym pokojem. Nieznana data nie
 # blokuje (jak przy dolnej granicy).
-MAKS_WIEK_CELU_DNI = 21
+#
+# TRZY TYGODNIE TO BYL PUSTY POKOJ, NIE GRANICA. Zmierzone 13 wrzesnia 2026 na
+# 28 naszych komentarzach ze statystykami (8-13 wrzesnia):
+#
+#     pod ARTYKULAMI   14 komentarzy   18 wyswietlen razem   srednio 1,3
+#     pod NOTKAMI      14 komentarzy  157 wyswietlen razem   srednio 11,2
+#
+# Artykuly, pod ktore szly komentarze, mialy 6-20 dni (ByteByteGo: doba,
+# drugi duzy portal: 12 dni, maly blog o pisaniu: 18 dni) i komentarz pod nimi mial
+# zero, jedno albo dwa wyswietlenia. Jedyny komentarz pod artykulem, ktory
+# dostal odpowiedz i polubienie, stal pod tekstem sprzed 17 godzin. Wiec
+# artykul: trzy dni. Notka zyje godziny — ma wlasna granice nizej.
+MAKS_WIEK_CELU_DNI = 3
+# NOTKA: 36 GODZIN. Z tych samych czternastu komentarzy pod notkami najwiecej
+# wyswietlen mialy te pod notkami sprzed 6 i 11 godzin (27 i 77); pod notkami
+# sprzed 9-19 dni po 1-4.
+MAKS_WIEK_NOTKI_H = 36
+# ILE Z PRZYDZIALU PRZEBIEGU IDZIE POD ARTYKULY. Reszta idzie pod notki, bo
+# tam — patrz pomiar wyzej — komentarz w ogole ktos widzi. Blok artykulow stoi
+# w dniu PRZED blokiem notek, wiec bez tego udzialu zabieral caly przydzial.
+UDZIAL_KOMENTARZY_POD_ARTYKULAMI = 0.4
+# ILE STRON KANALU `for-you` CZYTAMY PO NOTKI DO DYSKUSJI — patrz
+# `kanal.notki_z_kanalu`. Jedna strona to okolo czterech notek, szesc — okolo
+# trzydziestu, z czego kilkanascie w granicy wieku notki.
+STRONY_KANALU_NOTEK = 6
 
 # ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala
 # posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto dwudziesty
@@ -3695,8 +3872,8 @@ elif KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():
     print("  [konfiguracja] %s: przestawiono %d pozycji"
           % (KONFIGURACJA_PLIK.name, len(KONFIGURACJA_ZMIENILA)), flush=True)
 
-# Published rates checked 2026-09-06; invoice verification is separate.
-PRICING_VERSION = "rates-2026-09-06"
+# Published rates checked 2026-09-13; invoice verification is separate.
+PRICING_VERSION = "rates-2026-09-13"
 PRICING_SOURCES = {
     "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
     "anthropic": "https://platform.claude.com/docs/en/about-claude/pricing",
@@ -3724,3 +3901,18 @@ CLAUDE_PROMPT_CACHE = False  # enable only after measuring same-model cache hits
 CACHE_MAX_AGE_S = 6 * 3600
 FACTCHECK_CACHE_MAX_AGE_S = 3600
 
+# NOWSZE WERSJE MODELI — NA SAMYM KONCU, PO PRESECIE. Preset przestawia
+# `MODEL_FOR`, wiec zamiana nalozona wczesniej zostalaby nadpisana nazwa
+# z kartridza. Darmowy test nie dostaje zamian z danych instancji: ma widziec
+# konfiguracje, a nie stan konkretnego konta.
+ZAMIANY_MODELI: list = []
+if not _w_darmowym_tescie():
+    try:
+        import wersje_modeli as _wersje_modeli
+        ZAMIANY_MODELI = _wersje_modeli.zastosuj(sys.modules[__name__])
+    except Exception as _blad_zamian:                      # noqa: BLE001
+        print("  [modele] nie nalozylem zamian modeli: %s: %s"
+              % (type(_blad_zamian).__name__, _blad_zamian), flush=True)
+    for _stary, _nowy in ZAMIANY_MODELI:
+        print("  [modele] %s -> %s (zamiana z wersje_modeli.json)" % (_stary, _nowy),
+              flush=True)

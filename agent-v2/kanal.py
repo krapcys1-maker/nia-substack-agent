@@ -76,6 +76,9 @@ def _za_stary(post: dict) -> bool:
     wiek = _wiek_minut(post.get("data", ""))
     if wiek >= 1e9:
         return False
+    # NOTKA ZYJE GODZINY, ARTYKUL DNI — pomiar przy `config.MAKS_WIEK_NOTKI_H`.
+    if post.get("rodzaj") == "notka":
+        return wiek > getattr(config, "MAKS_WIEK_NOTKI_H", 36) * 60
     return wiek > config.MAKS_WIEK_CELU_DNI * 1440
 
 
@@ -241,11 +244,33 @@ def notki_z_kanalu(ile: int = 25) -> list[dict]:
     p, br, ctx = browser.podlacz_sie()
     page = ctx.new_page()
     try:
-        dane = browser.api_json(page, "/api/v1/reader/feed?tab=for-you&type=base") or {}
+        # KANAL MA KOLEJNE STRONY I TO NA NICH SA SWIEZE NOTKI. Zmierzone
+        # 13 wrzesnia 2026: pierwsza strona `for-you` niosla 4 notki (jedna
+        # sprzed 12 dni), cztery strony po `nextCursor` — 31, z tego okolo
+        # dziesieciu mlodszych niz doba. Przy 20-30 komentarzach dziennie
+        # i granicy wieku notki 36 godzin jedna strona to za malo celow.
+        from urllib.parse import quote as _quote
+
+        pozycje: list = []
+        widziane_id: set = set()
+        kursor = None
+        for _strona in range(max(1, int(getattr(config, "STRONY_KANALU_NOTEK", 1)))):
+            dane = browser.api_json(
+                page, "/api/v1/reader/feed?tab=for-you&type=base"
+                + ("&cursor=%s" % _quote(str(kursor)) if kursor else "")) or {}
+            for x in dane.get("items") or []:
+                c_id = ((x or {}).get("comment") or {}).get("id")
+                if c_id is not None and c_id in widziane_id:
+                    continue
+                widziane_id.add(c_id)
+                pozycje.append(x)
+            kursor = dane.get("nextCursor")
+            if not kursor:
+                break
         notki = []
         odrzucone = 0
         stare = 0
-        for x in (dane.get("items") or [])[:ile * 2]:
+        for x in pozycje[:ile * 6]:
             c = (x or {}).get("comment") or {}
             if not c.get("body") or c.get("post_id"):
                 continue                     # to nie notka, tylko komentarz

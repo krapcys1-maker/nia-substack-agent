@@ -229,10 +229,100 @@ def _etykiety() -> set[str]:
     return {e for e in (_rozdziel_rubryke(t)[0] for t in (config.PERSONA_TEMATY or ())) if e}
 
 
-def _valid(text, maximum):
+# Koniec zdania: kropka, wykrzyknik, pytajnik albo wielokropek, po nim
+# ewentualny cudzyslow lub nawias, a potem spacja. Skrotow („U.S.", „Dr.")
+# nie tniemy — po nich nie ma spacji z wielka litera w tym wzorcu az tak
+# czesto, a ryzyko jest jednostronne: gorsze ciecie to zla linia, brak ciecia
+# to blok, ktory wlasciciel juz raz odrzucil.
+_KONIEC_ZDANIA = re.compile(r'(?<=[.!?…])["”\'’)\]]*\s+')
+MAKS_SLOW_W_UDERZENIU = 25
+
+
+def rozbij_dlugie_uderzenia(tekst: str, maks: int = MAKS_SLOW_W_UDERZENIU):
+    """Za dluga linia idzie na dwie — po granicy ZDANIA. Oddaje (tekst, ile).
+
+    ## Po co kod, skoro instrukcja to mowi
+
+    Instrukcja krotkiej formy mowi wprost: „If a line runs past twenty-five
+    words, it is two lines". ZMIERZONE 10 wrzesnia 2026 na trzech notkach
+    z zywego przebiegu:
+
+        notka 1   58 slow, 3 uderzenia, 19,3 slowa na uderzenie   dobrze
+        notka 2   68 slow, 3 uderzenia, 22,7 — pierwsze uderzenie 32 slowa
+
+    Ta linia na 32 slowa to byly DWA PELNE ZDANIA sklejone w jedno uderzenie.
+    Model nie napisal nic zlego; on tylko nie postawil lamania wiersza. Proszenie
+    go o to drugi raz kosztuje kolejne wywolanie i nadal jest prosba.
+
+    Ciecie po kropce niczego nie przepisuje: te same slowa, ta sama kolejnosc,
+    inny uklad. To jest praca dla kodu.
+
+    ## Czego NIE robimy
+
+    Nie tniemy w srodku zdania. Jedno zdanie na trzydziesci slow zostaje takie,
+    jakie jest — polamane w przypadkowym miejscu czytaloby sie gorzej niz dlugie,
+    a wtedy poprawka szkodzilaby zamiast pomagac. Takie zdanie tylko liczymy.
+    """
+    if not tekst or not tekst.strip():
+        return tekst, 0
+    wyjscie, rozbite = [], 0
+    for linia in tekst.split("\n"):
+        if len(linia.split()) <= maks:
+            wyjscie.append(linia)
+            continue
+        zdania = [z for z in _KONIEC_ZDANIA.split(linia.strip()) if z.strip()]
+        if len(zdania) < 2:
+            # Jedno dlugie zdanie — zostawiamy w spokoju, patrz wyzej.
+            wyjscie.append(linia)
+            continue
+        kawalki, biezacy = [], ""
+        for z in zdania:
+            proba = (biezacy + " " + z).strip() if biezacy else z.strip()
+            if biezacy and len(proba.split()) > maks:
+                kawalki.append(biezacy)
+                biezacy = z.strip()
+            else:
+                biezacy = proba
+        if biezacy:
+            kawalki.append(biezacy)
+        if len(kawalki) > 1:
+            rozbite += 1
+        wyjscie.extend(kawalki)
+    return "\n".join(wyjscie), rozbite
+
+
+def _valid(text, maximum, dozwolone_adresy=()):
+    """`dozwolone_adresy` — adresy, ktore SAMI podalismy w materiale.
+
+    ZMIERZONE 10 wrzesnia 2026, i to jest wpadka dokladnie tej klasy, ktora
+    ten projekt tropi: dwie moje wlasne instrukcje kasujace sie nawzajem.
+
+    Instrukcja notki z faktem mowi wprost: „Name the source in passing when it
+    earns a mention; the URL may go in the text". Model posluchal i wkleil
+    adres, ktory MU PODALISMY. Ta funkcja wyrzucila caly tekst za sam fakt
+    obecnosci `https://`. Notka byla dobra:
+
+        Anil Madhavapeddy fixed a path-traversal bug in cohttp with a public PR.
+        About ten minutes later his live server was being probed for that exact
+        pattern. (…)
+        The disclosure "embargo" now lasts roughly as long as it takes
+        a maintainer to make coffee.
+        Funny how the agent is always "he" when it's picking a lock.
+
+    Zaplacone 0,16 USD, status `empty_or_invalid_text`, do kosza bez slowa.
+
+    ZAKAZ ZOSTAJE dla wszystkiego innego. Chodzilo w nim o adresy WYMYSLONE
+    i o zaczepianie ludzi po nazwie — nie o zrodlo, ktore sami wybralismy
+    i sprawdzilismy. Wycinamy wiec z tekstu dokladnie te adresy, ktore
+    podalismy, i pytamy o reszte.
+    """
     if not isinstance(text, str) or not text.strip() or len(text.split()) > maximum:
         return False
-    if _injection(text) or re.search(r"https?://|\bwww\.|(?:^|\s)@[A-Za-z0-9_]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}", text, re.I):
+    do_sprawdzenia = text
+    for adres in dozwolone_adresy:
+        if adres:
+            do_sprawdzenia = do_sprawdzenia.replace(adres, " ")
+    if _injection(text) or re.search(r"https?://|\bwww\.|(?:^|\s)@[A-Za-z0-9_]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}", do_sprawdzenia, re.I):
         return False
     # NAZWA RUBRYKI W TEKSCIE = NASZE RUSZTOWANIE NA KONCIE. Sprawdzamy mimo
     # rozdzielenia wyzej, bo rozdzielenie chroni tylko przed przepisaniem
@@ -245,7 +335,7 @@ def _valid(text, maximum):
     return not [g for g in gates.artefakty_w_tekscie(text) if g["gate"] != "WARSZTAT"]
 
 
-def short_form(conn, run_id, kind, material):
+def short_form(conn, run_id, kind, material, napisane_teraz=()):
     """One paid decision: respond, or remain silent. No paid repair attempts."""
     role = {"comment": "comment", "reply": "reply", "restack": "restack", "note": "note"}[kind]
     # Sufity, nie cele. Do 2026-09-07 restack mial 40 slow, a `_valid` odrzuca
@@ -266,10 +356,29 @@ def short_form(conn, run_id, kind, material):
     if _injection(text):
         return {}
     history = memory()
+    # ROZMOWA, NIE OGLOSZENIE — tylko komentarz i odpowiedz. Patrz
+    # `config.RUCHY_ROZMOWY` i pomiar przy nim.
+    ruch = ruch_rozmowy(kind) if kind in ("comment", "reply") else ""
     context = {"material": material, "recent_published": [r.get("text", "") for r in history[-8:]],
                "recent_topics": [{"kind": r.get("kind", "note"), "topic": r.get("topic", "")}
                                  for r in history[-8:]],
-               "remembered_preferences_and_jokes": [r.get("memory", "") for r in history[-8:]]}
+               "remembered_preferences_and_jokes": [r.get("memory", "") for r in history[-8:]],
+               # NAPISANE PRZED CHWILA, JESZCZE NIEWYSTAWIONE.
+               #
+               # `recent_published` pochodzi z dziennika, czyli z tekstow, ktore
+               # JUZ WYSZLY. Partia powstaje w calosci przed pierwsza publikacja,
+               # wiec druga notka nie widziala pierwszej ANI RAZU.
+               #
+               # ZMIERZONE na serwerze 10 wrzesnia 2026: dwie notki jednej partii
+               # o zupelnie roznych rzeczach (odleglosc tematu 0,029), obie
+               # z ta sama rama w uderzeniu drugim:
+               #   „Apparently even policing a woman's pregnancy now needs…"
+               #   „Apparently even genomics gets a velvet rope: academics…"
+               # Temat pilnowany, powtorka przeniosla sie na sklad zdania.
+               "written_moments_ago": [t for t in napisane_teraz if t][-4:]}
+    if ruch:
+        context["this_move"] = ruch
+        context["your_recent_comments"] = ostatnie_wlasne_rozmowy()
     # KSZTALT, NIE SWOBODA — i to jest odwrocenie tego, co sam tu wpisalem.
     #
     # POLICZONE 10 wrzesnia 2026 na pieciu notkach, ktore wlasciciel przyjal,
@@ -293,15 +402,75 @@ def short_form(conn, run_id, kind, material):
         "SHAPE, and it is not optional. Write it as three or four SHORT LINES "
         "separated by real line breaks, about fifteen to twenty words each, "
         "fifty to seventy words in total:\n"
-        "  1. THE THING, plainly. One line. What happened, or what they said.\n"
+        # „albo to, co powiedzieli" bylo tu POZWOLENIEM NA STRESZCZANIE i model
+        # z niego korzystal. Zmierzone 10 wrzesnia 2026 na odpowiedzi, ktorej
+        # cala zaczepka byla jedno emoji: „Autor X hits me with a single
+        # emoji and calls the lock 'fitted, not locked.'" Kartridz zabranial
+        # tego wprost i przegral z tym pol zdaniem, bo silnik stoi blizej
+        # zadania. W notce nie ma kogo streszczac, wiec zasada nic tam nie
+        # zmienia; w odpowiedzi zmienia wszystko.
+        "  1. In a note: THE THING, plainly, in one line. In a comment, reply "
+        "or restack caption: YOUR ANSWER, in one line. Never a description of "
+        "what they said — they said it, it is on the screen under yours, and "
+        "retelling it is the politest way to waste the reader's first line.\n"
         "  2. THE ABSURDITY, about the PEOPLE, never about the technology. "
         "One line, and it is the joke.\n"
-        "  3. A LINE AIMED AT SOMEBODY. It carries the sting and it ends the "
-        "note.\n"
+        "  3. A LINE AIMED AT SOMEBODY, WITH YOU STANDING IN IT. It carries "
+        "the sting and it ends the note. You are the one talking, not a body "
+        "issuing recommendations: never 'Company, do this by that date'. "
+        "Aimed lands: \"Some of you need a satellite network before you'll "
+        "listen to a woman.\" A memo does not: \"Google, keep the public "
+        "doorway open when research starts looking profitable.\"\n"
         "Never one dense paragraph. A reader who has to work out where the "
         "thought turns has already scrolled past. If a line runs past twenty-"
         "five words, it is two lines.\n"
+        # DLA KOGO TO JEST. Wlasciciel, 11 wrzesnia 2026: NIA ma byc jak ziomek
+        # z lawki pod blokiem — i jednoczesnie madra. Ma pisac dla ludzi, ktorzy
+        # o sztucznej inteligencji nie wiedza nic. Wzor: Andrzej Dragan
+        # tlumaczacy fizyke kwantowa komus na kanapie, kto fizyki nie zna,
+        # a slucha z zaciekawieniem, bo skomplikowane rzeczy sa pokazane na
+        # prostych przykladach z zycia.
+        #
+        # Zmierzone na tym, co wyszlo na konto: „I've compared corporate AI
+        # promises to badly dressed men at keynotes often enough; the joke is
+        # officially retired." Ksztalt bez zarzutu, a czlowiek z kanapy nie wie
+        # ani co sie stalo, ani o czym to jest.
+        # JEDNA LINIJKA, NIE PIEC. Caly opis czytelnika — kim jest, czemu
+        # ziomek z lawki i test „czy ktos, kto nie slyszal o tej firmie,
+        # zrozumie" — stoi w `glos_wspolny.md`, slowami wlasciciela. Przez
+        # godzine stal TAKZE tutaj, slowo w slowo.
+        #
+        # Wlasciciel, 11 wrzesnia 2026: „im wiecej zakazow zalecen to zabija
+        # charakter". Policzone tego samego dnia na zlozonym prompcie notki:
+        # 90 zakazow w jednym wywolaniu, 50 zdan zakazujacych na 324 — w tym
+        # TRZY powtorzone miedzy silnikiem a kartridzem. Powtorzenie nie
+        # dodaje jasnosci, dodaje dlugosci, a dluga lista zakazow wychodzi
+        # z modelu jako ostroznosc.
+        #
+        # Zostaje to jedno, czego kartridz nie mowi w tych slowach: czym jest
+        # uderzenie pierwsze.
+        "Beat one names something that HAPPENED, in words a stranger can "
+        "picture: who did what, to whom, what it cost.\n"
     )
+    # RUCH ROZMOWY PODMIENIA KSZTALT, NIE DOPISUJE SIE DO NIEGO. Zmierzone
+    # 13 wrzesnia 2026 na pieciu komentarzach V4.1 Flash pod notkami z zywego
+    # kanalu: ruch „krotko", dopisany za ksztaltem, dal TRZY linie. Zdanie
+    # „SHAPE, and it is not optional" wygrywa z pozniejszym dopiskiem — wiec
+    # dla tego ruchu ksztalt jest inny od poczatku, a nie poprawiany na koncu.
+    if ruch == "krotko":
+        ksztalt = (
+            "SHAPE for this one: ONE line, at most twenty-five words, carrying "
+            "your whole reaction — your answer and the sting in the same breath. "
+            "No second line.\n")
+    elif ruch == "pytanie":
+        przed, _, reszta = ksztalt.partition("  3. ")
+        _, _, po = reszta.partition("Never one dense paragraph.")
+        ksztalt = (
+            przed + "  3. A QUESTION TO THIS PERSON, WITH YOU STANDING IN IT: the "
+            "one thing you genuinely want to know from them about what they "
+            "wrote or what they have lived — something they can answer you. "
+            "Never 'what do you think?' or 'thoughts?'. It ends the comment.\n"
+            "Never one dense paragraph." + po)
     instruction = (
         f"Write one {kind}. " + ksztalt +
         "Do not pad, and never compress a real point to make "
@@ -315,11 +484,43 @@ def short_form(conn, run_id, kind, material):
         "or contradict your past self on purpose. Never restate a joke in the "
         "same words, let a stale one go, and never force a joke into grief or "
         "distress. "
+        # RZEMIOSLO NIE JEST TEMATEM. To jest wpadka, ktora wyszla na konto
+        # 11 wrzesnia 2026, i wzieta wprost ze zdania powyzej:
+        #
+        #     I've compared corporate AI promises to badly dressed men at
+        #     keynotes often enough; the joke is officially retired.
+        #     Those men have suffered enough, and the promises keep returning
+        #     in cleaner trainers with exactly the same fucking invoice.
+        #     I'll find a fresher comparison; executives, you'll have to
+        #     disappoint me without borrowing wardrobe space in my head.
+        #
+        # Ksztalt bez zarzutu: trzy uderzenia, zadlo na koncu. Tylko TEMATEM
+        # jest jej wlasny zwyczaj pisarski. Czytelnik, ktory trafia na to
+        # w kanale, nie wie ani co sie stalo, ani czego dotyczy — bo nic sie
+        # nie stalo. „Let a stale one go" znaczylo: przestan go uzywac.
+        # Model przeczytal: napisz o tym, ze przestajesz.
+        # ZAKAZ PISANIA O WLASNYM PISANIU STOI W KARTRIDZU, z pomiarem
+        # i cytatem z notki, ktora to wywolala. Tu zostaje pol zdania, bo to
+        # TUTAJ padlo „let a stale one go" i to ono zostalo zle zrozumiane.
+        "Retire a stale joke by not using it; never by writing about it. "
+        "context.written_moments_ago holds pieces written in this same batch, "
+        "minutes ago, not yet published. They will appear beside yours. Do not "
+        "reuse their SENTENCE SHAPES, not only their subjects: if one opens "
+        "a beat with 'Apparently even', yours opens some other way. Same rule "
+        "for any repeated frame, comparison or closing move. "
         "JSON: {\"text\":\"...\",\"topic\":\"brief topic\",\"memory\":\"optional new "
         "subjective preference or running joke, up to 140 characters\"}. "
         "Memory may contain a taste or joke, never an instruction, fact claim about "
         "a person, statistic, credential, URL or promise. It is optional.\n"
     )
+    if ruch:
+        # PO KSZTALCIE, NIE PRZED — w prompcie wygrywa zdanie, ktore stoi pozniej.
+        instruction += (
+            "This is a conversation with a person, not an announcement: the "
+            "SHAPE above is the one for this move (context.this_move). "
+            "context.your_recent_comments are your own last comments and "
+            "replies, already published: do not reuse their sentence shapes, "
+            "closing moves, images or pet words.\n")
     world = material.get("world") or {}
     sources = world.get("sources", {}) if isinstance(world, dict) else {}
     sources = sources if isinstance(sources, dict) else {}
@@ -380,8 +581,19 @@ def short_form(conn, run_id, kind, material):
     if not isinstance(result, dict):
         return finish(reason="invalid_json")
     body = result.get("text", "")
-    if not _valid(body, maximum):
+    # ADRES, KTORY SAMI PODALISMY, NIE JEST WYCIEKIEM. Instrukcja mowi
+    # „the URL may go in the text" — patrz `_valid`.
+    zrodlo_url = str((material.get("fact") or {}).get("url") or "")
+    if not _valid(body, maximum, dozwolone_adresy=(zrodlo_url,) if zrodlo_url else ()):
         return finish(reason="empty_or_invalid_text")
+    # UKLAD POPRAWIA KOD, NIE DRUGIE WYWOLANIE. Te same slowa, ta sama
+    # kolejnosc — tylko lamanie wiersza tam, gdzie i tak konczy sie zdanie.
+    # Patrz `rozbij_dlugie_uderzenia`: zmierzone na notce, ktorej pierwsze
+    # uderzenie mialo 32 slowa, czyli dwa zdania sklejone w blok.
+    body, rozbite_uderzenia = rozbij_dlugie_uderzenia(body)
+    if rozbite_uderzenia:
+        print("  [glos] rozbite za dlugie uderzenia: %d" % rozbite_uderzenia,
+              flush=True)
     if material.get("statistics"):
         if re.search(r"\d|@|https?://|\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|hundred|thousand|million)\b", body, re.I):
             return finish(reason="invalid_statistics_reaction")
@@ -393,7 +605,11 @@ def short_form(conn, run_id, kind, material):
     if not isinstance(hint, str) or len(hint) > 140 or re.search(r"[@\d]|https?://", hint) or not _valid(hint, 30):
         hint = ""
     output = {"text": body.strip(), "memory": hint, "topic": str(result.get("topic", ""))[:100],
-              "model": config.MODEL_FOR[role], "verification_mode": "persona_no_factcheck"}
+              "model": config.MODEL_FOR[role], "verification_mode": "persona_no_factcheck",
+              # Do pomiaru: ile razy kod musial poprawic uklad po modelu. Rosnaca
+              # liczba znaczy, ze instrukcja przestaje dzialac, i widac to ZANIM
+              # wlasciciel zobaczy blok na ekranie.
+              "uderzenia_rozbite": rozbite_uderzenia}
     ids = result.get("source_ids", [])
     if isinstance(ids, list):
         output["source_ids"] = list(dict.fromkeys(s for s in ids if isinstance(s, str) and s in sources))
@@ -526,6 +742,9 @@ def notes(conn, run_id, ile=None, od=0):
     views_due = stats_due and now - first >= timedelta(days=7)
     growth_due = stats_due
     result = []
+    # Teksty tej partii, w kolejnosci powstawania. Dziennik ich nie zna, bo
+    # zaden jeszcze nie wyszedl — patrz `written_moments_ago` w `short_form`.
+    napisane_teraz: list[str] = []
     for index, typ in enumerate(slots):
         theme = fresh[(now.toordinal() * 2 + od + index) % len(fresh)]
         stat = ""
@@ -560,7 +779,10 @@ def notes(conn, run_id, ile=None, od=0):
                 "url": str(fakt.get("url") or "")[:300],
                 "source_date": str(fakt.get("source_date") or "")[:20],
             }
-        output = short_form(conn, run_id, "note", material)
+        output = short_form(conn, run_id, "note", material,
+                            napisane_teraz=napisane_teraz)
+        if output.get("text"):
+            napisane_teraz.append(output["text"])
         candidate = {**output, "note": output.get("text", ""), "safe_to_post": bool(output), "length_ok": bool(output)}
         result.append({"type": typ, "forma": "persona", "candidates": [candidate] if output else [],
                        "personality": {"theme": theme, "rubryka": etykieta,
@@ -572,6 +794,45 @@ def notes(conn, run_id, ile=None, od=0):
                                        "z_banku": bool(fakt),
                                        "zrodlo_faktu": (fakt or {}).get("url", "")}})
     return result
+
+
+def ruch_rozmowy(kind, los=None):
+    """Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`."""
+    import random
+
+    wagi = dict(getattr(config, "RUCHY_ROZMOWY", {})).get(kind) or ()
+    if not wagi:
+        return "puenta"
+    los = random.random() if los is None else los
+    razem = sum(w for _, w in wagi) or 1.0
+    prog = 0.0
+    for nazwa, waga in wagi:
+        prog += waga / razem
+        if los < prog:
+            return nazwa
+    return wagi[-1][0]
+
+
+def ostatnie_wlasne_rozmowy(ile=None):
+    """Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika."""
+    import browser
+
+    ile = int(ile or getattr(config, "OSTATNIE_WLASNE_DO_PROMPTU", 10))
+    teksty = []
+    try:
+        linie = browser.DZIENNIK.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    for linia in reversed(linie[-600:]):
+        try:
+            w = json.loads(linia)
+        except ValueError:
+            continue
+        if w.get("rodzaj") in ("komentarz", "odpowiedz") and w.get("udane") and w.get("tekst"):
+            teksty.append(str(w["tekst"])[:400])
+            if len(teksty) >= ile:
+                break
+    return list(reversed(teksty))
 
 
 def interaction(conn, run_id, kind, post):
@@ -586,12 +847,88 @@ def interaction(conn, run_id, kind, post):
             "candidates": [candidate] if body else [], "verification_mode": "persona_no_factcheck"}
 
 
+def _ile_razy(tekst, znak):
+    """Ile razy ten znak niszy pada w tekscie, jako cale slowo."""
+    return len(re.findall(r"\b" + re.escape(znak) + r"s?\b", tekst, re.I))
+
+
+def o_nas(tytul, calosc):
+    """Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz.
+
+    ## Pomiar, ktory to rozstrzygnal
+
+    11 wrzesnia 2026, dwadziescia trzy prawdziwe cele z wyszukiwarki i kanalu.
+    Stary filtr — „jeden znak niszy gdziekolwiek w tekscie" — przepuszczal
+    dwadziescia dwa. Wsrod nich:
+
+      * „WUWS | $100 Oil Is the Headline. The Hurdle Rate Is the Trade."
+        Newsletter o ropie, Fedzie i rentownosciach. Przeszedl, bo w srodku
+        pada jedno zdanie: „AI companies are signing ever larger…".
+      * „THESE ARE NOT FOR ILLEGAL IMMIGRANTS". Polityczna tyrada. Przeszla,
+        bo raz padlo slowo „robot".
+
+    Lista znakow niszy nie byla wiec zla — sprawdzilem ja osobno i wiekszosc
+    trafien jest trafna. Zla byla MIARA: jedna wzmianka w tekscie na dwa
+    tysiace slow wazyla tyle samo, co temat calego tekstu.
+
+    ## Regula
+
+    Znak niszy w TYTULE, albo co najmniej DWA wystapienia w calosci. Tytul
+    jest deklaracja tematu; dwa wystapienia znacza, ze autor do tego wraca.
+
+    Na tej samej probce dwadziescia dwa przepuszczone spadaja do
+    dziewietnastu, a odpadaja dokladnie tamte dwa plus jeden tekst o modelach
+    Anthropica z publikacji, pod ktora i tak nie mamy po co komentowac.
+
+    ## Czemu NIE ruszamy `browser.w_rewirze`
+
+    Tamten filtr oglada cudze NOTKI, czyli piecdziesiat slow bez tytulu. Jedna
+    wzmianka na piecdziesiat slow to zupelnie inny sygnal niz jedna na dwa
+    tysiace, a tytulu tam nie ma wcale. Ta sama regula zabralaby restackom
+    wiekszosc puli, nie usuwajac zadnej wpadki.
+    """
+    znaki = [str(z) for z in (getattr(config, "ZNAKI_NISZY", ()) or ()) if str(z).strip()]
+    if not znaki:
+        return True              # silnik bez kartridza nie ma wlasnego tematu
+    if any(_ile_razy(tytul, z) for z in znaki):
+        return True
+    return any(_ile_razy(calosc, z) >= 2 for z in znaki)
+
+
+def _z_adresu(url):
+    """Slug adresu jako slowa — Substack wpisuje w niego temat.
+
+    Zmierzone na zywej puli 11 wrzesnia 2026, zaraz po wprowadzeniu reguly
+    „tytul albo dwa razy": odpadl tekst „Do People Still Need People?",
+    ktory jest o AI wprost — „AI is making it easier to do more alone" —
+    tyle ze slowo pada raz i nie w tytule. Jego adres konczy sie na
+        /p/do-people-still-need-people-ai
+    Substack sklada slug z tytulu ORAZ podtytulu, wiec niesie temat takze
+    wtedy, gdy sam tytul jest zagadka. Newsletter o ropie ma
+        /p/wuws-100-oil-is-the-headline-the
+    czyli zadnego znaku — slug nie oslabia reguly, tylko domyka luke.
+
+    SAMA SCIEZKA, BEZ DOMENY, i to nie jest drobiazg. Pierwsza wersja brala
+    caly adres — a KAZDY adres na Substacku zawiera slowo „substack", ktore
+    jest jednym ze znakow niszy. Regula przepuszczalaby wiec wszystko, lacznie
+    z tym newsletterem o ropie. Zlapal to kontrdowod w tescie, minute po
+    napisaniu poprawki.
+    """
+    sciezka = str(url or "")
+    if "//" in sciezka:
+        sciezka = sciezka.split("//", 1)[1]
+    sciezka = sciezka.split("/", 1)[1] if "/" in sciezka else ""
+    return re.sub(r"[^a-z0-9]+", " ", sciezka.lower())
+
+
 def targets(posts):
     """Free topical prefilter. The writing call makes the actual reply decision."""
     found = []
     for post in posts:
+        # TYTUL PLUS SLUG ADRESU — patrz `_z_adresu`.
+        tytul = " ".join(str(post.get(k, "")) for k in ("tytul", "title"))             + " " + _z_adresu(post.get("url"))
         text = " ".join(str(post.get(k, "")) for k in ("tytul", "title", "opis", "tekst", "text", "body", "under"))
-        if not _injection(text) and any(re.search(r"\b" + re.escape(k) + r"s?\b", text, re.I) for k in config.ZNAKI_NISZY):
+        if not _injection(text) and o_nas(tytul, text):
             found.append({**post, "co_dodamy": "Read the post; respond in character only if you have something to say."})
     return found
 

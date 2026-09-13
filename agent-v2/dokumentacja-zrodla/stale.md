@@ -41,6 +41,8 @@
 | `GPT_ASTRA` | `"gpt-6-astra"` | — |
 | `DEEPSEEK` | `"deepseek-v4-flash"` | — |
 | `DEEPSEEK_PRO` | `"deepseek-v4-pro"` | — |
+| `DEEPSEEK_FLASH` | `"deepseek-flash"` | NASTEPCA FLASHA U DOSTAWCY. Od wrzesnia 2026 DeepSeek podaje na liscie modeli `deepseek-flash` (DeepSeek-V4.1-Flash), a `deepseek-v4-flash`  |
+| `MODELE_SAME_NA_NOWSZE` | `True` | NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na  |
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |
 | `OPENAI_BASE_URL` | `"https://api.openai.com/v1"` | — |
@@ -60,6 +62,11 @@
 | `MNOZNIK_POZA_SZCZYTEM` | `1.0` | — |
 | `WEB_SEARCH_TOOL` | `{ CLAUDE: "web_search_20260209", SONNET: "we` | Filtrowanie dynamiczne (`_20260209`) jest na Opusie i Sonnecie 5. |
 | `NAJNOWSZE_WYSZUKIWANIE` | `"web_search_20260209"` | Wersja narzedzia wyszukiwania dla modelu Anthropic, z galezia awaryjna. |
+| `MODEL_ZAPASOWY_WYSZUKIWANIA` | `CLAUDE` | MODEL, PO KTORY SIEGAMY, GDY WYSZUKIWANIE U DOSTAWCY PADNIE. 10 wrzesnia 2026 narzedzie `web_search` DeepSeeka przestalo cokolwiek oddawac n |
+| `REZERWA_NA_PISARZA_USD` | `0.60` | ILE ZOSTAWIC PISARZOWI, ZANIM SIEGNIEMY PO DROGIE WYSZUKIWANIE. 10 wrzesnia 2026 awaryjne odkrycie na Opusie kosztowalo 0,68 USD przy `RUN_L |
+| `DISCOVERY_MAX_SEARCHES_ZAPASOWE` | `4` | ILE WYSZUKIWAN WOLNO MODELOWI ZAPASOWEMU. Awaryjne odkrycie na Opusie 10 wrzesnia 2026: osiem wyszukiwan, 99 851 tokenow wejscia, 4 097 wyjs |
+| `KOSZT_AWARYJNEGO_WYSZUKIWANIA_USD` | `0.80` | ILE KOSZTUJE AWARYJNE WYSZUKIWANIE — do decyzji, czy w ogole zaczynac. ZMIERZONE 10 wrzesnia 2026 na `claude-opus-5`: osiem wyszukiwan, 99 8 |
+| `SUBSKRYPCJE_MAKS_OGLADANYCH` | `40` | ILU KANDYDATOW WOLNO OBEJRZEC W JEDNYM PRZEBIEGU SUBSKRYPCJI. Do 10 wrzesnia 2026 okno mialo osiem pozycji — cztery sloty plus zapas na odpa |
 | `WEB_SEARCH_USD_PER_1K` | `10.00` | Wyszukiwanie po stronie Anthropic: USD za 1000 zapytań. |
 | `SUFIT_PODNIESIONY_NA` | `""` | — |
 | `SUFIT_PODNIESIONY_RAZY` | `2.0` | O ILE PODNOSI SIE SUFIT W DNIU PRACY PRZY WLASCICIELU. Mnoznik, nie druga liczba: sufit dzienny jest polem konfiguracji, a wpisana tu kwota  |
@@ -104,7 +111,7 @@
 | `CHARS_PER_TOKEN` | `3.5` | Zachowawczo, żeby sufit był raczej za duży niż za mały. Zmierzone na starym agencie: CJK 2,19x, cyrylica 1,41x; dla angielskiego 3,5 znaku n |
 | `JSON_OVERHEAD_TOKENS` | `1200` | Ile tokenów zajmuje rusztowanie JSON-a, klucze i pola opisowe poza samą treścią. |
 | `THINKING_HEADROOM_TOKENS` | `28000` | Myślenie na Opusie 5 jest domyślnie włączone, liczy się jak tokeny wyjściowe i NIE jest częścią kontraktu — więc sufit wyliczony z samego ko |
-| `EFFORT` | `{ "scout": "medium", "discovery": "medium", ` | Głębokość myślenia. Jawnie, bo domyślne `high` na Opusie 5 potrafi podwoić rachunek za wyjście bez pytania. TO JEST POKRETLO WYLACZNIE DLA M |
+| `EFFORT` | `{ "nowszy_model": "low", "scout": "medium", ` | Głębokość myślenia. Jawnie, bo domyślne `high` na Opusie 5 potrafi podwoić rachunek za wyjście bez pytania. TO JEST POKRETLO WYLACZNIE DLA M |
 | `MAX_TOKENS` | `{ # 6 tematow: tytul, pytanie, ZLAMANE PRZEK` | — |
 | `NOTE_MIN_WORDS` | `33` | --- notki i komentarze ------------------------------------------------------ Zmierzone na publicznych analizach Substacka: 33-64 słowa dają |
 | `NOTE_MAX_WORDS` | `64` | — |
@@ -184,13 +191,23 @@
 | `SKAUT_UDZIAL_Z_KANALOW` | `0.75` | Jaka czesc tematow skauta ma wychodzic z kanalow, ktore konto obserwuje. Decyzja wlasciciela z 30 sierpnia, po pomiarze: przed nia z kanalow |
 | `ROZBIEG_DNI` | `30` | — |
 | `ODSTEPY` | `{ # 45-90 MIN, nie 10-25. Zmierzone na profi` | Odstepy miedzy dzialaniami, w sekundach. Pietnascie polubien w dziewiecdziesiat sekund to nie jest czytanie i kazdy system to widzi. Odstepy |
+| `ODSTEPY_WAZONE` | `{ "komentarz": ((0.20, 300, 420), (0.70, 420` | PRZERWY PRZY ROZMOWACH NIE SA ROWNOMIERNE. Czlowiek odpisuje zwykle po kilku minutach, czasem od razu po przeczytaniu, czasem wraca po pol g |
+| `MAKS_ROZMOW_NA_GODZINE` | `4` | NAJWIECEJ ROZMOW NA GODZINE — komentarze i odpowiedzi razem, w kazdym oknie szescdziesieciu minut. Przy 20-30 komentarzach dziennie srednia  |
+| `SZANSA_ODPOWIEDZI` | `{ "pytanie": 0.90, # ktos o cos zapytal "nie` | KOMU ODPISUJEMY U SIEBIE — NIE KAZDEMU. Szansa odpowiedzi wg rodzaju komentarza (`stages.rodzaj_komentarza`). Odpowiedz pod kazdym komentarz |
+| `ROZMOWA_MAKS_ODPOWIEDZI` | `2` | ROZMOWA W WATKU MA KONIEC. Tej samej osobie pod tym samym tekstem odpisujemy w tygodniu najwyzej tyle razy; druga odpowiedz ma juz mniejsza  |
+| `ROZMOWA_SZANSA_DALEJ` | `0.40` | — |
+| `RUCHY_ROZMOWY` | `{ "comment": (("puenta", 0.55), ("pytanie", ` | JAK KONCZY SIE TEN KONKRETNY KOMENTARZ ALBO ODPOWIEDZ. Losowane za kazdym razem (`personality.ruch_rozmowy`): puenta  — trzy uderzenia, osta |
+| `OSTATNIE_WLASNE_DO_PROMPTU` | `10` | Ile wlasnych, juz opublikowanych komentarzy i odpowiedzi widzi model przy pisaniu nastepnego — zeby nie wracaly te same obrazy i te same zak |
 | `ODSTEP_MIEDZY_DZIALANIAMI` | `(45, 180)` | — |
 | `ZWLOKA_PRZED_NOTKAMI` | `(0, 900)` | ZWLOKA PRZED PIERWSZA NOTKA PRZEBIEGU. Bez niej pierwsza notka wychodzila zawsze kilka minut po starcie zegara, wiec piec razy dziennie o te |
 | `UDZIAL_CZASU_NA_NOTKI` | `0.60` | ILE CZASU PRZEBIEGU WOLNO ZJESC SAMYM NOTKOM. Rozdzielnik dzienny nie wiedzial nic o czasie: dzielil norme tak, jakby dzialania byly natychm |
 | `CZAS_DZIALANIA_S` | `240` | Ile trwa samo dzialanie poza przerwa: napisanie, sprawdzenie faktow, wystawienie i potwierdzenie u zrodla. Z realnych przebiegow. |
 | `MIN_WIEK_POSTA_MIN` | `(90, 900)` | NIE KOMENTUJEMY SWIEZYCH POSTOW. Wlasciciel opisal to najlepiej: napisal notke i piec sekund pozniej ktos odpisal ogolnikowa zgoda — i to zd |
 | `MIN_WIEK_NOTKI_MIN` | `(20, 90)` | NOTKA TO NIE ARTYKUL i zyje godziny, nie dni. Ten sam prog co dla artykulow oznaczal, ze pod notki wchodzilismy zawsze PO koncu rozmowy: prz |
-| `MAKS_WIEK_CELU_DNI` | `21` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
+| `MAKS_WIEK_CELU_DNI` | `3` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
+| `MAKS_WIEK_NOTKI_H` | `36` | NOTKA: 36 GODZIN. Z tych samych czternastu komentarzy pod notkami najwiecej wyswietlen mialy te pod notkami sprzed 6 i 11 godzin (27 i 77);  |
+| `UDZIAL_KOMENTARZY_POD_ARTYKULAMI` | `0.4` | ILE Z PRZYDZIALU PRZEBIEGU IDZIE POD ARTYKULY. Reszta idzie pod notki, bo tam — patrz pomiar wyzej — komentarz w ogole ktos widzi. Blok arty |
+| `STRONY_KANALU_NOTEK` | `6` | ILE STRON KANALU `for-you` CZYTAMY PO NOTKI DO DYSKUSJI — patrz `kanal.notki_z_kanalu`. Jedna strona to okolo czterech notek, szesc — okolo  |
 | `KOMFORTOWO_KOMENTARZY` | `25` | ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto |
 | `ODSTEP_DNI_NA_PUBLIKACJE` | `4` | Ile dni odstepu przed kolejnym komentarzem pod TA SAMA publikacja. Komentarz pod kazdym kolejnym tekstem tej samej osoby to drugi najczyteln |
 | `NISZA` | `""` | HASLA, KTORYMI AGENT SZUKA NOWYCH KONT. Kanal czytelnika pokazuje tylko to, co juz znamy, wiec sam z siebie nie przyprowadzi nikogo nowego — |
@@ -241,7 +258,7 @@
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
-| `PRICING_VERSION` | `"rates-2026-09-06"` | Published rates checked 2026-09-06; invoice verification is separate. |
+| `PRICING_VERSION` | `"rates-2026-09-13"` | Published rates checked 2026-09-13; invoice verification is separate. |
 | `PRICING_SOURCES` | `{ "deepseek": "https://api-docs.deepseek.com` | — |
 | `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. CIEKAWOSTKI DOSTALY 600 s, NIE 300 — z awarii, nie z ostroznosci. 8 wrz |
 | `ROLE_DEADLINE_S` | `{"write": 480, "scout": 300, "synthesis": 30` | — |

@@ -31,6 +31,7 @@ BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
 import json
 import pathlib
 import sys
+from unittest.mock import patch
 import tempfile
 
 sys.path.insert(0, "agent-v2")
@@ -106,12 +107,18 @@ print("=== 4. ZAPORA 'MODEL NIE SZUKAL' ZOSTAJE ===")
 # Bez tej sekcji latwo „naprawic" limit tak, ze przy okazji rozbroi sie
 # sprawdzenie, ktore chroni przed adresami z pamieci modelu.
 atrapa([zrodlo("https://example.org/x", 0)], [])
-try:
-    stages.discovery(CONN, 1, "Pytanie testowe", [])
-    sprawdz("brak wynikow wyszukiwania nadal zatrzymuje", False, "przepuscilo")
-except ValueError as exc:
-    sprawdz("brak wynikow wyszukiwania nadal zatrzymuje",
-            "nie wykonała ani jednego wyszukiwania" in str(exc), str(exc)[:60])
+# BUDZET ZDROWY, ZEBY PRZEJSC CALY LANCUCH RATUNKOWY. Od 10 wrzesnia 2026
+# dyskoveria przy zerze wyszukiwan pyta drugi raz, potem siega po model
+# zapasowy — a to ostatnie wstrzymuje sie, gdy w przebiegu brakuje pieniedzy
+# dla pisarza. Bez tej atrapy test dostawalby komunikat o budzecie zamiast
+# sprawdzac to, po co powstal: zapore przed adresami z pamieci modelu.
+with patch.object(stages.db, "available_budget", lambda c, r: 5.0):
+    try:
+        stages.discovery(CONN, 1, "Pytanie testowe", [])
+        sprawdz("brak wynikow wyszukiwania nadal zatrzymuje", False, "przepuscilo")
+    except ValueError as exc:
+        sprawdz("brak wynikow wyszukiwania nadal zatrzymuje",
+                "nie wykonała ani jednego wyszukiwania" in str(exc), str(exc)[:60])
 
 print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))

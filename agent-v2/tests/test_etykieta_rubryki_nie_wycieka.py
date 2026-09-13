@@ -82,7 +82,7 @@ stary_swiat = personality._swiat
 zebrane = []
 try:
     config.PERSONA_TEMATY = (RUBRYKA,)
-    personality.short_form = lambda conn, run_id, kind, material: (
+    personality.short_form = lambda conn, run_id, kind, material, **_kw: (
         zebrane.append(material) or {})
     personality.memory = lambda *a, **k: []
     personality.memory_state = lambda *a, **k: {"intro": True}

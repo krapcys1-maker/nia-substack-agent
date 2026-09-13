@@ -47,7 +47,9 @@ sprawdz("stala istnieje i jest dodatnia", isinstance(config.MAKS_WIEK_CELU_DNI, 
         and config.MAKS_WIEK_CELU_DNI > 0, config.MAKS_WIEK_CELU_DNI)
 sprawdz("cel sprzed 30 dni jest za stary (przypadek z 2026-09-05)",
         kanal._za_stary({"data": sprzed(30.3)}))
-sprawdz("cel sprzed 5 dni przechodzi", not kanal._za_stary({"data": sprzed(5)}))
+# 13 wrzesnia 2026 granica artykulu spadla z 21 do 3 dni (pomiar przy
+# `config.MAKS_WIEK_CELU_DNI`), a notka dostala wlasna: `MAKS_WIEK_NOTKI_H`.
+sprawdz("cel sprzed 2 dni przechodzi", not kanal._za_stary({"data": sprzed(2)}))
 sprawdz("cel dokladnie na granicy przechodzi",
         not kanal._za_stary({"data": sprzed(config.MAKS_WIEK_CELU_DNI - 0.01)}))
 sprawdz("cel o dzien za granica odpada",
