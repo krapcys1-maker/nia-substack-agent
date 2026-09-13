@@ -116,11 +116,14 @@ try:
         # UPLYW DOBY. `odhacz_promocje` stempluje dzisiejsza date, a nowy
         # warunek „czy cokolwiek szlo dzis" porownuje wlasnie z dzisiejsza —
         # wiec zeby zasymulowac nastepny dzien, cofamy stempel w przeszlosc.
-        # To jedyna rzecz, ktora tu udajemy: licznik `wystawione` rosnie
-        # naprawde i to on ma zatrzymac promocje po trzecim dniu.
+        # Oba stemple: date i godzine (`ostatnia_kiedy`, odstep
+        # `PROMOCJA_ODSTEP_H`). To jedyna rzecz, ktora tu udajemy: licznik
+        # `wystawione` rosnie naprawde i to on ma zatrzymac promocje po
+        # trzecim dniu.
         dane = stages.wczytaj_promocje()
         for a in dane:
             a["ostatnia"] = "2026-01-01"
+            a["ostatnia_kiedy"] = "2026-01-01T19:00:00+00:00"
         stages.PROMOCJA.write_text(json.dumps(dane, ensure_ascii=False),
                                    encoding="utf-8")
     print("    kolejne dni: %s" % dni)
@@ -171,6 +174,58 @@ try:
     w = stages.artykul_do_promocji()
     sprawdz("nowy artykul wchodzi przed niedokonczony starszy",
             w and w["tytul"] == "Dzisiejszy", w and w["tytul"])
+
+    print()
+    print("=== 6b. NOTKA W DNIU PUBLIKACJI, NAWET PO PORANNEJ NOTCE STARSZEGO ===")
+    # Decyzja wlasciciela z 13 wrzesnia 2026: artykul dostaje notke promujaca
+    # W DNIU publikacji. Artykul wychodzi o 16:30, a poranny przebieg moze juz
+    # wystawic notke starszego tekstu.
+    ustaw(wpis("Starszy", wystawione=2, ostatnia=dzis),
+          wpis("Dzisiejszy nowy"))
+    w = stages.artykul_do_promocji()
+    sprawdz("nowszy artykul dostaje notke mimo porannej notki starszego",
+            w and w["tytul"] == "Dzisiejszy nowy", w and w["tytul"])
+    # KONTRDOWOD: druga strona reguly zostaje — starszy nie dostaje drugiej
+    # notki w dniu, w ktorym NOWSZY juz swoja wystawil, takze gdy nowszy
+    # wlasnie tym wyczerpal swoje trzy.
+    ustaw(wpis("Starszy", wystawione=1),
+          wpis("Nowszy wyczerpany dzis", wystawione=config.NOTEK_PROMUJACYCH,
+               ostatnia=dzis))
+    sprawdz("starszy nie dostaje notki po dzisiejszej notce nowszego",
+            stages.artykul_do_promocji() is None)
+
+    print()
+    print("=== 6c. TRZY DNI TO TRZY DNI, NIE DWA WIECZORY ===")
+    # Doba w UTC konczy sie o polnocy, a przebieg o 00:30 UTC to wieczor
+    # w Nowym Jorku. Bez odstepu notka z 19:00 i notka z 00:30 szly tego
+    # samego wieczoru u czytelnikow, po pieciu i pol godzinie.
+    from datetime import datetime as _dt, timedelta as _td, timezone as _tz
+
+    def godzin_temu(h):
+        return (_dt.now(_tz.utc) - _td(hours=h)).isoformat(timespec="seconds")
+
+    ustaw(dict(wpis("Wczorajszy wieczor", wystawione=1, ostatnia=_dzis(-1)),
+               ostatnia_kiedy=godzin_temu(5)))
+    sprawdz("nowa doba UTC, ale 5 h po poprzedniej: czeka",
+            stages.artykul_do_promocji() is None)
+    ustaw(wpis("Starszy", wystawione=1, ostatnia=_dzis(-2)),
+          dict(wpis("Wczorajszy wieczor", wystawione=1, ostatnia=_dzis(-1)),
+               ostatnia_kiedy=godzin_temu(5)))
+    sprawdz("i starszy artykul nie wskakuje na jego miejsce",
+            stages.artykul_do_promocji() is None)
+    ustaw(dict(wpis("Wczorajszy wieczor", wystawione=1, ostatnia=_dzis(-1)),
+               ostatnia_kiedy=godzin_temu(config.PROMOCJA_ODSTEP_H + 1)))
+    w = stages.artykul_do_promocji()
+    sprawdz("po odstepie idzie",
+            w and w["tytul"] == "Wczorajszy wieczor", w and w["tytul"])
+    ustaw(wpis("Bez godziny", wystawione=1, ostatnia=_dzis(-1)))
+    w = stages.artykul_do_promocji()
+    sprawdz("wpis sprzed stempla godziny nie jest blokowany",
+            w and w["tytul"] == "Bez godziny", w)
+    ustaw(wpis("Stempel"))
+    stages.odhacz_promocje("https://x/p/stempel", "tekst")
+    kiedy = stages.wczytaj_promocje()[0].get("ostatnia_kiedy", "")
+    sprawdz("odhaczenie stempluje godzine", kiedy[:10] == _dzis() and "T" in kiedy, kiedy)
 
     print()
     print("=== 7. OKNO WAZNOSCI: STARY ARTYKUL PRZESTAJE BYC PROMOWANY ===")

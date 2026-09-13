@@ -528,6 +528,19 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
         instruction += ("For a Note based on a supplied news item, also return source_ids: "
                         "an array of its IDs from material.world.sources. For a personal "
                         "thought use []. Keep these IDs out of the published text.\n")
+    if material.get("promocja"):
+        # NOTKA PROMUJACA NASZ ARTYKUL. Zadanie, ktorego zwykla notka nie ma:
+        # posłać czytelnika dalej. Karta niesie tez to, co powiedzialy
+        # poprzednie notki o tym tekscie (`odhacz_promocje`), bo bez tego trzy
+        # dni z rzedu wracala ta sama liczba i ta sama nazwa.
+        instruction += (
+            "material.promocja is an article YOU published on this publication, "
+            "with its link. This Note sends readers to it. Pick ONE concrete "
+            "thing from the article — a scene, a finding, a line — that is not "
+            "already in material.promocja.powiedziane (what your earlier Notes "
+            "about it said), say it your way, and give the link "
+            "(material.promocja.url) on its own last line. No 'new post' "
+            "announcement and no summary of the whole article.\n")
     if material.get("fact"):
         # RUBRYKA TO KAT, FAKT TO MATERIAL. Bez tego zdania model dostaje
         # sprawdzony fakt i pisze o nim depesze, a rubryka idzie do kosza —
@@ -583,7 +596,10 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     body = result.get("text", "")
     # ADRES, KTORY SAMI PODALISMY, NIE JEST WYCIEKIEM. Instrukcja mowi
     # „the URL may go in the text" — patrz `_valid`.
-    zrodlo_url = str((material.get("fact") or {}).get("url") or "")
+    # Adres, ktory SAMI podalismy: zrodlo faktu albo link do naszego artykulu
+    # w notce promujacej. `_valid` wycina z tekstu dokladnie te adresy.
+    zrodlo_url = str((material.get("fact") or {}).get("url")
+                     or (material.get("promocja") or {}).get("url") or "")
     if not _valid(body, maximum, dozwolone_adresy=(zrodlo_url,) if zrodlo_url else ()):
         return finish(reason="empty_or_invalid_text")
     # UKLAD POPRAWIA KOD, NIE DRUGIE WYWOLANIE. Te same slowa, ta sama
@@ -833,6 +849,29 @@ def ostatnie_wlasne_rozmowy(ile=None):
             if len(teksty) >= ile:
                 break
     return list(reversed(teksty))
+
+
+def notka_promujaca(conn, run_id, artykul):
+    """Notka promujaca NASZ artykul — ta sama droga, co kazda notka persony.
+
+    Oddaje wpis w ksztalcie `notes()`, zeby `run` wystawial i zapamietywal go
+    tak samo jak zwykla notke; `promocja_url` mowi, co odhaczyc po publikacji.
+    """
+    url = str(artykul.get("url") or "")
+    material = {
+        "promocja": {"tytul": str(artykul.get("tytul") or "")[:200], "url": url,
+                     "tekst": str(artykul.get("tekst") or "")[:3500],
+                     "powiedziane": [str(t)[:400] for t in (artykul.get("powiedziane") or [])][-3:]},
+        "theme": "your own article, published here",
+        "choice": "One thing from the article, your way, and the link.",
+    }
+    output = short_form(conn, run_id, "note", material)
+    candidate = {**output, "note": output.get("text", ""), "safe_to_post": bool(output),
+                 "length_ok": bool(output)}
+    return {"type": "promocja", "forma": "persona", "promocja_url": url,
+            "candidates": [candidate] if output else [],
+            "personality": {"theme": "promocja artykulu", "rubryka": "promocja",
+                            "promocja": url}}
 
 
 def interaction(conn, run_id, kind, post):

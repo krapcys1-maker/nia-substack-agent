@@ -163,7 +163,9 @@ m = re.search(r"for nazwa, robota in \((.*?)\):", zrodlo, re.S)
 sprawdz("pętla bloków istnieje", m is not None)
 kolejnosc = re.findall(r'\("(\w+)",', m.group(1)) if m else []
 print("    %s" % " -> ".join(kolejnosc))
-sprawdz("wszystkie osiem bloków", len(kolejnosc) == 8, kolejnosc)
+# DZIEWIEC od 13 wrzesnia 2026: doszla notka promujaca artykul, zaraz po
+# notkach (`run.promuj_artykul`, pilnowane w `test_notka_promujaca.py`).
+sprawdz("wszystkie dziewiec bloków", len(kolejnosc) == 9, kolejnosc)
 
 i = {n: k for k, n in enumerate(kolejnosc)}
 sprawdz("obserwowanie PRZED komentarzami",

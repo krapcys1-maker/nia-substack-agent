@@ -1902,6 +1902,15 @@ WORST_NOTE_DAYS = ("monday", "friday")
 # starszymi z zimnym juz linkiem.
 NOTEK_PROMUJACYCH = 3
 
+# NAJKROTSZY ODSTEP MIEDZY NOTKAMI PROMUJACYMI TEN SAM ARTYKUL, w godzinach.
+# „Jedna na dobe" liczy dobe w UTC, a przebieg o 00:30 UTC to jeszcze wieczor
+# u czytelnikow. Policzone na harmonogramie z 13 wrzesnia 2026: artykul
+# wychodzi o 16:30, pierwsza notka o 19:00, a druga moglaby wyjsc o 00:30 —
+# po pieciu i pol godzinie, tego samego wieczoru w Nowym Jorku. Trzy dni
+# z rzedu mialy znaczyc trzy dni. Dwadziescia godzin trzyma pore dnia
+# (19:00 -> 19:00 nastepnego dnia) i zostawia zapas na przebieg, ktory wypadl.
+PROMOCJA_ODSTEP_H = 20
+
 # PO ILU DNIACH ARTYKUL PRZESTAJE BYC PROMOWANY, nawet jesli nie wybral swoich
 # trzech notek. `artykul_do_promocji` sam nazwal ten problem w docstringu —
 # „link juz zimny, artykul dawno zepchniety w dol kanalu" — ale nazwal go tylko

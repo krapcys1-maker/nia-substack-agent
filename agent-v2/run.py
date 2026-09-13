@@ -372,6 +372,94 @@ def _do_konca_limitu_rozmow(teraz: float | None = None) -> float:
     return max(0.0, chwile[-limit] + 3600 - teraz + 30)
 
 
+def promuj_artykul(conn, run_id: int, wyslij: bool, rytm_stanu: dict) -> int:
+    """Jedna notka promujaca swiezy artykul — PONAD dzienny przydzial notek.
+
+    Decyzja wlasciciela z 13 wrzesnia 2026: gdy wychodzi artykul, w dniu
+    publikacji i przez dwa kolejne dni sa po dwie zwykle notki i jedna
+    promujaca. Kolejke (trzy notki, jedna na dobe, najswiezszy artykul
+    pierwszy, okno `OKNO_PROMOCJI_DNI`) prowadzi `stages.artykul_do_promocji`.
+
+    ZMIERZONE TEGO SAMEGO DNIA: piec artykulow w `promocja.json`, kazdy
+    z `wystawione: 0`. Ani jedna notka promujaca nie wyszla, bo slot
+    `ARTYKUL` zyl w miksie notek starej sciezki, a konto pisze notki persona,
+    ktora tego miksu nie czyta. Stad osobny blok, niezalezny od sciezki notek.
+
+    Oddaje 1, gdy notka poszla, inaczej 0. Notka trafia do dziennika jako
+    `notka` z `typ="promocja"` — liczniki dnia i normy ja pomijaja.
+    """
+    if not getattr(config, "PERSONA_WLACZONA", False) or not config.NOTEK_PROMUJACYCH:
+        return 0
+    import browser
+    import personality
+
+    artykul = stages.artykul_do_promocji()
+    if not artykul:
+        print("  dzis nic do promowania", flush=True)
+        return 0
+    # TE SAME BRAMKI CO ZWYKLA NOTKA. `dzien` zeruje `na_teraz["notki"]` poza
+    # oknem czytelnikow i w cichy dzien, a ten blok z `na_teraz` nie czyta —
+    # bez tych dwoch warunkow notka promujaca wychodzilaby o polnocy w Nowym
+    # Jorku i w dzien, w ktorym konto nie nadaje.
+    wolno, powod = config.pora_na_publikacje()
+    if not wolno:
+        print(f"  [promocja] poza oknem publikacji ({powod}) — w nastepnym przebiegu",
+              flush=True)
+        return 0
+    if config.cichy_dzien() and "notki" in config.CICHY_DZIEN_WYCISZA:
+        print("  [promocja] cichy dzien — notka promujaca czeka", flush=True)
+        return 0
+    # ZWYKLA NOTKA POSZLA W TYM PRZEBIEGU, A DZIS BEDZIE JESZCZE INNY: promocja
+    # idzie tam. Na miejscu musialaby odczekac odstep miedzy notkami
+    # (35-65 min), zabierajac ten czas komentarzom. Ostatni przebieg dnia nie
+    # ma dokad przelozyc, wiec on czeka przez `rytm`, jesli sie zmiesci.
+    if rytm_stanu.get("notka") and ile_przebiegow_zostalo(conn) > 1:
+        print("  [promocja] zwykla notka poszla w tym przebiegu — promocja"
+              " w nastepnym", flush=True)
+        return 0
+    if not zostal_czas("promocja"):
+        return 0
+    wisi = browser.artykul_opublikowany(artykul.get("url") or "")
+    if wisi is False:
+        # Artykul zniknal z publikacji (skasowany albo cofniety do szkicu).
+        stages.zakwestionuj_promocje(artykul.get("url") or "",
+                                     "artykulu nie ma juz w archiwum publikacji",
+                                     skad="artykul zniknal")
+        return 0
+    # KANAL „notka" — to jest notka, tylko z innym zadaniem. Koszt ma stac
+    # obok zwyklych notek, a nie bez przypisania.
+    with db.kanal("notka"):
+        notka = personality.notka_promujaca(conn, run_id, artykul)
+    gotowe = [k for k in notka["candidates"] if k.get("safe_to_post") and k.get("length_ok")]
+    if not gotowe:
+        print("  [promocja] notka promujaca nie powstala — sprobuje nastepny przebieg",
+              flush=True)
+        return 0
+    tekst = gotowe[0]["note"].strip()
+    url = artykul.get("url") or ""
+    # LINK ZAWSZE. Notka promujaca bez adresu nikogo nigdzie nie posyla.
+    if url and url not in tekst:
+        tekst = tekst.rstrip() + "\n\n" + url
+        gotowe[0]["note"] = tekst
+    print("  [promocja] %d/%d: %s" % (int(artykul.get("wystawione") or 0) + 1,
+                                     config.NOTEK_PROMUJACYCH,
+                                     str(artykul.get("tytul") or "")[:60]), flush=True)
+    if not wyslij:
+        print("  (zrobilbym notke promujaca: %s)" % tekst[:140].replace("\n", " / "),
+              flush=True)
+        return 0
+    if not rytm("notka", "promocja", rytm_stanu):
+        return 0
+    wynik = browser.wystaw_notke(tekst, wyslij=True, typ="promocja", forma="persona",
+                                 model=gotowe[0].get("model", ""))
+    rytm_stanu["notka"] = True
+    personality.remember(notka, wynik)
+    if wynik.get("pominiete") or not wynik.get("wyslane"):
+        return 0
+    stages.odhacz_promocje(url, tekst)
+    return 1
+
+
 def zmiesci_sie(rodzaj: str, ile: int, udzial: float = 1.0) -> int:
     """Ile z zaplanowanych dzialan NAPRAWDE zmiesci sie w czasie przebiegu.
 
@@ -1256,8 +1344,8 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
           f"w tym przebiegu: notki={na_teraz['notki']} "
           f"komentarze={na_teraz['komentarze']} lajki={na_teraz['lajki']}",
           flush=True)
-    zrobione = {"notki": 0, "komentarze": 0, "odpowiedzi": 0, "polubienia": 0,
-                "restacki": 0}
+    zrobione = {"notki": 0, "promocje": 0, "komentarze": 0, "odpowiedzi": 0,
+                "polubienia": 0, "restacki": 0}
     # Czy dany rodzaj dzialania juz w tym przebiegu wyszedl. Wspolne dla
     # wszystkich blokow, bo profil widzi jeden ciag zdarzen, nie nasze bloki:
     # komentarz tuz po obserwacji to dla Substacka dwa dzialania pod rzad.
@@ -2623,7 +2711,12 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             print(f"  nie zrobilem kopii: {type(exc).__name__}: {exc}"[:160],
                   flush=True)
 
+    # --- 2b. notka promujaca artykul: PONAD dzienny przydzial notek ----------
+    def promocja() -> None:
+        zrobione["promocje"] += promuj_artykul(conn, run_id, wyslij, rytm_stanu)
+
     for nazwa, robota in (("odpowiedzi", odpowiedzi), ("notki", notki),
+                          ("promocja", promocja),
                           ("obserwowanie", obserwuj), ("subskrypcje", subskrybuj),
                           ("komentarze", komentarze), ("dyskusje", dyskusje),
                           ("polubienia", polubienia), ("restacki", restacki),

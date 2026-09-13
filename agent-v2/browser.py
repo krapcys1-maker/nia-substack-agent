@@ -384,8 +384,11 @@ def z_dziennika_dzis() -> dict[str, int]:
     # i jest to DOKLADNIE ta sama wada, ktora tego samego dnia znalazlem przy
     # notkach: licznik nie widzial dzialania, wiec ochrona przed powtorzeniem
     # normy nie dzialala dla niego wcale.
+    # `promocje` — notki promujace artykul. Poza przydzialem `notki`, ale
+    # policzone osobno: kontrola z kanalem profilu w `ile_dzis_wystawione`
+    # wzielaby je inaczej za notki pisane recznie przez wlasciciela.
     ile = {"komentarze": 0, "lajki": 0, "restacki": 0, "notki": 0,
-           "subskrypcje": 0, "follow": 0}
+           "subskrypcje": 0, "follow": 0, "promocje": 0}
     # Klucz po lewej to `rodzaj` z dziennika, po prawej nazwa z budzetu.
     nazwa = {"komentarz": "komentarze", "polubienie": "lajki",
              "restack": "restacki", "notka": "notki",
@@ -406,6 +409,12 @@ def z_dziennika_dzis() -> dict[str, int]:
             if not str(wpis.get("kiedy", "")).startswith(dzis):
                 continue
             if not wpis.get("udane"):
+                continue
+            # NOTKA PROMUJACA IDZIE PONAD DZIENNY PRZYDZIAL — decyzja
+            # wlasciciela z 13 wrzesnia 2026: dwie zwykle plus jedna promujaca.
+            # Policzona tutaj zabieralaby miejsce zwyklej notce.
+            if wpis.get("rodzaj") == "notka" and wpis.get("typ") == "promocja":
+                ile["promocje"] += 1
                 continue
             klucz = nazwa.get(wpis.get("rodzaj"))
             if klucz:
@@ -1075,10 +1084,13 @@ def ile_dzis_wystawione() -> dict[str, int]:
         # KONTROLA, NIE DECYZJA. Nadmiar to notki wlasciciela pisane recznie i
         # ma zostac widoczny, bo to jedyne miejsce, w ktorym ta praca sie
         # ujawnia. Wczesniej ten sam nadmiar cicho zabieral botowi przydzial.
-        if na_profilu != wynik["notki"]:
+        # Notka promujaca wisi na profilu jak kazda inna, wiec wchodzi do
+        # porownania — inaczej kazdy dzien promocji meldowalby „prace reczna".
+        bota = wynik["notki"] + wynik.get("promocje", 0)
+        if na_profilu != bota:
             print("  [licznik] na profilu %d notek, bot wystawil %d"
                   " — roznica %+d to praca reczna wlasciciela"
-                  % (na_profilu, wynik["notki"], na_profilu - wynik["notki"]),
+                  % (na_profilu, bota, na_profilu - bota),
                   flush=True)
         return wynik
     except Exception as exc:
@@ -5713,6 +5725,41 @@ def bez_znacznikow(html: str) -> str:
     tekst = _re.sub(r"<[^>]+>", " ", html or "")
     tekst = tekst.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
     return _re.sub(r"\s+", " ", tekst).strip()
+
+
+def artykul_opublikowany(url: str) -> bool | None:
+    """Czy artykul nadal wisi na naszej publikacji. None = nie da sie sprawdzic.
+
+    ZMIERZONE 13 wrzesnia 2026: w kolejce promocji leglo piec artykulow,
+    a archiwum publikacji pokazywalo trzy z nich — dwa zniknely po publikacji.
+    Notka promujaca z martwym linkiem jest gorsza niz jej brak (patrz
+    `potwierdz_adres_artykulu`), wiec przed nia pytamy archiwum.
+    """
+    import re as _re
+
+    slug = _re.sub(r"^.*/p/", "", str(url or "")).split("?")[0].strip("/")
+    if not slug:
+        return None
+    try:
+        wymagaj_sesji()
+        p, browser, context = podlacz_sie()
+    except BaseException:                                     # noqa: BLE001
+        return None
+    page = context.new_page()
+    try:
+        lista = api_json(page, "/api/v1/archive?sort=new&limit=50",
+                         baza=f"https://{config.SUBSTACK_HANDLE}.substack.com")
+        if not isinstance(lista, list):
+            return None
+        return any(str((x or {}).get("slug") or "") == slug
+                   or str((x or {}).get("canonical_url") or "").rstrip("/").endswith("/p/" + slug)
+                   for x in lista)
+    except Exception:                                         # noqa: BLE001
+        return None
+    finally:
+        page.close()
+        browser.close()
+        p.stop()
 
 
 def potwierdz_adres_artykulu(page, tytul: str) -> str:
