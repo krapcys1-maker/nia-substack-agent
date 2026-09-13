@@ -1803,11 +1803,25 @@ def _napisz_i_zapisz(conn, run_id, brief, card) -> int:
         if "--tylko-plik" in sys.argv:
             print(">> --tylko-plik: artykul zostaje na dysku", flush=True)
             return 0
+        # DARMOWY TEST NIE ZAKLADA SZKICU NA KONCIE. Znalezione w kopii CI
+        # 13 wrzesnia 2026: `test_artykul_nie_ginie_po_drodze` dochodzil tutaj
+        # i wolal prawdziwe `wystaw_artykul`. Bez sesji konczylo sie to
+        # `SystemExit`, a na komputerze z zalogowanym Chrome — szkicem na
+        # prawdziwym koncie, zalozonym przez test.
+        if getattr(config, "W_TESCIE", False):
+            print(">> darmowy test: szkicu na Substacku nie zakladam", flush=True)
+            return 0
         print(">> bez --wyslij: zakladam SZKIC na Substacku (nic nie wychodzi"
               " w swiat; `--tylko-plik` zostawia sam plik)", flush=True)
         try:
             import browser as _browser
             _w = _browser.wystaw_artykul(sciezka, wyslij=False)
+        except SystemExit as exc:
+            # BRAK SESJI to `SystemExit` z `browser.wymagaj_sesji`, nie Exception —
+            # bez tej galezi oplacony artykul konczyl przebieg bledem.
+            print(">> szkicu nie zakladam: %s — plik lezy w %s"
+                  % (str(exc).splitlines()[0][:80], sciezka), flush=True)
+            return 0
         except Exception as exc:                      # noqa: BLE001
             print(">> szkicu nie udalo sie zalozyc (%s: %s) — plik lezy w %s"
                   % (type(exc).__name__, str(exc)[:110], sciezka), flush=True)

@@ -404,7 +404,7 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
         "fifty to seventy words in total:\n"
         # „albo to, co powiedzieli" bylo tu POZWOLENIEM NA STRESZCZANIE i model
         # z niego korzystal. Zmierzone 10 wrzesnia 2026 na odpowiedzi, ktorej
-        # cala zaczepka byla jedno emoji: „Chaos Engine hits me with a single
+        # cala zaczepka byla jedno emoji: „Autor X hits me with a single
         # emoji and calls the lock 'fitted, not locked.'" Kartridz zabranial
         # tego wprost i przegral z tym pol zdaniem, bo silnik stoi blizej
         # zadania. W notce nie ma kogo streszczac, wiec zasada nic tam nie

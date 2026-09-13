@@ -2663,7 +2663,7 @@ MIN_WIEK_NOTKI_MIN = (20, 90)       # od dwudziestu minut do poltorej godziny
 #     pod NOTKAMI      14 komentarzy  157 wyswietlen razem   srednio 11,2
 #
 # Artykuly, pod ktore szly komentarze, mialy 6-20 dni (ByteByteGo: doba,
-# a16z: 12 dni, The Eel-Filled Hovercraft: 18 dni) i komentarz pod nimi mial
+# drugi duzy portal: 12 dni, maly blog o pisaniu: 18 dni) i komentarz pod nimi mial
 # zero, jedno albo dwa wyswietlenia. Jedyny komentarz pod artykulem, ktory
 # dostal odpowiedz i polubienie, stal pod tekstem sprzed 17 godzin. Wiec
 # artykul: trzy dni. Notka zyje godziny — ma wlasna granice nizej.

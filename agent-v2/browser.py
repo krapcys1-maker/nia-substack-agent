@@ -3099,7 +3099,7 @@ def wpisz_w_puste_pole(page, pole, tekst: str, nazwa: str = "pole",
     10 wrzesnia 2026 pod naszym artykulem o zamku wyszla odpowiedz o tresci:
 
         proba sucha, nic nie wychodziproba suSomeone got a prompt back from
-        Chaos Engine and that's the whole review.cha, nic nie wychodzi
+        Autor X and that's the whole review.cha, nic nie wychodzi
 
     „proba sucha, nic nie wychodzi" to MOJ tekst probny z `wyslij=False`.
     Zlozyly sie na to dwie wady naraz i obie sa tutaj:
@@ -4545,8 +4545,8 @@ def wystaw_odpowiedz_pod_artykulem(
         # („aria-label w kontenerze autora"), a odlozony zrzut ukladu okazal
         # sie CUDZA STRONA:
         #
-        #     <title>(9) Chaos Engine (@chaosengine2026): "😱"</title>
-        #     canonical: substack.com/profile/527355842-chaos-engine/note/c-332614348
+        #     <title>(9) Autor X (@autor-x): "😱"</title>
+        #     canonical: substack.com/profile/900000001-chaos-engine/note/c-900000002
         #     zero `contenteditable`, zero `textarea`, 16 przyciskow „Comment"
         #
         # Czyli klikniety element nie byl przyciskiem odpowiedzi, tylko
@@ -6070,7 +6070,7 @@ def kogo_juz_restackowalismy(dni: int = DNI_ODPOCZYNKU_AUTORA) -> set[str]:
     11 wrzesnia 2026, caly dziennik: TRZYNASCIE udanych restackow, DZIESIECIU
     roznych autorow. Jeden powtarza sie trzy razy:
 
-        Nothing Is Accidental   3        (09-10T14:58, 09-10T19:49, 09-11T12:34)
+        Publikacja A   3        (09-10T14:58, 09-10T19:49, 09-11T12:34)
         pozostali               po 1
         bez zapisanego autora   2
 

@@ -31,9 +31,9 @@ dziesiec sekund i padal, bo Substack rysuje tu ProseMirror, czyli
 
 ## Sprawdzone na zywo
 
-9 wrzesnia 2026, artykul o zamku, komentarz „Chaos Engine", `wyslij=False`:
+9 wrzesnia 2026, artykul o zamku, komentarz „Autor X", `wyslij=False`:
 
-    przycisk odpowiedzi znaleziony przy komentarzu 'Chaos Engine'
+    przycisk odpowiedzi znaleziony przy komentarzu 'Autor X'
         (aria-label w kontenerze autora)
     wpisane w pole odpowiedzi (edytor tiptap): 5 slow
     (nie wysylam — tryb sprawdzenia)
@@ -139,7 +139,7 @@ sprawdz("i stoi przed pierwszym wejsciem na strone", i_w < i_goto,
 print()
 print("=== POLE ODPOWIEDZI: CZEKAMY, AZ SIE ZAMONTUJE ===")
 # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, odpowiedz pod naszym artykulem:
-#     przycisk odpowiedzi znaleziony przy komentarzu 'Chaos Engine'
+#     przycisk odpowiedzi znaleziony przy komentarzu 'Autor X'
 #     BLAD: TimeoutError: Locator.click ... waiting for locator("textarea").first
 # Trzy drogi do pola sprawdzaly sie w JEDNYM obrocie, tuz po klinieciu.
 # Substack montuje edytor tiptap asynchronicznie, wiec zadna jeszcze nie
@@ -166,8 +166,8 @@ print("=== KLIKNIECIE, KTORE ZABIERA ZE STRONY ===")
 # ZMIERZONE NA PRODUKCJI 10 wrzesnia 2026, dwa przebiegi pod rzad. Adres byl
 # poprawny — nasz artykul o zamku — przycisk znaleziony, a odlozony zrzut
 # ukladu okazal sie CUDZA STRONA:
-#     <title>(9) Chaos Engine (@chaosengine2026): "😱"</title>
-#     canonical: substack.com/profile/527355842-chaos-engine/note/c-332614348
+#     <title>(9) Autor X (@autor-x): "😱"</title>
+#     canonical: substack.com/profile/900000001-chaos-engine/note/c-900000002
 #     zero `contenteditable`, zero `textarea`, 16 przyciskow „Comment"
 # Klikniety element byl odnosnikiem do wlasnej strony komentarza, nie
 # przyciskiem odpowiedzi. Szukanie pola szlo juz po cudzym profilu i konczylo

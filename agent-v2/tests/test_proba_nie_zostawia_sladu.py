@@ -8,7 +8,7 @@ do cudzej wersji roboczej.
 czytelnikowi:
 
     proba sucha, nic nie wychodziproba suSomeone got a prompt back from
-    Chaos Engine and that's the whole review.cha, nic nie wychodzi
+    Autor X and that's the whole review.cha, nic nie wychodzi
 
 „proba sucha, nic nie wychodzi" to tekst probny z wywolania `wyslij=False`.
 Zlozyly sie na to dwie wady, obie w `browser.py`:

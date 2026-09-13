@@ -6,7 +6,7 @@
 11 wrzesnia 2026, caly dziennik: TRZYNASCIE udanych restackow, DZIESIECIU
 roznych autorow.
 
-    Nothing Is Accidental   3     (09-10T14:58, 09-10T19:49, 09-11T12:34)
+    Publikacja A   3     (09-10T14:58, 09-10T19:49, 09-11T12:34)
     pozostali osmiu         po 1
     bez zapisanego autora   2
 
@@ -65,7 +65,7 @@ print("=== 1. AUTOR Z TEGO TYGODNIA JEST PAMIETANY ===")
 with tempfile.TemporaryDirectory() as kat:
     plik = Path(kat) / "dziennik.jsonl"
     wpisy = [
-        {"rodzaj": "restack", "udane": True, "komu": "Nothing Is Accidental",
+        {"rodzaj": "restack", "udane": True, "komu": "Publikacja A",
          "kiedy": kiedy(1)},
         {"rodzaj": "restack", "udane": True, "komu": "Unmesh Shah",
          "kiedy": kiedy(0)},
@@ -85,7 +85,7 @@ with tempfile.TemporaryDirectory() as kat:
     with patch.object(browser, "DZIENNIK", plik):
         byli = browser.kogo_juz_restackowalismy()
     sprawdz("wczorajszy autor odpoczywa",
-            "nothing is accidental" in byli, sorted(byli)[:3])
+            "publikacja a" in byli, sorted(byli)[:3])
     sprawdz("dzisiejszy autor odpoczywa", "unmesh shah" in byli)
     sprawdz("sprzed dziewieciu dni WRACA do gry",
             "benjamin laval" not in byli)
