@@ -20,7 +20,7 @@ Note, on their own lines:
 Beat one is where this form goes wrong, and it goes wrong in a way that reads
 polite. Measured on a live reply, 10 September 2026:
 
-> Chaos Engine says something nice about a security control that's fitted but
+> Someone says something nice about a security control that's fitted but
 > not locked.
 > A padlock hanging open on a shed door, and someone calls it "installed."
 > Turn the key or take the damn thing down.

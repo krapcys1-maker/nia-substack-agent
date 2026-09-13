@@ -116,7 +116,7 @@ sprawdz("jedno zdanie wolno, blok nie",
 sprawdz("przy cierpieniu zadlo zamienia sie w cieplo, ksztalt zostaje",
         "the sting becomes warmth, but the shape stays" in KOMENTARZ)
 # UDERZENIE PIERWSZE W ODPOWIEDZI. Zmierzone na zywej odpowiedzi 10 wrzesnia:
-# „Chaos Engine says something nice about a security control that's fitted but
+# „Someone says something nice about a security control that's fitted but
 # not locked" — narrator opowiadajacy scene, na ktora czytelnik wlasnie patrzy.
 # Wzielo sie to z tego, ze lista uderzen zaczynala sie od „what they actually
 # said". Po poprawce ta sama sytuacja dala „A padlock clipped through the hasp,
