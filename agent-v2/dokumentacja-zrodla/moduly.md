@@ -645,7 +645,7 @@
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-377 wierszy, 13 funkcji na poziomie modułu, 0 klas
+399 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -729,7 +729,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3914 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3918 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

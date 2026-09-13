@@ -2676,6 +2676,10 @@ MAKS_WIEK_NOTKI_H = 36
 # tam — patrz pomiar wyzej — komentarz w ogole ktos widzi. Blok artykulow stoi
 # w dniu PRZED blokiem notek, wiec bez tego udzialu zabieral caly przydzial.
 UDZIAL_KOMENTARZY_POD_ARTYKULAMI = 0.4
+# ILE STRON KANALU `for-you` CZYTAMY PO NOTKI DO DYSKUSJI — patrz
+# `kanal.notki_z_kanalu`. Jedna strona to okolo czterech notek, szesc — okolo
+# trzydziestu, z czego kilkanascie w granicy wieku notki.
+STRONY_KANALU_NOTEK = 6
 
 # ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala
 # posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto dwudziesty

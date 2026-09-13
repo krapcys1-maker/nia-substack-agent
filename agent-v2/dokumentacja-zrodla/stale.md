@@ -207,6 +207,7 @@
 | `MAKS_WIEK_CELU_DNI` | `3` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
 | `MAKS_WIEK_NOTKI_H` | `36` | NOTKA: 36 GODZIN. Z tych samych czternastu komentarzy pod notkami najwiecej wyswietlen mialy te pod notkami sprzed 6 i 11 godzin (27 i 77);  |
 | `UDZIAL_KOMENTARZY_POD_ARTYKULAMI` | `0.4` | ILE Z PRZYDZIALU PRZEBIEGU IDZIE POD ARTYKULY. Reszta idzie pod notki, bo tam — patrz pomiar wyzej — komentarz w ogole ktos widzi. Blok arty |
+| `STRONY_KANALU_NOTEK` | `6` | ILE STRON KANALU `for-you` CZYTAMY PO NOTKI DO DYSKUSJI — patrz `kanal.notki_z_kanalu`. Jedna strona to okolo czterech notek, szesc — okolo  |
 | `KOMFORTOWO_KOMENTARZY` | `25` | ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto |
 | `ODSTEP_DNI_NA_PUBLIKACJE` | `4` | Ile dni odstepu przed kolejnym komentarzem pod TA SAMA publikacja. Komentarz pod kazdym kolejnym tekstem tej samej osoby to drugi najczyteln |
 | `NISZA` | `""` | HASLA, KTORYMI AGENT SZUKA NOWYCH KONT. Kanal czytelnika pokazuje tylko to, co juz znamy, wiec sam z siebie nie przyprowadzi nikogo nowego — |

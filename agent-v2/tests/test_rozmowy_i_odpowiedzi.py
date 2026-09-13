@@ -296,6 +296,72 @@ finally:
     browser.DZIENNIK = stary_dziennik
 
 print()
+print("=== 8. KANAL NOTEK CZYTANY PO STRONACH ===")
+# Zmierzone 13 wrzesnia 2026: pierwsza strona `for-you` — 4 notki, cztery
+# strony po `nextCursor` — 31. Atrapa oddaje trzy strony i koniec kursora.
+wolane_adresy = []
+
+
+def notka_api(i, godzin=5):
+    return {"comment": {"id": i, "body": "note number %d about agents" % i,
+                        "name": "Autor %d" % i, "handle": "autor%d" % i,
+                        "reaction_count": i, "children_count": 1,
+                        "date": (datetime.now(timezone.utc) - timedelta(hours=godzin)).isoformat()}}
+
+
+STRONY = {None: ([notka_api(1), notka_api(2), {"post": {"id": 9}}], "k2"),
+          "k2": ([notka_api(2), notka_api(3), notka_api(4, godzin=50)], "k3"),
+          "k3": ([notka_api(5)], None)}
+
+
+class _Strona:
+    def close(self):
+        pass
+
+
+class _Kontekst:
+    def new_page(self):
+        return _Strona()
+
+    def close(self):
+        pass
+
+    def stop(self):
+        pass
+
+
+def api_atrapa(page, adres, baza=None):
+    wolane_adresy.append(adres)
+    kursor = adres.split("&cursor=")[1] if "&cursor=" in adres else None
+    items, nastepny = STRONY[kursor]
+    return {"items": items, "nextCursor": nastepny}
+
+
+oryg_b = (kanal.browser.wymagaj_sesji, kanal.browser.podlacz_sie, kanal.browser.api_json)
+kanal.browser.wymagaj_sesji = lambda: None
+kanal.browser.podlacz_sie = lambda: (_Kontekst(), _Kontekst(), _Kontekst())
+kanal.browser.api_json = api_atrapa
+try:
+    notki = kanal.notki_z_kanalu()
+    ids = sorted(n["id"] for n in notki)
+    sprawdz("notki ze wszystkich trzech stron", ids == [1, 2, 3, 5], ids)
+    sprawdz("ta sama notka z dwoch stron liczy sie raz", ids.count(2) == 1)
+    sprawdz("notka sprzed 50 h odpada po granicy wieku", 4 not in ids)
+    sprawdz("czytanie konczy sie, gdy kursora juz nie ma", len(wolane_adresy) == 3,
+            wolane_adresy)
+    wolane_adresy.clear()
+    stare_strony = config.STRONY_KANALU_NOTEK
+    config.STRONY_KANALU_NOTEK = 2
+    try:
+        kanal.notki_z_kanalu()
+    finally:
+        config.STRONY_KANALU_NOTEK = stare_strony
+    sprawdz("i nie czyta wiecej stron, niz pozwala konfiguracja", len(wolane_adresy) == 2,
+            wolane_adresy)
+finally:
+    kanal.browser.wymagaj_sesji, kanal.browser.podlacz_sie, kanal.browser.api_json = oryg_b
+
+print()
 print("=== 7. WPIECIE ===")
 ZR = io.open("agent-v2/run.py", encoding="utf-8").read()
 CIALO = {}

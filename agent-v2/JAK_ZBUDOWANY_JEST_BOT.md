@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 40 706 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 40 732 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 231 zestawów
-testów, 5169 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 5174 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -787,7 +787,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `kanal.py` — pamięć o cudzych publikacjach
 
-377 wierszy, 13 funkcji na poziomie modułu, 0 klas
+399 wierszy, 13 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -871,7 +871,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3914 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3918 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -13147,6 +13147,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `MAKS_WIEK_CELU_DNI` | `3` | GORNA GRANICA WIEKU CELU. Do 2026-09-05 byla tylko dolna: zmierzone tego dnia na kartridzu `ai` — pierwszy komentarz na zywo poszedl pod not |
 | `MAKS_WIEK_NOTKI_H` | `36` | NOTKA: 36 GODZIN. Z tych samych czternastu komentarzy pod notkami najwiecej wyswietlen mialy te pod notkami sprzed 6 i 11 godzin (27 i 77);  |
 | `UDZIAL_KOMENTARZY_POD_ARTYKULAMI` | `0.4` | ILE Z PRZYDZIALU PRZEBIEGU IDZIE POD ARTYKULY. Reszta idzie pod notki, bo tam — patrz pomiar wyzej — komentarz w ogole ktos widzi. Blok arty |
+| `STRONY_KANALU_NOTEK` | `6` | ILE STRON KANALU `for-you` CZYTAMY PO NOTKI DO DYSKUSJI — patrz `kanal.notki_z_kanalu`. Jedna strona to okolo czterech notek, szesc — okolo  |
 | `KOMFORTOWO_KOMENTARZY` | `25` | ILU KOMENTARZY POD CELEM JESZCZE NIE UWAZAMY ZA TLOK. Wyszukiwarka oddawala posty ze srednio 45 komentarzami, jeden ze 126 — a komentarz sto |
 | `ODSTEP_DNI_NA_PUBLIKACJE` | `4` | Ile dni odstepu przed kolejnym komentarzem pod TA SAMA publikacja. Komentarz pod kazdym kolejnym tekstem tej samej osoby to drugi najczyteln |
 | `NISZA` | `""` | HASLA, KTORYMI AGENT SZUKA NOWYCH KONT. Kanal czytelnika pokazuje tylko to, co juz znamy, wiec sam z siebie nie przyprowadzi nikogo nowego — |
