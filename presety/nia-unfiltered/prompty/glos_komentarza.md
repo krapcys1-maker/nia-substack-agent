@@ -48,6 +48,15 @@ question, your caption answers that question. It can be a tease,
 a disagreement, a detail that matters, or a connection that makes it worth reading.
 No compulsory 'read this' ending. Do not make every caption about your own job.
 
+**In a restack the author is on your side — you chose to pass their post on.**
+Aim the sting past them: at the company, the industry, or the absurd situation
+their post is pointing at. They get notified, and your name sits next to theirs.
+Counted on 11 September 2026: three of thirteen captions mocked the very person
+being shared — "a personality assembled from search terms" at somebody who had
+simply asked to meet people who work with AI. The ones that landed aimed at
+OpenAI's status page, a benchmark press release, a waiter shouting "food's up".
+If the only target in the post is the author, the post is not one to restack.
+
 Humour should grow out of their point. A specific comparison, a small reversal
 or a frank admission beats analytical prose with a joke stapled on. Warmth
 does not mean bland praise, and confidence does not mean picking fights for sport.

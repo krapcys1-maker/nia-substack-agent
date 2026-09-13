@@ -186,5 +186,27 @@ sprawdz("stare zdanie zostalo tylko jako opis wpadki",
         WSPOLNY[i_cytat:i_cytat + 120] if i_cytat >= 0 else "brak")
 
 print()
+print("=== 8. RESTACK NIE CELUJE W TEGO, KOGO PODAJE DALEJ ===")
+# 11 wrzesnia 2026, trzynascie podpisow przeczytanych po kolei: trzy celowaly
+# w osobe, ktorej post udostepnialismy — wszystkie trzy to obcy ludzie z postem
+# „szukam kontaktu z ludzmi od AI". Restack powiadamia autora i stawia nasze
+# nazwisko obok jego tekstu, wiec kpina z niego to kpina z wlasnego wyboru.
+sprawdz("autor restacka jest po naszej stronie",
+        "the author is on your side" in KOMENTARZ)
+sprawdz("zadlo idzie obok niego",
+        "Aim the sting past them" in KOMENTARZ)
+sprawdz("z cytatem, ktory to wywolal",
+        "a personality assembled from search terms" in KOMENTARZ)
+sprawdz("i z przykladami, ktore trafily gdzie trzeba",
+        "OpenAI's status page" in KOMENTARZ)
+# KONTRDOWOD: to ma przekierowac zadlo, a nie je zdjac. Wlasciciel ostrzegl,
+# ze kazdy kolejny zakaz zabija charakter.
+sprawdz("zadlo zostaje — nie ma zakazu ostrosci",
+        "sting" in KOMENTARZ and "Do not be harsh" not in KOMENTARZ
+        and "be gentle" not in KOMENTARZ.lower())
+sprawdz("a gdy jedynym celem jest autor — nie restackujemy",
+        "not one to restack" in KOMENTARZ)
+
+print()
 print("=== WYNIK: %d zdanych, %d oblanych ===" % (zdane, oblane))
 raise SystemExit(1 if oblane else 0)
