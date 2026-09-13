@@ -3320,6 +3320,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 zapisz_w_dzienniku("subskrypcja_pominieta", udane=True,
                                    komu=handle, powod=POWOD_JUZ_SUBSKRYBOWANY)
             return wynik
+        profil_z_api = None           # patrz galaz „bez przycisku" nizej
         if rodzaj == "subskrypcja" and config.SUBSKRYPCJE_MAX_ODBIORCOW is not None:
             import personality
             # api_json navigates its page. Keep the Subscribe controls on the
@@ -3329,6 +3330,7 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
                 profile = api_json(stats_page, f"/api/v1/user/{handle}/public_profile")
             finally:
                 stats_page.close()
+            profil_z_api = profile
             if not personality.small_account(profile, config.SUBSKRYPCJE_MAX_ODBIORCOW):
                 wynik.update(pominiete=True, powod=POWOD_ZA_DUZY)
                 if wyslij:
@@ -3386,6 +3388,36 @@ def _klik_na_profilu(handle: str, napisy: tuple[str, ...], rodzaj: str,
             print("  ZROBIONE" if wynik["zrobione"]
                   else "  KLIKNIETE, ALE STAN SIE NIE ZMIENIL", flush=True)
             return wynik
+        # BRAK PRZYCISKU, A SUBSKRYPCJA JUZ JEST. Zmierzone na produkcji
+        # 13 wrzesnia 2026 na jednym z profili z pomiaru 11 wrzesnia wyzej
+        # (subskrypcja weszla, ale zapisala sie jako porazka jeszcze przed
+        # potwierdzaniem zniknieciem przycisku): ani „Subscribe", ani zadnej
+        # z `subscription_labels`, wpis „nie ma przycisku" jako porazka,
+        # a API profilu oddawalo w tej samej chwili `isSubscribed: true`.
+        # Porazka nie zamyka profilu w `kogo_juz_subskrybujemy`, wiec
+        # wracal co przebieg: kilkanascie minut przerwy i kolejna „porazka"
+        # doliczana hamulcowi. Profil jest juz w reku, gdy sprawdzal go sufit
+        # odbiorcow; bez sufitu pytamy API dopiero TUTAJ, w galezi, ktora i tak
+        # konczy sie niczym — zwykla droga nie dostaje dodatkowego zapytania.
+        if rodzaj == "subskrypcja":
+            profil = profil_z_api
+            if not isinstance(profil, dict):
+                sprawdzenie = context.new_page()
+                try:
+                    profil = api_json(sprawdzenie, f"/api/v1/user/{handle}/public_profile")
+                except Exception:                             # noqa: BLE001
+                    profil = None
+                finally:
+                    sprawdzenie.close()
+            if isinstance(profil, dict) and profil.get("isSubscribed") is True:
+                wynik.update(pominiete=True, potwierdzone=True, juz_subskrybowany=True,
+                             powod=POWOD_JUZ_SUBSKRYBOWANY)
+                print(f"  @{handle}: bez przycisku, ale API mowi, ze juz"
+                      f" subskrybujemy — zapisuje jako nasza", flush=True)
+                if wyslij:
+                    zapisz_w_dzienniku("subskrypcja_pominieta", udane=True,
+                                       komu=handle, powod=POWOD_JUZ_SUBSKRYBOWANY)
+                return wynik
         wynik["blad"] = f"nie ma przycisku {rodzaj} u {handle}"
         print(f"  {wynik['blad']} — nie klikam nic innego", flush=True)
     except Exception as exc:
@@ -5616,6 +5648,19 @@ def mozna_komentowac(url: str) -> bool:
             # Zapis jest ODWRACALNY: udane wystawienie komentarza kasuje host z
             # listy, wiec zmiana ustawien u wydawcy odblokowuje go sama.
             zapamietaj_platny_host(host, prawo)
+            return False
+        # POST ZA PAYWALLEM, choc publikacja przyjmuje komentarze darmowych.
+        # `write_comment_permissions` to ustawienie PUBLIKACJI, `audience` —
+        # tego jednego POSTA. Zmierzone na produkcji 13 wrzesnia 2026:
+        # post jednej z publikacji z puli, `audience: only_paid`,
+        # `write_comment_permissions: subscribers` — zapora przepuscila, model
+        # napisal komentarz, przebieg odczekal kwadrans, a pod postem nie bylo
+        # pola. Host NIE trafia do `zapamietaj_platny_host`: nastepny post tej
+        # samej publikacji moze byc darmowy.
+        dla_kogo = str(post.get("audience") or "").lower()
+        if dla_kogo in {"only_paid", "founding"}:
+            print(f"  {host}: ten post jest tylko dla placacych ({dla_kogo}) —"
+                  f" odpuszczam przed pisaniem", flush=True)
             return False
         return True
     except Exception:
