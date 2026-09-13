@@ -49,14 +49,14 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **37 plików**, 39 833 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 40 330 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 37 plików zamiast dziesięciu.** Najbliższe usunięciu:
+**WADA — 38 plików zamiast dziesięciu.** Najbliższe usunięciu:
 `style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 229 zestawów
-testów, 5058 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 230 zestawów
+testów, 5119 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -269,7 +269,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3252 wierszy, 28 funkcji na poziomie modułu, 1 klas
+3263 wierszy, 28 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -860,7 +860,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3801 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3844 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -992,6 +992,28 @@ wiec nie da sie go rozjechac z kodem.
 | `wczytaj()` | Ostatnia zapisana odpowiedz NA TO SAMO PYTANIE. Pusty slownik, gdy nie ma, |
 | `pobierz(conn, run_id, wymus)` | Aktualny stan modeli. Z pliku, gdy swiezy; inaczej pyta na nowo. |
 | `jako_tekst(dane)` | Stan modeli w postaci, ktora wchodzi do promptu. |
+
+### `wersje_modeli.py` — nowsza wersja modelu u dostawcy: wykrycie, próba na żywo, przełączenie
+
+443 wierszy, 15 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `plik()` | Stan w danych INSTANCJI — kazde konto ma wlasne zamiany i wlasna historie. |
+| `rozbierz(model)` | Dostawca, rodzina i wersja z nazwy modelu; None, gdy nazwa nie pasuje. |
+| `nastepca(model, lista)` | (nastepca albo None, dlaczego) — tylko z tej samej rodziny i tylko z listy. |
+| `modele_w_uzyciu(cfg)` | Modele tekstowe, na ktorych naprawde chodzimy: role plus modele zapasowe. |
+| `lista_modeli(dostawca)` | Identyfikatory, ktore dostawca dzis podaje. None = nie wiem (brak klucza, siec). |
+| `zarejestruj(cfg, stary, nowy)` | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. |
+| `przestaw(cfg, stary, nowy)` | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. Oddaje liste miejsc. |
+| `wczytaj()` | — |
+| `zapisz(dane)` | — |
+| `_koniec_lancucha(zamiany, model)` *(wewn.)* | a -> b, a pozniej b -> c: model `a` ma trafic od razu na `c`. |
+| `zastosuj(cfg)` | Naklada zapisane zamiany na zaladowana konfiguracje. Bez sieci i bez kosztu. |
+| `sprawdz_na_zywo(nowy)` | Jedno male wywolanie nastepcy przez `llm.call` — ta sama droga co produkcja. |
+| `sprawdz_i_przelacz(conn, run_id)` | Raz na dobe: listy dostawcow, nastepcy, proba na zywo, zapis zamian. |
+| `cofnij(model)` | Usuwa zamiane `model -> ...`. Nastepny start procesu chodzi po staremu. |
+| `main(argv)` | — |
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
@@ -12933,6 +12955,8 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `GPT_ASTRA` | `"gpt-6-astra"` | — |
 | `DEEPSEEK` | `"deepseek-v4-flash"` | — |
 | `DEEPSEEK_PRO` | `"deepseek-v4-pro"` | — |
+| `DEEPSEEK_FLASH` | `"deepseek-flash"` | NASTEPCA FLASHA U DOSTAWCY. Od wrzesnia 2026 DeepSeek podaje na liscie modeli `deepseek-flash` (DeepSeek-V4.1-Flash), a `deepseek-v4-flash`  |
+| `MODELE_SAME_NA_NOWSZE` | `True` | NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na  |
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |
 | `OPENAI_BASE_URL` | `"https://api.openai.com/v1"` | — |
@@ -13001,7 +13025,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `CHARS_PER_TOKEN` | `3.5` | Zachowawczo, żeby sufit był raczej za duży niż za mały. Zmierzone na starym agencie: CJK 2,19x, cyrylica 1,41x; dla angielskiego 3,5 znaku n |
 | `JSON_OVERHEAD_TOKENS` | `1200` | Ile tokenów zajmuje rusztowanie JSON-a, klucze i pola opisowe poza samą treścią. |
 | `THINKING_HEADROOM_TOKENS` | `28000` | Myślenie na Opusie 5 jest domyślnie włączone, liczy się jak tokeny wyjściowe i NIE jest częścią kontraktu — więc sufit wyliczony z samego ko |
-| `EFFORT` | `{ "scout": "medium", "discovery": "medium", ` | Głębokość myślenia. Jawnie, bo domyślne `high` na Opusie 5 potrafi podwoić rachunek za wyjście bez pytania. TO JEST POKRETLO WYLACZNIE DLA M |
+| `EFFORT` | `{ "nowszy_model": "low", "scout": "medium", ` | Głębokość myślenia. Jawnie, bo domyślne `high` na Opusie 5 potrafi podwoić rachunek za wyjście bez pytania. TO JEST POKRETLO WYLACZNIE DLA M |
 | `MAX_TOKENS` | `{ # 6 tematow: tytul, pytanie, ZLAMANE PRZEK` | — |
 | `NOTE_MIN_WORDS` | `33` | --- notki i komentarze ------------------------------------------------------ Zmierzone na publicznych analizach Substacka: 33-64 słowa dają |
 | `NOTE_MAX_WORDS` | `64` | — |
@@ -13138,7 +13162,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
-| `PRICING_VERSION` | `"rates-2026-09-06"` | Published rates checked 2026-09-06; invoice verification is separate. |
+| `PRICING_VERSION` | `"rates-2026-09-13"` | Published rates checked 2026-09-13; invoice verification is separate. |
 | `PRICING_SOURCES` | `{ "deepseek": "https://api-docs.deepseek.com` | — |
 | `CALL_DEADLINE_S` | `180` | Whole operation, including retries, distinct from socket inactivity. CIEKAWOSTKI DOSTALY 600 s, NIE 300 — z awarii, nie z ostroznosci. 8 wrz |
 | `ROLE_DEADLINE_S` | `{"write": 480, "scout": 300, "synthesis": 30` | — |

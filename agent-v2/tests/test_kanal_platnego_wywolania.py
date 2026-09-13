@@ -351,6 +351,8 @@ KANALY = {
     "odpowiedz": "odpowiedzi pod naszymi wlasnymi tresciami",
     "restack": "ocena, czy podac cudza notke dalej",
     "bank": "uzupelnianie banku kandydatow poza notkami (Federal Register)",
+    "modele": "proba nastepcy modelu przed przelaczeniem (`wersje_modeli`) —"
+              " utrzymanie, nie tresc; jedno male wywolanie na nowa wersje",
 }
 
 print("=== 1. KAZDE PLATNE WYWOLANIE MA KANAL ===")

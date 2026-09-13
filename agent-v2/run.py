@@ -1139,6 +1139,17 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
     _KONIEC_CZASU = time.time() + max(
         60, config.LIMIT_CZASU_PRZEBIEGU_S - config.ZAPAS_CZASU_S)
 
+    # NOWSZE WERSJE MODELI, RAZ NA DOBE, PRZED PIERWSZYM PLATNYM ETAPEM.
+    # 13 wrzesnia 2026 DeepSeek przestal podawac `deepseek-v4-flash`, na ktorym
+    # stalo dziewietnascie rol — patrz `wersje_modeli`. Awaria sprawdzenia nie
+    # zatrzymuje dnia: stare modele nadal chodza, a jutro sprawdzimy znowu.
+    try:
+        import wersje_modeli
+        wersje_modeli.sprawdz_i_przelacz(conn, run_id)
+    except Exception as exc:                                   # noqa: BLE001
+        print("  [modele] sprawdzenie wersji padlo: %s: %s"
+              % (type(exc).__name__, exc), flush=True)
+
     budzet = stages.budzet_dnia(conn)
 
     # ILE JUZ DZIS POSZLO — pytamy Substacka, nie wlasnej ksiegowosci.

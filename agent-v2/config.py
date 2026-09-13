@@ -187,6 +187,20 @@ GPT_LUNA = "gpt-5.6-luna"
 GPT_ASTRA = "gpt-6-astra"
 DEEPSEEK = "deepseek-v4-flash"
 DEEPSEEK_PRO = "deepseek-v4-pro"  # ma server-side web_search przez /responses
+# NASTEPCA FLASHA U DOSTAWCY. Od wrzesnia 2026 DeepSeek podaje na liscie modeli
+# `deepseek-flash` (DeepSeek-V4.1-Flash), a `deepseek-v4-flash` juz nie — stara
+# nazwa jest tylko przyjmowana i trafia w ten sam model. Przejscie robi
+# `wersje_modeli`, nie ta stala: patrz tam, jak to zmierzono.
+DEEPSEEK_FLASH = "deepseek-flash"
+
+# NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe
+# pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na zywo
+# i zapisuje zamiane; `wersje_modeli.zastosuj` naklada ja przy starcie
+# procesu. `False` zostawia sam raport. Model z `MODELE_NIE_RUSZAJ` zostaje
+# na swojej wersji, nawet gdy wyjdzie nowsza — na przyklad glos, ktory
+# wlasciciel dopiero co skalibrowal.
+MODELE_SAME_NA_NOWSZE = True
+MODELE_NIE_RUSZAJ: tuple[str, ...] = ()
 
 # Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po
 # pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a etapy
@@ -327,6 +341,10 @@ MODEL_FOR = {
     # to jest cala jego wartosc. Ten sam, co sprawdzanie faktow, bo robi
     # dokladnie to samo: konfrontuje pamiec ze swiatem.
     "aktualne_modele": DEEPSEEK,
+    # Proba nastepcy modelu — `wersje_modeli.sprawdz_na_zywo` podstawia tu
+    # sprawdzany model na czas jednego wywolania. Wartosc ponizej nie chodzi
+    # nigdy sama.
+    "nowszy_model": DEEPSEEK,
     "curiosity": DEEPSEEK,
     "grafika": DEEPSEEK,
     "cele": DEEPSEEK,
@@ -376,7 +394,7 @@ DEEPSEEK_EFFORT = "low"
 # ($0,095) za werdykt strukturalny — wiecej niz samo pisanie ($0,066).
 DEEPSEEK_BEZ_MYSLENIA = frozenset({
     "feasibility", "classify", "bank", "cele", "restack", "grafika", "fedreg",
-    "forma",
+    "forma", "nowszy_model",
 })
 
 # Tryb tani: wszystko na DeepSeeku poza dyskoveria, ktora ten jawny override
@@ -464,6 +482,11 @@ PRICING = {
     # — dostawca podaje ich liczbe w kazdej odpowiedzi, wiec nie zgadujemy.
     DEEPSEEK: {"in": 0.22, "out": 0.66, "cache": 0.007, "verified": True},
     DEEPSEEK_PRO: {"in": 0.66, "out": 1.98, "cache": 0.022, "verified": True},
+    # DEEPSEEK-V4.1-FLASH, CENNIK DOSTAWCY Z 13 wrzesnia 2026 — poza szczytem
+    # 0,15 / 0,60, cache 0,003; w szczycie dwa razy tyle, jak u poprzednika.
+    # Taniej niz V4 (0,22 / 0,66 / 0,007), wiec ksiegowanie po starej nazwie
+    # zawyzalo koszt. `verified: False`, dopoki nie przyjdzie faktura.
+    DEEPSEEK_FLASH: {"in": 0.15, "out": 0.60, "cache": 0.003, "verified": False},
     # STAWKI OPENAI ODCZYTANE Z CENNIKA 7 wrzesnia 2026, NIE Z FAKTURY.
     # Sol ma cene PROMOCYJNA, gwarantowana przez dostawce „co najmniej do
     # 21 listopada 2026" — czyli ta liczba ma date waznosci, w odroznieniu od
@@ -1150,6 +1173,7 @@ THINKING_HEADROOM_TOKENS = 28000
 # przepiecia etapu na Claude. Zeby jednak nie byly cicha ozdoba, `llm.call`
 # mowi RAZ NA PROCES, ktory wpis nie zadzialal i dlaczego.
 EFFORT = {
+    "nowszy_model": "low",
     "scout": "medium",
     "discovery": "medium",
     "synthesis": "high",
@@ -1230,6 +1254,10 @@ MAX_TOKENS = {
     # Pytanie o stan modeli wraca lista kilkunastu pozycji z datami —
     # krotka odpowiedz, ale wyszukiwanie dokłada do wyjscia swoje rundy.
     "aktualne_modele": 16000,
+    # PROBA NASTEPCY: odpowiedz to jedno slowo, ale sufit wyznacza tez termin
+    # (`timeout_for`). 1000 tokenow to 24 sekundy na odpowiedz; 64 dawaloby
+    # 1,5 sekundy i proba padalaby na czasie, a nie na modelu.
+    "nowszy_model": 1000,
     "curiosity": 24000,
     "grafika": 4000,
     "cele": 6000,
@@ -3770,8 +3798,8 @@ elif KONFIGURACJA_ZMIENILA and not _w_darmowym_tescie():
     print("  [konfiguracja] %s: przestawiono %d pozycji"
           % (KONFIGURACJA_PLIK.name, len(KONFIGURACJA_ZMIENILA)), flush=True)
 
-# Published rates checked 2026-09-06; invoice verification is separate.
-PRICING_VERSION = "rates-2026-09-06"
+# Published rates checked 2026-09-13; invoice verification is separate.
+PRICING_VERSION = "rates-2026-09-13"
 PRICING_SOURCES = {
     "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
     "anthropic": "https://platform.claude.com/docs/en/about-claude/pricing",
@@ -3799,3 +3827,18 @@ CLAUDE_PROMPT_CACHE = False  # enable only after measuring same-model cache hits
 CACHE_MAX_AGE_S = 6 * 3600
 FACTCHECK_CACHE_MAX_AGE_S = 3600
 
+# NOWSZE WERSJE MODELI — NA SAMYM KONCU, PO PRESECIE. Preset przestawia
+# `MODEL_FOR`, wiec zamiana nalozona wczesniej zostalaby nadpisana nazwa
+# z kartridza. Darmowy test nie dostaje zamian z danych instancji: ma widziec
+# konfiguracje, a nie stan konkretnego konta.
+ZAMIANY_MODELI: list = []
+if not _w_darmowym_tescie():
+    try:
+        import wersje_modeli as _wersje_modeli
+        ZAMIANY_MODELI = _wersje_modeli.zastosuj(sys.modules[__name__])
+    except Exception as _blad_zamian:                      # noqa: BLE001
+        print("  [modele] nie nalozylem zamian modeli: %s: %s"
+              % (type(_blad_zamian).__name__, _blad_zamian), flush=True)
+    for _stary, _nowy in ZAMIANY_MODELI:
+        print("  [modele] %s -> %s (zamiana z wersje_modeli.json)" % (_stary, _nowy),
+              flush=True)
