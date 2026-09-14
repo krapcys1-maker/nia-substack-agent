@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 41 182 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 41 233 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 236 zestawów
-testów, 5315 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 237 zestawów
+testów, 5327 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -604,7 +604,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1234 wierszy, 23 funkcji na poziomie modułu, 4 klas
+1245 wierszy, 23 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -877,12 +877,13 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3951 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3991 wierszy, 44 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
 | `_korpus_stylu()` *(wewn.)* | — |
 | `_env(name, default)` *(wewn.)* | — |
+| `napraw_role_wyszukiwania(cfg)` | Rola z wyszukiwarka na modelu bez wyszukiwarki dostaje `MODEL_WYSZUKIWARKI`. |
 | `stawka_deepseek(model, kiedy)` | Stawka DeepSeeka z uwzglednieniem pory doby po wejsciu nowej taryfy. |
 | `pora_na_publikacje(kiedy)` | Czy teraz wolno wystawiac NOTKI — wg zegara CZYTELNIKOW, nie serwera. |
 | `w_szczycie(kiedy)` | Czy teraz obowiazuje droga taryfa. |
@@ -6809,6 +6810,17 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         if collect_urls is not None:
             collect_urls.extend(urls)
         _log(purpose, model, tin, tout, searches, usd, verified)
+        # WYSZUKIWARKA, KTORA NIE SZUKALA — GLOSNO, przy kazdym takim wywolaniu.
+        # Zmierzone 14 wrzesnia 2026: od 10 wrzesnia kazde wywolanie tematow,
+        # researchu i sprawdzania faktow mialo zero wyszukiwan (dostawca podmienil
+        # model pod nazwa flash), a w logu nie bylo o tym ani slowa — tylko
+        # `wyszukiwan=0` w tabeli, do ktorej nikt nie zagladal. Patrz
+        # `config.ROLE_Z_WYSZUKIWARKA`.
+        if (web_search and not searches
+                and purpose in getattr(config, "ROLE_Z_WYSZUKIWARKA", ())):
+            print(f"  [wyszukiwarka] UWAGA: {purpose} na {model} nie wykonal ani"
+                  f" jednego wyszukiwania — odpowiedz jest z pamieci modelu,"
+                  f" nie z sieci", flush=True)
         if provider == 'deepseek' and web_search:
             needs_recovery = not text.strip()
             if purpose in SEARCH_JSON_PURPOSES and text.strip():
@@ -13041,6 +13053,9 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `DEEPSEEK` | `"deepseek-v4-flash"` | — |
 | `DEEPSEEK_PRO` | `"deepseek-v4-pro"` | — |
 | `DEEPSEEK_FLASH` | `"deepseek-flash"` | NASTEPCA FLASHA U DOSTAWCY. Od wrzesnia 2026 DeepSeek podaje na liscie modeli `deepseek-flash` (DeepSeek-V4.1-Flash), a `deepseek-v4-flash`  |
+| `ROLE_Z_WYSZUKIWARKA` | `("curiosity", "discovery", "factcheck", "akt` | ROLE, KTORYCH CALA WARTOSCIA JEST WYSZUKIWARKA — i modele, na ktorych ona NIE DZIALA. Zmierzone na zywo 14 wrzesnia 2026, cztery minimalne w |
+| `MODELE_BEZ_WYSZUKIWARKI` | `(DEEPSEEK, DEEPSEEK_FLASH)` | — |
+| `MODEL_WYSZUKIWARKI` | `DEEPSEEK_PRO` | — |
 | `MODELE_SAME_NA_NOWSZE` | `True` | NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na  |
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |

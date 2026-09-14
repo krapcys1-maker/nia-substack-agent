@@ -963,6 +963,17 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
         if collect_urls is not None:
             collect_urls.extend(urls)
         _log(purpose, model, tin, tout, searches, usd, verified)
+        # WYSZUKIWARKA, KTORA NIE SZUKALA — GLOSNO, przy kazdym takim wywolaniu.
+        # Zmierzone 14 wrzesnia 2026: od 10 wrzesnia kazde wywolanie tematow,
+        # researchu i sprawdzania faktow mialo zero wyszukiwan (dostawca podmienil
+        # model pod nazwa flash), a w logu nie bylo o tym ani slowa — tylko
+        # `wyszukiwan=0` w tabeli, do ktorej nikt nie zagladal. Patrz
+        # `config.ROLE_Z_WYSZUKIWARKA`.
+        if (web_search and not searches
+                and purpose in getattr(config, "ROLE_Z_WYSZUKIWARKA", ())):
+            print(f"  [wyszukiwarka] UWAGA: {purpose} na {model} nie wykonal ani"
+                  f" jednego wyszukiwania — odpowiedz jest z pamieci modelu,"
+                  f" nie z sieci", flush=True)
         if provider == 'deepseek' and web_search:
             needs_recovery = not text.strip()
             if purpose in SEARCH_JSON_PURPOSES and text.strip():
