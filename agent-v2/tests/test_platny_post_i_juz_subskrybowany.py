@@ -144,7 +144,7 @@ try:
     swiat({"id": 1, "write_comment_permissions": "everyone", "audience": "founding"})
     sprawdz("post dla zalozycieli: tez nie", browser.mozna_komentowac(URL) is False)
     # KONTRDOWODY — zapora nie moze zamknac tego, co otwarte.
-    swiat({"id": 1, "write_comment_permissions": "subscribers", "audience": "everyone"})
+    swiat({"id": 1, "write_comment_permissions": "everyone", "audience": "everyone"})
     sprawdz("post dla wszystkich: piszemy", browser.mozna_komentowac(URL) is True)
     swiat({"id": 1, "write_comment_permissions": "everyone"})
     sprawdz("brak pola audience: przy watpliwosci TAK", browser.mozna_komentowac(URL) is True)

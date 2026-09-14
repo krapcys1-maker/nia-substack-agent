@@ -5032,6 +5032,35 @@ def _watek_z_paginacja(page, nid, stron: int = 6) -> list[dict]:
     return wszystkie
 
 
+def przycisk_wysylki(page, nazwy: tuple[str, ...]):
+    """Pierwszy WIDOCZNY przycisk o DOKLADNIE jednej z tych nazw: (przycisk, nazwa).
+
+    NAZWA DOKLADNA, NIE FRAGMENT. Zmierzone w dzienniku systemowym od
+    5 do 14 wrzesnia 2026, wynik wysylki wg przycisku, ktory kod wybral:
+
+        'Post'     78 potwierdzonych,  0 porazek
+        'Reply'     0 potwierdzonych,  5 porazek („odpowiedzi nie ma w watku")
+        'Comment'   0 potwierdzonych,  5 porazek („Substack go nie pokazuje")
+
+    Obejrzane w ukladzie zywych stron, bez wpisywania i bez wysylania:
+    `get_by_role("button", name="Reply")` bez `exact` lapie
+    „The Context Engine reply rules" — przycisk z zasadami odpowiedzi, ktory
+    czesc publikacji stawia obok pola, dwa poziomy od niego — a prawdziwe
+    „Post" stalo tuz obok. „Comment" lapalo „View comments (24)" pod postem,
+    gdzie przycisku wysylki nie bylo wcale (post tylko dla subskrybentow,
+    patrz `mozna_komentowac`). Kolejnosc tez sie liczy: „Reply" stalo przed
+    „Post", wiec wygrywalo nawet tam, gdzie „Post" byl na stronie.
+    """
+    for nazwa in nazwy:
+        try:
+            kandydat = page.get_by_role("button", name=nazwa, exact=True).first
+            if kandydat.count() > 0 and kandydat.is_visible():
+                return kandydat, nazwa
+        except Exception:                                     # noqa: BLE001
+            continue
+    return None, None
+
+
 def potwierdz_odpowiedz(page, note_id: int, tekst: str) -> int | None:
     """Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA.
 
@@ -5175,14 +5204,18 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
         wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole odpowiedzi: {len(tekst.split())} słów", flush=True)
 
-        przycisk = None
-        for nazwa in ("Reply", "Odpowiedz", "Post", "Opublikuj", "Wyślij"):
-            kandydat = page.get_by_role("button", name=nazwa).first
-            if kandydat.count() > 0 and kandydat.is_visible():
-                przycisk = kandydat
-                print(f"  przycisk wysyłki: {nazwa!r}", flush=True)
-                break
+        # „POST" PIERWSZY I NAZWA DOKLADNA — patrz `przycisk_wysylki`.
+        przycisk, nazwa = przycisk_wysylki(
+            page, ("Post", "Reply", "Odpowiedz", "Opublikuj", "Wyślij"))
+        if przycisk is not None:
+            print(f"  przycisk wysyłki: {nazwa!r}", flush=True)
         wynik["przycisk_widoczny"] = przycisk is not None
+        if wyslij and przycisk is None:
+            # Nic nie klikamy, ale wpisany tekst nie moze zostac w polu:
+            # Substack trzyma wersje robocza (patrz `oproznij_pole`).
+            print("  nie ma przycisku wysylki przy polu — nie klikam nic innego",
+                  flush=True)
+            wynik["posprzatane"] = oproznij_pole(page, pole, "odpowiedz w watku")
 
         if wyslij and przycisk is not None:
             # DROGA KLIKNIECIA IDZIE DO DZIENNIKA — patrz `klik_mimo_zaslony`.
@@ -5662,6 +5695,29 @@ def mozna_komentowac(url: str) -> bool:
             print(f"  {host}: ten post jest tylko dla placacych ({dla_kogo}) —"
                   f" odpuszczam przed pisaniem", flush=True)
             return False
+        # KOMENTARZE TYLKO DLA SUBSKRYBENTOW, a my tej publikacji nie
+        # subskrybujemy. Zmierzone 14 wrzesnia 2026 na wszystkich komentarzach
+        # pod postami od 5 wrzesnia, prawo odczytane z API na zywo:
+        #     `subscribers` bez naszej subskrypcji   0 wystawionych na 7
+        #     `everyone`                            22 wystawione na 22
+        # Pola „Post" pod takim postem nie ma, a kod klikal wtedy
+        # „View comments (N)". Host NIE trafia do `zapamietaj_platny_host`:
+        # blok subskrypcji moze te publikacje jeszcze zasubskrybowac.
+        if prawo == "subscribers":
+            nasza = False
+            for autor in [x for x in (post.get("publishedBylines") or [])
+                          if isinstance(x, dict) and x.get("handle")][:3]:
+                profil = api_json(page, f"/api/v1/user/{autor['handle']}/public_profile")
+                if (isinstance(profil, dict) and profil.get("isSubscribed") is True
+                        and (profil.get("primaryPublication") or {}).get("id")
+                        == post.get("publication_id")):
+                    nasza = True
+                    break
+            if not nasza:
+                print(f"  {host}: komentarze tylko dla subskrybentow, a tej"
+                      f" publikacji nie subskrybujemy — odpuszczam przed pisaniem",
+                      flush=True)
+                return False
         return True
     except Exception:
         return True                   # nie wiem, wiec probuje
@@ -5993,16 +6049,16 @@ def wystaw_komentarz(url: str, tekst: str, wyslij: bool = False,
         wynik["zgodne_z_polem"] = plaski(w_polu) == plaski(tekst) if w_polu else None
         print(f"  wpisane w pole komentarza: {len(tekst.split())} słów", flush=True)
 
-        # Interfejs bywa po polsku, więc szukamy obu wariantów nazwy.
-        przycisk = None
-        for nazwa in ("Post", "Opublikuj", "Wyślij", "Comment", "Skomentuj"):
-            kandydat = page.get_by_role("button", name=nazwa).first
-            if kandydat.count() > 0 and kandydat.is_visible():
-                przycisk = kandydat
-                print(f"  przycisk wysyłki: {nazwa!r}", flush=True)
-                break
+        # Interfejs bywa po polsku, więc szukamy obu wariantów nazwy. BEZ
+        # „Comment": ta nazwa trafiala wylacznie w „View comments (N)" — patrz
+        # `przycisk_wysylki`.
+        przycisk, nazwa = przycisk_wysylki(page, ("Post", "Opublikuj", "Wyślij", "Skomentuj"))
+        if przycisk is not None:
+            print(f"  przycisk wysyłki: {nazwa!r}", flush=True)
         wynik["przycisk_widoczny"] = przycisk is not None
         print(f"  przycisk wysyłki widoczny: {wynik['przycisk_widoczny']}", flush=True)
+        if wyslij and przycisk is None:
+            wynik["posprzatane"] = oproznij_pole(page, pole, "komentarz")
 
         if wyslij and wynik["przycisk_widoczny"]:
             wynik["droga_klikniecia"] = klik_mimo_zaslony(przycisk, "komentarz")
