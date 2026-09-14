@@ -2715,8 +2715,19 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
     def promocja() -> None:
         zrobione["promocje"] += promuj_artykul(conn, run_id, wyslij, rytm_stanu)
 
-    for nazwa, robota in (("odpowiedzi", odpowiedzi), ("notki", notki),
-                          ("promocja", promocja),
+    # --- 1b. swieze tematy do banku, ZANIM notki z niego wezma --------------
+    # Zmierzone 14 wrzesnia 2026: bank dzien przed artykulem mial 4 wolne
+    # tematy i nic go nie dobieralo od trzech dni. Szczegoly
+    # w `stages.uzupelnij_bank`; szuka najwyzej raz na dobe.
+    def bank() -> None:
+        if not wyslij:
+            # PROBA SUCHA NIE PLACI ZA SZUKANIE i nie zapisuje banku.
+            print("  (tryb sprawdzenia — nie dobieram do banku)", flush=True)
+            return
+        stages.uzupelnij_bank(conn, run_id)
+
+    for nazwa, robota in (("odpowiedzi", odpowiedzi), ("bank", bank),
+                          ("notki", notki), ("promocja", promocja),
                           ("obserwowanie", obserwuj), ("subskrypcje", subskrybuj),
                           ("komentarze", komentarze), ("dyskusje", dyskusje),
                           ("polubienia", polubienia), ("restacki", restacki),

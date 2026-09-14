@@ -1997,6 +1997,30 @@ BANK_MAKS_WOLNYCH = 20
 # Przy rezerwie trzech notki moga wziac trzy, a artykul ma z czego wybierac.
 BANK_REZERWA_NA_ARTYKUL = 3
 
+# CEL ZAPASU, PONIZEJ KTOREGO PRZEBIEG DNIA SAM DOBIERA TEMATY (`stages.uzupelnij_bank`).
+#
+# Zmierzone na serwerze 14 wrzesnia 2026: w banku 25 wpisow, 4 wolne, 1 na
+# artykul — dzien przed artykulem. Ostatnie dopisanie 11 wrzesnia. Bank
+# dobieraly TYLKO stara sciezka notek (konto od 7 wrzesnia pisze persona)
+# i artykul, i to dopiero przy CALKIEM pustym banku. Notki persony od
+# 9 wrzesnia z banku biora, a wpis traci waznosc po `BANK_MAKS_DNI` — wiec
+# zapas mogl tylko malec: w logu kazdego przebiegu „wolnych 4, zostawiam 3,
+# biore 1".
+#
+# Dwanascie, bo tyle zostawia notkom material ponad rezerwe artykulu przez
+# kilka dni, a do sufitu `BANK_MAKS_WOLNYCH` zostaje miejsce na nastepna
+# partie. Dwa na artykul, bo artykul bierze najlepszy z oznaczonych, a jeden
+# bywa zderzeniem z poprzednim tekstem.
+BANK_CEL_WOLNYCH = 12
+BANK_CEL_NA_ARTYKUL = 2
+
+# ILE DNI WSTECZ SIEGAJA NAGLOWKI Z KANALOW PODAWANE DO SZUKANIA TEMATOW.
+# Wlasciciel, 14 wrzesnia 2026: „chcemy miec swieze tematy, duzo sie w AI
+# dzieje". Tego dnia korpus mial 398 wpisow z 19 kanalow, z tego 115 z ostatnich
+# siedmiu dni — dosc na 26 miejsc w prompcie. Okno czternastu dni wpuszczalo
+# kanal, ktorego ostatni wpis mial dwanascie dni.
+KANALY_DNI_DLA_BANKU = 7
+
 
 # ILE RAZY NA DOBE WOLNO DOBIERAC MATERIAL DO BANKU.
 #

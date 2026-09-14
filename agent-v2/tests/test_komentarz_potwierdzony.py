@@ -238,6 +238,9 @@ def swiat(slad, martwe_hosty, czekajace=()):
         zdecyduj_o_odpowiedziach=lambda czekaja, zapisuj: list(czekaja),
         zapamietaj_decyzje=lambda *a, **k: None,
         sredni_odstep=stages.sredni_odstep,
+        # BANK W PORZADKU — dobieranie tematow ma wlasny test
+        # (`test_bank_sie_uzupelnia.py`).
+        uzupelnij_bank=lambda conn, run_id: {"wolnych": 12, "na_artykul": 2, "dobrane": 0},
         wybierz_do_odpowiedzi=lambda conn, run_id, lista: list(lista),
         reply_to=lambda conn, run_id, co, ctx: {
             "candidates": [{"reply": "Krotka odpowiedz na zarzut."}]},

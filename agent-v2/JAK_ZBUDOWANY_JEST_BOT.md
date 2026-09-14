@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 41 077 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 41 182 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 235 zestawów
-testów, 5296 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 236 zestawów
+testów, 5315 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -272,7 +272,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3419 wierszy, 30 funkcji na poziomie modułu, 1 klas
+3430 wierszy, 30 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -309,7 +309,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9484 wierszy, 165 funkcji na poziomie modułu, 0 klas
+9554 wierszy, 167 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -475,6 +475,8 @@ wiec nie da sie go rozjechac z kodem.
 | `bank_pelny()` | Czy zapas wystarczy, zeby NIE placic za nowe szukanie. |
 | `zwroc_kandydatow(kandydaci)` | Oddaje do puli kandydatow, ktorych ostatecznie NIE uzyto. |
 | `oznacz_uzyty(fakt)` | Odhacza w indeksie fakt, ktory NAPRAWDE poszedl w swiat. |
+| `zapas_banku()` | Ile tematow naprawde da sie wziac: wolne, z obecnej epoki, w terminie. |
+| `uzupelnij_bank(conn, run_id)` | Dobiera swieze tematy do banku, ZANIM notki i artykul go wyczerpia. |
 | `stan_indeksu()` | Ile mamy zapasu i ile odsialismy — do wypisania przy starcie. |
 | `korpus_fedreg(ile_dokumentow, ile_gestych)` | Preambuly przepisow, w ktorych regulator ODPOWIADA na zastrzezenia. |
 | `kandydaci_z_fedreg(conn, run_id, dokument)` | Wyciaga kandydatow z jednej preambuly i oddaje w ksztalcie indeksu. |
@@ -875,7 +877,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3927 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3951 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -13147,6 +13149,9 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `BANK_UDZIAL_ARTYKULOW` | `0.33` | Jaka czesc banku moze niesc znacznik „na artykul". Pytany po kolei „czy to unioslo by artykul", model mowi tak prawie zawsze — ta sama degen |
 | `BANK_MAKS_WOLNYCH` | `20` | --- BANK POMYSLOW: BUFOR, NIE MAGAZYN -------------------------------------- Wlasciciel, 30 sierpnia: „nie moze byc tak, ze mamy za duzo tem |
 | `BANK_REZERWA_NA_ARTYKUL` | `3` | ILE KANDYDATUR ZOSTAJE DLA ARTYKULU, gdy notki tez siegaja do banku. Od 9 wrzesnia 2026 notka bierze fakt z banku, jesli tam lezy. Bez rezer |
+| `BANK_CEL_WOLNYCH` | `12` | CEL ZAPASU, PONIZEJ KTOREGO PRZEBIEG DNIA SAM DOBIERA TEMATY (`stages.uzupelnij_bank`). Zmierzone na serwerze 14 wrzesnia 2026: w banku 25 w |
+| `BANK_CEL_NA_ARTYKUL` | `2` | — |
+| `KANALY_DNI_DLA_BANKU` | `7` | ILE DNI WSTECZ SIEGAJA NAGLOWKI Z KANALOW PODAWANE DO SZUKANIA TEMATOW. Wlasciciel, 14 wrzesnia 2026: „chcemy miec swieze tematy, duzo sie w |
 | `SZUKANIE_BANKU_NA_DOBE` | `1` | ILE RAZY NA DOBE WOLNO DOBIERAC MATERIAL DO BANKU. Bylo: przy kazdym z pieciu przebiegow. Zmierzone 1 wrzesnia 2026 na produkcji: srednio 26 |
 | `WYDARZENIE_WAZNE_DNI` | `2` | JAK DLUGO TO SAMO WYDARZENIE NIE OTWIERA FURTKI DRUGI RAZ. Wlasciciel: „chce napisac o tym w tym samym dniu, max dzien po". Dwie doby pokryw |
 | `WYDARZENIE_PROB_MAKS` | `3` | ILE RAZY PROBUJEMY DOBRAC MATERIAL DO JEDNEGO WYDARZENIA, zanim uznamy je za zamkniete mimo braku materialu. Od 2 wrzesnia 2026 furtke zamyk |
