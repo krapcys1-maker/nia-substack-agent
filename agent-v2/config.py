@@ -193,6 +193,38 @@ DEEPSEEK_PRO = "deepseek-v4-pro"  # ma server-side web_search przez /responses
 # `wersje_modeli`, nie ta stala: patrz tam, jak to zmierzono.
 DEEPSEEK_FLASH = "deepseek-flash"
 
+# ROLE, KTORYCH CALA WARTOSCIA JEST WYSZUKIWARKA — i modele, na ktorych ona NIE
+# DZIALA. Zmierzone na zywo 14 wrzesnia 2026, cztery minimalne wywolania
+# `/responses` z `tools: web_search` na serwerze:
+#   deepseek-flash, `tool_choice: auto`        0 wyszukiwan, odpowiedz zmyslona
+#   deepseek-v4-flash (API oddaje deepseek-flash) 0 wyszukiwan, „dzis 7 maja 2026"
+#   deepseek-flash, narzedzie wymuszone        wywolanie wypisane TEKSTEM, nie wykonane
+#   deepseek-v4-pro, `tool_choice: auto`       7 wyszukiwan, poprawny adres
+# W tabeli `calls`: do 9 wrzesnia tematy, research i sprawdzanie faktow na
+# flashu robily 7-48 wyszukiwan dziennie; od 10 wrzesnia KAZDE takie wywolanie
+# mialo zero. Nic tego nie zglosilo przez cztery dni — stad `napraw_role_wyszukiwania`
+# ponizej i ostrzezenie w `llm.call`.
+ROLE_Z_WYSZUKIWARKA = ("curiosity", "discovery", "factcheck", "aktualne_modele")
+MODELE_BEZ_WYSZUKIWARKI = (DEEPSEEK, DEEPSEEK_FLASH)
+MODEL_WYSZUKIWARKI = DEEPSEEK_PRO
+
+
+def napraw_role_wyszukiwania(cfg=None) -> list[tuple[str, str, str]]:
+    """Rola z wyszukiwarka na modelu bez wyszukiwarki dostaje `MODEL_WYSZUKIWARKI`.
+
+    Wola to koniec konfiguracji, PO presecie i PO `wersje_modeli` — oba umieja
+    przestawic `MODEL_FOR`. Oddaje [(rola, byl, jest)], zeby zmiana byla glosna.
+    """
+    import sys as _sys
+    cfg = cfg or _sys.modules[__name__]
+    zmiany = []
+    for rola in cfg.ROLE_Z_WYSZUKIWARKA:
+        byl = cfg.MODEL_FOR.get(rola)
+        if byl in cfg.MODELE_BEZ_WYSZUKIWARKI:
+            cfg.MODEL_FOR[rola] = cfg.MODEL_WYSZUKIWARKI
+            zmiany.append((rola, byl, cfg.MODEL_WYSZUKIWARKI))
+    return zmiany
+
 # NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe
 # pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na zywo
 # i zapisuje zamiane; `wersje_modeli.zastosuj` naklada ja przy starcie
@@ -329,7 +361,9 @@ MODEL_FOR = {
     # jednozdaniowych opisow, a nie rozumowanie o tresci — i ma byc tanie,
     # zeby oplacalo sie wolac je czesto.
     "bank": DEEPSEEK,
-    "factcheck": DEEPSEEK,
+    # WYSZUKIWARKA — patrz `ROLE_Z_WYSZUKIWARKA` nizej: flash od wrzesnia 2026
+    # nie wykonuje `web_search`.
+    "factcheck": DEEPSEEK_PRO,
     # NAPRAWA OBALONEGO ZDANIA. Kazdy tekst wraca do TEGO SAMEGO modelu,
     # ktory go napisal — notka do Opusa, komentarz do DeepSeeka-pro. Nie z
     # oszczednosci, tylko dlatego, ze naprawa ma zachowac glos: model, ktory
@@ -340,12 +374,12 @@ MODEL_FOR = {
     # Pytanie „jakie modele sa dzisiaj" MUSI isc na model z wyszukiwaniem —
     # to jest cala jego wartosc. Ten sam, co sprawdzanie faktow, bo robi
     # dokladnie to samo: konfrontuje pamiec ze swiatem.
-    "aktualne_modele": DEEPSEEK,
+    "aktualne_modele": DEEPSEEK_PRO,
     # Proba nastepcy modelu — `wersje_modeli.sprawdz_na_zywo` podstawia tu
     # sprawdzany model na czas jednego wywolania. Wartosc ponizej nie chodzi
     # nigdy sama.
     "nowszy_model": DEEPSEEK,
-    "curiosity": DEEPSEEK,
+    "curiosity": DEEPSEEK_PRO,
     "grafika": DEEPSEEK,
     "cele": DEEPSEEK,
     "wybor": DEEPSEEK_PRO,
@@ -3949,3 +3983,9 @@ if not _w_darmowym_tescie():
     for _stary, _nowy in ZAMIANY_MODELI:
         print("  [modele] %s -> %s (zamiana z wersje_modeli.json)" % (_stary, _nowy),
               flush=True)
+
+# WYSZUKIWARKA NA MODELU, KTORY SZUKA — NA SAMYM KONCU, po presecie i po
+# zamianach wersji. Patrz `ROLE_Z_WYSZUKIWARKA`.
+for _rola, _byl, _jest in napraw_role_wyszukiwania():
+    print("  [modele] %s: %s nie wykonuje wyszukiwania — biore %s"
+          % (_rola, _byl, _jest), flush=True)

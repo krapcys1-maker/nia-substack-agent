@@ -42,6 +42,9 @@
 | `DEEPSEEK` | `"deepseek-v4-flash"` | — |
 | `DEEPSEEK_PRO` | `"deepseek-v4-pro"` | — |
 | `DEEPSEEK_FLASH` | `"deepseek-flash"` | NASTEPCA FLASHA U DOSTAWCY. Od wrzesnia 2026 DeepSeek podaje na liscie modeli `deepseek-flash` (DeepSeek-V4.1-Flash), a `deepseek-v4-flash`  |
+| `ROLE_Z_WYSZUKIWARKA` | `("curiosity", "discovery", "factcheck", "akt` | ROLE, KTORYCH CALA WARTOSCIA JEST WYSZUKIWARKA — i modele, na ktorych ona NIE DZIALA. Zmierzone na zywo 14 wrzesnia 2026, cztery minimalne w |
+| `MODELE_BEZ_WYSZUKIWARKI` | `(DEEPSEEK, DEEPSEEK_FLASH)` | — |
+| `MODEL_WYSZUKIWARKI` | `DEEPSEEK_PRO` | — |
 | `MODELE_SAME_NA_NOWSZE` | `True` | NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na  |
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |
