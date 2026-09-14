@@ -2139,9 +2139,16 @@ def zaczyn_z_kanalow(ile: int = 26, ze_skrotem: bool = False,
             ordered = []
             for tier in sorted({priority(w) for w in wpisy}):
                 channels = {}
-                for w in wpisy:
-                    if priority(w) == tier:
-                        channels.setdefault(w.get("kanal", ""), []).append(w)
+                # NAJSWIEZSZE NAJPIERW, W KAZDYM KANALE I MIEDZY KANALAMI.
+                # Kolejka szla w kolejnosci korpusu, wiec kanal z wpisem sprzed
+                # dwunastu dni stal w rzedzie obok wczorajszych premier, a do
+                # promptu wchodzi tylko `ile` pierwszych. Zmierzone 14 wrzesnia
+                # 2026: 398 wpisow, 115 z ostatniego tygodnia, 28 z dwoch dob.
+                # Sortowanie stabilne: rowne daty zostaja w starej kolejnosci.
+                for w in sorted((w for w in wpisy if priority(w) == tier),
+                                key=lambda w: korpus_kanalow._data_rss(str(w.get("data") or "")),
+                                reverse=True):
+                    channels.setdefault(w.get("kanal", ""), []).append(w)
                 while channels:
                     for channel in list(channels):
                         ordered.append(channels[channel].pop(0))
@@ -2596,7 +2603,9 @@ def znajdz_ciekawostki(
         # juz poszlo na konto — badanie o grzybach, opisane DWA RAZY.
         # `niepowtorzony` w `pick_topic` chroni dopiero PO oplaceniu
         # wywolania; to sito dziala przed nim i nic nie kosztuje.
+        # OKNO TYGODNIA, NIE DWOCH — patrz `config.KANALY_DNI_DLA_BANKU`.
         zaczyn_kanalow=zaczyn_z_kanalow(ze_skrotem=True, run_id=run_id,
+                                        max_dni=config.KANALY_DNI_DLA_BANKU,
                                         opisane_rdzenie=pamiec_wystawionych()),
         # WYDARZENIE JAKO OKAZJA, NIE TEMAT — patrz komentarz wyzej.
         wydarzenia=("\n".join(
@@ -9341,6 +9350,67 @@ def oznacz_uzyty(fakt: Any) -> int:
         _zapisz_indeks(indeks)
         print("  [indeks] odhaczone po publikacji: %d" % ile, flush=True)
     return ile
+
+
+def zapas_banku() -> dict[str, int]:
+    """Ile tematow naprawde da sie wziac: wolne, z obecnej epoki, w terminie.
+
+    TYLKO ODCZYT — w odroznieniu od `wez_kandydatow`, ktore znaczy wydanych
+    jako uzytych. 14 wrzesnia 2026 wolanie tamtego „zeby policzyc pule" zdjelo
+    z banku cztery z czterech wolnych tematow dzien przed artykulem.
+    """
+    wolni = [k for k in wczytaj_indeks()
+             if k.get("status") == "nowy" and _z_obecnej_epoki(k) and not _po_terminie(k)]
+    return {"wolnych": len(wolni),
+            "na_artykul": sum(1 for k in wolni if k.get("na_artykul"))}
+
+
+@_na_kanal("bank")
+def uzupelnij_bank(conn: sqlite3.Connection, run_id: int | None) -> dict[str, int]:
+    """Dobiera swieze tematy do banku, ZANIM notki i artykul go wyczerpia.
+
+    ## Pomiar, ktory to wywolal
+
+    Serwer, 14 wrzesnia 2026, dzien przed artykulem: 25 wpisow w banku,
+    4 wolne, 1 na artykul. Ostatnie dopisanie — 11 wrzesnia. Szukanie tematow
+    (`znajdz_ciekawostki`) wolala tylko stara sciezka notek, z ktorej konto nie
+    korzysta od przejscia na persone, oraz artykul — i to przy CALKIEM pustym
+    banku, czyli wtedy, gdy za pozno na wybor. Notki persony z banku biora
+    (`fakt_na_notke`), a wpis wygasa po `BANK_MAKS_DNI`, wiec zapas mogl tylko
+    malec.
+
+    ## Co robi
+
+    Gdy wolnych jest mniej niz `BANK_CEL_WOLNYCH` albo oznaczonych na artykul
+    mniej niz `BANK_CEL_NA_ARTYKUL`, wola `znajdz_ciekawostki` (najswiezsze
+    naglowki kanalow, `KANALY_DNI_DLA_BANKU`) i sortuje bank sedzia, ktory
+    nadaje range i znacznik artykulowy. Limit `SZUKANIE_BANKU_NA_DOBE`
+    i sufit `BANK_MAKS_WOLNYCH` pilnuje dalej `znajdz_ciekawostki` — ten blok
+    chodzi co przebieg, a szuka najwyzej raz na dobe.
+    """
+    przed = zapas_banku()
+    if (przed["wolnych"] >= config.BANK_CEL_WOLNYCH
+            and przed["na_artykul"] >= config.BANK_CEL_NA_ARTYKUL):
+        print("  [bank] zapas w porzadku: %d wolnych, %d na artykul"
+              % (przed["wolnych"], przed["na_artykul"]), flush=True)
+        return {**przed, "dobrane": 0}
+    print("  [bank] zapas niski: %d wolnych (cel %d), %d na artykul (cel %d)"
+          " — dobieram swieze tematy"
+          % (przed["wolnych"], config.BANK_CEL_WOLNYCH, przed["na_artykul"],
+             config.BANK_CEL_NA_ARTYKUL), flush=True)
+    nowe = znajdz_ciekawostki(conn, run_id)
+    if nowe:
+        # AWARIA SEDZIEGO NIE ZABIERA TEMATOW — sa juz w indeksie, tylko bez
+        # rangi. Tak samo jak w `notki_dnia`.
+        try:
+            posortuj_bank(conn, run_id)
+        except Exception as exc:                              # noqa: BLE001
+            print("  [bank] sedzia nie przeszedl (%s) — tematy zostaja bez rangi"
+                  % type(exc).__name__, flush=True)
+    po = zapas_banku()
+    print("  [bank] po dobraniu: %d wolnych, %d na artykul (znalezione: %d)"
+          % (po["wolnych"], po["na_artykul"], len(nowe)), flush=True)
+    return {**po, "dobrane": len(nowe)}
 
 
 def stan_indeksu() -> dict[str, int]:

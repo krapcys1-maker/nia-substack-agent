@@ -350,7 +350,8 @@ KANALY = {
     "komentarz@notka": "to samo pod cudzymi NOTKAMI",
     "odpowiedz": "odpowiedzi pod naszymi wlasnymi tresciami",
     "restack": "ocena, czy podac cudza notke dalej",
-    "bank": "uzupelnianie banku kandydatow poza notkami (Federal Register)",
+    "bank": "uzupelnianie banku kandydatow poza notkami: codzienne dobieranie"
+            " swiezych tematow (`uzupelnij_bank`) i Federal Register",
     "modele": "proba nastepcy modelu przed przelaczeniem (`wersje_modeli`) —"
               " utrzymanie, nie tresc; jedno male wywolanie na nowa wersje",
 }
@@ -641,6 +642,9 @@ def _swiat():
         wybierz_do_odpowiedzi=lambda conn, run_id, lista: list(lista),
         reply_to=lambda conn, run_id, co, ctx: {"candidates": []},
         niewystawiony_artykul=lambda: None,
+        # BANK W PORZADKU — dobieranie tematow ma wlasny test
+        # (`test_bank_sie_uzupelnia.py`); tu mierzymy kanaly komentarzy.
+        uzupelnij_bank=lambda conn, run_id: {"wolnych": 12, "na_artykul": 2, "dobrane": 0},
     )
     kat = pathlib.Path(tempfile.mkdtemp(prefix="kanal-dzien-"))
     (kat / "kopie").mkdir()

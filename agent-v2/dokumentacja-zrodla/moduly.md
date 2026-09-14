@@ -130,7 +130,7 @@
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3419 wierszy, 30 funkcji na poziomie modułu, 1 klas
+3430 wierszy, 30 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -167,7 +167,7 @@
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9484 wierszy, 165 funkcji na poziomie modułu, 0 klas
+9554 wierszy, 167 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -333,6 +333,8 @@
 | `bank_pelny()` | Czy zapas wystarczy, zeby NIE placic za nowe szukanie. |
 | `zwroc_kandydatow(kandydaci)` | Oddaje do puli kandydatow, ktorych ostatecznie NIE uzyto. |
 | `oznacz_uzyty(fakt)` | Odhacza w indeksie fakt, ktory NAPRAWDE poszedl w swiat. |
+| `zapas_banku()` | Ile tematow naprawde da sie wziac: wolne, z obecnej epoki, w terminie. |
+| `uzupelnij_bank(conn, run_id)` | Dobiera swieze tematy do banku, ZANIM notki i artykul go wyczerpia. |
 | `stan_indeksu()` | Ile mamy zapasu i ile odsialismy — do wypisania przy starcie. |
 | `korpus_fedreg(ile_dokumentow, ile_gestych)` | Preambuly przepisow, w ktorych regulator ODPOWIADA na zastrzezenia. |
 | `kandydaci_z_fedreg(conn, run_id, dokument)` | Wyciaga kandydatow z jednej preambuly i oddaje w ksztalcie indeksu. |
@@ -733,7 +735,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3927 wierszy, 43 funkcji na poziomie modułu, 0 klas
+3951 wierszy, 43 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

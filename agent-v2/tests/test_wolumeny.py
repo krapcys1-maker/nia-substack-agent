@@ -165,7 +165,9 @@ kolejnosc = re.findall(r'\("(\w+)",', m.group(1)) if m else []
 print("    %s" % " -> ".join(kolejnosc))
 # DZIEWIEC od 13 wrzesnia 2026: doszla notka promujaca artykul, zaraz po
 # notkach (`run.promuj_artykul`, pilnowane w `test_notka_promujaca.py`).
-sprawdz("wszystkie dziewiec bloków", len(kolejnosc) == 9, kolejnosc)
+# DZIESIEC od 14 wrzesnia 2026: dobieranie swiezych tematow do banku tuz przed
+# notkami (`stages.uzupelnij_bank`, pilnowane w `test_bank_sie_uzupelnia.py`).
+sprawdz("wszystkie dziesiec bloków", len(kolejnosc) == 10, kolejnosc)
 
 i = {n: k for k, n in enumerate(kolejnosc)}
 sprawdz("obserwowanie PRZED komentarzami",
@@ -183,8 +185,10 @@ print()
 print("=== 6. CO ZOSTAJE NA SWOIM MIEJSCU I DLACZEGO ===")
 sprawdz("odpowiedzi pierwsze — to zobowiązanie wobec czytelnika",
         kolejnosc and kolejnosc[0] == "odpowiedzi", kolejnosc[:1])
-sprawdz("notki drugie — to nasza własna treść",
-        len(kolejnosc) > 1 and kolejnosc[1] == "notki", kolejnosc[:2])
+# Miedzy odpowiedziami a notkami stoi TYLKO dobieranie tematow do banku —
+# notki biora z niego material, wiec musi przyjsc przed nimi.
+sprawdz("notki zaraz po odpowiedziach i banku — to nasza własna treść",
+        kolejnosc[1:3] == ["bank", "notki"], kolejnosc[:3])
 sprawdz("restacki ostatnie — niosą najwięcej ryzyka",
         kolejnosc and kolejnosc[-1] == "restacki", kolejnosc[-1:])
 
