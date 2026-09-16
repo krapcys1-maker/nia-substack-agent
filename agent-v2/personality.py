@@ -600,8 +600,8 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
             "content is insufficient, even if you can invent a clever reaction. "
             "A short self-contained thought or personal moment can be enough. "
             "First assess the source privately, then give the caption. Return JSON: "
-            '{"source_assessment":{"sufficient":true,"anchor":"an exact quote '
-            'from the supplied source supporting your reaction","reason":"why '
+            '{"source_assessment":{"sufficient":true,"anchor":"a short continuous quote '
+            'copied verbatim from the source supporting your reaction","reason":"why '
             'there is enough material to share, or what is missing"},"text":"your '
             'caption, or empty if insufficient or nothing to add","topic":"brief '
             'topic","memory":""}. If insufficient, set sufficient to false and '
