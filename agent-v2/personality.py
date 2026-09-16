@@ -161,8 +161,12 @@ the publicly visible follower list, not the publisher's subscriber database.
 
 
 def voice_blocks(kind):
-    """The same identity and voice, in the same order, for every writing role."""
+    """Shared identity, with an optional conversation profile for comments only."""
     blocks = getattr(config, "PRESET_BLOKI", None) or {}
+    if kind in ("comment", "reply") and blocks.get("glos_rozmowy"):
+        # The editorial agenda is for choosing/writing stories. In a reply,
+        # it made every innocent invention another argument about power.
+        return [config.STYL_OPIS, blocks["glos_rozmowy"]]
     voice = {"article": "glos_artykulu", "note": "glos_notki"}.get(kind, "glos_komentarza")
     return [blocks.get("linia_redakcyjna", ""), config.STYL_OPIS,
             blocks.get("glos_wspolny", ""), blocks.get(voice, "")]
@@ -170,6 +174,9 @@ def voice_blocks(kind):
 
 def _system(kind):
     """System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy.
+
+    Wyjatek: opt-in glos_rozmowy bierze styl.opis i profil rozmowy dla
+    komentarzy/odpowiedzi. Nie dziedziczy nizej opisanego ukladu notek.
 
     GLOS WSPOLNY WCHODZI PRZED GLOSEM FORMY i to jest cala poprawka z 8 wrzesnia
     2026. Bylo tak, ze caly dzien strojenia glosu wyladowal w `glos_notki`,
@@ -358,7 +365,9 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     history = memory()
     # ROZMOWA, NIE OGLOSZENIE — tylko komentarz i odpowiedz. Patrz
     # `config.RUCHY_ROZMOWY` i pomiar przy nim.
-    ruch = ruch_rozmowy(kind) if kind in ("comment", "reply") else ""
+    rozmowa = kind in ("comment", "reply") and bool(
+        (getattr(config, "PRESET_BLOKI", None) or {}).get("glos_rozmowy"))
+    ruch = ruch_rozmowy(kind) if kind in ("comment", "reply") and not rozmowa else ""
     context = {"material": material, "recent_published": [r.get("text", "") for r in history[-8:]],
                "recent_topics": [{"kind": r.get("kind", "note"), "topic": r.get("topic", "")}
                                  for r in history[-8:]],
@@ -378,7 +387,31 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
                "written_moments_ago": [t for t in napisane_teraz if t][-4:]}
     if ruch:
         context["this_move"] = ruch
+    if ruch:
         context["your_recent_comments"] = ostatnie_wlasne_rozmowy()
+    if rozmowa:
+        # Cross-thread quotations made the model defend old insults and invent
+        # exchanges. Only paired, attributable turns belong in a conversation.
+        exchanges = []
+        target = material.get("conversation_url")
+        author = material.get("author") or material.get("autor")
+        for row in history if kind == "reply" and target and author else ():
+            if row.get("kind") != "reply" or row.get("target") != target:
+                continue
+            draft_id = str(row.get("draft_id") or "")
+            if not re.fullmatch(r"[a-f0-9]{32}", draft_id):
+                continue
+            try:
+                draft = json.loads((Path(config.DATA_DIR) / "persona-drafts" /
+                                    (draft_id + ".json")).read_text(encoding="utf-8"))
+                prompt = draft["request"]["user"]
+                old = json.JSONDecoder().raw_decode(prompt[prompt.index('{"material":'):])[0]["material"]
+            except (OSError, ValueError, KeyError, TypeError):
+                continue
+            if (old.get("author") or old.get("autor")) == author:
+                exchanges.append({"reader": {"author": author, "text": old.get("text") or old.get("tekst") or ""},
+                                  "nia_reply": row.get("text", "")})
+        context = {"material": material, "earlier_exchanges_with_this_reader": exchanges[-3:]}
     # KSZTALT, NIE SWOBODA — i to jest odwrocenie tego, co sam tu wpisalem.
     #
     # POLICZONE 10 wrzesnia 2026 na pieciu notkach, ktore wlasciciel przyjal,
@@ -457,7 +490,14 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     # kanalu: ruch „krotko", dopisany za ksztaltem, dal TRZY linie. Zdanie
     # „SHAPE, and it is not optional" wygrywa z pozniejszym dopiskiem — wiec
     # dla tego ruchu ksztalt jest inny od poczatku, a nie poprawiany na koncu.
-    if ruch == "krotko":
+    if rozmowa:
+        ksztalt = (
+            "Read the current person's message in material before deciding how "
+            "to respond. Let their meaning and situation choose the response, "
+            "its length and its ending. A single sentence can be enough. Use "
+            "readable paragraphs where the thought needs them. Follow the "
+            "conversation voice in the system instructions.\n")
+    elif ruch == "krotko":
         ksztalt = (
             "SHAPE for this one: ONE line, at most twenty-five words, carrying "
             "your whole reaction — your answer and the sting in the same breath. "
@@ -521,6 +561,25 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
             "context.your_recent_comments are your own last comments and "
             "replies, already published: do not reuse their sentence shapes, "
             "closing moves, images or pet words.\n")
+    if rozmowa:
+        instruction = (
+            f"Write one {kind} to the person in material. " + ksztalt +
+            "material.parent_post, if present, is what they are responding to. "
+            "earlier_exchanges_with_this_reader contains paired turns from this "
+            "conversation only. The current message is not a response to your "
+            "earlier words unless it actually refers to them. You can correct "
+            "an old mistake without defending it for continuity.\n"
+            "First record a brief reading of this message, then write your "
+            "response. These reading fields are private metadata, not published. "
+            'Return JSON in this order: {"reading":{"intent":"what this person '
+            'is doing or asking","stated":"one relevant fact they actually supplied",'
+            '"unknown":"what their message does not establish, if relevant"},'
+            '"text":"your response, or empty if nothing to add",'
+            '"topic":"brief topic","memory":""}. '
+            "Keep the response spoken and proportionate: a passing remark usually "
+            "needs one to three sentences, a substantive question may need more. "
+            "Do not turn a greeting into an opinion column. Check that your response "
+            "respects the facts and unknowns you just recorded. Return only JSON.\n")
     world = material.get("world") or {}
     sources = world.get("sources", {}) if isinstance(world, dict) else {}
     sources = sources if isinstance(sources, dict) else {}
@@ -560,11 +619,12 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
                         "names, handles, extra statistics or restating the figures.\n")
     system = _system(kind)
     user = instruction + json.dumps(context, ensure_ascii=False)
+    thinking = bool(rozmowa and config.MODEL_FOR[role].startswith("deepseek"))
     request = {"role": role, "model": config.MODEL_FOR[role], "system": system,
                "user": user, "web_search": False, "max_tokens": 2000,
-               "thinking": False, "effort": config.EFFORT.get(role)}
+               "thinking": thinking, "effort": config.EFFORT.get(role)}
     raw = llm.call(role, system, user,
-                   conn=conn, run_id=run_id, web_search=False, max_tokens=2000, thinking=False)
+                   conn=conn, run_id=run_id, web_search=False, max_tokens=2000, thinking=thinking)
     if config.DRY_RUN:
         return {}
     def finish(output=None, reason="ready"):
@@ -606,7 +666,10 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     # kolejnosc — tylko lamanie wiersza tam, gdzie i tak konczy sie zdanie.
     # Patrz `rozbij_dlugie_uderzenia`: zmierzone na notce, ktorej pierwsze
     # uderzenie mialo 32 slowa, czyli dwa zdania sklejone w blok.
-    body, rozbite_uderzenia = rozbij_dlugie_uderzenia(body)
+    if rozmowa:
+        rozbite_uderzenia = 0
+    else:
+        body, rozbite_uderzenia = rozbij_dlugie_uderzenia(body)
     if rozbite_uderzenia:
         print("  [glos] rozbite za dlugie uderzenia: %d" % rozbite_uderzenia,
               flush=True)
@@ -626,6 +689,9 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
               # liczba znaczy, ze instrukcja przestaje dzialac, i widac to ZANIM
               # wlasciciel zobaczy blok na ekranie.
               "uderzenia_rozbite": rozbite_uderzenia}
+    if rozmowa and isinstance(result.get("reading"), dict):
+        output["reading"] = {key: str(result["reading"].get(key) or "")[:500]
+                             for key in ("intent", "stated", "unknown")}
     ids = result.get("source_ids", [])
     if isinstance(ids, list):
         output["source_ids"] = list(dict.fromkeys(s for s in ids if isinstance(s, str) and s in sources))
@@ -877,6 +943,11 @@ def notka_promujaca(conn, run_id, artykul):
 def interaction(conn, run_id, kind, post):
     """Adapt persona JSON to the existing browser publication contracts."""
     material = {key: str(post.get(key, ""))[:3000] for key in ("text", "tekst", "body", "title", "under", "author", "autor")}
+    if kind in ("comment", "reply") and (config.PRESET_BLOKI or {}).get("glos_rozmowy"):
+        if post.get("url"):
+            material["conversation_url"] = str(post["url"])
+        if post.get("parent_post"):
+            material["parent_post"] = str(post["parent_post"])[:3000]
     output = short_form(conn, run_id, kind, material) if any(material.values()) else {}
     body = output.get("text", "")
     if kind == "restack":

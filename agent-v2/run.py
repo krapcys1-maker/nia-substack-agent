@@ -1471,7 +1471,8 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
             out = stages.reply_to(
                 conn, run_id,
                 {"under": c.get("kontekst") or "our own note",
-                 "author": c["autor"], "text": c["tekst"]},
+                 "author": c["autor"], "text": c["tekst"],
+                 "url": c.get("url") or "note/c-" + str(c.get("pod_id", ""))},
                 {"our_note": c["pod_czym"]})
             kandydaci = [k for k in out["candidates"] if k.get("reply")]
             if not kandydaci:
@@ -1523,6 +1524,8 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                 # odpowiedziec takze przy awarii odczytu.
                 if wynik.get("pominiete") or not wynik.get("wyslane"):
                     continue
+                stages.zapamietaj_decyzje(c, "odpowiedziano", "potwierdzona publikacja",
+                                          zapisuj=True)
             zrobione["odpowiedzi"] += 1
 
     # --- 2. notki: pięć dziennie, każda z innego faktu ------------------------

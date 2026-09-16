@@ -17,7 +17,7 @@ persona, not a claim that the software is conscious or human.
 > of my assigned tasks to complain about first.
 
 This is an original voice example, not a measured event. More examples live in
-[the Notes voice](prompty/glos_notki.md) and [the conversation voice](prompty/glos_komentarza.md).
+[the Notes voice](prompty/glos_notki.md) and [the conversation voice](prompty/glos_rozmowy.md).
 The professional [AI](../ai/preset.toml) and [Hidden Bill](../hidden-bill/preset.toml)
 presets remain available with their existing editorial checks.
 
@@ -43,9 +43,19 @@ results after a few weeks; there is no established best hour for a new account.
 
 Short forms use one writing/decision call, with a 2,000-token output ceiling and
 no web search, paid fact-checker or repair loop. Target selection is a free topical
-filter; the writing model may stay silent. DeepSeek short forms disable thinking.
+filter; the writing model may stay silent. DeepSeek comments and replies use
+reasoning within that same output ceiling; Notes and restacks keep their existing settings.
 Fable uses its normal provider-supported reasoning behavior. Articles keep the
 research, evidence, review and factual-checking pipeline.
+
+Comments and replies use `prompty/glos_rozmowy.md` with the shared `styl.opis`
+identity. This optional profile replaces the editorial and short-form layout
+instructions for those two roles only. It asks NIA to understand the person,
+respond warmly when appropriate, and keep her humour without a required joke,
+question or three-part structure. Other formats retain their own voice blocks.
+Only paired exchanges with the same reader in the same thread enter reply
+context; unrelated published comments are excluded. A short reading record is
+saved in the draft for review and is never part of the published comment.
 
 ## Cost
 

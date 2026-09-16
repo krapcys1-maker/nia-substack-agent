@@ -72,8 +72,9 @@ class PersonaTests(unittest.TestCase):
                 # Sufit, nie cel: musi zmiescic dluzsza wypowiedz RAZEM z myśleniem
                 # Fabla, ktore liczy sie jak wyjscie. Ma jednak zostac ograniczony.
                 self.assertEqual(c.kwargs["max_tokens"], 2000)
-                self.assertFalse(c.kwargs["thinking"])
-                self.assert_voice_request(c, "note" if c.args[0] == "note" else "interaction")
+                self.assertEqual(c.kwargs["thinking"], c.args[0] in ("comment", "reply")
+                                 and config.MODEL_FOR[c.args[0]].startswith("deepseek"))
+                self.assert_voice_request(c, c.args[0])
         self.assertEqual(personality.memory(), [])
 
     def assert_voice_request(self, call, kind):
@@ -83,6 +84,11 @@ class PersonaTests(unittest.TestCase):
         common = [blocks["linia_redakcyjna"], config.STYL_OPIS, blocks["glos_wspolny"]]
         form = {"article": "glos_artykulu", "note": "glos_notki"}.get(kind, "glos_komentarza")
         ordered = common + [blocks[form]]
+        if kind in ("comment", "reply") and blocks.get("glos_rozmowy"):
+            ordered = [config.STYL_OPIS, blocks["glos_rozmowy"]]
+            self.assertNotIn(blocks["linia_redakcyjna"], system)
+            self.assertNotIn(blocks["glos_wspolny"], system)
+            self.assertNotIn(blocks["glos_komentarza"], system)
         positions = []
         for block in ordered:
             self.assertTrue(block)
@@ -90,6 +96,52 @@ class PersonaTests(unittest.TestCase):
             self.assertNotIn(block, user)
             positions.append(system.index(block))
         self.assertEqual(positions, sorted(positions))
+
+    def test_conversation_profile_changes_only_comments_and_replies(self):
+        with_profile = {k: personality._system(k) for k in ("note", "restack", "article", "comment", "reply")}
+        blocks = dict(config.PRESET_BLOKI)
+        blocks.pop("glos_rozmowy")
+        with patch.object(config, "PRESET_BLOKI", blocks):
+            legacy = {k: personality._system(k) for k in with_profile}
+        for kind in ("note", "restack", "article"):
+            self.assertEqual(with_profile[kind], legacy[kind])
+        for kind in ("comment", "reply"):
+            self.assertNotEqual(with_profile[kind], legacy[kind])
+            self.assertIn(config.STYL_OPIS, with_profile[kind])
+            self.assertNotIn("three short lines", with_profile[kind])
+
+    def test_conversation_keeps_context_and_finished_paragraph_without_forced_ending(self):
+        post = {"author": "Reader", "text": "Nobody has paid yet. Do private channels get included?",
+                "url": "https://example.org/discussion"}
+        body = ("That part is not established in the post. I would want the permission "
+                "spelled out before connecting anything, because a private conversation "
+                "should not quietly become material for the office dashboard.")
+        draft_id = "a" * 32
+        drafts = config.DATA_DIR / "persona-drafts"
+        drafts.mkdir()
+        (drafts / (draft_id + ".json")).write_text(json.dumps({"request": {"user": json.dumps(
+            {"material": {"author": "Reader", "text": "What did the post promise?"}})}}), encoding="utf-8")
+        self.rows("personality.jsonl", [
+            {"kind": "reply", "target": post["url"], "draft_id": draft_id, "text": "Our earlier reply here."},
+            {"kind": "reply", "target": "https://example.org/other", "text": "A different thread."}])
+        with patch.object(llm, "call", return_value=self.response(body)) as call, \
+             patch.object(personality, "ruch_rozmowy", side_effect=AssertionError("no random ending")), \
+             patch.object(personality, "rozbij_dlugie_uderzenia", side_effect=AssertionError("preserve prose")):
+            result = stages.reply_to(self.conn, self.rid, post, {"our_note": "The post did not specify permissions."})
+        call.assert_called_once()
+        user = call.call_args.args[2]
+        context = json.JSONDecoder().raw_decode(user[user.index('{"material":'):])[0]
+        self.assertEqual(context["material"]["text"], post["text"])
+        self.assertEqual(context["material"]["parent_post"], "The post did not specify permissions.")
+        self.assertEqual(context["earlier_exchanges_with_this_reader"], [
+            {"reader": {"author": "Reader", "text": "What did the post promise?"},
+             "nia_reply": "Our earlier reply here."}])
+        self.assertNotIn("A different thread.", user)
+        self.assertNotIn("this_move", context)
+        self.assertNotIn("SHAPE, and it is not optional", user)
+        self.assertNotIn("A QUESTION TO THIS PERSON", user)
+        self.assertEqual(result["candidates"][0]["reply"], body)
+        self.assertFalse(call.call_args.kwargs["web_search"])
 
     def test_article_uses_shared_system_voice_and_keeps_generated_body(self):
         # The English writer's exact output must survive the active no-rewrite path.

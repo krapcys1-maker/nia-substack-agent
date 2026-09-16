@@ -128,6 +128,9 @@ BLOKI: dict[str, str] = {
     "glos_artykulu": "jak ten tytul pisze dlugi tekst — czyta pisarz artykulu",
     "glos_notki": "jak brzmi notka — czytaja briefy notki i mysli",
     "glos_komentarza": "jak brzmi komentarz i odpowiedz — komentarz, odpowiedz, restack",
+    "glos_rozmowy": ("opcjonalny profil rozmowy persony: komentarze i odpowiedzi; "
+                     "zastepuje bloki redakcyjne tylko w tych dwoch formach, "
+                     "zachowujac wspolna tozsamosc z styl.opis"),
     "okladka": ("tozsamosc wizualna okladki: blok stylu kopiowany doslownie do promptu "
                 "obrazu — czyta brief grafiki"),
     "kogo_szukamy": "pod czyimi postami komentujemy, a pod czyimi nie — czyta wybor celow",

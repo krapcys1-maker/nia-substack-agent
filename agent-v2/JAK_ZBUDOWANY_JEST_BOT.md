@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 41 233 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 41 313 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 237 zestawów
-testów, 5327 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 5330 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -155,7 +155,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `personality.py` — opcjonalne krotkie formy osobowosci, pomiary i pamiec po publikacji; artykuly zachowuja weryfikacje
 
-1046 wierszy, 29 funkcji na poziomie modułu, 0 klas
+1117 wierszy, 29 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -166,7 +166,7 @@ wiec nie da sie go rozjechac z kodem.
 | `memory_state()` | Keep milestones after individual Notes leave the bounded prompt memory. |
 | `_count(value)` *(wewn.)* | — |
 | `statistics(now)` | Publishable facts only: net growth and cumulative measured Note views. |
-| `voice_blocks(kind)` | The same identity and voice, in the same order, for every writing role. |
+| `voice_blocks(kind)` | Shared identity, with an optional conversation profile for comments only. |
 | `_system(kind)` *(wewn.)* | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. |
 | `_rozdziel_rubryke(temat)` *(wewn.)* | „NAZWA: polecenie" -> („NAZWA", „polecenie"). Bez nazwy oddaje ("", temat). |
 | `_etykiety()` *(wewn.)* | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. |
@@ -272,7 +272,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `run.py` — rozdzielnik — ścieżka artykułu i ścieżka dnia
 
-3430 wierszy, 30 funkcji na poziomie modułu, 1 klas
+3433 wierszy, 30 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -309,7 +309,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9554 wierszy, 167 funkcji na poziomie modułu, 0 klas
+9557 wierszy, 167 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -746,7 +746,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `preset.py` — preset: caly opis redakcji w jednym pliku, podlaczany i odlaczany jednym poleceniem; odcisk, osobna instancja danych, brama na wejsciu `run.py`
 
-1137 wierszy, 40 funkcji na poziomie modułu, 4 klas
+1140 wierszy, 40 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|

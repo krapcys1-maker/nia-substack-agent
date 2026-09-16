@@ -144,6 +144,24 @@ wybrane3 = stages.zdecyduj_o_odpowiedziach(czekaja, zapisuj=True, los=lambda: 0.
 sprawdz("komentarz, przy ktorym model zamilkl, nie wraca", [k["id"] for k in wybrane3] == [4],
         [k["id"] for k in wybrane3])
 
+# Udana publikacja konczy oczekujaca decyzje. Samo 'odpisz' pozwalalo
+# generowac kolejne odpowiedzi na ten sam komentarz w kazdym przebiegu.
+stages.zapamietaj_decyzje(czekaja[3], "odpowiedziano", "potwierdzona publikacja",
+                          zapisuj=True, plik=PLIK)
+po_publikacji = stages.zdecyduj_o_odpowiedziach(
+    czekaja, zapisuj=True, los=lambda: 0.0, plik=PLIK)
+sprawdz("potwierdzona odpowiedz nie wraca do generacji", po_publikacji == [])
+nowy = dict(czekaja[3], id=44, tekst="And what about the next step?")
+po_nowym = stages.zdecyduj_o_odpowiedziach(
+    [nowy], zapisuj=True, los=lambda: 0.0, plik=PLIK)
+sprawdz("nowy komentarz tej samej osoby moze dostac odpowiedz", po_nowym == [nowy])
+stages.zapamietaj_decyzje(nowy, "odpowiedziano", "potwierdzona publikacja",
+                          zapisuj=True, plik=PLIK)
+trzeci = dict(nowy, id=45)
+sprawdz("potwierdzone odpowiedzi nadal licza sie do limitu rozmowy",
+        stages.zdecyduj_o_odpowiedziach([trzeci], zapisuj=True,
+                                      los=lambda: 0.0, plik=PLIK) == [])
+
 # SPRZATANIE: decyzje starsze niz 30 dni wypadaja przy zapisie.
 stary = {"notka:777": {"decyzja": "pomin", "kiedy": (TERAZ - timedelta(days=40)).isoformat()}}
 PLIK_S = KAT / "stare.json"

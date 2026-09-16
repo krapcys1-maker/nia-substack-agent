@@ -1154,7 +1154,10 @@ def reply_to(
     """Odpowiedź na komentarz pod własną treścią — do szuflady."""
     if config.PERSONA_WLACZONA:
         import personality
-        return personality.interaction(conn, run_id, "reply", comment)
+        material = dict(comment)
+        if evidence.get("our_note"):
+            material["parent_post"] = evidence["our_note"]
+        return personality.interaction(conn, run_id, "reply", material)
     prompt = _prompt(
         "odpowiedz.md",
         cel_slow=config.losowa_dlugosc(),
@@ -1831,7 +1834,7 @@ def zdecyduj_o_odpowiedziach(
         autor = str(k.get("autor") or "").strip().casefold()
         miejsce = str(k.get("url") or k.get("pod_id") or "")
         wczesniej = sum(1 for v in dane.values()
-                        if isinstance(v, dict) and v.get("decyzja") == "odpisz"
+                        if isinstance(v, dict) and v.get("decyzja") in ("odpisz", "odpowiedziano")
                         and str(v.get("autor") or "").casefold() == autor and autor
                         and str(v.get("miejsce") or "") == miejsce
                         and str(v.get("kiedy") or "") >= tydzien)

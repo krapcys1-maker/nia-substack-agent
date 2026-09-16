@@ -144,8 +144,9 @@ sprawdz("kartridz ai wczytuje sie z katalogu",
         oblewa(lambda: preset.wczytaj(KARTRIDZ_AI)) is None)
 ai = preset.wczytaj(KARTRIDZ_AI)
 sprawdz("kartridz zna swoj katalog", ai.katalog == KARTRIDZ_AI.resolve(), ai.katalog)
-sprawdz("kartridz niesie wszystkie bloki promptow", set(ai.bloki) == set(preset.BLOKI),
-        sorted(set(preset.BLOKI) - set(ai.bloki)))
+sprawdz("kartridz niesie wszystkie standardowe bloki promptow",
+        set(ai.bloki) == set(preset.BLOKI) - {"glos_rozmowy"},
+        sorted(set(preset.BLOKI) - {"glos_rozmowy"} - set(ai.bloki)))
 bledy, uwagi = preset.sprawdz(ai, config, BAZA, srodowisko={})
 sprawdz("kartridz ai przechodzi sprawdzenie bez bledow", not bledy, bledy)
 a, b = preset.wczytaj(KARTRIDZ_AI), preset.wczytaj(KARTRIDZ_AI)
@@ -254,7 +255,8 @@ try:
     config.PRESET_BLOKI.clear()
     pola = stages._pola_wspolne()
     sprawdz("bez kartridza kazdy blok to jawne zdanie zastepcze",
-            all(pola[n] == stages._ZASTEPCZE_BLOKI[n] for n in preset.BLOKI if n != "oswiadczenie"))
+            all(pola[n] == stages._ZASTEPCZE_BLOKI[n] for n in preset.BLOKI
+                if n not in ("oswiadczenie", "glos_rozmowy")))
     sprawdz("zastepczy blok okladki jest neutralny (bez palety jednej marki)",
             "no text" in pola["okladka"] and "grey" not in pola["okladka"].lower())
     config.PRESET_BLOKI.update(ai.bloki)
