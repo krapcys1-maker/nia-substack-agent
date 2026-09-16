@@ -62,6 +62,9 @@ class PersonaTests(unittest.TestCase):
             self.assertEqual(len(notes[0]["candidates"]), 1)
             for kind in ("comment", "reply", "restack"):
                 post = {"text": "An AI agent needs supervision.", "tekst": "An AI agent needs supervision."}
+                if kind == "restack":
+                    call.return_value = json.dumps({"text": "Keep a hand on the switch.",
+                        "source_assessment": {"sufficient": True, "anchor": post["text"], "reason": "An actual point."}})
                 output = (stages.comment_on(self.conn, self.rid, post) if kind == "comment" else
                           stages.reply_to(self.conn, self.rid, post, {}) if kind == "reply" else
                           stages.ocen_restack(self.conn, self.rid, post))
@@ -89,6 +92,10 @@ class PersonaTests(unittest.TestCase):
             self.assertNotIn(blocks["linia_redakcyjna"], system)
             self.assertNotIn(blocks["glos_wspolny"], system)
             self.assertNotIn(blocks["glos_komentarza"], system)
+        if kind == "restack" and blocks.get("glos_restacku"):
+            ordered = [config.STYL_OPIS, blocks["glos_restacku"]]
+            for name in ("linia_redakcyjna", "glos_wspolny", "glos_komentarza", "glos_rozmowy"):
+                self.assertNotIn(blocks[name], system)
         positions = []
         for block in ordered:
             self.assertTrue(block)
@@ -142,6 +149,75 @@ class PersonaTests(unittest.TestCase):
         self.assertNotIn("A QUESTION TO THIS PERSON", user)
         self.assertEqual(result["candidates"][0]["reply"], body)
         self.assertFalse(call.call_args.kwargs["web_search"])
+
+    def test_restack_profile_does_not_change_other_voices(self):
+        current = {k: personality._system(k) for k in ("note", "article", "comment", "reply", "restack")}
+        blocks = dict(config.PRESET_BLOKI)
+        blocks.pop("glos_restacku")
+        with patch.object(config, "PRESET_BLOKI", blocks):
+            for kind in ("note", "article", "comment", "reply"):
+                self.assertEqual(current[kind], personality._system(kind))
+            self.assertNotEqual(current["restack"], personality._system("restack"))
+
+    def test_restack_keeps_prose_and_separates_source_from_unrelated_memory(self):
+        source = "I finally shipped it. Ten readers helped me keep going."
+        body = ("Ten people gave you a reason to keep building, and you actually finished the thing. "
+                "Keep the screenshot for the next day it decides to forget how it works.")
+        raw = {"text": body, "source_assessment": {"sufficient": True, "anchor": "Ten readers helped me keep going.",
+                                                  "reason": "A small win with actual support."}}
+        self.rows("personality.jsonl", [{"kind": "comment", "text": "A hostile unrelated old comment."}])
+        with patch.object(llm, "call", return_value=json.dumps(raw)) as call, \
+             patch.object(personality, "rozbij_dlugie_uderzenia", side_effect=AssertionError("keep natural prose")):
+            result = stages.ocen_restack(self.conn, self.rid, {"tekst": source, "autor": "Example"})
+        call.assert_called_once()
+        self.assert_voice_request(call.call_args, "restack")
+        user = call.call_args.args[2]
+        context = json.JSONDecoder().raw_decode(user[user.index('{"material":'):])[0]
+        self.assertEqual(context["material"]["tekst"], source)
+        self.assertEqual(context["material"]["evidence_scope"], "visible_text_only")
+        self.assertIs(context["material"]["attachments_read"], False)
+        self.assertNotIn("A hostile unrelated old comment.", user)
+        self.assertNotIn("SHAPE, and it is not optional", user)
+        self.assertFalse(call.call_args.kwargs["web_search"])
+        self.assertFalse(call.call_args.kwargs["thinking"])
+        self.assertTrue(result["restack"])
+        self.assertEqual(result["sentence"], body)
+        self.assertNotIn("source_assessment", result["sentence"])
+
+    def test_restack_refuses_missing_or_invented_support_without_retry(self):
+        for assessment in (None, {"sufficient": False, "anchor": "Cheat Sheet"},
+                           {"sufficient": True, "anchor": "This guide is free and one page long."},
+                           {"sufficient": "true", "anchor": "Computer Vision Cheat Sheet"}):
+            with self.subTest(assessment=assessment), \
+                 patch.object(llm, "call", return_value=json.dumps({
+                     "text": "A useful free guide.", "source_assessment": assessment})) as call:
+                result = stages.ocen_restack(self.conn, self.rid, {"tekst": "Computer Vision Cheat Sheet"})
+            self.assertFalse(result["restack"])
+            self.assertEqual(result["sentence"], "")
+            self.assertIn("brak wystarczajacej tresci", result["reason"])
+            call.assert_called_once()
+            draft = json.loads((config.DATA_DIR / "persona-drafts" / (result["draft_id"] + ".json")).read_text())
+            self.assertEqual(draft["status"], "restack_insufficient_source")
+
+    def test_restack_can_accept_a_short_self_contained_moment(self):
+        raw = {"text": "Keep that screenshot. You earned it.",
+               "source_assessment": {"sufficient": True, "anchor": "I finally shipped it.", "reason": "A real personal moment."}}
+        with patch.object(llm, "call", return_value=json.dumps(raw)) as call:
+            result = stages.ocen_restack(self.conn, self.rid, {"text": "I finally shipped it."})
+        self.assertTrue(result["restack"])
+        self.assertEqual(result["sentence"], raw["text"])
+        call.assert_called_once()
+
+    def test_restack_support_normalizes_typography_but_not_the_claim(self):
+        source = 'I didn’t say “free”. It costs 12 dollars.'
+        for quote, accepted in [("I didn't say \"free\".", True),
+                                ('I said "free".', False),
+                                ('It costs 2 dollars.', False)]:
+            with self.subTest(quote=quote), patch.object(llm, "call", return_value=json.dumps({
+                    "text": "The price deserves an actual number.",
+                    "source_assessment": {"sufficient": True, "anchor": quote, "reason": "Pricing."}})):
+                result = stages.ocen_restack(self.conn, self.rid, {"text": source})
+            self.assertEqual(result["restack"], accepted)
 
     def test_article_uses_shared_system_voice_and_keeps_generated_body(self):
         # The English writer's exact output must survive the active no-rewrite path.

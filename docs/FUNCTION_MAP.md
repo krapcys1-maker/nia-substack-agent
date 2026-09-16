@@ -842,29 +842,29 @@ Opt-in conversational short forms.
 | 87 | `_count(value)` | — | — | `personality.small_account`, `personality.statistics` |
 | 91 | `statistics(now)` | — | Publishable facts only: net growth and cumulative measured Note views. | `personality.notes` |
 | 138 | `statistics.handles(row)` | — | — | `personality.statistics` |
-| 163 | `voice_blocks(kind)` | — | Shared identity, with an optional conversation profile for comments only. | `personality._system`, `stages.system_pisarza` |
-| 175 | `_system(kind)` | — | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. | `personality.short_form` |
-| 215 | `_rozdziel_rubryke(temat)` | — | „NAZWA: polecenie" -> („NAZWA", „polecenie"). | `personality._etykiety`, `personality.notes` |
-| 234 | `_etykiety()` | — | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. | `personality._valid` |
-| 248 | `rozbij_dlugie_uderzenia(tekst, maks)` | — | Za dluga linia idzie na dwie — po granicy ZDANIA. | `personality.short_form` |
-| 301 | `_valid(text, maximum, dozwolone_adresy)` | — | `dozwolone_adresy` — adresy, ktore SAMI podalismy w materiale. | `personality.short_form` |
-| 345 | `short_form(conn, run_id, kind, material, napisane_teraz)` | **$**((zmienna)) | One paid decision: respond, or remain silent. | `personality.interaction`, `personality.notes`, `personality.notka_promujaca` |
-| 630 | `short_form.finish(output, reason)` | — | — | `personality.short_form` |
-| 705 | `_swiat(conn, run_id)` | — | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. | `personality.notes` |
-| 779 | `_fakt_z_banku()` | — | Jeden fakt z banku dla tej notki, albo `None`. | `personality.notes` |
-| 793 | `notes(conn, run_id, ile, od)` | — | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. | `stages.notki_dnia` |
-| 881 | `ruch_rozmowy(kind, los)` | — | Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`. | `personality.short_form` |
-| 898 | `ostatnie_wlasne_rozmowy(ile)` | — | Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika. | `personality.short_form` |
-| 920 | `notka_promujaca(conn, run_id, artykul)` | — | Notka promujaca NASZ artykul — ta sama droga, co kazda notka persony. | `run.promuj_artykul` |
-| 943 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
-| 960 | `_ile_razy(tekst, znak)` | — | Ile razy ten znak niszy pada w tekscie, jako cale slowo. | `personality.o_nas` |
-| 965 | `o_nas(tytul, calosc)` | — | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. | `personality.targets` |
-| 1008 | `_z_adresu(url)` | — | Slug adresu jako slowa — Substack wpisuje w niego temat. | `personality.targets` |
-| 1034 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
-| 1046 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
-| 1068 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu`, `browser.konto_za_duze` |
-| 1076 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `personality.remember_interaction`, `run.dzien`, `run.dzien.notki`, `run.promuj_artykul` |
-| 1111 | `remember_interaction(kind, candidate, publication, target)` | — | Only confirmed persona output becomes autobiographical continuity. | `browser.restackuj_w_kanale`, `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` *(+1)* |
+| 163 | `voice_blocks(kind)` | — | Shared identity with separate opt-in conversation and restack profiles. | `personality._system`, `stages.system_pisarza` |
+| 177 | `_system(kind)` | — | System krotkiej formy: tozsamosc, styl, GLOS WSPOLNY, potem glos formy. | `personality.short_form` |
+| 218 | `_rozdziel_rubryke(temat)` | — | „NAZWA: polecenie" -> („NAZWA", „polecenie"). | `personality._etykiety`, `personality.notes` |
+| 237 | `_etykiety()` | — | Nazwy wszystkich rubryk presetu — do sprawdzenia, czy nie wyciekly. | `personality._valid` |
+| 251 | `rozbij_dlugie_uderzenia(tekst, maks)` | — | Za dluga linia idzie na dwie — po granicy ZDANIA. | `personality.short_form` |
+| 304 | `_valid(text, maximum, dozwolone_adresy)` | — | `dozwolone_adresy` — adresy, ktore SAMI podalismy w materiale. | `personality.short_form` |
+| 348 | `short_form(conn, run_id, kind, material, napisane_teraz)` | **$**((zmienna)) | One paid decision: respond, or remain silent. | `personality.interaction`, `personality.notes`, `personality.notka_promujaca` |
+| 657 | `short_form.finish(output, reason)` | — | — | `personality.short_form` |
+| 750 | `_swiat(conn, run_id)` | — | Co sie w tej branzy WYDARZYLO — naglowki z datami, jako tlo notki. | `personality.notes` |
+| 824 | `_fakt_z_banku()` | — | Jeden fakt z banku dla tej notki, albo `None`. | `personality.notes` |
+| 838 | `notes(conn, run_id, ile, od)` | — | Rubryka daje KAT, bank daje MATERIAL — a gdy bank pusty, sama rubryka. | `stages.notki_dnia` |
+| 926 | `ruch_rozmowy(kind, los)` | — | Jak konczy sie ten komentarz albo odpowiedz — wg wag z `config.RUCHY_ROZMOWY`. | `personality.short_form` |
+| 943 | `ostatnie_wlasne_rozmowy(ile)` | — | Nasze ostatnie opublikowane komentarze i odpowiedzi, z dziennika. | `personality.short_form` |
+| 965 | `notka_promujaca(conn, run_id, artykul)` | — | Notka promujaca NASZ artykul — ta sama droga, co kazda notka persony. | `run.promuj_artykul` |
+| 988 | `interaction(conn, run_id, kind, post)` | — | Adapt persona JSON to the existing browser publication contracts. | `stages.comment_on`, `stages.ocen_restack`, `stages.reply_to` |
+| 1006 | `_ile_razy(tekst, znak)` | — | Ile razy ten znak niszy pada w tekscie, jako cale slowo. | `personality.o_nas` |
+| 1011 | `o_nas(tytul, calosc)` | — | Czy ten post jest O NAS, czy tylko WSPOMINA o nas raz. | `personality.targets` |
+| 1054 | `_z_adresu(url)` | — | Slug adresu jako slowa — Substack wpisuje w niego temat. | `personality.targets` |
+| 1080 | `targets(posts)` | — | Free topical prefilter. | `personality.community_candidates`, `stages.wybierz_cele` |
+| 1092 | `community_candidates()` | — | Relevant new people need not have received a comment first. | `run.dzien`, `run.dzien.nowi_dla_persony` |
+| 1114 | `small_account(profile, maximum)` | — | Unknown size is not evidence of a small account. | `browser._klik_na_profilu`, `browser.konto_za_duze` |
+| 1122 | `remember(note, publication)` | — | Commit once, only after the browser confirms a new publication. | `personality.remember_interaction`, `run.dzien`, `run.dzien.notki`, `run.promuj_artykul` |
+| 1157 | `remember_interaction(kind, candidate, publication, target)` | — | Only confirmed persona output becomes autobiographical continuity. | `browser.restackuj_w_kanale`, `run.dzien`, `run.dzien.dyskusje`, `run.dzien.komentarze` *(+1)* |
 
 ---
 
@@ -877,46 +877,46 @@ Preset: kartridz z CALA redakcja, podlaczany i odlaczany jednym poleceniem.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 194 | `korzen(agent_dir)` | — | — | `preset.aktywacja`, `preset.katalog_presetow`, `preset.odlacz`, `preset.podlacz` |
-| 198 | `katalog_presetow(agent_dir)` | — | — | `preset.lista` |
-| 202 | `katalog_instancji(agent_dir)` | — | — | `preset.aktywacja`, `preset.podlacz` |
-| 206 | `wskaznik(agent_dir)` | — | — | `preset.czytaj_wskaznik`, `preset.odlacz`, `preset.podlacz` |
-| 210 | `_wzgledna(p, baza)` | — | Sciezka wzgledem `baza` (posix), a gdy lezy poza nia — bezwzgledna. | `preset.podlacz` |
-| 218 | `_bezwzgledna(napis, baza)` | — | — | `preset.aktywacja`, `preset.odlacz` |
-| 223 | `plik_presetu(sciezka)` | — | Katalog presetu -> jego `preset.toml`; plik -> ten plik. | `preset.wczytaj`, `preset.znajdz` |
-| 232 | `_kanoniczne(x)` | — | — | `preset.odcisk`, `preset.pochodzenie` |
-| 242 | `odcisk(pola, schema, bloki, zasoby)` | — | SHA-256 pol, blokow I ZASOBOW STYLU. | `preset.wczytaj_tekst` |
-| 262 | `_wczytaj_bloki(katalog)` | — | `prompty/<blok>.md` z katalogu presetu; tylko znane nazwy, tylko niepuste. | `preset.wczytaj_tekst` |
-| 297 | `_rozwiaz_sciezki(pola, katalog)` | — | Sciezki stylu wzgledem KATALOGU PRESETU, gdy tam leza; inaczej wzgledem repo. | `preset.wczytaj_tekst` |
-| 317 | `_zasoby_kartridza(pola, katalog)` | — | Skroty plikow stylu lezacych W KATALOGU presetu: {sciezka wzgledna: sha256}. | `preset.wczytaj_tekst` |
-| 342 | `wczytaj_tekst(tekst, nazwa_pliku, plik, katalog)` | — | Tekst TOML presetu -> `Preset`. | `preset.wczytaj` |
-| 399 | `wczytaj(sciezka)` | — | Preset z katalogu (`presety/<nazwa>/`) albo z pojedynczego pliku. | `preset.aktywacja`, `preset.podlacz` |
-| 411 | `proba_konfiguracji(cfg, baza)` | — | Kopia stalych `config` do bezpiecznego przymierzenia presetu. | `preset.rozwiaz` |
-| 437 | `rozwiaz(preset, cfg, baza, srodowisko)` | — | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). | `preset.pochodzenie`, `preset.sprawdz` |
-| 458 | `_bez_domyslnego_korpusu(preset, cfg)` | — | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". | `preset.rozwiaz`, `preset.zastosuj` |
-| 472 | `pochodzenie(preset, cfg, baza)` | DEAD? | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". | — |
-| 495 | `_dostawcy_tekstu()` | — | Lista z `llm`, zeby walidator nie mial wlasnej, rozjezdzajacej sie kopii. | `preset.sprawdz` |
-| 504 | `_dostawca(model)` | — | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. | `preset.sprawdz` |
-| 523 | `_napisy(x)` | — | Wszystkie napisy w zagniezdzonej wartosci. | `preset.sprawdz` |
-| 535 | `sprawdz(preset, cfg, baza, srodowisko, do_aktywacji)` | — | Reguly PONAD ksztaltem pol. | `preset.podlacz` |
-| 736 | `zastosuj(preset, cfg, baza)` | DEAD? | Neutralna baza, potem pola i bloki presetu. | — |
-| 758 | `_zapisz_atomowo(plik, tekst)` | — | — | `personality.remember`, `personality.short_form`, `personality.short_form.finish`, `preset._sprawdz_wlasciciela` *(+1)* |
-| 773 | `_teraz()` | — | — | `preset._dopisz_do_dziennika`, `preset.podlacz`, `preset.z_konfiguracji` |
-| 777 | `_dopisz_do_dziennika(katalog, wpis)` | — | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. | `preset._sprawdz_wlasciciela`, `preset.odlacz`, `preset.podlacz` |
-| 793 | `czytaj_wskaznik(agent_dir)` | — | Surowa tresc wskaznika (bez wczytywania presetu) albo None. | `preset.aktywacja`, `preset.aktywacja_nadal_wazna` |
-| 808 | `aktywacja(agent_dir, srodowisko)` | DEAD? | Co jest podlaczone. | — |
-| 843 | `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko, przejmij)` | DEAD? | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. | — |
-| 887 | `wlasciciel(katalog)` | — | Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy. | `preset._sprawdz_wlasciciela` |
-| 899 | `_sprawdz_wlasciciela(katalog, preset, przejmij, uchwyt)` | — | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. | `preset.podlacz` |
-| 937 | `odlacz(agent_dir)` | DEAD? | Usuwa wskaznik. | — |
-| 977 | `wymagaj_aktywnego(cfg, co)` | — | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. | `artykul_z_puli.main`, `run.main` |
-| 998 | `tylko_podglad(cfg)` | DEAD? | Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji. | — |
-| 1011 | `aktywacja_nadal_wazna(cfg)` | — | Pusty napis, gdy aktywacja z pamieci procesu nadal stoi we wskazniku; inaczej powod. | `preset.wymagaj_aktywnego` |
-| 1069 | `lista(agent_dir)` | — | Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`. | `preset.znajdz` |
-| 1084 | `nazwa_z_pliku(plik)` | — | Nazwa presetu z jego polozenia: katalog albo nazwa pliku. | `preset.znajdz` |
-| 1090 | `znajdz(nazwa, agent_dir)` | DEAD? | Preset po nazwie (katalog przed plikiem) albo po sciezce. | — |
-| 1103 | `z_konfiguracji(tekst_toml, nazwa, opis)` | DEAD? | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). | — |
-| 1127 | `eksportuj(preset)` | DEAD? | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). | — |
+| 196 | `korzen(agent_dir)` | — | — | `preset.aktywacja`, `preset.katalog_presetow`, `preset.odlacz`, `preset.podlacz` |
+| 200 | `katalog_presetow(agent_dir)` | — | — | `preset.lista` |
+| 204 | `katalog_instancji(agent_dir)` | — | — | `preset.aktywacja`, `preset.podlacz` |
+| 208 | `wskaznik(agent_dir)` | — | — | `preset.czytaj_wskaznik`, `preset.odlacz`, `preset.podlacz` |
+| 212 | `_wzgledna(p, baza)` | — | Sciezka wzgledem `baza` (posix), a gdy lezy poza nia — bezwzgledna. | `preset.podlacz` |
+| 220 | `_bezwzgledna(napis, baza)` | — | — | `preset.aktywacja`, `preset.odlacz` |
+| 225 | `plik_presetu(sciezka)` | — | Katalog presetu -> jego `preset.toml`; plik -> ten plik. | `preset.wczytaj`, `preset.znajdz` |
+| 234 | `_kanoniczne(x)` | — | — | `preset.odcisk`, `preset.pochodzenie` |
+| 244 | `odcisk(pola, schema, bloki, zasoby)` | — | SHA-256 pol, blokow I ZASOBOW STYLU. | `preset.wczytaj_tekst` |
+| 264 | `_wczytaj_bloki(katalog)` | — | `prompty/<blok>.md` z katalogu presetu; tylko znane nazwy, tylko niepuste. | `preset.wczytaj_tekst` |
+| 299 | `_rozwiaz_sciezki(pola, katalog)` | — | Sciezki stylu wzgledem KATALOGU PRESETU, gdy tam leza; inaczej wzgledem repo. | `preset.wczytaj_tekst` |
+| 319 | `_zasoby_kartridza(pola, katalog)` | — | Skroty plikow stylu lezacych W KATALOGU presetu: {sciezka wzgledna: sha256}. | `preset.wczytaj_tekst` |
+| 344 | `wczytaj_tekst(tekst, nazwa_pliku, plik, katalog)` | — | Tekst TOML presetu -> `Preset`. | `preset.wczytaj` |
+| 401 | `wczytaj(sciezka)` | — | Preset z katalogu (`presety/<nazwa>/`) albo z pojedynczego pliku. | `preset.aktywacja`, `preset.podlacz` |
+| 413 | `proba_konfiguracji(cfg, baza)` | — | Kopia stalych `config` do bezpiecznego przymierzenia presetu. | `preset.rozwiaz` |
+| 439 | `rozwiaz(preset, cfg, baza, srodowisko)` | — | Preset przymierzony na kopii: (kopia po zastosowaniu, meldunki). | `preset.pochodzenie`, `preset.sprawdz` |
+| 460 | `_bez_domyslnego_korpusu(preset, cfg)` | — | Pusty `styl.korpus` w kartridzu znaczy BRAK korpusu, nie „ten z katalogu silnika". | `preset.rozwiaz`, `preset.zastosuj` |
+| 474 | `pochodzenie(preset, cfg, baza)` | DEAD? | Skad kazda stala konta bierze wartosc: „preset" albo „silnik". | — |
+| 497 | `_dostawcy_tekstu()` | — | Lista z `llm`, zeby walidator nie mial wlasnej, rozjezdzajacej sie kopii. | `preset.sprawdz` |
+| 506 | `_dostawca(model)` | — | Dostawca po prefiksie — TA SAMA regula co `llm._dostawca`. | `preset.sprawdz` |
+| 525 | `_napisy(x)` | — | Wszystkie napisy w zagniezdzonej wartosci. | `preset.sprawdz` |
+| 537 | `sprawdz(preset, cfg, baza, srodowisko, do_aktywacji)` | — | Reguly PONAD ksztaltem pol. | `preset.podlacz` |
+| 738 | `zastosuj(preset, cfg, baza)` | DEAD? | Neutralna baza, potem pola i bloki presetu. | — |
+| 760 | `_zapisz_atomowo(plik, tekst)` | — | — | `personality.remember`, `personality.short_form`, `personality.short_form.finish`, `preset._sprawdz_wlasciciela` *(+1)* |
+| 775 | `_teraz()` | — | — | `preset._dopisz_do_dziennika`, `preset.podlacz`, `preset.z_konfiguracji` |
+| 779 | `_dopisz_do_dziennika(katalog, wpis)` | — | Dziennik aktywacji instancji; oddaje numer TEJ aktywacji. | `preset._sprawdz_wlasciciela`, `preset.odlacz`, `preset.podlacz` |
+| 795 | `czytaj_wskaznik(agent_dir)` | — | Surowa tresc wskaznika (bez wczytywania presetu) albo None. | `preset.aktywacja`, `preset.aktywacja_nadal_wazna` |
+| 810 | `aktywacja(agent_dir, srodowisko)` | DEAD? | Co jest podlaczone. | — |
+| 845 | `podlacz(sciezka, agent_dir, cfg, baza, instancja, srodowisko, przejmij)` | DEAD? | Sprawdza preset W CALOSCI i dopiero potem atomowo przelacza wskaznik. | — |
+| 889 | `wlasciciel(katalog)` | — | Manifest wlasciciela katalogu instancji albo None, gdy katalog jest nowy. | `preset._sprawdz_wlasciciela` |
+| 901 | `_sprawdz_wlasciciela(katalog, preset, przejmij, uchwyt)` | — | Instancja nalezy do JEDNEJ redakcji: tego presetu i tego konta. | `preset.podlacz` |
+| 939 | `odlacz(agent_dir)` | DEAD? | Usuwa wskaznik. | — |
+| 979 | `wymagaj_aktywnego(cfg, co)` | — | Brama na wejsciu `run.py` i `artykul_z_puli.py`: bez presetu nie ma pracy. | `artykul_z_puli.main`, `run.main` |
+| 1000 | `tylko_podglad(cfg)` | DEAD? | Aktywacja ze zmiennej AGENT_V2_PRESET to podglad: bez platnych wywolan i publikacji. | — |
+| 1013 | `aktywacja_nadal_wazna(cfg)` | — | Pusty napis, gdy aktywacja z pamieci procesu nadal stoi we wskazniku; inaczej powod. | `preset.wymagaj_aktywnego` |
+| 1071 | `lista(agent_dir)` | — | Presety w `presety/`: katalogi z `preset.toml` i pojedyncze pliki `.toml`. | `preset.znajdz` |
+| 1086 | `nazwa_z_pliku(plik)` | — | Nazwa presetu z jego polozenia: katalog albo nazwa pliku. | `preset.znajdz` |
+| 1092 | `znajdz(nazwa, agent_dir)` | DEAD? | Preset po nazwie (katalog przed plikiem) albo po sciezce. | — |
+| 1105 | `z_konfiguracji(tekst_toml, nazwa, opis)` | DEAD? | Stary `konfiguracja.toml` -> tekst presetu (naglowek + oryginal, z komentarzami). | — |
+| 1129 | `eksportuj(preset)` | DEAD? | Preset w postaci znormalizowanej (te same pola, ten sam odcisk po wczytaniu). | — |
 
 ---
 

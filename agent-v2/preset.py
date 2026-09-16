@@ -131,6 +131,8 @@ BLOKI: dict[str, str] = {
     "glos_rozmowy": ("opcjonalny profil rozmowy persony: komentarze i odpowiedzi; "
                      "zastepuje bloki redakcyjne tylko w tych dwoch formach, "
                      "zachowujac wspolna tozsamosc z styl.opis"),
+    "glos_restacku": ("opcjonalny profil persony przy udostepnianiu cudzego wpisu; "
+                      "zastepuje bloki redakcyjne tylko dla restacku, ze styl.opis"),
     "okladka": ("tozsamosc wizualna okladki: blok stylu kopiowany doslownie do promptu "
                 "obrazu — czyta brief grafiki"),
     "kogo_szukamy": "pod czyimi postami komentujemy, a pod czyimi nie — czyta wybor celow",
@@ -140,7 +142,7 @@ BLOKI: dict[str, str] = {
 
 # Brak tych blokow zachowuje dotychczasowa sciezke, bez zdania zastepczego
 # i bez ostrzezenia, ze profesjonalny preset nie zawiera glosu persony.
-BLOKI_OPT_IN = frozenset({"glos_rozmowy"})
+BLOKI_OPT_IN = frozenset({"glos_rozmowy", "glos_restacku"})
 
 # POLA, BEZ KTORYCH SILNIK NIE MA CZYM PRACOWAC. Silnik nie ma domyslnego
 # tematu, wiec brak ktoregos z nich to nie „zostaw domyslne", tylko pusty

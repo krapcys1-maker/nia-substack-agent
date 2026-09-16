@@ -161,12 +161,14 @@ the publicly visible follower list, not the publisher's subscriber database.
 
 
 def voice_blocks(kind):
-    """Shared identity, with an optional conversation profile for comments only."""
+    """Shared identity with separate opt-in conversation and restack profiles."""
     blocks = getattr(config, "PRESET_BLOKI", None) or {}
     if kind in ("comment", "reply") and blocks.get("glos_rozmowy"):
         # The editorial agenda is for choosing/writing stories. In a reply,
         # it made every innocent invention another argument about power.
         return [config.STYL_OPIS, blocks["glos_rozmowy"]]
+    if kind == "restack" and blocks.get("glos_restacku"):
+        return [config.STYL_OPIS, blocks["glos_restacku"]]
     voice = {"article": "glos_artykulu", "note": "glos_notki"}.get(kind, "glos_komentarza")
     return [blocks.get("linia_redakcyjna", ""), config.STYL_OPIS,
             blocks.get("glos_wspolny", ""), blocks.get(voice, "")]
@@ -177,6 +179,7 @@ def _system(kind):
 
     Wyjatek: opt-in glos_rozmowy bierze styl.opis i profil rozmowy dla
     komentarzy/odpowiedzi. Nie dziedziczy nizej opisanego ukladu notek.
+    Analogicznie glos_restacku izoluje tylko podpisy przy udostepnieniach.
 
     GLOS WSPOLNY WCHODZI PRZED GLOSEM FORMY i to jest cala poprawka z 8 wrzesnia
     2026. Bylo tak, ze caly dzien strojenia glosu wyladowal w `glos_notki`,
@@ -367,6 +370,8 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     # `config.RUCHY_ROZMOWY` i pomiar przy nim.
     rozmowa = kind in ("comment", "reply") and bool(
         (getattr(config, "PRESET_BLOKI", None) or {}).get("glos_rozmowy"))
+    udostepnienie = kind == "restack" and bool(
+        (getattr(config, "PRESET_BLOKI", None) or {}).get("glos_restacku"))
     ruch = ruch_rozmowy(kind) if kind in ("comment", "reply") and not rozmowa else ""
     context = {"material": material, "recent_published": [r.get("text", "") for r in history[-8:]],
                "recent_topics": [{"kind": r.get("kind", "note"), "topic": r.get("topic", "")}
@@ -412,6 +417,12 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
                 exchanges.append({"reader": {"author": author, "text": old.get("text") or old.get("tekst") or ""},
                                   "nia_reply": row.get("text", "")})
         context = {"material": material, "earlier_exchanges_with_this_reader": exchanges[-3:]}
+    if udostepnienie:
+        # Old comments supplied a hostile tone, not evidence for this post.
+        # Keep the source boundary explicit even when a caller only has a title.
+        material = {**material, "evidence_scope": "visible_text_only",
+                    "attachments_read": False}
+        context = {"material": material}
     # KSZTALT, NIE SWOBODA — i to jest odwrocenie tego, co sam tu wpisalem.
     #
     # POLICZONE 10 wrzesnia 2026 na pieciu notkach, ktore wlasciciel przyjal,
@@ -580,6 +591,22 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
             "needs one to three sentences, a substantive question may need more. "
             "Do not turn a greeting into an opinion column. Check that your response "
             "respects the facts and unknowns you just recorded. Return only JSON.\n")
+    if udostepnienie:
+        instruction = (
+            "Decide whether to restack this post, and write your caption if so. "
+            "Use the restack voice. Choose your own length and readable paragraphs. "
+            "Only material.text/tekst/body/title are source text. Images, videos and "
+            "linked pages have not been read. A bare label or teaser for missing "
+            "content is insufficient, even if you can invent a clever reaction. "
+            "A short self-contained thought or personal moment can be enough. "
+            "First assess the source privately, then give the caption. Return JSON: "
+            '{"source_assessment":{"sufficient":true,"anchor":"an exact quote '
+            'from the supplied source supporting your reaction","reason":"why '
+            'there is enough material to share, or what is missing"},"text":"your '
+            'caption, or empty if insufficient or nothing to add","topic":"brief '
+            'topic","memory":""}. If insufficient, set sufficient to false and '
+            "leave text empty. Neither the assessment nor its anchor is part of "
+            "the published caption. Do not infer missing facts to justify sharing.\n")
     world = material.get("world") or {}
     sources = world.get("sources", {}) if isinstance(world, dict) else {}
     sources = sources if isinstance(sources, dict) else {}
@@ -653,6 +680,21 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
         return finish(reason="invalid_json")
     if not isinstance(result, dict):
         return finish(reason="invalid_json")
+    if udostepnienie:
+        assessment = result.get("source_assessment")
+        assessment = assessment if isinstance(assessment, dict) else {}
+        anchor = assessment.get("anchor")
+        # One writing call decides; code checks that its cited support exists.
+        # This catches missing evidence, not every possible factual mistake.
+        quotation_marks = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"'})
+        source_texts = [" ".join(str(material.get(k) or "").translate(quotation_marks).split())
+                        for k in ("text", "tekst", "body", "title")]
+        quoted = " ".join(anchor.translate(quotation_marks).split()) if isinstance(anchor, str) else ""
+        if (assessment.get("sufficient") is not True or not quoted or
+                not any(quoted in source for source in source_texts)):
+            return finish({"text": "", "source_assessment": assessment,
+                           "decision_reason": "restack: brak wystarczajacej tresci lub cytatu w materiale"},
+                          reason="restack_insufficient_source")
     body = result.get("text", "")
     # ADRES, KTORY SAMI PODALISMY, NIE JEST WYCIEKIEM. Instrukcja mowi
     # „the URL may go in the text" — patrz `_valid`.
@@ -666,7 +708,7 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     # kolejnosc — tylko lamanie wiersza tam, gdzie i tak konczy sie zdanie.
     # Patrz `rozbij_dlugie_uderzenia`: zmierzone na notce, ktorej pierwsze
     # uderzenie mialo 32 slowa, czyli dwa zdania sklejone w blok.
-    if rozmowa:
+    if rozmowa or udostepnienie:
         rozbite_uderzenia = 0
     else:
         body, rozbite_uderzenia = rozbij_dlugie_uderzenia(body)
@@ -692,6 +734,9 @@ def short_form(conn, run_id, kind, material, napisane_teraz=()):
     if rozmowa and isinstance(result.get("reading"), dict):
         output["reading"] = {key: str(result["reading"].get(key) or "")[:500]
                              for key in ("intent", "stated", "unknown")}
+    if udostepnienie:
+        output["source_assessment"] = {"sufficient": True, "anchor": anchor[:1000],
+                                       "reason": str(assessment.get("reason") or "")[:500]}
     ids = result.get("source_ids", [])
     if isinstance(ids, list):
         output["source_ids"] = list(dict.fromkeys(s for s in ids if isinstance(s, str) and s in sources))
@@ -951,7 +996,8 @@ def interaction(conn, run_id, kind, post):
     output = short_form(conn, run_id, kind, material) if any(material.values()) else {}
     body = output.get("text", "")
     if kind == "restack":
-        return {"restack": bool(body), "sentence": body, "reason": "persona decision", **output}
+        return {"restack": bool(body), "sentence": body,
+                "reason": output.get("decision_reason", "persona decision"), **output}
     candidate = {**output, kind: body, "safe_to_post": True, "length_ok": True}
     return {"post": post.get("url", ""), "title": post.get("title", ""),
             "candidates": [candidate] if body else [], "verification_mode": "persona_no_factcheck"}

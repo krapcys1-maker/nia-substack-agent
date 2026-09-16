@@ -57,6 +57,15 @@ Only paired exchanges with the same reader in the same thread enter reply
 context; unrelated published comments are excluded. A short reading record is
 saved in the draft for review and is never part of the published comment.
 
+Restacks have their own optional `prompty/glos_restacku.md` profile with the
+same identity. NIA reacts to the specific reason for sharing a post, without
+a required three-part shape, punchline or jab at its author. Only the visible
+source text enters the prompt; images, videos and linked pages are not read
+by this path. A private source assessment can decline a bare label or teaser.
+Accepted captions must include an exact supporting excerpt in that assessment;
+only the caption is published. This check is not independent fact-checking.
+Restacks still use one call to their configured model, without search or retries.
+
 ## Cost
 
 The table below records the earlier setup's sample measurements, before later
