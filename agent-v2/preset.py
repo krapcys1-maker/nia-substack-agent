@@ -117,7 +117,7 @@ _WZORZEC_NAZWY = re.compile(r"[a-z0-9][a-z0-9._-]{0,62}")
 
 # BLOKI PROMPTOW, KTORE PRESET MOZE DOSTARCZYC (`prompty/<nazwa>.md`).
 # Nazwa bloku = nazwa pola w briefie silnika. Kazdy jest opcjonalny; brak
-# daje jawne zdanie zastepcze (`stages._pola_wspolne`), nie pustke.
+# daje jawne zdanie zastepcze (`stages._pola_wspolne`), poza BLOKI_OPT_IN.
 BLOKI: dict[str, str] = {
     "linia_redakcyjna": ("co dla tej publikacji JEST tematem, a co nie, i jakie pytania "
                          "warto stawiac — czytaja skaut, ciekawostki, bank i bramka "
@@ -137,6 +137,10 @@ BLOKI: dict[str, str] = {
     "oswiadczenie": ("publiczne oswiadczenie o autorstwie pokazywane przy skanie AI — "
                      "ustawienie konta, robione raz"),
 }
+
+# Brak tych blokow zachowuje dotychczasowa sciezke, bez zdania zastepczego
+# i bez ostrzezenia, ze profesjonalny preset nie zawiera glosu persony.
+BLOKI_OPT_IN = frozenset({"glos_rozmowy"})
 
 # POLA, BEZ KTORYCH SILNIK NIE MA CZYM PRACOWAC. Silnik nie ma domyslnego
 # tematu, wiec brak ktoregos z nich to nie „zostaw domyslne", tylko pusty
@@ -628,10 +632,11 @@ def sprawdz(preset: Preset, cfg: Any, baza: dict[str, Any] | None = None,
         uwagi.append("styl.opis jest pusty — glos redakcji opisuja tylko profile")
 
     # --- bloki promptow ------------------------------------------------
-    brak_blokow = sorted(set(BLOKI) - set(preset.bloki))
+    standardowe_bloki = set(BLOKI) - BLOKI_OPT_IN
+    brak_blokow = sorted(standardowe_bloki - set(preset.bloki))
     if preset.katalog is None:
         uwagi.append("preset jednoplikowy: bez katalogu `prompty/` — briefy dostana "
-                     "zdania zastepcze zamiast blokow (%s)" % ", ".join(sorted(BLOKI)))
+                     "zdania zastepcze zamiast blokow (%s)" % ", ".join(sorted(standardowe_bloki)))
     elif brak_blokow:
         uwagi.append("bez blokow promptow: %s — briefy dostana zdanie zastepcze"
                      % ", ".join(brak_blokow))

@@ -100,8 +100,9 @@ for strona, slowa in _strony.items():
 
 print()
 print("=== 3. BLOKI I STYL SA Z KARTRIDZA, NIE Z SILNIKA ===")
-sprawdz("wszystkie bloki promptow sa dostarczone",
-        set(ai.bloki) == set(preset.BLOKI), sorted(set(preset.BLOKI) - set(ai.bloki)))
+sprawdz("wszystkie standardowe bloki promptow sa dostarczone",
+        set(ai.bloki) == set(preset.BLOKI) - preset.BLOKI_OPT_IN,
+        sorted(set(preset.BLOKI) - preset.BLOKI_OPT_IN - set(ai.bloki)))
 sprawdz("zaden blok nie ma znacznika szablonu",
         not any("<<" in t for t in ai.bloki.values()))
 proba, _ = preset.rozwiaz(ai, config, BAZA)
