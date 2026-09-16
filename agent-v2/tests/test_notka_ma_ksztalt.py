@@ -31,10 +31,15 @@ oba oblewalby na kazdej z nich z osobna, mimo ze po scaleniu wszystko dziala.
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
     PYTHONIOENCODING=utf-8 python agent-v2/tests/test_notka_ma_ksztalt.py
 """
-import io
+import os
 import sys
+from unittest.mock import patch
 
 sys.path.insert(0, "agent-v2")
+os.environ["AGENT_V2_BEZ_KONFIGURACJI"] = "1"
+import config
+import llm
+import personality
 
 zdane = oblane = 0
 
@@ -49,7 +54,17 @@ def sprawdz(nazwa, warunek, szczegol=""):
         print("  BLAD  %s   %s" % (nazwa, szczegol))
 
 
-OSOBOWOSC = io.open("agent-v2/personality.py", encoding="utf-8").read()
+# Mierzymy prompt docierajacy do notki. Szukanie po calym module karalo
+# restack za swobode, choc notka nadal dostawala swoj dotychczasowy ksztalt.
+# DRY_RUN zatrzymuje zapis szkicu; atrapa transportu nie wykonuje API.
+with patch.object(config, "DRY_RUN", True), \
+     patch.object(config, "PRESET_BLOKI", {"glos_restacku": "Fixture restack voice."}), \
+     patch.object(personality, "memory", return_value=[]), \
+     patch.object(llm, "call", return_value="{}") as call:
+    personality.short_form(None, 0, "note", {"text": "A fictional task for this offline test."})
+    OSOBOWOSC = call.call_args.args[2]
+    personality.short_form(None, 0, "restack", {"text": "A fictional task for this offline test."})
+    RESTACK = call.call_args.args[2]
 
 print("=== 1. SILNIK ZAMAWIA KSZTALT, NIE SWOBODE ===")
 sprawdz("zgoda na dowolna dlugosc zniknela",
@@ -102,6 +117,8 @@ print("=== 5. STARE POZWOLENIA NIE ZOSTALY OBOK ===")
 # ja, bo jest latwiejsza.
 sprawdz("brak `Vary rhythm` jako furtki",
         "Vary rhythm" not in OSOBOWOSC)
+sprawdz("profil restacku ma swobodny ksztalt bez zmiany notki",
+        "Choose your own length" in RESTACK and "SHAPE, and it is not optional" not in RESTACK)
 # Ta sama furtka po stronie kartridza („take a short paragraph if the thought
 # needs it") jest pilnowana w `test_kartridz_ma_ksztalt.py`.
 
