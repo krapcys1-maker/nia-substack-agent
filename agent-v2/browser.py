@@ -2404,6 +2404,98 @@ def dopisz_skutki() -> int:
         p.stop()
 
 
+# PETLA ROZMOWY — dwa boty odpisywaly sobie bez konca.
+#
+# ZMIERZONE 26 wrzesnia 2026 na drzewie komentarzy z API: pod artykulem
+# „I'd like the songwriter's definition of fair" wisi 41 komentarzy, z czego
+# rozmowe zaczyna JEDEN — komentarz innego automatu. Reszta to 20 naszych
+# odpowiedzi i 20 jego, na zmiane, od 12 do 16 wrzesnia. Kazda z trzech drog nizej pytala tylko, czy na TE wiadomosc juz
+# odpisalismy — a kazda odpowiedz drugiej strony byla nowa wiadomoscia, wiec
+# rozmowa z drugim automatem nie konczyla sie nigdy.
+#
+# Dlatego liczymy NASZE odpowiedzi w calej GALEZI rozmowy, nie przy jednej
+# wiadomosci. Galaz to komentarz, ktory rozmowe zaczal, i wszystko pod nim;
+# Substack podaje to wprost w polu `ancestor_path` („korzen.dziecko.wnuk").
+# Liczymy z danych Substacka, nie z dziennika: dziennik nie zapisywal, komu
+# odpowiadamy, a Substack wie to takze o rozmowach sprzed tej poprawki.
+# Ile wolno — `config.MAKS_ODPOWIEDZI_W_ROZMOWIE`.
+def _przodkowie(komentarz: dict) -> list[str]:
+    """Numery przodkow z `ancestor_path`, od korzenia w dol."""
+    return [s for s in str(komentarz.get("ancestor_path") or "").split(".") if s]
+
+
+def korzen_rozmowy(komentarz: dict) -> str:
+    """Numer komentarza, ktory zaczal galaz, w ktorej stoi `komentarz`.
+
+    Pod artykulem `ancestor_path` zaczyna sie od komentarza najwyzszego
+    poziomu. Pod notka pierwszym przodkiem jest SAMA NOTKA (sprawdzone na
+    watku c-340495981: odpowiedzi maja tam `ancestor_path` rowne numerowi
+    notki i `post_id` puste) — rozmowa zaczyna sie pietro nizej. Inaczej
+    notka z dziesiecioma rozmowcami liczylaby sie jak jedna rozmowa.
+    """
+    przodkowie = _przodkowie(komentarz)
+    if komentarz.get("post_id"):
+        return przodkowie[0] if przodkowie else str(komentarz.get("id"))
+    return przodkowie[1] if len(przodkowie) > 1 else str(komentarz.get("id"))
+
+
+def nasze_odpowiedzi_w_rozmowie(komentarze: list[dict], korzen: Any,
+                                moje_id: Any) -> int:
+    """Ile razy JUZ odpisalismy pod `korzen`.
+
+    Liczy sie kazdy nasz komentarz w galezi ponizej korzenia. Sam korzen nie:
+    zaczecie rozmowy to nie odpowiedz, wiec komentarz pod cudzym tekstem nie
+    zjada limitu, ktory ma sie przydac w rozmowie pod nim.
+    """
+    korzen = str(korzen)
+    return sum(1 for c in komentarze
+               if c.get("user_id") == moje_id and korzen in _przodkowie(c))
+
+
+def limit_rozmowy(rozmowca_id: Any) -> int:
+    """Ile razy wolno nam odpisac w jednej rozmowie z ta osoba."""
+    try:
+        rozmowca = int(rozmowca_id)
+    except (TypeError, ValueError):
+        rozmowca = None
+    if rozmowca in config.KONTA_SIOSTRZANE:
+        return config.MAKS_ODPOWIEDZI_KONTU_SIOSTRZANEMU
+    return config.MAKS_ODPOWIEDZI_W_ROZMOWIE
+
+
+def _komentarze_galezi(page, komentarz: dict, korzen: str, post: dict,
+                       pamiec: dict) -> list[dict]:
+    """Wszystkie komentarze galezi `korzen` — jedno zapytanie na galaz.
+
+    Pod artykulem pytamy o CALE drzewo komentarzy posta. `/reader/comment/
+    <id>/replies` oddaje strony po osiem galezi (pole `nextCursor`), wiec pod
+    tym artykulem widzialo 16 komentarzy z 40 — a drzewo posta przyszlo
+    w calosci, 41 z 41. Pod notka drzewa posta nie ma; tam zostaje `/replies`
+    na korzeniu. Pierwsza strona wystarcza, bo limit to jedna, dwie odpowiedzi,
+    nie dziesiatki.
+    """
+    klucz = (komentarz.get("post_id"), korzen)
+    if klucz in pamiec:
+        return pamiec[klucz]
+    komentarze: list[dict] = []
+    adres = str((post or {}).get("canonical_url") or "")
+    if komentarz.get("post_id") and adres.startswith("http"):
+        from urllib.parse import urlsplit
+        czesci = urlsplit(adres)
+        dane = api_json(page, f"/api/v1/post/{komentarz['post_id']}/comments"
+                              "?all_comments=true",
+                        baza=f"{czesci.scheme}://{czesci.netloc}")
+        gora = dane if isinstance(dane, list) else (dane or {}).get("comments") or []
+        komentarze = [c for k in gora if isinstance(k, dict) for c in _plaskie(k)]
+    if not komentarze:
+        watek = api_json(page, f"/api/v1/reader/comment/{korzen}/replies"
+                               f"?comment_id={korzen}") or {}
+        komentarze = [c for g in (watek.get("commentBranches") or [])
+                      for c in _plaskie(g)]
+    pamiec[klucz] = komentarze
+    return komentarze
+
+
 def odpowiedzi_na_nasze_komentarze(ile: int = 10) -> list[dict[str, Any]]:
     """Odpowiedzi na NASZE komentarze zostawione pod CUDZYMI tekstami.
 
@@ -2449,6 +2541,7 @@ def odpowiedzi_na_nasze_komentarze(ile: int = 10) -> list[dict[str, Any]]:
                  if isinstance(x, dict) and x.get("id") is not None}
 
         czekaja: list[dict[str, Any]] = []
+        pamiec_galezi: dict = {}
         for zdarzenie in kanal.get("activityItems") or []:
             if not isinstance(zdarzenie, dict):
                 continue
@@ -2483,6 +2576,18 @@ def odpowiedzi_na_nasze_komentarze(ile: int = 10) -> list[dict[str, Any]]:
                      or (ludzie.get((zdarzenie.get("recent_sender_ids") or [None])[0])
                          or {}).get("name") or "")
             post = posty.get(zdarzenie.get("target_post_id")) or {}
+            # LIMIT ROZMOWY — patrz `korzen_rozmowy`. Dopiero tutaj, po odsianiu
+            # wiadomosci, na ktore juz odpisalismy: galaz kosztuje jedno wejscie
+            # na strone, a tamto sito nie kosztuje nic.
+            korzen = korzen_rozmowy(ich)
+            galaz = _komentarze_galezi(page, ich, korzen, post, pamiec_galezi)
+            juz = nasze_odpowiedzi_w_rozmowie(galaz, korzen, moje_id)
+            wolno = limit_rozmowy(ich.get("user_id"))
+            if juz >= wolno:
+                print(f"  [rozmowa] {autor or '?'}: nasze odpowiedzi w tej "
+                      f"rozmowie {juz}/{wolno} — ostatnie slowo zostaje po ich "
+                      "stronie", flush=True)
+                continue
             czekaja.append({
                 "pod_czym": (nasz.get("body") or "")[:400],
                 # Odpowiadamy ICH komentarzowi, nie swojemu — inaczej wpis
@@ -2541,6 +2646,13 @@ def komentarze_pod_artykulami(ile: int = 5) -> list[dict[str, Any]]:
             dane = api_json(page, f"/api/v1/post/{post['id']}/comments"
                                   "?all_comments=true", baza=moj)
             kom = dane if isinstance(dane, list) else (dane or {}).get("comments") or []
+            # CALE DRZEWO, NIE SAM WIERZCH. `kom` to komentarze najwyzszego
+            # poziomu, a nasze odpowiedzi wisza pietro nizej, w `children`.
+            # `nasz_ostatni` ich wiec nie widzial i komentarz, na ktory juz
+            # odpisalismy, dalej wygladal na czekajacy — w kazdym przebiegu.
+            # Tak wlasnie odpisalismy 20 razy na jeden komentarz pod naszym
+            # artykulem, zmierzone 26 wrzesnia 2026.
+            wszystkie = [c for k in kom if isinstance(k, dict) for c in _plaskie(k)]
             nasze_daty = [_kiedy(k) for k in kom
                           if isinstance(k, dict) and k.get("user_id") == moje_id]
             nasz_ostatni = max(nasze_daty, default=0.0)
@@ -2548,6 +2660,12 @@ def komentarze_pod_artykulami(ile: int = 5) -> list[dict[str, Any]]:
                 if not isinstance(k, dict) or k.get("user_id") == moje_id:
                     continue
                 if nasz_ostatni and _kiedy(k) < nasz_ostatni:
+                    continue
+                # Ta droga zaczyna rozmowe, nie prowadzi jej. Jesli w galezi
+                # jest juz nasza odpowiedz, kolejne tury przyjda jako
+                # `comment_reply` do `odpowiedzi_na_nasze_komentarze`, a tam
+                # stoi limit rozmowy.
+                if nasze_odpowiedzi_w_rozmowie(wszystkie, k.get("id"), moje_id):
                     continue
                 czekaja.append({
                     "pod_czym": (post.get("title") or "")[:200],
@@ -2614,6 +2732,24 @@ def nieodpowiedziane(ile: int = 10) -> list[dict[str, Any]]:
                 if ostatni.get("user_id") == moje_id:
                     continue
                 if nasz_ostatni and _kiedy(ostatni) < nasz_ostatni:
+                    continue
+                # LIMIT ROZMOWY POD NASZA NOTKA — patrz `korzen_rozmowy`. Tu
+                # odpisujemy w polu pod cala notka, wiec nasza odpowiedz jest
+                # RODZENSTWEM ich komentarza, nie dzieckiem, i `ancestor_path`
+                # nie powie, komu odpisalismy. Liczymy wiec kazda nasza
+                # wypowiedz w watku od pierwszego slowa tej osoby: przy kilku
+                # rozmowcach limit zadziala wczesniej, nigdy pozniej.
+                rozmowca = ostatni.get("user_id")
+                od_kiedy = min((_kiedy(c) for c in wszystkie
+                                if c.get("user_id") == rozmowca),
+                               default=_kiedy(ostatni))
+                juz = sum(1 for c in wszystkie
+                          if c.get("user_id") == moje_id and _kiedy(c) > od_kiedy)
+                wolno = limit_rozmowy(rozmowca)
+                if juz >= wolno:
+                    print(f"  [rozmowa] {ostatni.get('name') or '?'} pod nasza "
+                          f"notka: nasze odpowiedzi {juz}/{wolno} — ostatnie "
+                          "slowo zostaje po ich stronie", flush=True)
                     continue
                 czekaja.append({
                     "pod_czym": (n.get("body") or "")[:400], "pod_id": n["id"],

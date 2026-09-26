@@ -341,7 +341,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6837 wierszy, 114 funkcji na poziomie modułu, 3 klas
+6973 wierszy, 119 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -393,6 +393,11 @@
 | `_artykuly_z_panelu(page, baza)` *(wewn.)* | Nasze artykuly razem ze statystykami — JEDNYM zapytaniem. |
 | `nasze_pozycje_do_pomiaru(page, ile)` | Co wystawilismy i ma wlasny numer — czyli co da sie zmierzyc. |
 | `dopisz_skutki()` | Dopisuje do dziennika, CO Z NASZYCH DZIALAN WYNIKLO. |
+| `_przodkowie(komentarz)` *(wewn.)* | Numery przodkow z `ancestor_path`, od korzenia w dol. |
+| `korzen_rozmowy(komentarz)` | Numer komentarza, ktory zaczal galaz, w ktorej stoi `komentarz`. |
+| `nasze_odpowiedzi_w_rozmowie(komentarze, korzen, moje_id)` | Ile razy JUZ odpisalismy pod `korzen`. |
+| `limit_rozmowy(rozmowca_id)` | Ile razy wolno nam odpisac w jednej rozmowie z ta osoba. |
+| `_komentarze_galezi(page, komentarz, korzen, post, pamiec)` *(wewn.)* | Wszystkie komentarze galezi `korzen` — jedno zapytanie na galaz. |
 | `odpowiedzi_na_nasze_komentarze(ile)` | Odpowiedzi na NASZE komentarze zostawione pod CUDZYMI tekstami. |
 | `komentarze_pod_artykulami(ile)` | Cudze komentarze pod NASZYMI artykulami, na ktore nie odpisalismy. |
 | `nieodpowiedziane(ile)` | Cudze odpowiedzi pod naszymi notkami, na które jeszcze nie odpisaliśmy. |
@@ -735,7 +740,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3991 wierszy, 44 funkcji na poziomie modułu, 0 klas
+4011 wierszy, 44 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

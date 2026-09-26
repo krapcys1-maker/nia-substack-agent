@@ -12,7 +12,7 @@ The **what it does** column comes from each function's own docstring, so it is i
 | what | how many |
 |---|---|
 | modules | 38 |
-| functions and methods | 839 |
+| functions and methods | 844 |
 | functions that call a paid model | 29 |
 | functions that touch the browser | 75 |
 | functions that touch the database | 53 |
@@ -44,7 +44,7 @@ For paid calls the verdict comes from
 | [`audyt_systemu.py`](#agent-v2audyt-systemu-py) | 9 | 0 | 1 | 0 | Audyt CALEGO systemu na zywych danych, jednym poleceniem. |
 | [`audyt_tematow.py`](#agent-v2audyt-tematow-py) | 4 | 0 | 0 | 0 | Audyt segmentu tematow — kazdy etap na ZYWYCH danych, jednym poleceniem. |
 | [`bramki.py`](#agent-v2bramki-py) | 9 | 0 | 0 | 0 | Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci. |
-| [`browser.py`](#agent-v2browser-py) | 118 | 0 | 54 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
+| [`browser.py`](#agent-v2browser-py) | 123 | 0 | 54 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
 | [`browser_reader.py`](#agent-v2browser-reader-py) | 5 | 0 | 1 | 0 | Bound source reads, including Playwright shutdown, in an owned subprocess. |
 | [`call_runtime.py`](#agent-v2call-runtime-py) | 10 | 0 | 1 | 0 | Per-operation deadlines and usage; workers never write to the database. |
 | [`config.py`](#agent-v2config-py) | 45 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
@@ -267,7 +267,7 @@ Co moze zatrzymac tresc — wyliczone z kodu, nie spisane z pamieci.
 
 Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 
-118 funkcji.
+123 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
@@ -287,13 +287,13 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 | 528 | `uruchom_chrome()` | — | Otwiera Chrome na trwałym profilu agenta, jeśli jeszcze nie działa. | `browser.podlacz_sie` |
 | 560 | `rozgrzej(context)` | WWW | Pozwala Cloudflare wydać zgodę dla adresu, z którego akurat działamy. | `browser.podlacz_sie` |
 | 603 | `plaski(tekst)` | — | Tekst sprowadzony do znakow, ktore SAMI piszemy — do POROWNYWANIA. | `browser.numer_naszej_notki`, `browser.potwierdz_artykul`, `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` *(+6)* |
-| 633 | `api_json(page, sciezka, baza)` | WWW | Czyta API WCHODZĄC na adres, zamiast wołać `fetch` ze strony. | `browser._artykuly_z_panelu`, `browser._klik_na_profilu`, `browser._watek_z_paginacja`, `browser.artykul_opublikowany` *(+21)* |
+| 633 | `api_json(page, sciezka, baza)` | WWW | Czyta API WCHODZĄC na adres, zamiast wołać `fetch` ze strony. | `browser._artykuly_z_panelu`, `browser._klik_na_profilu`, `browser._komentarze_galezi`, `browser._watek_z_paginacja` *(+22)* |
 | 668 | `podlacz_sie()` | WWW | Podłącza się do Chrome'a, którego uruchomił i zalogował WŁAŚCICIEL. | `browser._klik_na_profilu`, `browser.artykul_opublikowany`, `browser.dopisz_skutki`, `browser.ile_dzis_wystawione` *(+26)* |
 | 793 | `sprawdz_sesje()` | WWW | Czy Chrome właściciela jest zalogowany i co agent w nim widzi. | `browser (poziom modulu)` |
 | 833 | `sprawdz_serwer()` | WWW | Odpowiada na JEDNO pytanie: czy zapisana sesja żyje z adresu tego serwera. | `browser (poziom modulu)` |
 | 881 | `zaloguj()` | WWW | Otwiera prawdziwe okno przeglądarki i czeka, aż właściciel się zaloguje. | `browser (poziom modulu)` |
 | 938 | `rozpoznanie()` | WWW | Sprawdza, czy agent umie się poruszać po zalogowanym koncie. | `browser (poziom modulu)` |
-| 1010 | `_plaskie(galaz)` | — | Rozwija gałąź wątku do płaskiej listy komentarzy. | `browser._watek_z_paginacja`, `browser.juz_sie_odezwalismy`, `browser.nieodpowiedziane`, `browser.odpowiedzi_na_nasze_komentarze` *(+1)* |
+| 1010 | `_plaskie(galaz)` | — | Rozwija gałąź wątku do płaskiej listy komentarzy. | `browser._komentarze_galezi`, `browser._watek_z_paginacja`, `browser.juz_sie_odezwalismy`, `browser.komentarze_pod_artykulami` *(+3)* |
 | 1025 | `_kiedy(c)` | — | — | `browser.komentarze_pod_artykulami`, `browser.nieodpowiedziane`, `browser.odpowiedzi_na_nasze_komentarze` |
 | 1034 | `ile_dzis_wystawione()` | WWW | Ile notek, komentarzy i polubien poszlo dzisiaj. | `run.dzien` |
 | 1105 | `statystyki_pozycji(pozycje)` | WWW | Pobiera statystyki NASZYCH tresci — jedna przegladarka na cala liste. | `run.dzien`, `run.dzien.odpowiedzi` |
@@ -320,75 +320,80 @@ Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza.
 | 2054 | `_artykuly_z_panelu.licz(*klucze)` | — | — | `browser._artykuly_z_panelu` |
 | 2091 | `nasze_pozycje_do_pomiaru(page, ile)` | — | Co wystawilismy i ma wlasny numer — czyli co da sie zmierzyc. | `browser.statystyki_pozycji` |
 | 2256 | `dopisz_skutki()` | WWW | Dopisuje do dziennika, CO Z NASZYCH DZIALAN WYNIKLO. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 2407 | `odpowiedzi_na_nasze_komentarze(ile)` | WWW | Odpowiedzi na NASZE komentarze zostawione pod CUDZYMI tekstami. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 2519 | `komentarze_pod_artykulami(ile)` | WWW | Cudze komentarze pod NASZYMI artykulami, na ktore nie odpisalismy. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 2576 | `nieodpowiedziane(ile)` | WWW | Cudze odpowiedzi pod naszymi notkami, na które jeszcze nie odpisaliśmy. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 2635 | `sluchaj_publikacji(page)` | WWW | Zbiera kody odpowiedzi na zapytania PUBLIKUJACE. | `browser.wystaw_notke` |
-| 2652 | `id_z_odpowiedzi(odpowiedzi)` | — | Identyfikator notki, ktory Substack oddal przy zapisie. | `browser.wystaw_notke` |
-| 2685 | `numer_naszej_notki(page, tekst, prob)` | WWW | Numer notki odczytany z NASZEGO PROFILU po jej tresci. | `browser.potwierdz_notke`, `browser.restackuj_w_kanale`, `browser.wystaw_notke` |
-| 2721 | `potwierdz_notke(page, tekst, prob)` | — | Pyta Substacka, czy notka naprawdę wisi na naszym profilu. | `browser.wystaw_notke` |
-| 2752 | `_autor_przy_przycisku(przycisk)` | — | Kto napisal wpis, przy ktorym stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
-| 2801 | `_uchwyt_wezla(lokator)` | — | Uchwyt do KONKRETNEGO wezla DOM, albo None. | `browser.polub_w_kanale` |
-| 2815 | `_stan_przycisku(uchwyt)` | — | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. | `browser.polub_w_kanale`, `browser.potwierdz_polubienie` |
-| 2840 | `potwierdz_polubienie(uchwyt, przed)` | — | Czy przycisk po klknieciu wyglada inaczej niz przed nim. | `browser.polub_w_kanale` |
-| 2871 | `polub_w_kanale(ile, wyslij, url)` | WWW | Polubienia w kanale czytelnika. | `run.dzien`, `run.dzien.polubienia` |
-| 3005 | `klik_mimo_zaslony(przycisk, nazwa, timeout)` | — | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. | `browser._domknij_publikacje_artykulu`, `browser._klik_na_profilu`, `browser._wybierz_darmowy_plan`, `browser.restackuj_w_kanale` *(+8)* |
-| 3056 | `_inna_strona(przed, teraz)` | — | Czy przegladarka zmienila STRONE, a nie tylko kotwice albo ukosnik. | `browser.wystaw_odpowiedz_pod_artykulem` |
-| 3063 | `_inna_strona.goly(u)` | — | — | `browser._inna_strona` |
-| 3070 | `_tresc_pola(pole)` | — | Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania. | `browser.oproznij_pole`, `browser.wpisz_w_puste_pole` |
-| 3080 | `oproznij_pole(page, pole, nazwa)` | WWW | Czysci pole do zera. | `browser.wpisz_w_puste_pole`, `browser.wystaw_komentarz`, `browser.wystaw_notke`, `browser.wystaw_odpowiedz` *(+1)* |
-| 3105 | `wpisz_w_puste_pole(page, pole, tekst, nazwa, timeout, klikaj)` | WWW | Czysci pole, pisze, sprawdza wynik. | `browser.wystaw_komentarz`, `browser.wystaw_notke`, `browser.wystaw_odpowiedz`, `browser.wystaw_odpowiedz_pod_artykulem` |
-| 3167 | `konto_za_duze(handle)` | — | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. | `run.dzien`, `run.dzien.subskrybuj` |
-| 3255 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` | WWW | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. | `browser.zasubskrybuj` |
-| 3440 | `_wybierz_darmowy_plan(page)` | WWW | Finish an explicitly free plan; never select a paid/default plan. | `browser._klik_na_profilu` |
-| 3467 | `pobierz_subskrybentow()` | WWW | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. | `kopia_subskrybentow.pobierz_z_panelu` |
-| 3537 | `zloz_wiersze_subskrybentow(surowe)` | — | Sklada wiersze z komorek tabeli panelu: adres, typ i data rozpoczecia. | `browser._wiersze_subskrybentow` |
-| 3575 | `_wiersze_subskrybentow(page)` | WWW | Czyta komorki tabeli z panelu i oddaje je zlozone. | `browser.pobierz_subskrybentow` |
-| 3639 | `_pozycje_menu(page)` | WWW | Teksty pozycji OTWARTEGO menu, w kolejnosci ekranu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
-| 3658 | `_otworz_menu_profilu(page)` | WWW | Klika kolko „..." w naglowku profilu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
-| 3680 | `potwierdz_obserwacje(page)` | WWW | Czy menu profilu mowi teraz, ze go OBSERWUJEMY. | `browser.obserwuj_profil` |
-| 3749 | `obserwuj_profil(handle, wyslij)` | WWW | Obserwuje cudzy profil — jego notki trafiaja do naszego kanalu. | `run.dzien`, `run.dzien.obserwuj` |
-| 3921 | `kogo_polecamy(page)` | WWW | Kogo nasza publikacja poleca — z API, nie z pamieci. | `browser.polec_publikacje` |
-| 3953 | `polec_publikacje(fraza, powod, wyslij)` | WWW DEAD? | Dodaje REKOMENDACJE publikacji. | — |
-| 4060 | `zasubskrybuj(handle, wyslij)` | — | Subskrybuje cudzy profil. | `run.dzien`, `run.dzien.subskrybuj` |
-| 4066 | `_esc(t)` | — | — | `browser._html_z_linkami`, `browser.rozbierz_artykul` |
-| 4070 | `_html_z_linkami(tekst)` | — | Render inline HTTP(S) Markdown links while escaping all source text. | `browser.rozbierz_artykul` |
-| 4082 | `rozbierz_artykul(sciezka)` | — | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. | `browser.wystaw_artykul` |
-| 4206 | `wypelnij_artykul(page, artykul, obraz, obraz2, kotwica2)` | WWW | Wkłada tytuł, podtytuł, grafiki i treść do otwartego edytora. | `browser.wystaw_artykul` |
-| 4246 | `wypelnij_artykul._wklej_obraz(plik, opis, bylo)` | WWW | Jeden obraz w miejscu, w którym stoi karetka. | `browser.wypelnij_artykul` |
-| 4283 | `wstaw_przycisk_subskrypcji(page)` | WWW | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. | `browser.wypelnij_artykul` |
-| 4320 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
-| 4341 | `ustaw_oswiadczenie_ai(wyslij)` | WWW | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | `browser (poziom modulu)` |
-| 4419 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
-| 4771 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
-| 4790 | `wylacz_wykrywanie_ai(page)` | WWW | Klika „Disable AI detection" na stronie ustawien publikacji. | `browser.wystaw_artykul` |
-| 4851 | `_domknij_publikacje_artykulu(page)` | WWW | Complete Substack's optional subscribe-button prompt after Send. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
-| 4865 | `_potwierdz_wysylke_artykulu(page, tytul)` | WWW | Retry reads, never the send; keep the editor open for a late prompt. | `browser.wystaw_artykul` |
-| 4884 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
-| 5002 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
-| 5035 | `przycisk_wysylki(page, nazwy)` | WWW | Pierwszy WIDOCZNY przycisk o DOKLADNIE jednej z tych nazw: (przycisk, nazwa). | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz` |
-| 5064 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
-| 5100 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
-| 5289 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki`, `run.promuj_artykul` |
-| 5420 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
-| 5447 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
-| 5461 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
-| 5506 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
-| 5626 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
-| 5730 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
-| 5770 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
-| 5821 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
-| 5831 | `artykul_opublikowany(url)` | WWW | Czy artykul nadal wisi na naszej publikacji. | `run.promuj_artykul` |
-| 5866 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
-| 5899 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
-| 5971 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
-| 6203 | `read_pages(urls)` | — | Read sources with a deadline that also covers browser shutdown. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
-| 6213 | `kogo_juz_restackowalismy(dni)` | — | Autorzy podani dalej w ostatnich `dni` dniach. | `browser.restackuj_w_kanale` |
-| 6284 | `restackuj_w_kanale(ile, decyzja, wyslij, url)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
-| 6347 | `restackuj_w_kanale.doladuj(cel_przyciskow)` | WWW | Przewija, dopoki przybywa przyciskow i jest ich mniej niz cel. | `browser.restackuj_w_kanale` |
-| 6712 | `w_rewirze(tekst)` | — | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
-| 6730 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
-| 6805 | `_tylko_jeden_wpis(tekst)` | — | Pierwszy wpis z kontenera, gdy mimo wszystko trafilo sie ich kilka. | `browser._notka_przy_przycisku` |
+| 2422 | `_przodkowie(komentarz)` | — | Numery przodkow z `ancestor_path`, od korzenia w dol. | `browser.korzen_rozmowy`, `browser.nasze_odpowiedzi_w_rozmowie` |
+| 2427 | `korzen_rozmowy(komentarz)` | — | Numer komentarza, ktory zaczal galaz, w ktorej stoi `komentarz`. | `browser.odpowiedzi_na_nasze_komentarze` |
+| 2442 | `nasze_odpowiedzi_w_rozmowie(komentarze, korzen, moje_id)` | — | Ile razy JUZ odpisalismy pod `korzen`. | `browser.komentarze_pod_artykulami`, `browser.odpowiedzi_na_nasze_komentarze` |
+| 2455 | `limit_rozmowy(rozmowca_id)` | — | Ile razy wolno nam odpisac w jednej rozmowie z ta osoba. | `browser.nieodpowiedziane`, `browser.odpowiedzi_na_nasze_komentarze` |
+| 2466 | `_komentarze_galezi(page, komentarz, korzen, post, pamiec)` | — | Wszystkie komentarze galezi `korzen` — jedno zapytanie na galaz. | `browser.odpowiedzi_na_nasze_komentarze` |
+| 2499 | `odpowiedzi_na_nasze_komentarze(ile)` | WWW | Odpowiedzi na NASZE komentarze zostawione pod CUDZYMI tekstami. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 2624 | `komentarze_pod_artykulami(ile)` | WWW | Cudze komentarze pod NASZYMI artykulami, na ktore nie odpisalismy. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 2694 | `nieodpowiedziane(ile)` | WWW | Cudze odpowiedzi pod naszymi notkami, na które jeszcze nie odpisaliśmy. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 2771 | `sluchaj_publikacji(page)` | WWW | Zbiera kody odpowiedzi na zapytania PUBLIKUJACE. | `browser.wystaw_notke` |
+| 2788 | `id_z_odpowiedzi(odpowiedzi)` | — | Identyfikator notki, ktory Substack oddal przy zapisie. | `browser.wystaw_notke` |
+| 2821 | `numer_naszej_notki(page, tekst, prob)` | WWW | Numer notki odczytany z NASZEGO PROFILU po jej tresci. | `browser.potwierdz_notke`, `browser.restackuj_w_kanale`, `browser.wystaw_notke` |
+| 2857 | `potwierdz_notke(page, tekst, prob)` | — | Pyta Substacka, czy notka naprawdę wisi na naszym profilu. | `browser.wystaw_notke` |
+| 2888 | `_autor_przy_przycisku(przycisk)` | — | Kto napisal wpis, przy ktorym stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 2937 | `_uchwyt_wezla(lokator)` | — | Uchwyt do KONKRETNEGO wezla DOM, albo None. | `browser.polub_w_kanale` |
+| 2951 | `_stan_przycisku(uchwyt)` | — | Jak przycisk wyglada — wszystkie sygnaly naraz, sklejone w jeden napis. | `browser.polub_w_kanale`, `browser.potwierdz_polubienie` |
+| 2976 | `potwierdz_polubienie(uchwyt, przed)` | — | Czy przycisk po klknieciu wyglada inaczej niz przed nim. | `browser.polub_w_kanale` |
+| 3007 | `polub_w_kanale(ile, wyslij, url)` | WWW | Polubienia w kanale czytelnika. | `run.dzien`, `run.dzien.polubienia` |
+| 3141 | `klik_mimo_zaslony(przycisk, nazwa, timeout)` | — | Klika normalnie, a gdy cos zaslania przycisk — wysyla zdarzenie wprost. | `browser._domknij_publikacje_artykulu`, `browser._klik_na_profilu`, `browser._wybierz_darmowy_plan`, `browser.restackuj_w_kanale` *(+8)* |
+| 3192 | `_inna_strona(przed, teraz)` | — | Czy przegladarka zmienila STRONE, a nie tylko kotwice albo ukosnik. | `browser.wystaw_odpowiedz_pod_artykulem` |
+| 3199 | `_inna_strona.goly(u)` | — | — | `browser._inna_strona` |
+| 3206 | `_tresc_pola(pole)` | — | Co NAPRAWDE stoi w polu — `innerText` albo `value`, bez zgadywania. | `browser.oproznij_pole`, `browser.wpisz_w_puste_pole` |
+| 3216 | `oproznij_pole(page, pole, nazwa)` | WWW | Czysci pole do zera. | `browser.wpisz_w_puste_pole`, `browser.wystaw_komentarz`, `browser.wystaw_notke`, `browser.wystaw_odpowiedz` *(+1)* |
+| 3241 | `wpisz_w_puste_pole(page, pole, tekst, nazwa, timeout, klikaj)` | WWW | Czysci pole, pisze, sprawdza wynik. | `browser.wystaw_komentarz`, `browser.wystaw_notke`, `browser.wystaw_odpowiedz`, `browser.wystaw_odpowiedz_pod_artykulem` |
+| 3303 | `konto_za_duze(handle)` | — | Czy konto przekracza sufit odbiorcow — SPRAWDZANE ZANIM ZAPLACIMY CZAS. | `run.dzien`, `run.dzien.subskrybuj` |
+| 3391 | `_klik_na_profilu(handle, napisy, rodzaj, wyslij)` | WWW | Klika JEDEN konkretny przycisk na cudzym profilu — i tylko jego. | `browser.zasubskrybuj` |
+| 3576 | `_wybierz_darmowy_plan(page)` | WWW | Finish an explicitly free plan; never select a paid/default plan. | `browser._klik_na_profilu` |
+| 3603 | `pobierz_subskrybentow()` | WWW | Czyta liste subskrybentow z WLASNEGO panelu, wlasna sesja. | `kopia_subskrybentow.pobierz_z_panelu` |
+| 3673 | `zloz_wiersze_subskrybentow(surowe)` | — | Sklada wiersze z komorek tabeli panelu: adres, typ i data rozpoczecia. | `browser._wiersze_subskrybentow` |
+| 3711 | `_wiersze_subskrybentow(page)` | WWW | Czyta komorki tabeli z panelu i oddaje je zlozone. | `browser.pobierz_subskrybentow` |
+| 3775 | `_pozycje_menu(page)` | WWW | Teksty pozycji OTWARTEGO menu, w kolejnosci ekranu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
+| 3794 | `_otworz_menu_profilu(page)` | WWW | Klika kolko „..." w naglowku profilu. | `browser.obserwuj_profil`, `browser.potwierdz_obserwacje` |
+| 3816 | `potwierdz_obserwacje(page)` | WWW | Czy menu profilu mowi teraz, ze go OBSERWUJEMY. | `browser.obserwuj_profil` |
+| 3885 | `obserwuj_profil(handle, wyslij)` | WWW | Obserwuje cudzy profil — jego notki trafiaja do naszego kanalu. | `run.dzien`, `run.dzien.obserwuj` |
+| 4057 | `kogo_polecamy(page)` | WWW | Kogo nasza publikacja poleca — z API, nie z pamieci. | `browser.polec_publikacje` |
+| 4089 | `polec_publikacje(fraza, powod, wyslij)` | WWW DEAD? | Dodaje REKOMENDACJE publikacji. | — |
+| 4196 | `zasubskrybuj(handle, wyslij)` | — | Subskrybuje cudzy profil. | `run.dzien`, `run.dzien.subskrybuj` |
+| 4202 | `_esc(t)` | — | — | `browser._html_z_linkami`, `browser.rozbierz_artykul` |
+| 4206 | `_html_z_linkami(tekst)` | — | Render inline HTTP(S) Markdown links while escaping all source text. | `browser.rozbierz_artykul` |
+| 4218 | `rozbierz_artykul(sciezka)` | — | Rozkłada plik artykułu na tytuł, podtytuł i treść jako HTML. | `browser.wystaw_artykul` |
+| 4342 | `wypelnij_artykul(page, artykul, obraz, obraz2, kotwica2)` | WWW | Wkłada tytuł, podtytuł, grafiki i treść do otwartego edytora. | `browser.wystaw_artykul` |
+| 4382 | `wypelnij_artykul._wklej_obraz(plik, opis, bylo)` | WWW | Jeden obraz w miejscu, w którym stoi karetka. | `browser.wypelnij_artykul` |
+| 4419 | `wstaw_przycisk_subskrypcji(page)` | WWW | Jeden przycisk subskrypcji, po ostatnim akapicie a przed źródłami. | `browser.wypelnij_artykul` |
+| 4456 | `tresc_oswiadczenia()` | — | Oświadczenie „Jak to robię" — z pliku, nie z drugiej kopii w kodzie. | `browser.ustaw_oswiadczenie_ai` |
+| 4477 | `ustaw_oswiadczenie_ai(wyslij)` | WWW | Ustawia stałe oświadczenie pokazywane każdemu, kto skanuje nas pod kątem AI. | `browser (poziom modulu)` |
+| 4555 | `wystaw_odpowiedz_pod_artykulem(url_artykulu, autor, tekst, wyslij)` | WWW | Odpowiada pod KONKRETNYM komentarzem pod naszym artykułem. | `run.dzien`, `run.dzien.odpowiedzi` |
+| 4907 | `potwierdz_artykul(page, tytul)` | — | Pyta Substacka, czy artykuł naprawdę jest opublikowany. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
+| 4926 | `wylacz_wykrywanie_ai(page)` | WWW | Klika „Disable AI detection" na stronie ustawien publikacji. | `browser.wystaw_artykul` |
+| 4987 | `_domknij_publikacje_artykulu(page)` | WWW | Complete Substack's optional subscribe-button prompt after Send. | `browser._potwierdz_wysylke_artykulu`, `browser.wystaw_artykul` |
+| 5001 | `_potwierdz_wysylke_artykulu(page, tytul)` | WWW | Retry reads, never the send; keep the editor open for a late prompt. | `browser.wystaw_artykul` |
+| 5020 | `wystaw_artykul(sciezka_md, sciezka_png, wyslij)` | WWW | Wystawia artykuł na Substacku. | `artykul_z_puli._opublikuj`, `run.main` |
+| 5138 | `_watek_z_paginacja(page, nid, stron)` | — | Caly watek notki — ze WSZYSTKICH stron, nie tylko z pierwszej. | `browser.potwierdz_komentarz`, `browser.potwierdz_odpowiedz` |
+| 5171 | `przycisk_wysylki(page, nazwy)` | WWW | Pierwszy WIDOCZNY przycisk o DOKLADNIE jednej z tych nazw: (przycisk, nazwa). | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz` |
+| 5200 | `potwierdz_odpowiedz(page, note_id, tekst)` | WWW | Pyta Substacka, czy nasza odpowiedź naprawdę jest w wątku — i KTORA. | `browser.wystaw_odpowiedz` |
+| 5236 | `wystaw_odpowiedz(note_id, tekst, wyslij, kontekst, rodzaj)` | WWW | Odpowiada w watku — pod nasza notka albo w cudzej dyskusji. | `run.dzien`, `run.dzien.dyskusje`, `run.dzien.odpowiedzi` |
+| 5425 | `wystaw_notke(tekst, wyslij, typ, forma, model)` | WWW | Wystawia notkę. | `run.dzien`, `run.dzien.notki`, `run.promuj_artykul` |
+| 5556 | `zapamietaj_platny_host(host, prawo)` | — | Host, ktory wprost mowi, ze komentowac moga tylko placacy. | `browser.mozna_komentowac` |
+| 5583 | `hosty_tylko_dla_placacych()` | — | Hosty, gdzie komentowac moga tylko placacy — do odsiania PRZED ocena. | `audyt_systemu.main`, `run.dzien`, `run.dzien.komentarze` |
+| 5597 | `zapomnij_platny_host(host)` | — | Udany komentarz kasuje host z listy — wydawca mogl zmienic ustawienia. | `run.dzien`, `run.dzien.komentarze` |
+| 5642 | `hosty_gdzie_komentarz_nie_wchodzi(min_prob, dni)` | — | Hosty, gdzie w ostatnich `dni` dniach probowalismy >=2 razy i ANI RAZ komentarz nie wszedl. | `browser.mozna_komentowac`, `run.dzien`, `run.dzien.komentarze` |
+| 5762 | `mozna_komentowac(url)` | WWW | Czy pod tym tekstem wolno nam w ogóle napisać. | `run.dzien`, `run.dzien.komentarze` |
+| 5866 | `uchwyt_publikacji(host)` | WWW | Nazwa konta do obserwowania — z hosta albo, gdy trzeba, z API. | `run.dzien`, `run.dzien.obserwuj`, `run.dzien.subskrybuj` |
+| 5906 | `juz_sie_odezwalismy(page, url)` | — | Czy JUZ napisalismy cokolwiek pod tym postem albo pod ta notka. | `browser.wystaw_komentarz` |
+| 5957 | `bez_znacznikow(html)` | — | Sam tekst, bez HTML-a. | `browser.wystaw_artykul` |
+| 5967 | `artykul_opublikowany(url)` | WWW | Czy artykul nadal wisi na naszej publikacji. | `run.promuj_artykul` |
+| 6002 | `potwierdz_adres_artykulu(page, tytul)` | — | Prawdziwy adres opublikowanego artykulu — od Substacka, nie z tytulu. | `browser.wystaw_artykul` |
+| 6035 | `potwierdz_komentarz(page, url, tekst)` | WWW | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. | `browser.wystaw_komentarz`, `browser.wystaw_odpowiedz_pod_artykulem` |
+| 6107 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | WWW | Wystawia komentarz pod cudzym postem. | `run.dzien`, `run.dzien.komentarze` |
+| 6339 | `read_pages(urls)` | — | Read sources with a deadline that also covers browser shutdown. | `run.dzien`, `run.dzien.komentarze`, `stages._dobierz_przegladarka` |
+| 6349 | `kogo_juz_restackowalismy(dni)` | — | Autorzy podani dalej w ostatnich `dni` dniach. | `browser.restackuj_w_kanale` |
+| 6420 | `restackuj_w_kanale(ile, decyzja, wyslij, url)` | WWW | Podaje dalej cudze notki z wlasnym zdaniem. | `run.dzien`, `run.dzien.restacki` |
+| 6483 | `restackuj_w_kanale.doladuj(cel_przyciskow)` | WWW | Przewija, dopoki przybywa przyciskow i jest ich mniej niz cel. | `browser.restackuj_w_kanale` |
+| 6848 | `w_rewirze(tekst)` | — | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 6866 | `_notka_przy_przycisku(przycisk)` | — | Tresc i autor notki, przy ktorej stoi ten przycisk. | `browser.polub_w_kanale`, `browser.restackuj_w_kanale` |
+| 6941 | `_tylko_jeden_wpis(tekst)` | — | Pierwszy wpis z kontenera, gdy mimo wszystko trafilo sie ich kilka. | `browser._notka_przy_przycisku` |
 
 ---
 
