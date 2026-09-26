@@ -41,9 +41,15 @@ Zamiany naklada `zastosuj` przy starcie kazdego procesu, zaraz po presecie.
 - Nie czyta bledu sieci jako wycofania. Brak listy to „nie wiem".
 - Nie rusza modeli z `config.MODELE_NIE_RUSZAJ`, a przy
   `config.MODELE_SAME_NA_NOWSZE = False` tylko raportuje.
-- Nie zgaduje ceny w dol. Nastepca bez wpisu w `PRICING` jest liczony po
-  PODWOJNEJ stawce poprzednika, oznaczonej jako niepotwierdzona — zawyzony
-  koszt zatrzyma budzet wczesniej, zanizony pozwolilby go przekroczyc.
+- Nie zgaduje ceny. Nastepca bez wpisu w `PRICING` dostaje stawke z cennika
+  dostawcy (`cennik_dostawcy`), sprawdzona PRZED proba na zywo; zapisana przy
+  zamianie wraca przy kazdym starcie. Gdy cennika nie da sie odczytac, liczy sie
+  1:1 jak poprzednik (decyzja wlasciciela z 26.09.2026). Do tego dnia byla to
+  PODWOJNA stawka poprzednika — i miesieczny sufit konczyl sie kilka dni przed
+  koncem miesiaca, choc prawdziwe koszty byly 2,5–4 razy mniejsze.
+- Nie przechodzi sam na wyraznie drozszy model. Podwyzka ponad
+  `config.MAKS_PODWYZKA_PRZY_ZAMIANIE` wedlug cennika dostawcy zostawia obecny
+  model i zglasza decyzje wlascicielowi.
 
 Wiersz polecen (z korzenia repo):
 
@@ -201,30 +207,43 @@ def lista_modeli(dostawca: str) -> list[str] | None:
         return None
 
 
-def zarejestruj(cfg, stary: str, nowy: str) -> None:
+# Modele, ktore w TYM procesie dostaly stawke poprzednika (1:1), bo ceny
+# z cennika dostawcy jeszcze nie znamy. `sprawdz_i_przelacz` probuje ja dla nich
+# uzupelnic — a wpisy z cennika silnika zostawia w spokoju.
+_JAK_POPRZEDNIK: set[str] = set()
+
+
+def zarejestruj(cfg, stary: str, nowy: str, cena: dict[str, Any] | None = None) -> None:
     """Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola.
 
     `llm._reserve_attempt` bierze `config.PRICING[model]` przed kazdym
     wywolaniem — model bez wpisu to KeyError w polowie platnej sciezki.
+
+    Stawka: z cennika silnika, potem `cena` z cennika dostawcy (sprawdzona przy
+    zamianie i zapisana w danych instancji), a gdy jej nie ma — 1:1 jak
+    poprzednik. Nigdy podwojnie: do 26.09.2026 bylo tu x2 i ksiegi pokazywaly
+    2,5–4 razy wiecej, niz modele naprawde kosztowaly.
     """
     if nowy not in cfg.PRICING:
-        cena = dict(cfg.PRICING[stary])
-        for klucz in ("in", "out", "cache"):
-            if klucz in cena:
-                cena[klucz] = cena[klucz] * 2
-        cena["verified"] = False
-        cfg.PRICING[nowy] = cena
-        print("  [modele] %s nie ma stawki w cenniku — licze po PODWOJNEJ stawce %s,"
-              " dopoki nikt nie wpisze prawdziwej" % (nowy, stary), flush=True)
+        import cennik_dostawcy
+        if cena and cennik_dostawcy.wiarygodna(cena):
+            cfg.PRICING[nowy] = {"in": float(cena["in"]), "out": float(cena["out"]),
+                                 "cache": float(cena.get("cache", 0.0)), "verified": False}
+            _JAK_POPRZEDNIK.discard(nowy)
+        else:
+            cfg.PRICING[nowy] = {**dict(cfg.PRICING[stary]), "verified": False}
+            _JAK_POPRZEDNIK.add(nowy)
+            print("  [modele] %s nie ma stawki w cenniku — licze 1:1 jak %s,"
+                  " dopoki cennik dostawcy jej nie poda" % (nowy, stary), flush=True)
     for slownik in ("WEB_SEARCH_TOOL", "STAWKI_PRZED_PODWYZKA"):
         s = getattr(cfg, slownik, None)
         if isinstance(s, dict) and stary in s and nowy not in s:
             s[nowy] = s[stary]
 
 
-def przestaw(cfg, stary: str, nowy: str) -> list[str]:
+def przestaw(cfg, stary: str, nowy: str, cena: dict[str, Any] | None = None) -> list[str]:
     """Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. Oddaje liste miejsc."""
-    zarejestruj(cfg, stary, nowy)
+    zarejestruj(cfg, stary, nowy, cena=cena)
     miejsca = []
     for rola, model in list(cfg.MODEL_FOR.items()):
         if model == stary:
@@ -281,14 +300,33 @@ def zastosuj(cfg=None) -> list[tuple[str, str]]:
         nowy = _koniec_lancucha(zamiany, stary)
         if nowy == stary or stary in przypiete:
             continue
-        if stary not in cfg.PRICING and nowy not in cfg.PRICING:
+        cena = cena_zapisana(zamiany, nowy)
+        if stary not in cfg.PRICING and nowy not in cfg.PRICING and not cena:
             continue
         if stary not in cfg.PRICING:
             # Poprzednik zniknal z cennika silnika — nastepca musi miec wlasny wpis.
-            cfg.PRICING[stary] = dict(cfg.PRICING[nowy])
-        if przestaw(cfg, stary, nowy):
+            cfg.PRICING[stary] = (dict(cfg.PRICING[nowy]) if nowy in cfg.PRICING
+                                  else {**cena, "verified": False})
+        if przestaw(cfg, stary, nowy, cena=cena):
             zrobione.append((stary, nowy))
     return zrobione
+
+
+def cena_zapisana(zamiany: dict[str, Any], nowy: str) -> dict[str, float] | None:
+    """Stawka `nowy` z cennika dostawcy, zapisana przy zamianie; None, gdy jej nie ma.
+
+    Plik czyta kazdy start procesu, wiec liczby przechodza te sama kontrole co
+    cennik: wejscie < wyjscie, cache <= wejscie.
+    """
+    import cennik_dostawcy
+    for wpis in zamiany.values():
+        if not isinstance(wpis, dict) or wpis.get("na") != nowy:
+            continue
+        cena = wpis.get("cena")
+        if isinstance(cena, dict) and cennik_dostawcy.wiarygodna(cena):
+            return {"in": float(cena["in"]), "out": float(cena["out"]),
+                    "cache": float(cena.get("cache", 0.0))}
+    return None
 
 
 def sprawdz_na_zywo(nowy: str, *, conn, run_id: int | None) -> tuple[bool, str]:
@@ -343,6 +381,23 @@ def sprawdz_i_przelacz(conn, run_id: int | None = None, *, wymus: bool = False,
     przypiete = set(getattr(config, "MODELE_NIE_RUSZAJ", ()) or ())
     pobrane: dict[str, list[str] | None] = dict(listy or {})
     raport: list[tuple[str, str | None, str]] = []
+    import cennik_dostawcy
+
+    # CENY ZAMIAN ZROBIONYCH, ZANIM SPRAWDZALISMY CENY — darmowym GET, bez
+    # ponownej proby modelu. Tylko dla nastepcow liczonych w tym procesie 1:1.
+    for stary_z, wpis in dane["zamiany"].items():
+        nowy_z = str((wpis or {}).get("na") or "")
+        if nowy_z not in _JAK_POPRZEDNIK or (wpis or {}).get("cena"):
+            continue
+        cena_z, zrodlo_z = cennik_dostawcy.stawka_u_dostawcy(
+            nowy_z, wzor=config.PRICING.get(stary_z))
+        if not cena_z:
+            continue
+        config.PRICING[nowy_z] = {**cena_z, "verified": False}
+        _JAK_POPRZEDNIK.discard(nowy_z)
+        wpis["cena"], wpis["cena_zrodlo"] = cena_z, zrodlo_z
+        raport.append((stary_z, nowy_z, "cena z cennika dostawcy: %s (%s)" % (cena_z, zrodlo_z)))
+
     for model in sorted(modele_w_uzyciu(config)):
         dostawca = rozbierz(model)["dostawca"]
         if dostawca not in pobrane:
@@ -358,15 +413,29 @@ def sprawdz_i_przelacz(conn, run_id: int | None = None, *, wymus: bool = False,
         if model in przypiete:
             raport.append((model, nowy, "przypiety, nie przelaczam (%s)" % powod))
             continue
+        # CENA NASTEPCY PRZED PROBA — z cennika silnika, a gdy go tam nie ma,
+        # z cennika dostawcy (`cennik_dostawcy`). Wyraznie drozszy nie wchodzi
+        # sam; nieodczytany cennik to 1:1 jak poprzednik.
+        wzor = config.PRICING.get(model)
+        z_silnika = nowy in config.PRICING and nowy not in _JAK_POPRZEDNIK
+        cena, zrodlo_ceny = ((config.PRICING[nowy], "cennik silnika") if z_silnika
+                             else cennik_dostawcy.stawka_u_dostawcy(nowy, wzor=wzor))
+        if (cena and wzor and cennik_dostawcy.podwyzka(cena, wzor)
+                > getattr(config, "MAKS_PODWYZKA_PRZY_ZAMIANIE", 0.25)):
+            raport.append((model, None, "nastepca %s drozszy o %.0f%% (%s) — zostaje obecny,"
+                           " decyzja wlasciciela" % (nowy, 100 * cennik_dostawcy.podwyzka(
+                               cena, wzor), zrodlo_ceny)))
+            continue
         if not przelaczaj:
-            raport.append((model, nowy, "do przelaczenia: %s" % powod))
+            raport.append((model, nowy, "do przelaczenia: %s; cena: %s" % (
+                powod, zrodlo_ceny if cena else "jak poprzednik")))
             continue
         # PROBA NA KONFIGURACJI JUZ PRZESTAWIONEJ. Dopiero wtedy stale wolane
         # wprost (effort, stawka cache) wskazuja nastepce i proba sprawdza to,
         # co pojdzie w produkcji. Oblana proba przywraca role i stale.
         role, stale = dict(config.MODEL_FOR), {n: getattr(config, n, None)
                                                for n in STALE_Z_MODELEM}
-        przestaw(config, model, nowy)
+        przestaw(config, model, nowy, cena=None if z_silnika else cena)
         # WLASNY KANAL KOSZTOW. Proba nie sluzy zadnej notce ani komentarzowi,
         # wiec ksiegowana pod ktoryms z nich zawyzalaby jego koszt. Kanal
         # stoi TUTAJ, przy wywolaniu — tak widzi go `test_kanal_platnego_wywolania`.
@@ -384,9 +453,15 @@ def sprawdz_i_przelacz(conn, run_id: int | None = None, *, wymus: bool = False,
             raport.append((model, None, "nastepca %s oblal probe: %s" % (nowy, szczegol)))
             continue
         dane["zamiany"][model] = {"na": nowy, "od": teraz.isoformat(timespec="seconds"),
-                                  "powod": powod, "proba": szczegol}
+                                  "powod": powod, "proba": szczegol,
+                                  "cena_zrodlo": (zrodlo_ceny if cena
+                                                  else "jak poprzednik: " + zrodlo_ceny)}
+        if cena and not z_silnika:
+            dane["zamiany"][model]["cena"] = {k: cena[k] for k in ("in", "out", "cache")
+                                              if k in cena}
         dane["odrzucone"].pop(nowy, None)
-        raport.append((model, nowy, "PRZELACZONE: %s" % powod))
+        raport.append((model, nowy, "PRZELACZONE: %s; cena: %s" % (
+            powod, dane["zamiany"][model]["cena_zrodlo"])))
     dane["sprawdzono"] = teraz.isoformat(timespec="seconds")
     dane["listy"] = {k: v for k, v in pobrane.items() if v is not None}
     if przelaczaj:

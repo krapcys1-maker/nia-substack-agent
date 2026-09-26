@@ -11,8 +11,8 @@ The **what it does** column comes from each function's own docstring, so it is i
 
 | what | how many |
 |---|---|
-| modules | 38 |
-| functions and methods | 844 |
+| modules | 39 |
+| functions and methods | 854 |
 | functions that call a paid model | 29 |
 | functions that touch the browser | 75 |
 | functions that touch the database | 53 |
@@ -47,6 +47,7 @@ For paid calls the verdict comes from
 | [`browser.py`](#agent-v2browser-py) | 123 | 0 | 54 | 0 | Czytanie stron przeglądarką — tam, gdzie zwykły HTTP nie wystarcza. |
 | [`browser_reader.py`](#agent-v2browser-reader-py) | 5 | 0 | 1 | 0 | Bound source reads, including Playwright shutdown, in an owned subprocess. |
 | [`call_runtime.py`](#agent-v2call-runtime-py) | 10 | 0 | 1 | 0 | Per-operation deadlines and usage; workers never write to the database. |
+| [`cennik_dostawcy.py`](#agent-v2cennik-dostawcy-py) | 9 | 0 | 0 | 0 | Stawka modelu z OFICJALNEGO cennika dostawcy — sprawdzana przy zamianie modelu. |
 | [`config.py`](#agent-v2config-py) | 45 | 0 | 0 | 0 | Jedyne miejsce ze stałymi. |
 | [`db.py`](#agent-v2db-py) | 15 | 0 | 0 | 10 | Baza: cztery tabele, waskie migracje kolumn, zero triggerow i limitow CHECK. |
 | [`feed_cache.py`](#agent-v2feed-cache-py) | 2 | 0 | 0 | 0 | Per-instance, per-URL feed recovery. |
@@ -72,7 +73,7 @@ For paid calls the verdict comes from
 | [`statystyki.py`](#agent-v2statystyki-py) | 11 | 0 | 0 | 0 | Statystyki wystawionych pozycji: kto to zobaczyl i co z tego wyniklo. |
 | [`style.py`](#agent-v2style-py) | 9 | 0 | 0 | 0 | Głos redakcyjny: korpus próbek i dwa profile stylu. |
 | [`tekst_strony.py`](#agent-v2tekst-strony-py) | 5 | 0 | 0 | 0 | Read explicitly marked article bodies before generic page extraction. |
-| [`wersje_modeli.py`](#agent-v2wersje-modeli-py) | 15 | 1 | 0 | 2 | Czy dostawca ma juz nowsza wersje modelu, na ktorym chodzimy — i przejscie na nia. |
+| [`wersje_modeli.py`](#agent-v2wersje-modeli-py) | 16 | 1 | 0 | 2 | Czy dostawca ma juz nowsza wersje modelu, na ktorym chodzimy — i przejscie na nia. |
 | [`wzajemnosc.py`](#agent-v2wzajemnosc-py) | 27 | 0 | 0 | 0 | Czy zaczepieni odwzajemniaja sie, i skad naprawde biora sie czytelnicy. |
 
 ---
@@ -436,6 +437,27 @@ Per-operation deadlines and usage; workers never write to the database.
 
 ---
 
+<a id="agent-v2cennik-dostawcy-py"></a>
+## `agent-v2/cennik_dostawcy.py`
+
+Stawka modelu z OFICJALNEGO cennika dostawcy — sprawdzana przy zamianie modelu.
+
+9 funkcji.
+
+| line | function | markers | what it does | called by |
+|---|---|---|---|---|
+| 49 | `dostawca_modelu(model)` | — | Dostawca, ktorego cennik umiemy odczytac; None dla reszty. | `cennik_dostawcy.stawka_u_dostawcy` |
+| 59 | `_kwota(tekst)` | — | — | `cennik_dostawcy.z_cennika_anthropic` |
+| 64 | `nazwa_anthropic(model)` | — | `claude-opus-5-5` -> „Claude Opus 5.5"; data na koncu nie zmienia nazwy. | `cennik_dostawcy.z_cennika_anthropic` |
+| 74 | `z_cennika_anthropic(md, model)` | — | Stawka z tabeli cen modeli w dokumentacji Anthropic; None, gdy nie ma. | `cennik_dostawcy.stawka_u_dostawcy` |
+| 100 | `z_cennika_openai(strona, model)` | — | Stawka z pierwszego wiersza modelu na stronie cennika OpenAI. | `cennik_dostawcy.stawka_u_dostawcy` |
+| 116 | `wiarygodna(cena, wzor)` | — | Czy liczby wygladaja na cennik: wejscie < wyjscie, cache <= wejscie, i nie dziesiec razy dalej od poprzednika w obie strony. | `cennik_dostawcy.stawka_u_dostawcy`, `wersje_modeli.cena_zapisana`, `wersje_modeli.zarejestruj` |
+| 138 | `podwyzka(cena, wzor)` | — | O ile nastepca drozszy od poprzednika (0.25 = o 25%), po wejsciu + wyjsciu. | `wersje_modeli.sprawdz_i_przelacz` |
+| 147 | `_pobierz(url)` | — | — | `cennik_dostawcy.stawka_u_dostawcy` |
+| 163 | `stawka_u_dostawcy(model, wzor, pobierz)` | — | (stawka, zrodlo) z cennika dostawcy albo (None, powod). | `wersje_modeli.sprawdz_i_przelacz` |
+
+---
+
 <a id="agent-v2config-py"></a>
 ## `agent-v2/config.py`
 
@@ -448,48 +470,48 @@ Jedyne miejsce ze stałymi.
 | 58 | `_korpus_stylu()` | — | — | `config (poziom modulu)` |
 | 99 | `_env(name, default)` | — | — | `config (poziom modulu)`, `config._aktywacja_przy_starcie` |
 | 212 | `napraw_role_wyszukiwania(cfg)` | — | Rola z wyszukiwarka na modelu bez wyszukiwarki dostaje `MODEL_WYSZUKIWARKI`. | `config (poziom modulu)` |
-| 559 | `stawka_deepseek(model, kiedy)` | — | Stawka DeepSeeka z uwzglednieniem pory doby po wejsciu nowej taryfy. | `llm._cost` |
-| 586 | `pora_na_publikacje(kiedy)` | — | Czy teraz wolno wystawiac NOTKI — wg zegara CZYTELNIKOW, nie serwera. | `run.dzien`, `run.promuj_artykul` |
-| 632 | `w_szczycie(kiedy)` | — | Czy teraz obowiazuje droga taryfa. | `config.stawka_deepseek` |
-| 733 | `narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie. | `llm._narzedzie_wyszukiwania` |
-| 802 | `_dzis_utc()` | — | Dzisiejszy dzien UTC. | `config (poziom modulu)` |
-| 824 | `sufit_dnia(dzien)` | — | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. | `alarm.koszt`, `config (poziom modulu)` |
-| 1048 | `kotwica_dlugosci(glebokosc, persona)` | — | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. | `stages.write` |
-| 1058 | `dlugosc_dla(glebokosc)` | — | Ile slow ma miec artykul o tej glebokosci. | `artykul_z_puli._napisz_i_zapisz`, `run.main`, `stages.write` |
-| 1226 | `_tokens_for(chars)` | — | — | `config (poziom modulu)` |
-| 1332 | `dlugosc_notki(typ)` | — | Przedział słów dla tego typu notki. | `stages.note` |
-| 1600 | `losowa_postawa()` | — | Ktora postawa dla TEGO komentarza. | `stages.comment_on` |
-| 1648 | `otwarcia_dla_postawy(postawa)` | — | Otwarcia, ktore ta postawa ma jak wykonac. | `config.losowe_otwarcie` |
-| 1658 | `losowe_otwarcie(postawa)` | — | — | `stages.comment_on`, `stages.reply_to` |
-| 1664 | `losowa_dlugosc()` | — | Ile slow ma miec ta konkretna wypowiedz. | `stages.comment_on`, `stages.reply_to` |
-| 1807 | `formy_dla_typu(typ)` | — | Formy, ktore ten typ notki ma czym wypelnic. | `stages.notki_dnia` |
-| 2153 | `losowy_ksztalt_mysli()` | — | Ktory ksztalt dostaje ta MYSL. | `stages._opis_typu` |
-| 2310 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `alarm.bank_bez_tematow`, `alarm.max_dzialan_dziennie`, `audyt_systemu.main`, `norma.main` *(+1)* |
-| 2398 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
-| 2405 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `run.promuj_artykul` *(+1)* |
-| 2479 | `dzis_dzien_artykulu(kiedy)` | — | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. | `artykul_z_puli.main` |
-| 2489 | `zegar_agenta_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. | — |
-| 2495 | `zegar_artykulu_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. | — |
-| 2960 | `sufit_wyjscia(purpose, model)` | — | Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_openai_responses` |
-| 2996 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._call_openai_responses` |
-| 3074 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
-| 3104 | `tylko_dla_wlasciciela(sciezka)` | — | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. | `browser.rozpoznanie`, `browser.sprawdz_sesje`, `browser.zaloguj`, `config.otworz_tylko_dla_wlasciciela` |
-| 3134 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | — | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. | `kopia_subskrybentow.main`, `kopia_subskrybentow.pobierz_z_panelu` |
-| 3169 | `pytanie_o_stan_dziedziny()` | — | O co pytamy, sprawdzajac stan dziedziny. | `aktualne_modele.pobierz`, `aktualne_modele.wczytaj` |
-| 3244 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
-| 3267 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
-| 3276 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
-| 3305 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
-| 3360 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
-| 3375 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
-| 3396 | `uzyj_katalogu_danych(katalog, utworz)` | — | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | `config (poziom modulu)` |
-| 3424 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
-| 3459 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
-| 3590 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
-| 3598 | `losowa_liczba_paraleli(glebokosc, dostepne)` | — | Ile paraleli w drugim akcie. | `stages.write` |
-| 3712 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
-| 3735 | `co_teraz_w_reku(kiedy, kalendarz)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
-| 3839 | `_aktywacja_przy_starcie()` | — | — | `config (poziom modulu)` |
+| 571 | `stawka_deepseek(model, kiedy)` | — | Stawka DeepSeeka z uwzglednieniem pory doby po wejsciu nowej taryfy. | `llm._cost` |
+| 598 | `pora_na_publikacje(kiedy)` | — | Czy teraz wolno wystawiac NOTKI — wg zegara CZYTELNIKOW, nie serwera. | `run.dzien`, `run.promuj_artykul` |
+| 644 | `w_szczycie(kiedy)` | — | Czy teraz obowiazuje droga taryfa. | `config.stawka_deepseek` |
+| 745 | `narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania i ewentualne ostrzezenie. | `llm._narzedzie_wyszukiwania` |
+| 814 | `_dzis_utc()` | — | Dzisiejszy dzien UTC. | `config (poziom modulu)` |
+| 836 | `sufit_dnia(dzien)` | — | Sufit obowiazujacy W TYM DNIU, nie dzisiaj. | `alarm.koszt`, `config (poziom modulu)` |
+| 1060 | `kotwica_dlugosci(glebokosc, persona)` | — | Zdanie kalibrujace dlugosc, dobrane do ilosci materialu. | `stages.write` |
+| 1070 | `dlugosc_dla(glebokosc)` | — | Ile slow ma miec artykul o tej glebokosci. | `artykul_z_puli._napisz_i_zapisz`, `run.main`, `stages.write` |
+| 1238 | `_tokens_for(chars)` | — | — | `config (poziom modulu)` |
+| 1344 | `dlugosc_notki(typ)` | — | Przedział słów dla tego typu notki. | `stages.note` |
+| 1612 | `losowa_postawa()` | — | Ktora postawa dla TEGO komentarza. | `stages.comment_on` |
+| 1660 | `otwarcia_dla_postawy(postawa)` | — | Otwarcia, ktore ta postawa ma jak wykonac. | `config.losowe_otwarcie` |
+| 1670 | `losowe_otwarcie(postawa)` | — | — | `stages.comment_on`, `stages.reply_to` |
+| 1676 | `losowa_dlugosc()` | — | Ile slow ma miec ta konkretna wypowiedz. | `stages.comment_on`, `stages.reply_to` |
+| 1819 | `formy_dla_typu(typ)` | — | Formy, ktore ten typ notki ma czym wypelnic. | `stages.notki_dnia` |
+| 2165 | `losowy_ksztalt_mysli()` | — | Ktory ksztalt dostaje ta MYSL. | `stages._opis_typu` |
+| 2322 | `normy_dzienne()` | — | Ile czego POWINNO wychodzic dziennie — srodek widelek. | `alarm.bank_bez_tematow`, `alarm.max_dzialan_dziennie`, `audyt_systemu.main`, `norma.main` *(+1)* |
+| 2410 | `_cisza_z_hasza(dzien)` | — | — | `config.cichy_dzien` |
+| 2417 | `cichy_dzien(kiedy)` | — | Czy dzis nie nadajemy. | `audyt_systemu.main`, `norma.main`, `run.dzien`, `run.promuj_artykul` *(+1)* |
+| 2491 | `dzis_dzien_artykulu(kiedy)` | — | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. | `artykul_z_puli.main` |
+| 2501 | `zegar_agenta_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. | — |
+| 2507 | `zegar_artykulu_on_calendar()` | DEAD? | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. | — |
+| 2972 | `sufit_wyjscia(purpose, model)` | — | Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_openai_responses` |
+| 3008 | `timeout_for(max_tokens)` | — | Termin w sekundach, który realnie pokrywa podany sufit tokenów. | `llm._call_claude`, `llm._call_deepseek`, `llm._call_deepseek_responses`, `llm._call_openai_responses` |
+| 3086 | `_znacznik_klienta(marka)` | — | — | `config._naglowek_klienta` |
+| 3116 | `tylko_dla_wlasciciela(sciezka)` | — | Prawa 0600 na tym pliku — a gdzie sie nie da, MOWI o tym raz. | `browser.rozpoznanie`, `browser.sprawdz_sesje`, `browser.zaloguj`, `config.otworz_tylko_dla_wlasciciela` |
+| 3146 | `otworz_tylko_dla_wlasciciela(sciezka, tryb)` | — | Otwiera plik do zapisu TWORZAC GO od razu z prawami 0600. | `kopia_subskrybentow.main`, `kopia_subskrybentow.pobierz_z_panelu` |
+| 3181 | `pytanie_o_stan_dziedziny()` | — | O co pytamy, sprawdzajac stan dziedziny. | `aktualne_modele.pobierz`, `aktualne_modele.wczytaj` |
+| 3256 | `usluga_agenta()` | — | Nazwa pliku uslugi, ktora uruchamia dzien agenta — po TRESCI, nie nazwie. | `alarm.sprawdz_przebiegi_i_ostrzez`, `config.zegar_agenta` |
+| 3279 | `zegar_agenta()` | DEAD? | Sciezka do jednostki zegara agenta albo None. | — |
+| 3288 | `_naglowek_klienta()` | — | Naglowek User-Agent zlozony z BIEZACEJ nazwy marki. | `config (poziom modulu)` |
+| 3317 | `_w_darmowym_tescie()` | — | Czy uruchomiony program to test, ktory NIE MA prawa placic. | `config (poziom modulu)` |
+| 3372 | `pod_produkcyjnymi_danymi(sciezka)` | — | Czy ta sciezka lezy w PRAWDZIWYM katalogu danych (takze w podkatalogu). | `db._odmow_produkcji` |
+| 3387 | `_moduly_projektu()` | — | Zaimportowane moduly z `agent-v2/`, bez samych testow. | `config.uzyj_katalogu_danych` |
+| 3408 | `uzyj_katalogu_danych(katalog, utworz)` | — | Przestawia `DATA_DIR` I KOMPLET sciezek z niego policzonych. | `config (poziom modulu)` |
+| 3436 | `uzyj_katalogu_danych.przeniesiona(wartosc)` | — | Ta sama sciezka wzgledem NOWEGO katalogu — albo None, gdy nie nasza. | `config.uzyj_katalogu_danych` |
+| 3471 | `przywroc_katalog_danych(zdjecie)` | DEAD? | Cofa `uzyj_katalogu_danych`. | — |
+| 3602 | `losowy_ruch_koncowy()` | — | Czym konczy sie TEN artykul. | `stages.write` |
+| 3610 | `losowa_liczba_paraleli(glebokosc, dostepne)` | — | Ile paraleli w drugim akcie. | `stages.write` |
+| 3724 | `losowe_generatory(ile)` | — | Ktore wzorce w tym przebiegu. | `stages.znajdz_ciekawostki` |
+| 3747 | `co_teraz_w_reku(kiedy, kalendarz)` | — | Rzeczy, ktorych czytelnik dotyka wlasnie teraz. | `stages.znajdz_ciekawostki` |
+| 3851 | `_aktywacja_przy_starcie()` | — | — | `config (poziom modulu)` |
 
 ---
 
@@ -762,29 +784,29 @@ Provider calls with per-attempt accounting, reservations and deadlines.
 | 200 | `_powod_urwania(zdarzenie)` | — | POWOD urwania odpowiedzi, nie pierwsze 300 znakow calego zdarzenia. | `llm._call_deepseek_responses`, `llm._call_openai_responses` |
 | 224 | `_narzedzie_wyszukiwania(model)` | — | Nazwa narzedzia wyszukiwania; ostrzega RAZ NA PROCES o braku wpisu. | `llm._call_claude` |
 | 233 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit, when, cache_write_5m, cache_write_1h)` | — | — | `llm._settle_attempt` |
-| 249 | `_log(purpose, model, tin, tout, searches, usd, verified)` | — | — | `llm.call` |
-| 260 | `_call_claude(purpose, system, user, web_search)` | — | — | `llm.call`, `llm.call.transport` |
-| 341 | `_call_deepseek_responses(purpose, system, user)` | — | DeepSeek przez /responses z server-side `web_search`. | `llm.call`, `llm.call.transport` |
-| 442 | `_call_deepseek_responses.walk(node)` | — | — | `llm._call_deepseek_responses` |
-| 476 | `_call_openai_responses(purpose, system, user)` | — | OpenAI przez `/responses`. | `llm.call`, `llm.call.transport` |
-| 567 | `_call_openai_responses.zbierz(node)` | — | — | `llm._call_openai_responses` |
-| 584 | `_deepseek_pick_from_urls(purpose, system, user, urls, conn, run_id, partial)` | — | Reconstruct a search result with the ordinary streamed, billed transport. | `llm.call` |
-| 612 | `_read_search_sources(urls)` | — | Recover evidence from already-found public URLs, without another search. | `llm._deepseek_pick_from_urls` |
-| 624 | `_read_search_sources.public_url(url)` | — | — | `llm._read_search_sources` |
-| 685 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call`, `llm.call.transport` |
-| 776 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
-| 823 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
-| 865 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
-| 881 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
-| 890 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+27)* |
-| 926 | `call.transport()` | — | — | `llm.call` |
-| 998 | `_multipart(pola, pliki)` | — | Cialo `multipart/form-data` — bez zewnetrznej biblioteki. | `llm.obraz`, `llm.obraz.request` |
-| 1019 | `obraz(opis, conn, run_id, referencja)` | — | — | `stages.grafika`, `stages.grafika_srodek` |
-| 1041 | `obraz.request()` | — | — | `llm.obraz` |
-| 1073 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
-| 1089 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
-| 1154 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
-| 1199 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+25)* |
+| 251 | `_log(purpose, model, tin, tout, searches, usd, verified)` | — | — | `llm.call` |
+| 262 | `_call_claude(purpose, system, user, web_search)` | — | — | `llm.call`, `llm.call.transport` |
+| 343 | `_call_deepseek_responses(purpose, system, user)` | — | DeepSeek przez /responses z server-side `web_search`. | `llm.call`, `llm.call.transport` |
+| 444 | `_call_deepseek_responses.walk(node)` | — | — | `llm._call_deepseek_responses` |
+| 478 | `_call_openai_responses(purpose, system, user)` | — | OpenAI przez `/responses`. | `llm.call`, `llm.call.transport` |
+| 569 | `_call_openai_responses.zbierz(node)` | — | — | `llm._call_openai_responses` |
+| 586 | `_deepseek_pick_from_urls(purpose, system, user, urls, conn, run_id, partial)` | — | Reconstruct a search result with the ordinary streamed, billed transport. | `llm.call` |
+| 614 | `_read_search_sources(urls)` | — | Recover evidence from already-found public URLs, without another search. | `llm._deepseek_pick_from_urls` |
+| 626 | `_read_search_sources.public_url(url)` | — | — | `llm._read_search_sources` |
+| 687 | `_call_deepseek(purpose, system, user)` | — | — | `llm.call`, `llm.call.transport` |
+| 778 | `przejsciowy(exc)` | — | Czy ten błąd ma szansę minąć sam. | `llm.call` |
+| 825 | `_reserve_attempt(conn, run_id, purpose, system, user, web_search, operation, attempt_no, max_tokens)` | DB | — | `llm.call`, `llm.obraz` |
+| 867 | `_settle_attempt(conn, call_id, state, model, started, ok, exc)` | DB | — | `llm.call` |
+| 883 | `image_output_price()` | — | — | `llm._reserve_attempt`, `llm._settle_image` |
+| 892 | `call(purpose, system, user, conn, run_id, web_search, collect_urls, max_tokens, thinking)` | — | — | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm._deepseek_pick_from_urls`, `llm.ratuj_json` *(+27)* |
+| 928 | `call.transport()` | — | — | `llm.call` |
+| 1000 | `_multipart(pola, pliki)` | — | Cialo `multipart/form-data` — bez zewnetrznej biblioteki. | `llm.obraz`, `llm.obraz.request` |
+| 1021 | `obraz(opis, conn, run_id, referencja)` | — | — | `stages.grafika`, `stages.grafika_srodek` |
+| 1043 | `obraz.request()` | — | — | `llm.obraz` |
+| 1075 | `_settle_image(conn, call_id, data, ok, error)` | DB | — | `llm.obraz` |
+| 1091 | `_obiekty_json(tekst)` | — | Kolejne ZBILANSOWANE obiekty JSON w tekscie, od lewej. | `llm.parse_json` |
+| 1156 | `ratuj_json(purpose, tekst, ksztalt, conn, run_id)` | — | Drugie podejście do odpowiedzi, która nie zawierała JSON-a. | `stages.discovery`, `stages.znajdz_ciekawostki`, `stages.zweryfikuj` |
+| 1201 | `parse_json(text)` | — | Wyciąga obiekt JSON z odpowiedzi modelu. | `aktualne_modele.pobierz`, `artykul_z_puli.temat_z_faktu`, `llm.call`, `personality.short_form` *(+25)* |
 
 ---
 
@@ -1322,25 +1344,26 @@ Read explicitly marked article bodies before generic page extraction.
 
 Czy dostawca ma juz nowsza wersje modelu, na ktorym chodzimy — i przejscie na nia.
 
-15 funkcji.
+16 funkcji.
 
 | line | function | markers | what it does | called by |
 |---|---|---|---|---|
-| 112 | `plik()` | — | Stan w danych INSTANCJI — kazde konto ma wlasne zamiany i wlasna historie. | `wersje_modeli.wczytaj`, `wersje_modeli.zapisz` |
-| 118 | `rozbierz(model)` | — | Dostawca, rodzina i wersja z nazwy modelu; None, gdy nazwa nie pasuje. | `wersje_modeli.modele_w_uzyciu`, `wersje_modeli.nastepca`, `wersje_modeli.sprawdz_i_przelacz` |
-| 135 | `nastepca(model, lista)` | — | (nastepca albo None, dlaczego) — tylko z tej samej rodziny i tylko z listy. | `wersje_modeli.sprawdz_i_przelacz` |
-| 164 | `modele_w_uzyciu(cfg)` | — | Modele tekstowe, na ktorych naprawde chodzimy: role plus modele zapasowe. | `wersje_modeli.sprawdz_i_przelacz` |
-| 175 | `lista_modeli(dostawca)` | — | Identyfikatory, ktore dostawca dzis podaje. | `wersje_modeli.sprawdz_i_przelacz` |
-| 204 | `zarejestruj(cfg, stary, nowy)` | — | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. | `wersje_modeli.przestaw` |
-| 225 | `przestaw(cfg, stary, nowy)` | — | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. | `wersje_modeli.sprawdz_i_przelacz`, `wersje_modeli.zastosuj` |
-| 240 | `wczytaj()` | — | — | `wersje_modeli.cofnij`, `wersje_modeli.main`, `wersje_modeli.sprawdz_i_przelacz`, `wersje_modeli.zastosuj` |
-| 252 | `zapisz(dane)` | — | — | `wersje_modeli.cofnij`, `wersje_modeli.sprawdz_i_przelacz` |
-| 260 | `_koniec_lancucha(zamiany, model)` | — | a -> b, a pozniej b -> c: model `a` ma trafic od razu na `c`. | `wersje_modeli.zastosuj` |
-| 271 | `zastosuj(cfg)` | DEAD? | Naklada zapisane zamiany na zaladowana konfiguracje. | — |
-| 294 | `sprawdz_na_zywo(nowy, conn, run_id)` | **$**(You are a connectivity check. Answer with one word.) | Jedno male wywolanie nastepcy przez `llm.call` — ta sama droga co produkcja. | `wersje_modeli.sprawdz_i_przelacz` |
-| 316 | `sprawdz_i_przelacz(conn, run_id, wymus, przelaczaj, listy)` | DB | Raz na dobe: listy dostawcow, nastepcy, proba na zywo, zapis zamian. | `artykul_z_puli.main`, `run.dzien`, `wersje_modeli.main` |
-| 404 | `cofnij(model)` | — | Usuwa zamiane `model -> ...`. | `wersje_modeli.main` |
-| 414 | `main(argv)` | DB | — | `wersje_modeli (poziom modulu)` |
+| 118 | `plik()` | — | Stan w danych INSTANCJI — kazde konto ma wlasne zamiany i wlasna historie. | `wersje_modeli.wczytaj`, `wersje_modeli.zapisz` |
+| 124 | `rozbierz(model)` | — | Dostawca, rodzina i wersja z nazwy modelu; None, gdy nazwa nie pasuje. | `wersje_modeli.modele_w_uzyciu`, `wersje_modeli.nastepca`, `wersje_modeli.sprawdz_i_przelacz` |
+| 141 | `nastepca(model, lista)` | — | (nastepca albo None, dlaczego) — tylko z tej samej rodziny i tylko z listy. | `wersje_modeli.sprawdz_i_przelacz` |
+| 170 | `modele_w_uzyciu(cfg)` | — | Modele tekstowe, na ktorych naprawde chodzimy: role plus modele zapasowe. | `wersje_modeli.sprawdz_i_przelacz` |
+| 181 | `lista_modeli(dostawca)` | — | Identyfikatory, ktore dostawca dzis podaje. | `wersje_modeli.sprawdz_i_przelacz` |
+| 216 | `zarejestruj(cfg, stary, nowy, cena)` | — | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. | `wersje_modeli.przestaw` |
+| 244 | `przestaw(cfg, stary, nowy, cena)` | — | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. | `wersje_modeli.sprawdz_i_przelacz`, `wersje_modeli.zastosuj` |
+| 259 | `wczytaj()` | — | — | `wersje_modeli.cofnij`, `wersje_modeli.main`, `wersje_modeli.sprawdz_i_przelacz`, `wersje_modeli.zastosuj` |
+| 271 | `zapisz(dane)` | — | — | `wersje_modeli.cofnij`, `wersje_modeli.sprawdz_i_przelacz` |
+| 279 | `_koniec_lancucha(zamiany, model)` | — | a -> b, a pozniej b -> c: model `a` ma trafic od razu na `c`. | `wersje_modeli.zastosuj` |
+| 290 | `zastosuj(cfg)` | DEAD? | Naklada zapisane zamiany na zaladowana konfiguracje. | — |
+| 315 | `cena_zapisana(zamiany, nowy)` | — | Stawka `nowy` z cennika dostawcy, zapisana przy zamianie; None, gdy jej nie ma. | `wersje_modeli.zastosuj` |
+| 332 | `sprawdz_na_zywo(nowy, conn, run_id)` | **$**(You are a connectivity check. Answer with one word.) | Jedno male wywolanie nastepcy przez `llm.call` — ta sama droga co produkcja. | `wersje_modeli.sprawdz_i_przelacz` |
+| 354 | `sprawdz_i_przelacz(conn, run_id, wymus, przelaczaj, listy)` | DB | Raz na dobe: listy dostawcow, nastepcy, proba na zywo, zapis zamian. | `artykul_z_puli.main`, `run.dzien`, `wersje_modeli.main` |
+| 479 | `cofnij(model)` | — | Usuwa zamiane `model -> ...`. | `wersje_modeli.main` |
+| 489 | `main(argv)` | DB | — | `wersje_modeli (poziom modulu)` |
 
 ---
 

@@ -49,14 +49,14 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 41 522 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **39 plików**, 41 799 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
 | jedno polecenie uruchamiające | `python agent-v2/run.py` | dotrzymane |
 | pełna autonomia, zero pytań | brak interaktywnych promptów | dotrzymane |
 
-**WADA — 38 plików zamiast dziesięciu.** Najbliższe usunięciu:
+**WADA — 39 plików zamiast dziesięciu.** Najbliższe usunięciu:
 `style.py` (225 wierszy, wołany tylko z `stages.py`) i
 `kopia_subskrybentow.py` (209 wierszy, narzędzie ręczne poza
 przebiegiem). Scalenie któregokolwiek przywraca zgodność z mandatem.
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 238 zestawów
-testów, 5354 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 239 zestawów
+testów, 5380 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -609,7 +609,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1245 wierszy, 23 funkcji na poziomie modułu, 4 klas
+1247 wierszy, 23 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -882,7 +882,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-4011 wierszy, 44 funkcji na poziomie modułu, 0 klas
+4023 wierszy, 44 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1018,7 +1018,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `wersje_modeli.py` — nowsza wersja modelu u dostawcy: wykrycie, próba na żywo, przełączenie
 
-446 wierszy, 15 funkcji na poziomie modułu, 0 klas
+521 wierszy, 16 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1027,16 +1027,33 @@ wiec nie da sie go rozjechac z kodem.
 | `nastepca(model, lista)` | (nastepca albo None, dlaczego) — tylko z tej samej rodziny i tylko z listy. |
 | `modele_w_uzyciu(cfg)` | Modele tekstowe, na ktorych naprawde chodzimy: role plus modele zapasowe. |
 | `lista_modeli(dostawca)` | Identyfikatory, ktore dostawca dzis podaje. None = nie wiem (brak klucza, siec). |
-| `zarejestruj(cfg, stary, nowy)` | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. |
-| `przestaw(cfg, stary, nowy)` | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. Oddaje liste miejsc. |
+| `zarejestruj(cfg, stary, nowy, cena)` | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. |
+| `przestaw(cfg, stary, nowy, cena)` | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. Oddaje liste miejsc. |
 | `wczytaj()` | — |
 | `zapisz(dane)` | — |
 | `_koniec_lancucha(zamiany, model)` *(wewn.)* | a -> b, a pozniej b -> c: model `a` ma trafic od razu na `c`. |
 | `zastosuj(cfg)` | Naklada zapisane zamiany na zaladowana konfiguracje. Bez sieci i bez kosztu. |
+| `cena_zapisana(zamiany, nowy)` | Stawka `nowy` z cennika dostawcy, zapisana przy zamianie; None, gdy jej nie ma. |
 | `sprawdz_na_zywo(nowy)` | Jedno male wywolanie nastepcy przez `llm.call` — ta sama droga co produkcja. |
 | `sprawdz_i_przelacz(conn, run_id)` | Raz na dobe: listy dostawcow, nastepcy, proba na zywo, zapis zamian. |
 | `cofnij(model)` | Usuwa zamiane `model -> ...`. Nastepny start procesu chodzi po staremu. |
 | `main(argv)` | — |
+
+### `cennik_dostawcy.py` — stawka nowego modelu z oficjalnego cennika dostawcy, sprawdzana przy zamianie; bez niej 1:1 jak poprzednik
+
+188 wierszy, 9 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `dostawca_modelu(model)` | Dostawca, ktorego cennik umiemy odczytac; None dla reszty. |
+| `_kwota(tekst)` *(wewn.)* | — |
+| `nazwa_anthropic(model)` | `claude-opus-5-5` -> „Claude Opus 5.5"; data na koncu nie zmienia nazwy. |
+| `z_cennika_anthropic(md, model)` | Stawka z tabeli cen modeli w dokumentacji Anthropic; None, gdy nie ma. |
+| `z_cennika_openai(strona, model)` | Stawka z pierwszego wiersza modelu na stronie cennika OpenAI. |
+| `wiarygodna(cena, wzor)` | Czy liczby wygladaja na cennik: wejscie < wyjscie, cache <= wejscie, |
+| `podwyzka(cena, wzor)` | O ile nastepca drozszy od poprzednika (0.25 = o 25%), po wejsciu + wyjsciu. |
+| `_pobierz(url)` *(wewn.)* | — |
+| `stawka_u_dostawcy(model, wzor, pobierz)` | (stawka, zrodlo) z cennika dostawcy albo (None, powod). Bez wyjatkow. |
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
@@ -6855,7 +6872,9 @@ def _cost(model, tokens_in, tokens_out, web_searches, cache_hit=0, *, when=None,
     if model.startswith("deepseek"):
         price.update(config.stawka_deepseek(model, when))
     elif model.startswith("claude"):
-        price["cache"] = price["in"] * (.025 if model == config.FABLE else .1)
+        # JAWNA STAWKA CACHE Z CENNIKA WYGRYWA — Opus 5.5 ma 0,05 wejscia,
+        # a mnoznik ponizej zna tylko 0,1 i Fable 0,025.
+        price.setdefault("cache", price["in"] * (.025 if model == config.FABLE else .1))
     usd = (tokens_in * price["in"] + tokens_out * price["out"]
            + cache_hit * price.get("cache", price["in"])
            + cache_write_5m * price["in"] * 1.25
@@ -13074,6 +13093,7 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `OBRAZ_REFERENCJA` | `""` | OBRAZ REFERENCYJNY — zeby NIA wygladala tak samo na kazdej okladce. Opis slowny nie wystarcza. „Ciemne, krotkie, faliste wlosy, garnitur" od |
 | `ZAPASOWY_PISARZ` | `CLAUDE` | NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py` i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec zmia |
 | `PRICING` | `{ CLAUDE: {"in": 5.00, "out": 25.00, "verifi` | — |
+| `MAKS_PODWYZKA_PRZY_ZAMIANIE` | `0.25` | NASTEPCA WYRAZNIE DROZSZY NIE WCHODZI SAM — `wersje_modeli` sprawdza jego cene w cenniku dostawcy (`cennik_dostawcy`) i przy podwyzce ponad  |
 | `STAWKI_PRZED_PODWYZKA` | `{ DEEPSEEK: {"in": 0.14, "out": 0.28, "cache` | --- taryfa szczytowa DeepSeeka ----------------------------------------------- Od 2026-08-16 16:00 UTC DeepSeek wprowadza ceny szczytowe i p |
 | `TARYFA_SZCZYTOWA_OD` | `"2026-08-16T16:00:00+00:00"` | — |
 | `GODZINY_SZCZYTU_UTC` | `frozenset(range(1, 4)) | frozenset(range(6, ` | — |

@@ -530,7 +530,19 @@ PRICING = {
     GPT_TERRA: {"in": 2.00, "out": 12.00, "cache": 0.20, "verified": False},
     GPT_LUNA: {"in": 0.20, "out": 1.20, "cache": 0.02, "verified": False},
     GPT_ASTRA: {"in": 10.00, "out": 50.00, "cache": 1.00, "verified": False},
+    # NASTEPCY Z AUTOMATYCZNYCH ZAMIAN Z 22 WRZESNIA 2026 — stawki z cennikow
+    # dostawcow odczytane 26.09.2026 (Anthropic: dokumentacja cen; OpenAI: tryb
+    # standardowy, krotki kontekst). Do tego dnia `wersje_modeli` liczyl je po
+    # podwojnej stawce poprzednika: Opus 5.5 po 10/50, GPT-6 Sol po 8/40.
+    # Cache Opusa 5.5 to 0,05 stawki wejscia, nie 0,1 jak u reszty Claude.
+    "claude-opus-5-5": {"in": 4.00, "out": 20.00, "cache": 0.20, "verified": False},
+    "gpt-6-sol": {"in": 2.00, "out": 10.00, "cache": 0.20, "verified": False},
 }
+
+# NASTEPCA WYRAZNIE DROZSZY NIE WCHODZI SAM — `wersje_modeli` sprawdza jego
+# cene w cenniku dostawcy (`cennik_dostawcy`) i przy podwyzce ponad ten prog
+# (liczonej po wejsciu + wyjsciu) zostawia obecny model i zglasza decyzje.
+MAKS_PODWYZKA_PRZY_ZAMIANIE = 0.25
 
 # --- taryfa szczytowa DeepSeeka -----------------------------------------------
 # Od 2026-08-16 16:00 UTC DeepSeek wprowadza ceny szczytowe i pozaszczytowe:

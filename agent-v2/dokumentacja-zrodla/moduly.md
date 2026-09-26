@@ -467,7 +467,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1245 wierszy, 23 funkcji na poziomie modułu, 4 klas
+1247 wierszy, 23 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -740,7 +740,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-4011 wierszy, 44 funkcji na poziomie modułu, 0 klas
+4023 wierszy, 44 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -876,7 +876,7 @@
 
 ### `wersje_modeli.py` — nowsza wersja modelu u dostawcy: wykrycie, próba na żywo, przełączenie
 
-446 wierszy, 15 funkcji na poziomie modułu, 0 klas
+521 wierszy, 16 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -885,16 +885,33 @@
 | `nastepca(model, lista)` | (nastepca albo None, dlaczego) — tylko z tej samej rodziny i tylko z listy. |
 | `modele_w_uzyciu(cfg)` | Modele tekstowe, na ktorych naprawde chodzimy: role plus modele zapasowe. |
 | `lista_modeli(dostawca)` | Identyfikatory, ktore dostawca dzis podaje. None = nie wiem (brak klucza, siec). |
-| `zarejestruj(cfg, stary, nowy)` | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. |
-| `przestaw(cfg, stary, nowy)` | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. Oddaje liste miejsc. |
+| `zarejestruj(cfg, stary, nowy, cena)` | Cennik i narzedzie wyszukiwania dla nastepcy, zanim cokolwiek go zawola. |
+| `przestaw(cfg, stary, nowy, cena)` | Kazde miejsce, w ktorym stoi `stary`, dostaje `nowy`. Oddaje liste miejsc. |
 | `wczytaj()` | — |
 | `zapisz(dane)` | — |
 | `_koniec_lancucha(zamiany, model)` *(wewn.)* | a -> b, a pozniej b -> c: model `a` ma trafic od razu na `c`. |
 | `zastosuj(cfg)` | Naklada zapisane zamiany na zaladowana konfiguracje. Bez sieci i bez kosztu. |
+| `cena_zapisana(zamiany, nowy)` | Stawka `nowy` z cennika dostawcy, zapisana przy zamianie; None, gdy jej nie ma. |
 | `sprawdz_na_zywo(nowy)` | Jedno male wywolanie nastepcy przez `llm.call` — ta sama droga co produkcja. |
 | `sprawdz_i_przelacz(conn, run_id)` | Raz na dobe: listy dostawcow, nastepcy, proba na zywo, zapis zamian. |
 | `cofnij(model)` | Usuwa zamiane `model -> ...`. Nastepny start procesu chodzi po staremu. |
 | `main(argv)` | — |
+
+### `cennik_dostawcy.py` — stawka nowego modelu z oficjalnego cennika dostawcy, sprawdzana przy zamianie; bez niej 1:1 jak poprzednik
+
+188 wierszy, 9 funkcji na poziomie modułu, 0 klas
+
+| funkcja | co robi |
+|---|---|
+| `dostawca_modelu(model)` | Dostawca, ktorego cennik umiemy odczytac; None dla reszty. |
+| `_kwota(tekst)` *(wewn.)* | — |
+| `nazwa_anthropic(model)` | `claude-opus-5-5` -> „Claude Opus 5.5"; data na koncu nie zmienia nazwy. |
+| `z_cennika_anthropic(md, model)` | Stawka z tabeli cen modeli w dokumentacji Anthropic; None, gdy nie ma. |
+| `z_cennika_openai(strona, model)` | Stawka z pierwszego wiersza modelu na stronie cennika OpenAI. |
+| `wiarygodna(cena, wzor)` | Czy liczby wygladaja na cennik: wejscie < wyjscie, cache <= wejscie, |
+| `podwyzka(cena, wzor)` | O ile nastepca drozszy od poprzednika (0.25 = o 25%), po wejsciu + wyjsciu. |
+| `_pobierz(url)` *(wewn.)* | — |
+| `stawka_u_dostawcy(model, wzor, pobierz)` | (stawka, zrodlo) z cennika dostawcy albo (None, powod). Bez wyjatkow. |
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
