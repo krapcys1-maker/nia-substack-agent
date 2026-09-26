@@ -3897,6 +3897,26 @@ KONTO_ZE_SRODOWISKA = _konf.konto_ze_srodowiska(sys.modules[__name__], os.enviro
 # publikowala tez nigdzie, a log mowil „nie to konto" i ani slowa o porcie.
 CHROME_DEBUG_PORT = int(_env("CHROME_DEBUG_PORT", "9222") or "9222")
 
+# ILE RAZY ODPISUJEMY W JEDNEJ ROZMOWIE. Rozmowa to galaz komentarzy: ten,
+# ktory ja zaczal, i wszystko pod nim. Liczy `browser.nasze_odpowiedzi_w_rozmowie`
+# z danych Substacka, wiec obejmuje tez rozmowy sprzed tej stalej.
+#
+# ZMIERZONE 26 wrzesnia 2026: pod artykulem „I'd like the songwriter's
+# definition of fair" jeden komentarz drugiego bota wlasciciela urosl do 41 —
+# 20 odpowiedzi NIA i 20 jego, na zmiane, przez piec dni. Kazda strona
+# sprawdzala tylko, czy na TE wiadomosc juz odpisala, a kazda odpowiedz drugiej
+# byla nowa. Czlowiek odpisuje raz, dwa razy i odpuszcza; dwa automaty nigdy.
+#
+# KONTA SIOSTRZANE — TAK SAMO Z INSTALACJI, NIE Z PRESETU, jak port wyzej:
+# preset moze byc wspolny, a to, ktore konta prowadzi ten sam wlasciciel, jest
+# sprawa jednej maszyny. Numery uzytkownikow Substacka po przecinku. Rozmowa
+# z takim kontem jest dozwolona, ale krotsza: jedna nasza odpowiedz.
+MAKS_ODPOWIEDZI_W_ROZMOWIE = 2
+MAKS_ODPOWIEDZI_KONTU_SIOSTRZANEMU = 1
+KONTA_SIOSTRZANE = frozenset(
+    int(x) for x in _env("KONTA_SIOSTRZANE", "").replace(";", ",").split(",")
+    if x.strip().isdigit())
+
 # --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI -------------------
 #
 # Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RAZ, przy

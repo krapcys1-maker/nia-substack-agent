@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **38 plików**, 41 366 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **38 plików**, 41 522 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 237 zestawów
-testów, 5331 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 238 zestawów
+testów, 5354 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -483,7 +483,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6837 wierszy, 114 funkcji na poziomie modułu, 3 klas
+6973 wierszy, 119 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -535,6 +535,11 @@ wiec nie da sie go rozjechac z kodem.
 | `_artykuly_z_panelu(page, baza)` *(wewn.)* | Nasze artykuly razem ze statystykami — JEDNYM zapytaniem. |
 | `nasze_pozycje_do_pomiaru(page, ile)` | Co wystawilismy i ma wlasny numer — czyli co da sie zmierzyc. |
 | `dopisz_skutki()` | Dopisuje do dziennika, CO Z NASZYCH DZIALAN WYNIKLO. |
+| `_przodkowie(komentarz)` *(wewn.)* | Numery przodkow z `ancestor_path`, od korzenia w dol. |
+| `korzen_rozmowy(komentarz)` | Numer komentarza, ktory zaczal galaz, w ktorej stoi `komentarz`. |
+| `nasze_odpowiedzi_w_rozmowie(komentarze, korzen, moje_id)` | Ile razy JUZ odpisalismy pod `korzen`. |
+| `limit_rozmowy(rozmowca_id)` | Ile razy wolno nam odpisac w jednej rozmowie z ta osoba. |
+| `_komentarze_galezi(page, komentarz, korzen, post, pamiec)` *(wewn.)* | Wszystkie komentarze galezi `korzen` — jedno zapytanie na galaz. |
 | `odpowiedzi_na_nasze_komentarze(ile)` | Odpowiedzi na NASZE komentarze zostawione pod CUDZYMI tekstami. |
 | `komentarze_pod_artykulami(ile)` | Cudze komentarze pod NASZYMI artykulami, na ktore nie odpisalismy. |
 | `nieodpowiedziane(ile)` | Cudze odpowiedzi pod naszymi notkami, na które jeszcze nie odpisaliśmy. |
@@ -877,7 +882,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-3991 wierszy, 44 funkcji na poziomie modułu, 0 klas
+4011 wierszy, 44 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -13273,6 +13278,9 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `SPRAWDZAJ_FAKTY` | `True` | USTAWIONE PRZED `_aktywacja_przy_starcie()` I TO JEST WARUNEK, NIE STYL. Preset stosuje sie w linii ponizej; stala zapisana PO niej nadpisal |
 | `KONTO_ZE_SRODOWISKA` | `_konf.konto_ze_srodowiska(sys.modules[__name` | KONTO Z INSTALACJI: `.env` (SUBSTACK_HANDLE, NAZWA_MARKI) wygrywa z `[konto]` presetu i ze starego TOML-a. Preset moze byc wspolny dla wielu |
 | `CHROME_DEBUG_PORT` | `int(_env("CHROME_DEBUG_PORT", "9222") or "92` | PORT DEBUGOWANIA CHROME'A — TAK SAMO Z INSTALACJI, NIE Z PRESETU. Preset moze byc wspolny, a port nie: dwie kopie bota na jednej maszynie mu |
+| `MAKS_ODPOWIEDZI_W_ROZMOWIE` | `2` | ILE RAZY ODPISUJEMY W JEDNEJ ROZMOWIE. Rozmowa to galaz komentarzy: ten, ktory ja zaczal, i wszystko pod nim. Liczy `browser.nasze_odpowiedz |
+| `MAKS_ODPOWIEDZI_KONTU_SIOSTRZANEMU` | `1` | — |
+| `KONTA_SIOSTRZANE` | `frozenset( int(x) for x in _env("KONTA_SIOST` | — |
 | `FETCH_USER_AGENT` | `_naglowek_klienta()` | --- STALE POCHODNE, PRZELICZANE PO WCZYTANIU KONFIGURACJI ------------------- Ten plik opisuje te pulapke przy `DB_PATH`: stala policzona RA |
 | `DAILY_LIMIT_USD` | `sufit_dnia(_dzis_utc())` | Sufit na dzis: baza z konfiguracji, pomnozona tylko w dniu podniesienia. |
 | `TEST_LIMIT_USD` | `min(TEST_LIMIT_USD_BAZA, DAILY_LIMIT_USD)` | Tor testowy nigdy powyzej produkcyjnego — patrz `TEST_LIMIT_USD_BAZA`. |
