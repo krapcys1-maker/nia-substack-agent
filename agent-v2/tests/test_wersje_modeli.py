@@ -283,10 +283,26 @@ sprawdz("flash nalozony", cfg.MODEL_FOR["classify"] == "deepseek-flash", cfg.MOD
 sprawdz("lancuch sol -> 6 -> 6.1 idzie do konca", cfg.MODEL_FOR["note"] == "gpt-6.1-sol"
         and cfg.GPT_SOL == "gpt-6.1-sol", cfg.MODEL_FOR)
 sprawdz("model poza zamianami nietkniety", cfg.MODEL_FOR["write"] == "gpt-6-astra")
-sprawdz("nieznana cena nastepcy liczona PODWOJNIE i niepotwierdzona",
-        cfg.PRICING.get("gpt-6.1-sol") == {"in": 8.0, "out": 40.0, "cache": 0.8,
+# 1:1, NIE x2 — decyzja wlasciciela z 26.09.2026. Podwojna stawka konczyla
+# miesieczny sufit przed koncem miesiaca przy kosztach 2,5–4 razy mniejszych.
+sprawdz("nieznana cena nastepcy liczona 1:1 jak poprzednik i niepotwierdzona",
+        cfg.PRICING.get("gpt-6.1-sol") == {"in": 4.0, "out": 20.0, "cache": 0.4,
                                            "verified": False}, cfg.PRICING.get("gpt-6.1-sol"))
 sprawdz("zamiany wypisane", ("deepseek-v4-flash", "deepseek-flash") in zrobione, zrobione)
+
+# CENA ZAPISANA PRZY ZAMIANIE WYGRYWA Z 1:1 — kazdy start procesu ja odczytuje.
+zapisz_zamiany({"gpt-5.6-sol": {"na": "gpt-6-sol", "cena": {"in": 2.0, "out": 10.0,
+                                                             "cache": 0.2}}})
+cfg = atrapa_cfg()
+wm.zastosuj(cfg)
+sprawdz("stawka z cennika dostawcy zapisana przy zamianie",
+        cfg.PRICING.get("gpt-6-sol") == {"in": 2.0, "out": 10.0, "cache": 0.2,
+                                         "verified": False}, cfg.PRICING.get("gpt-6-sol"))
+zapisz_zamiany({"gpt-5.6-sol": {"na": "gpt-6-sol", "cena": {"in": 10.0, "out": 2.0}}})
+cfg = atrapa_cfg()
+wm.zastosuj(cfg)
+sprawdz("KONTRDOWOD: odwrocone liczby w pliku nie wchodza — zostaje 1:1",
+        cfg.PRICING.get("gpt-6-sol", {}).get("out") == 20.0, cfg.PRICING.get("gpt-6-sol"))
 
 cfg = atrapa_cfg()
 cfg.MODELE_NIE_RUSZAJ = ("gpt-5.6-sol",)

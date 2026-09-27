@@ -58,6 +58,7 @@
 | `OBRAZ_REFERENCJA` | `""` | OBRAZ REFERENCYJNY — zeby NIA wygladala tak samo na kazdej okladce. Opis slowny nie wystarcza. „Ciemne, krotkie, faliste wlosy, garnitur" od |
 | `ZAPASOWY_PISARZ` | `CLAUDE` | NA JAKI MODEL WRACA PISARZ PO AWARII SKONFIGUROWANEGO. `run.py` i `artykul_z_puli.py` mialy tu wpisane `config.CLAUDE` na sztywno, wiec zmia |
 | `PRICING` | `{ CLAUDE: {"in": 5.00, "out": 25.00, "verifi` | — |
+| `MAKS_PODWYZKA_PRZY_ZAMIANIE` | `0.25` | NASTEPCA WYRAZNIE DROZSZY NIE WCHODZI SAM — `wersje_modeli` sprawdza jego cene w cenniku dostawcy (`cennik_dostawcy`) i przy podwyzce ponad  |
 | `STAWKI_PRZED_PODWYZKA` | `{ DEEPSEEK: {"in": 0.14, "out": 0.28, "cache` | --- taryfa szczytowa DeepSeeka ----------------------------------------------- Od 2026-08-16 16:00 UTC DeepSeek wprowadza ceny szczytowe i p |
 | `TARYFA_SZCZYTOWA_OD` | `"2026-08-16T16:00:00+00:00"` | — |
 | `GODZINY_SZCZYTU_UTC` | `frozenset(range(1, 4)) | frozenset(range(6, ` | — |

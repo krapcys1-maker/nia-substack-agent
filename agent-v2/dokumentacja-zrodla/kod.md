@@ -189,7 +189,9 @@ def _cost(model, tokens_in, tokens_out, web_searches, cache_hit=0, *, when=None,
     if model.startswith("deepseek"):
         price.update(config.stawka_deepseek(model, when))
     elif model.startswith("claude"):
-        price["cache"] = price["in"] * (.025 if model == config.FABLE else .1)
+        # JAWNA STAWKA CACHE Z CENNIKA WYGRYWA — Opus 5.5 ma 0,05 wejscia,
+        # a mnoznik ponizej zna tylko 0,1 i Fable 0,025.
+        price.setdefault("cache", price["in"] * (.025 if model == config.FABLE else .1))
     usd = (tokens_in * price["in"] + tokens_out * price["out"]
            + cache_hit * price.get("cache", price["in"])
            + cache_write_5m * price["in"] * 1.25
