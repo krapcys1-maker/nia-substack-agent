@@ -30,12 +30,19 @@ a komentarz nad ta linijka opisuje ja wprost. Ochrona byla WYLICZONA po nazwie
 rodzaju, wiec nowy rodzaj wszedl prosto w te sama pulapke. Dlatego test pyta
 o REGULE — nasza wlasna tresc nie podlega limitowi — a nie o dwie nazwy.
 
+TRZECI RAZ (28.09.2026): komentarze dostawaly `ile - len(nasze)`, czyli to,
+co zostanie po naszych tresciach. Od 17 wrzesnia notek i artykulow bylo
+wiecej niz 60 i ani jeden komentarz nie mial pomiaru. Komentarze maja teraz
+WLASNY budzet (sekcja 6), a numer z pola `gdzie` (numer watku, nie naszej
+odpowiedzi) nie jest brany.
+
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo.
 """
 import json
 import pathlib
 import sys
 import tempfile
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, "agent-v2")
 import browser  # noqa: E402
@@ -96,11 +103,12 @@ def atrapa_api(page, sciezka, baza=None):
 
 
 # --- dziennik: tyle komentarzy, ze limit MUSI ciac -------------------------
+TERAZ = datetime.now(timezone.utc).isoformat(timespec="seconds")
 katalog = pathlib.Path(tempfile.mkdtemp())
 dziennik = katalog / "dziennik.jsonl"
 with dziennik.open("w", encoding="utf-8") as f:
     for i in range(80):
-        f.write(json.dumps({"udane": True, "rodzaj": "komentarz",
+        f.write(json.dumps({"udane": True, "rodzaj": "komentarz", "kiedy": TERAZ,
                             "nasz_id": 400000000 + i,
                             "tekst": "komentarz %d" % i}) + "\n")
 
@@ -144,12 +152,14 @@ try:
     # piec, a wynik mial dokladnie 60 pozycji i wygladal poprawnie.
     kom = [x for x in poz if x["rodzaj"] == "komentarz"]
     sprawdz("osiemdziesiat komentarzy zostalo przyciete", len(kom) < 80, len(kom))
-    sprawdz("limit trzyma cala liste na 60", len(poz) == 60, len(poz))
-    sprawdz("wyciete sa WYLACZNIE cudze watki",
-            len(kom) == 60 - 14, "%d komentarzy przy 14 naszych" % len(kom))
+    sprawdz("komentarze maja WLASNY budzet: 60 najnowszych", len(kom) == 60, len(kom))
+    sprawdz("i sa to najnowsze, nie najstarsze",
+            {x["id"] for x in kom} == {str(400000000 + i) for i in range(20, 80)})
     notki = [x for x in poz if x["rodzaj"] == "notka"]
     sprawdz("notki tez przezyly (stara ochrona nie zginela)",
             len(notki) == 12, len(notki))
+    sprawdz("nasze tresci sa poza limitem: 12 notek + 2 artykuly + 60 komentarzy",
+            len(poz) == 74, len(poz))
 
     print()
     print("=== 3. REGULA JEST OGOLNA, NIE WYLICZONA PO NAZWACH ===")
@@ -162,11 +172,14 @@ try:
     sprawdz("przy limicie 3 artykuly nadal sa wszystkie", len(art_male) == 2,
             len(art_male))
     sprawdz("i notki tez", len(notki_male) == 12, len(notki_male))
-    # `[-0:]` TO CALA LISTA. Przy `ile=3` naszych tresci jest 17, wiec na cudze
-    # zostaje zero miejsc — a stary wycinek oddawal w tym miejscu WSZYSTKIE 80.
-    sprawdz("a cudze watki sa przyciete do zera, nie do calosci",
-            len([x for x in poz_male if x["rodzaj"] == "komentarz"]) == 0,
+    sprawdz("a cudze watki dostaja swoje 3 miejsca, niezaleznie od notek",
+            len([x for x in poz_male if x["rodzaj"] == "komentarz"]) == 3,
             len([x for x in poz_male if x["rodzaj"] == "komentarz"]))
+    # `[-0:]` TO CALA LISTA. Przy `ile=0` stary wycinek oddawalby WSZYSTKIE 80.
+    poz_zero = browser.nasze_pozycje_do_pomiaru(page=object(), ile=0)
+    sprawdz("przy limicie 0 cudze watki sa przyciete do zera, nie do calosci",
+            len([x for x in poz_zero if x["rodzaj"] == "komentarz"]) == 0,
+            len([x for x in poz_zero if x["rodzaj"] == "komentarz"]))
 
     print()
     print("=== 4. KONTRDOWOD: STARA WERSJA MUSI TU POLEC ===")
@@ -201,6 +214,50 @@ try:
     sprawdz("pusty rekord nie trafia do pomiaru",
             all(any(v for k, v in x["statystyki"].items()
                     if isinstance(v, int)) for x in art))
+
+    print()
+    print("=== 6. KOMENTARZE MAJA WLASNY BUDZET, TYLKO Z WLASNYM NUMEREM ===")
+    # Stan produkcji 28.09.2026: 128 notek i 8 artykulow, limit 60 — komentarze
+    # dostawaly `60 - 136`, czyli nic, od 17 wrzesnia. Tu 70 notek z numerami.
+    stary_teraz = (datetime.now(timezone.utc) - timedelta(days=5)).isoformat(timespec="seconds")
+    with dziennik.open("w", encoding="utf-8") as f:
+        # Numery od 900000000: atrapy rozpoznawalne jako atrapy (audyt, sekcja 2c).
+        for i in range(70):
+            f.write(json.dumps({"udane": True, "rodzaj": "notka", "kiedy": stary_teraz,
+                                "id": 910000000 + i}) + "\n")
+        for i in range(10):
+            f.write(json.dumps({"udane": True, "rodzaj": "komentarz", "kiedy": TERAZ,
+                                "nasz_id": 920000000 + i}) + "\n")
+        # STARY komentarz: zasieg juz zebral, nie mierzymy go w nieskonczonosc.
+        f.write(json.dumps({"udane": True, "rodzaj": "komentarz", "kiedy": stary_teraz,
+                            "nasz_id": 930000000}) + "\n")
+        # Odpowiedz BEZ wlasnego numeru: `gdzie` to numer WATKU (tu cudzej notki).
+        f.write(json.dumps({"udane": True, "rodzaj": "odpowiedz", "kiedy": TERAZ,
+                            "gdzie": "https://substack.com/@ktos/note/c-940000000"}) + "\n")
+        # Odpowiedz w watku NASZEJ notki, tez bez numeru — to bylaby notka mierzona drugi raz.
+        f.write(json.dumps({"udane": True, "rodzaj": "odpowiedz", "kiedy": TERAZ,
+                            "gdzie": "https://substack.com/@my/note/c-910000001"}) + "\n")
+    poz6 = browser.nasze_pozycje_do_pomiaru(page=object(), ile=60)
+    kom6 = [x for x in poz6 if x["rodzaj"] == "komentarz"]
+    sprawdz("przy %d naszych tresciach (limit 60) komentarze z ostatnich dob nadal sa mierzone"
+            % len([x for x in poz6 if x["rodzaj"] in ("artykul", "notka")]),
+            len(kom6) == 10, len(kom6))
+    sprawdz("komentarz sprzed %d dob nie jest mierzony" % browser.DNI_POMIARU_KOMENTARZY,
+            "930000000" not in {x["id"] for x in poz6})
+    sprawdz("numer watku z `gdzie` nie trafia do pomiaru",
+            "940000000" not in {x["id"] for x in poz6})
+    sprawdz("nasza notka nie jest mierzona drugi raz jako odpowiedz",
+            [x["rodzaj"] for x in poz6 if x["id"] == "910000001"] == ["notka"],
+            [x["rodzaj"] for x in poz6 if x["id"] == "910000001"])
+    sprawdz("zadnej odpowiedzi w pomiarze (obie byly bez wlasnego numeru)",
+            not [x for x in poz6 if x["rodzaj"] == "odpowiedz"])
+    # KONTRDOWOD: stara regula na tych samych danych dawala zero komentarzy.
+    nasze6 = [x for x in poz6 if x["rodzaj"] in ("artykul", "notka")]
+    reszta6 = [x for x in poz6 if x["rodzaj"] not in ("artykul", "notka")]
+    po_staremu6 = max(0, 60 - len(nasze6))
+    sprawdz("stara regula dawala tu ZERO komentarzy",
+            po_staremu6 == 0 and len(reszta6[-po_staremu6:] if po_staremu6 else []) == 0,
+            po_staremu6)
 finally:
     browser.api_json, browser.DZIENNIK = stare_api, stary_dziennik
 
