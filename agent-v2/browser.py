@@ -2088,6 +2088,9 @@ def _artykuly_z_panelu(page, baza: str) -> dict[str, dict[str, Any]]:
     return wynik
 
 
+DNI_POMIARU_KOMENTARZY = 3
+
+
 def nasze_pozycje_do_pomiaru(page=None, ile: int = 60) -> list[dict[str, Any]]:
     """Co wystawilismy i ma wlasny numer — czyli co da sie zmierzyc.
 
@@ -2101,15 +2104,26 @@ def nasze_pozycje_do_pomiaru(page=None, ile: int = 60) -> list[dict[str, Any]]:
     zdazyly cos zebrac.
 
     DZIENNIK dokłada to, czego na profilu nie ma: komentarze pod cudzymi
-    tekstami (pole `nasz_id`) i odpowiedzi w cudzych watkach (numer w polu
-    `gdzie` w postaci „note/c-<numer>").
+    tekstami i odpowiedzi w watkach — WYLACZNIE z wlasnym numerem (`id` albo
+    `nasz_id`). Numer z pola `gdzie` („note/c-<numer>") to numer WATKU, nie
+    naszej odpowiedzi: gdy wlasnego numeru brakowalo, pomiar bral cudzy wpis
+    za nasz albo mierzyl nasza notke drugi raz, pod innym rodzajem.
+
+    KOMENTARZE I ODPOWIEDZI MAJA WLASNY BUDZET: z ostatnich
+    `DNI_POMIARU_KOMENTARZY` dob, najwyzej `ile` najnowszych. Dawniej `ile`
+    bylo limitem CALEJ listy, a nasze tresci sa spod niego wyjete — wiec gdy
+    notek i artykulow zrobilo sie 60, na komentarze zostalo zero miejsc.
+    Zmierzone 28.09.2026: od 17 wrzesnia ANI JEDEN komentarz ani odpowiedz nie
+    mial pomiaru (176 komentarzy z ostatniego tygodnia bez statystyk). Trzy
+    doby, bo tyle trwa zbieranie zasiegu; pomiar kosztuje ok. 1,7 s na pozycje.
 
     `page` podaje sie, gdy sesja przegladarki juz jest otwarta — zeby nie
     otwierac drugiej. Bez niej czytamy sam dziennik.
     """
     import json as _json
-    import re as _re
+    from datetime import datetime, timedelta, timezone
 
+    od_komentarzy = datetime.now(timezone.utc) - timedelta(days=DNI_POMIARU_KOMENTARZY)
     widziane: dict[str, dict[str, Any]] = {}
 
     # --- profil: nasze notki z numerami ---
@@ -2199,12 +2213,19 @@ def nasze_pozycje_do_pomiaru(page=None, ile: int = 60) -> list[dict[str, Any]]:
                 rodzaj = str(w.get("rodzaj") or "")
                 if rodzaj not in ("notka", "restack", "komentarz", "odpowiedz"):
                     continue
+                # TYLKO WLASNY NUMER — numer z `gdzie` to watek (docstring).
                 ident = w.get("id") or w.get("nasz_id")
                 if not ident:
-                    m = _re.search(r"note/c-(\d+)", str(w.get("gdzie") or ""))
-                    ident = m.group(1) if m else None
-                if not ident:
                     continue
+                if rodzaj in ("komentarz", "odpowiedz"):
+                    try:
+                        kiedy = datetime.fromisoformat(str(w.get("kiedy") or ""))
+                    except ValueError:
+                        continue
+                    if kiedy.tzinfo is None:
+                        kiedy = kiedy.replace(tzinfo=timezone.utc)
+                    if kiedy < od_komentarzy:
+                        continue
                 ident = str(ident)
                 if ident in widziane:
                     continue
@@ -2246,11 +2267,16 @@ def nasze_pozycje_do_pomiaru(page=None, ile: int = 60) -> list[dict[str, Any]]:
     # istniec — akurat wtedy, gdy zaczyna byc potrzebny. Dzis notek jest 12
     # i to nie boli; przy szescdziesieciu przebieg otwieralby w przegladarce
     # KAZDY komentarz, jaki kiedykolwiek zostawilismy. Liczymy wiec jawnie.
+    #
+    # TRZECI RAZ: `ile - len(nasze)` znaczylo, ze komentarze dostaja to, co
+    # zostanie po naszych tresciach. Od 17 wrzesnia nie zostawalo nic (notek
+    # i artykulow bylo 66, potem 136) i komentarze zniknely z pomiaru bez
+    # sladu w logu. Budzet komentarzy jest teraz WLASNY: `ile` najnowszych
+    # z ostatnich `DNI_POMIARU_KOMENTARZY` dob, niezaleznie od liczby notek.
     NASZE_RODZAJE = ("artykul", "notka")
     nasze = [x for x in widziane.values() if x["rodzaj"] in NASZE_RODZAJE]
     reszta = [x for x in widziane.values() if x["rodzaj"] not in NASZE_RODZAJE]
-    zostalo = max(0, ile - len(nasze))
-    return nasze + (reszta[-zostalo:] if zostalo else [])
+    return nasze + (reszta[-ile:] if ile > 0 else [])
 
 
 def dopisz_skutki() -> int:
