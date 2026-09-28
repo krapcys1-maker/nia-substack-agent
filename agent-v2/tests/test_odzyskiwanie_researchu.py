@@ -62,14 +62,14 @@ class SearchRecoveryTest(unittest.TestCase):
             if attempts == 1:
                 raise httpx.RemoteProtocolError("interrupted reconstruction")
             return '{"facts": []}', 100, 20, 0, 0
-        with patch.object(llm, "_call_deepseek_responses", return_value=("", 2000, 700, 9, ["https://example.org/evidence"])) as search, patch.object(llm, "_call_deepseek", side_effect=repair):
+        with patch.object(llm, "_call_deepseek_z_siecia", return_value=("", 2000, 700, 9, ["https://example.org/evidence"])) as search, patch.object(llm, "_call_deepseek", side_effect=repair):
             self.assertEqual(json.loads(self.invoke()), {"facts": []})
         self.assertEqual(search.call_count, 1)
         self.assertEqual(attempts, 2)
         self.assertEqual(len(self.rows()), 3)
 
     def test_failed_repair_preserves_search_cost(self):
-        with patch.object(llm, "_call_deepseek_responses", return_value=("{broken", 2000, 700, 4, ["https://example.org/evidence"])) as search, patch.object(llm, "_call_deepseek", side_effect=RuntimeError("repair failed")):
+        with patch.object(llm, "_call_deepseek_z_siecia", return_value=("{broken", 2000, 700, 4, ["https://example.org/evidence"])) as search, patch.object(llm, "_call_deepseek", side_effect=RuntimeError("repair failed")):
             with self.assertRaisesRegex(RuntimeError, "repair failed"):
                 self.invoke()
         self.assertEqual(search.call_count, 1)
@@ -77,21 +77,21 @@ class SearchRecoveryTest(unittest.TestCase):
         self.assertGreater(self.rows()[0]["cost_usd"], 0)
 
     def test_search_cost_is_checked_before_repair(self):
-        with patch.object(config, "RUN_LIMIT_USD", 0.000001), patch.object(llm, "_call_deepseek_responses", return_value=("", 2000, 700, 9, ["https://example.org/evidence"])), patch.object(llm, "_call_deepseek") as repair:
+        with patch.object(config, "RUN_LIMIT_USD", 0.000001), patch.object(llm, "_call_deepseek_z_siecia", return_value=("", 2000, 700, 9, ["https://example.org/evidence"])), patch.object(llm, "_call_deepseek") as repair:
             with self.assertRaises(llm.BudgetExceeded):
                 self.invoke()
         repair.assert_not_called()
         self.assertEqual(len(self.rows()), 0)
 
     def test_no_source_does_not_invent_evidence(self):
-        with patch.object(llm, "_call_deepseek_responses", return_value=("", 2000, 700, 4, [])), patch.object(llm, "_call_deepseek") as repair:
+        with patch.object(llm, "_call_deepseek_z_siecia", return_value=("", 2000, 700, 4, [])), patch.object(llm, "_call_deepseek") as repair:
             with self.assertRaises(llm.Truncated):
                 self.invoke()
         repair.assert_not_called()
         self.assertEqual(self.rows()[0]["web_searches"], 4)
 
     def test_valid_json_needs_no_reconstruction(self):
-        with patch.object(llm, "_call_deepseek_responses", return_value=('{"facts":[]}', 2000, 700, 4, [])), patch.object(llm, "_call_deepseek") as repair:
+        with patch.object(llm, "_call_deepseek_z_siecia", return_value=('{"facts":[]}', 2000, 700, 4, [])), patch.object(llm, "_call_deepseek") as repair:
             self.assertEqual(json.loads(self.invoke()), {"facts": []})
         repair.assert_not_called()
 

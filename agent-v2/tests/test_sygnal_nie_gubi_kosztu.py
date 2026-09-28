@@ -91,6 +91,7 @@ def wywolaj_z(wyjatek) -> tuple[str, int, int]:
         raise wyjatek
     llm._call_deepseek = wybuch
     llm._call_deepseek_responses = wybuch
+    llm._call_deepseek_z_siecia = wybuch
     przed = ile_w_ksiegach()
     nazwa = type(wyjatek).__name__
     try:
@@ -124,6 +125,7 @@ def _przepuszcza(wyjatek) -> bool:
         raise wyjatek
     llm._call_deepseek = wybuch
     llm._call_deepseek_responses = wybuch
+    llm._call_deepseek_z_siecia = wybuch
     try:
         llm.call("cele", "system", "user", conn=CONN, run_id=RUN)
     except BaseException as exc:                                 # noqa: BLE001

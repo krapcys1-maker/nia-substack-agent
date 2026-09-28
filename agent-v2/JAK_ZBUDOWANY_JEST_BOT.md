@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **39 plików**, 41 825 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **39 plików**, 41 900 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 239 zestawów
-testów, 5388 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 5400 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -609,7 +609,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1247 wierszy, 23 funkcji na poziomie modułu, 4 klas
+1308 wierszy, 24 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -620,6 +620,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` *(wewn.)* | — |
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
 | `_call_claude(purpose, system, user, web_search)` *(wewn.)* | — |
+| `_call_deepseek_z_siecia(purpose, system, user)` *(wewn.)* | DeepSeek z wyszukiwaniem przez endpoint zgodny z API Anthropic. |
 | `_call_deepseek_responses(purpose, system, user)` *(wewn.)* | DeepSeek przez /responses z server-side `web_search`. |
 | `_call_openai_responses(purpose, system, user)` *(wewn.)* | OpenAI przez `/responses`. Ten sam ksztalt zadania, co DeepSeek. |
 | `_deepseek_pick_from_urls(purpose, system, user, urls)` *(wewn.)* | Reconstruct a search result with the ordinary streamed, billed transport. |
@@ -882,7 +883,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-4023 wierszy, 44 funkcji na poziomie modułu, 0 klas
+4037 wierszy, 44 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -6798,7 +6799,9 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
             if provider == 'openai':
                 return _call_openai_responses(purpose, system, user)
             if web_search:
-                return _call_deepseek_responses(purpose, system, user)
+                # Endpoint zgodny z API Anthropic, nie `/responses` — tamtedy
+                # V4.1 Flash nie szuka (patrz `_call_deepseek_z_siecia`).
+                return _call_deepseek_z_siecia(purpose, system, user)
             return _call_deepseek(purpose, system, user)
         try:
             result = runtime.invoke(state, transport)
@@ -13078,8 +13081,9 @@ wartosc i komentarz stojacy bezposrednio nad definicja.
 | `DEEPSEEK_PRO` | `"deepseek-v4-pro"` | — |
 | `DEEPSEEK_FLASH` | `"deepseek-flash"` | NASTEPCA FLASHA U DOSTAWCY. Od wrzesnia 2026 DeepSeek podaje na liscie modeli `deepseek-flash` (DeepSeek-V4.1-Flash), a `deepseek-v4-flash`  |
 | `ROLE_Z_WYSZUKIWARKA` | `("curiosity", "discovery", "factcheck", "akt` | ROLE, KTORYCH CALA WARTOSCIA JEST WYSZUKIWARKA — i modele, na ktorych ona NIE DZIALA. Zmierzone na zywo 14 wrzesnia 2026, cztery minimalne w |
-| `MODELE_BEZ_WYSZUKIWARKI` | `(DEEPSEEK, DEEPSEEK_FLASH)` | — |
 | `MODEL_WYSZUKIWARKI` | `DEEPSEEK_PRO` | — |
+| `DEEPSEEK_ANTHROPIC_BASE_URL` | `"https://api.deepseek.com/anthropic"` | — |
+| `NARZEDZIE_WYSZUKIWANIA_DEEPSEEK` | `"web_search_20250305"` | — |
 | `MODELE_SAME_NA_NOWSZE` | `True` | NOWSZE WERSJE MODELI SAME. `wersje_modeli.sprawdz_i_przelacz` raz na dobe pyta dostawcow o liste, sprawdza nastepce w tej samej rodzinie na  |
 | `MODEL_FOR` | `{ "scout": DEEPSEEK_PRO, "feasibility": DEEP` | Decyzja wlasciciela 2026-08-15 zaczela od DeepSeeka poza pisaniem. Po pozniejszych testach artykuly trafily do Fable 5, notki do Opusa 5, a  |
 | `DEEPSEEK_BASE_URL` | `"https://api.deepseek.com"` | — |

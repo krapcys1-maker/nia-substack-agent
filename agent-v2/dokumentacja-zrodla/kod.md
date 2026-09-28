@@ -115,7 +115,9 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
             if provider == 'openai':
                 return _call_openai_responses(purpose, system, user)
             if web_search:
-                return _call_deepseek_responses(purpose, system, user)
+                # Endpoint zgodny z API Anthropic, nie `/responses` — tamtedy
+                # V4.1 Flash nie szuka (patrz `_call_deepseek_z_siecia`).
+                return _call_deepseek_z_siecia(purpose, system, user)
             return _call_deepseek(purpose, system, user)
         try:
             result = runtime.invoke(state, transport)
