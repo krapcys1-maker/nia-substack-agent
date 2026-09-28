@@ -340,6 +340,65 @@ def _call_claude(
     return text, message.usage.input_tokens, message.usage.output_tokens, searches, urls
 
 
+def _call_deepseek_z_siecia(
+    purpose: str, system: str, user: str
+) -> tuple[str, int, int, int, list[str]]:
+    """DeepSeek z wyszukiwaniem przez endpoint zgodny z API Anthropic.
+
+    DLACZEGO NIE `/responses`. Tamta droga od 10 wrzesnia 2026 nie szuka na
+    V4.1 Flash (patrz `config.ROLE_Z_WYSZUKIWARKA`), a ten sam model przez ten
+    endpoint szuka naprawde. Pro szuka obiema drogami, wiec KAZDE wywolanie
+    DeepSeeka z siecia idzie tedy (od 28.09.2026).
+
+    Liczba wyszukiwan pochodzi z `usage.server_tool_use`, a adresy z blokow
+    `web_search_tool_result` — z odpowiedzi serwera, nie z tekstu modelu, bo
+    zmyslony adres wyglada w tekscie identycznie jak prawdziwy. `max_uses`
+    dziala tu naprawde, w odroznieniu od `/responses`, gdzie zadne pole limitu
+    nie bylo przyjmowane.
+    """
+    runtime.observe()
+    klient = httpx.Client(timeout=httpx.Timeout(
+        config.timeout_for(config.MAX_TOKENS[purpose]), connect=30.0))
+    runtime.watch(klient)
+    try:
+        odpowiedz = klient.post(
+            f"{config.DEEPSEEK_ANTHROPIC_BASE_URL}/v1/messages",
+            headers={"x-api-key": str(config.DEEPSEEK_API_KEY),
+                     "anthropic-version": "2023-06-01",
+                     "content-type": "application/json"},
+            json={
+                "model": config.MODEL_FOR[purpose],
+                "max_tokens": runtime.token_limit(config.MAX_TOKENS[purpose]),
+                "system": system,
+                "messages": [{"role": "user", "content": user}],
+                "tools": [{"type": config.NARZEDZIE_WYSZUKIWANIA_DEEPSEEK,
+                           "name": "web_search",
+                           "max_uses": config.DISCOVERY_MAX_SEARCHES}],
+            },
+        )
+        odpowiedz.raise_for_status()
+        dane = odpowiedz.json()
+    finally:
+        klient.close()
+    uzycie = dane.get("usage") or {}
+    # ZUZYCIE ZAPISANE PRZED UCIECIEM — zaplacone wywolanie nie moze zginac
+    # z rachunku tylko dlatego, ze odpowiedz jest niepelna.
+    runtime.capture(uzycie, "claude")
+    if dane.get("stop_reason") == "max_tokens":
+        raise Truncated(
+            f"odpowiedź ucięta na suficie {config.MAX_TOKENS[purpose]} tokenów "
+            f"dla etapu {purpose!r}"
+        )
+    bloki = [b for b in (dane.get("content") or []) if isinstance(b, dict)]
+    tekst = "".join(str(b.get("text") or "") for b in bloki if b.get("type") == "text")
+    szukan = int((uzycie.get("server_tool_use") or {}).get("web_search_requests") or 0)
+    adresy = [w["url"] for b in bloki
+              if b.get("type") == "web_search_tool_result" and isinstance(b.get("content"), list)
+              for w in b["content"] if isinstance(w, dict) and isinstance(w.get("url"), str)]
+    return (tekst, int(uzycie.get("input_tokens") or 0), int(uzycie.get("output_tokens") or 0),
+            szukan, adresy)
+
+
 def _call_deepseek_responses(
     purpose: str, system: str, user: str
 ) -> tuple[str, int, int, int, list[str]]:
@@ -931,7 +990,9 @@ def call(purpose: str, system: str, user: str, *, conn: sqlite3.Connection,
             if provider == 'openai':
                 return _call_openai_responses(purpose, system, user)
             if web_search:
-                return _call_deepseek_responses(purpose, system, user)
+                # Endpoint zgodny z API Anthropic, nie `/responses` — tamtedy
+                # V4.1 Flash nie szuka (patrz `_call_deepseek_z_siecia`).
+                return _call_deepseek_z_siecia(purpose, system, user)
             return _call_deepseek(purpose, system, user)
         try:
             result = runtime.invoke(state, transport)

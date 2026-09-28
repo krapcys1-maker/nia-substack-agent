@@ -204,9 +204,20 @@ DEEPSEEK_FLASH = "deepseek-flash"
 # flashu robily 7-48 wyszukiwan dziennie; od 10 wrzesnia KAZDE takie wywolanie
 # mialo zero. Nic tego nie zglosilo przez cztery dni — stad `napraw_role_wyszukiwania`
 # ponizej i ostrzezenie w `llm.call`.
+#
+# OD 28 WRZESNIA 2026 FLASH ZNOW SZUKA — INNA DROGA. Ten sam V4.1 Flash przez
+# endpoint DeepSeeka zgodny z API Anthropic (`DEEPSEEK_ANTHROPIC_BASE_URL`,
+# narzedzie `web_search_20250305`) wykonuje wyszukiwania naprawde: pomiar na
+# produkcji innej instalacji tego kodu, 21-27.09, 352 wyszukania Flasha,
+# np. weryfikacja notki 2 wyszukania w 14 s, research artykulu 9 wyszukan
+# i 8 zrodel w 28 s. Kazde wywolanie DeepSeeka z siecia idzie teraz ta droga
+# (`llm._call_deepseek_z_siecia`), wiec lista modeli bez wyszukiwarki jest
+# pusta, a straznik zostaje na nastepna podmiane modelu u dostawcy.
 ROLE_Z_WYSZUKIWARKA = ("curiosity", "discovery", "factcheck", "aktualne_modele")
-MODELE_BEZ_WYSZUKIWARKI = (DEEPSEEK, DEEPSEEK_FLASH)
+MODELE_BEZ_WYSZUKIWARKI: tuple[str, ...] = ()
 MODEL_WYSZUKIWARKI = DEEPSEEK_PRO
+DEEPSEEK_ANTHROPIC_BASE_URL = "https://api.deepseek.com/anthropic"
+NARZEDZIE_WYSZUKIWANIA_DEEPSEEK = "web_search_20250305"
 
 
 def napraw_role_wyszukiwania(cfg=None) -> list[tuple[str, str, str]]:
@@ -263,7 +274,10 @@ MODEL_FOR = {
     #    52 767 tokenów wejścia ($0,46), a raz 285 759 ($1,65), bo wielkość
     #    wyników zależy od tematu. To dyskwalifikuje go z etapu, który biegnie
     #    codziennie bez nadzoru.
-    "discovery": DEEPSEEK_PRO,
+    #  - OD 28.09.2026 Flash przez endpoint zgodny z API Anthropic (patrz
+    #    `ROLE_Z_WYSZUKIWARKA`): 9 wyszukiwań i 8 źródeł w 28 s za $0,0124,
+    #    wobec Pro tą samą drogą 6 wyszukiwań i 9 źródeł w 54 s za $0,041.
+    "discovery": DEEPSEEK_FLASH,
     "classify": DEEPSEEK,  # mechaniczne, wysokowolumenowe
     "synthesis": DEEPSEEK_PRO,
     # TO JEST PRODUKT. Fable 5 po porównaniu A/B na identycznej karcie: krótszy
@@ -361,9 +375,9 @@ MODEL_FOR = {
     # jednozdaniowych opisow, a nie rozumowanie o tresci — i ma byc tanie,
     # zeby oplacalo sie wolac je czesto.
     "bank": DEEPSEEK,
-    # WYSZUKIWARKA — patrz `ROLE_Z_WYSZUKIWARKA` nizej: flash od wrzesnia 2026
-    # nie wykonuje `web_search`.
-    "factcheck": DEEPSEEK_PRO,
+    # WYSZUKIWARKA — patrz `ROLE_Z_WYSZUKIWARKA`: od 28.09.2026 flash szuka
+    # przez endpoint zgodny z API Anthropic (przez `/responses` nie szukal).
+    "factcheck": DEEPSEEK_FLASH,
     # NAPRAWA OBALONEGO ZDANIA. Kazdy tekst wraca do TEGO SAMEGO modelu,
     # ktory go napisal — notka do Opusa, komentarz do DeepSeeka-pro. Nie z
     # oszczednosci, tylko dlatego, ze naprawa ma zachowac glos: model, ktory
@@ -374,12 +388,12 @@ MODEL_FOR = {
     # Pytanie „jakie modele sa dzisiaj" MUSI isc na model z wyszukiwaniem —
     # to jest cala jego wartosc. Ten sam, co sprawdzanie faktow, bo robi
     # dokladnie to samo: konfrontuje pamiec ze swiatem.
-    "aktualne_modele": DEEPSEEK_PRO,
+    "aktualne_modele": DEEPSEEK_FLASH,
     # Proba nastepcy modelu — `wersje_modeli.sprawdz_na_zywo` podstawia tu
     # sprawdzany model na czas jednego wywolania. Wartosc ponizej nie chodzi
     # nigdy sama.
     "nowszy_model": DEEPSEEK,
-    "curiosity": DEEPSEEK_PRO,
+    "curiosity": DEEPSEEK_FLASH,
     "grafika": DEEPSEEK,
     "cele": DEEPSEEK,
     "wybor": DEEPSEEK_PRO,

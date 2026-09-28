@@ -467,7 +467,7 @@
 
 ### `llm.py` — JEDYNA warstwa dostępu do modeli i liczenia kosztu
 
-1247 wierszy, 23 funkcji na poziomie modułu, 4 klas
+1308 wierszy, 24 funkcji na poziomie modułu, 4 klas
 
 | funkcja | co robi |
 |---|---|
@@ -478,6 +478,7 @@
 | `_cost(model, tokens_in, tokens_out, web_searches, cache_hit)` *(wewn.)* | — |
 | `_log(purpose, model, tin, tout, searches, usd, verified)` *(wewn.)* | — |
 | `_call_claude(purpose, system, user, web_search)` *(wewn.)* | — |
+| `_call_deepseek_z_siecia(purpose, system, user)` *(wewn.)* | DeepSeek z wyszukiwaniem przez endpoint zgodny z API Anthropic. |
 | `_call_deepseek_responses(purpose, system, user)` *(wewn.)* | DeepSeek przez /responses z server-side `web_search`. |
 | `_call_openai_responses(purpose, system, user)` *(wewn.)* | OpenAI przez `/responses`. Ten sam ksztalt zadania, co DeepSeek. |
 | `_deepseek_pick_from_urls(purpose, system, user, urls)` *(wewn.)* | Reconstruct a search result with the ordinary streamed, billed transport. |
@@ -740,7 +741,7 @@
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-4023 wierszy, 44 funkcji na poziomie modułu, 0 klas
+4037 wierszy, 44 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
