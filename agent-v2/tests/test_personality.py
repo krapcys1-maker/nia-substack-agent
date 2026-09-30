@@ -486,7 +486,8 @@ class PersonaTests(unittest.TestCase):
     def test_exact_daily_caps_and_monthly_dates(self):
         budget = stages.budzet_dnia(self.conn)
         self.assertEqual((budget["notki"], budget["follow"], budget["subskrypcje"], budget["restacki"]), (2, 5, 4, 4))
-        self.assertEqual(config.zegar_artykulu_on_calendar(), ["*-*-8,22 17:00:00"])
+        # The timer fires daily; the plan days below decide (artykul_nalezny).
+        self.assertEqual(config.zegar_artykulu_on_calendar(), ["*-*-* 17:00:00"])
         for month in range(1, 13):
             dates = [d for d in range(1, 29) if config.dzis_dzien_artykulu(datetime(2026, month, d, tzinfo=timezone.utc))]
             self.assertEqual(dates, [8, 22])

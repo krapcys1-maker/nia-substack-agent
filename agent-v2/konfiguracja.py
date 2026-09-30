@@ -972,12 +972,18 @@ def on_calendar_agenta(godziny) -> list[str]:
 
 
 def on_calendar_artykulu(dni, godzina: str, ile: int, dni_miesiaca=()) -> list[str]:
-    """Zegar artykulu; pusta lista, gdy artykulow nie ma."""
-    if dni_miesiaca:
-        return ["*-*-%s %s:00" % (",".join(str(d) for d in dni_miesiaca), godzina)]
-    if int(ile or 0) <= 0 or not dni:
+    """Zegar artykulu: CODZIENNIE o `godzina`, gdy plan ma artykuly; pusta lista, gdy nie ma.
+
+    DZIEN ROZSTRZYGA `artykul_z_puli.artykul_nalezny`, NIE ZEGAR (30.09.2026).
+    Zegar odpalany tylko w dni z planu nie mial jak nadrobic dnia, w ktorym
+    przebieg padl przed napisaniem tekstu — to byl tydzien bez artykulu.
+    Codziennie odpalony skrypt w dzien bez terminu konczy sie po kilku
+    sekundach kodem 0, bez zadnego platnego wywolania. Dni z planu nadal
+    WLACZAJA zegar: plan bez dni nie ma artykulow.
+    """
+    if not dni_miesiaca and (int(ile or 0) <= 0 or not dni):
         return []
-    return ["%s *-*-* %s:00" % (",".join(dni), godzina)]
+    return ["*-*-* %s:00" % godzina]
 
 
 # ---------------------------------------------------------------------------

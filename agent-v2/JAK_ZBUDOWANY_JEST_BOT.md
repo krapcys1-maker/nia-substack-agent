@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **39 plików**, 41 900 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **39 plików**, 42 004 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 239 zestawów
-testów, 5400 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 240 zestawów
+testów, 5425 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -309,7 +309,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `stages.py` — wszystkie etapy myślowe; nie dotyka przeglądarki
 
-9557 wierszy, 167 funkcji na poziomie modułu, 0 klas
+9591 wierszy, 168 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -393,6 +393,7 @@ wiec nie da sie go rozjechac z kodem.
 | `niewystawiony_artykul()` | Artykul czekajacy na ponowna probe, albo None. NIGDY nie rzuca. |
 | `odnotuj_probe_artykulu(powod)` | Podbija licznik prob i oddaje nowa wartosc. Zero, gdy znacznika nie ma. |
 | `zapomnij_niewystawiony()` | Tekst jest publiczny — znacznik znika. |
+| `ostatni_wystawiony_artykul()` | Kiedy (UTC) wyszedl ostatni artykul potwierdzony przez Substack. NIGDY nie rzuca. |
 | `zapisz_do_promocji(url, tytul, tekst)` | Zapisuje opublikowany artykul do promowania przez kolejne dni. |
 | `wczytaj_promocje()` | — |
 | `artykul_do_promocji()` | Artykul, ktory dzis czeka na notke promujaca — najwyzej JEDNA na dobe. |
@@ -700,7 +701,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `konfiguracja.py` — wczytanie `konfiguracja.toml` — jeden plik zamiast edycji w kilkudziesieciu miejscach; nie podejmuje decyzji, tylko podaje wartosci do `config.py`
 
-1047 wierszy, 45 funkcji na poziomie modułu, 1 klas
+1053 wierszy, 45 funkcji na poziomie modułu, 1 klas
 
 | funkcja | co robi |
 |---|---|
@@ -745,7 +746,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_plan(dane, cfg)` *(wewn.)* | Co przestawic — policzone W CALOSCI, zanim cokolwiek zostanie zapisane. |
 | `zastosuj(dane, cfg)` | Wklada wartosci do modulu `config`. Oddaje liste tego, co przestawiono. |
 | `on_calendar_agenta(godziny)` | Zegar rutyny dnia: jedna linia na godzine UTC. |
-| `on_calendar_artykulu(dni, godzina, ile, dni_miesiaca)` | Zegar artykulu; pusta lista, gdy artykulow nie ma. |
+| `on_calendar_artykulu(dni, godzina, ile, dni_miesiaca)` | Zegar artykulu: CODZIENNIE o `godzina`, gdy plan ma artykuly; pusta lista, gdy nie ma. |
 | `_toml_napis(v)` *(wewn.)* | Napis w cudzyslowie z ucieczkami. Nowa linia w niszy dawala plik, ktorego |
 | `toml_wartosc(v)` | — |
 | `zapisz_toml(dane, naglowek, sekcje_dodatkowe)` | Pola plaskie -> tekst TOML. `sekcje_dodatkowe` (np. `[preset]`) ida na poczatek. |
@@ -883,7 +884,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `config.py` — wszystkie liczby i decyzje w jednym miejscu (patrz ZAŁĄCZNIK B)
 
-4037 wierszy, 44 funkcji na poziomie modułu, 0 klas
+4058 wierszy, 45 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -910,6 +911,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_cisza_z_hasza(dzien)` *(wewn.)* | — |
 | `cichy_dzien(kiedy)` | Czy dzis nie nadajemy. Ta sama odpowiedz przez caly dzien. |
 | `dzis_dzien_artykulu(kiedy)` | Czy dzis (UTC) jest dzien artykulu wedlug harmonogramu presetu. |
+| `ostatni_dzien_planu(kiedy)` | Ostatni dzien artykulu z planu, ktory juz nastal (dzis albo wczesniej). |
 | `zegar_agenta_on_calendar()` | Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu. |
 | `zegar_artykulu_on_calendar()` | Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma. |
 | `sufit_wyjscia(purpose, model)` | Sufit wyjscia dla TEGO modelu, nie dla nazwy etapu. |
@@ -1058,7 +1060,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `artykul_z_puli.py` — artykuł bierze temat z tej samej puli, co notki
 
-1904 wierszy, 15 funkcji na poziomie modułu, 0 klas
+1947 wierszy, 16 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|
@@ -1067,6 +1069,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_pola_glebi_puste(brief)` *(wewn.)* | Czy model zostawil WSZYSTKIE pola glebi puste — czyli nie odpowiedzial wcale. |
 | `uniesie_artykul(brief)` | Czy rekord ma material na artykul przed platnym researchem. |
 | `wybierz_fakt(conn, run_id, ile)` | Swiezy fakt z puli ciekawostek, ktory NIE powtarza zadnego artykulu. |
+| `artykul_nalezny(teraz)` | Czy dzis ma powstac artykul — i dlaczego tak albo nie. |
 | `main()` | Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku. |
 | `_zrob_miejsce_na_fakt(card)` *(wewn.)* | Robi miejsce na wstrzykniete twierdzenie, nie tracac zadnego ZRODLA. |
 | `_rozszerz_najstarsze(card, data_faktu)` *(wewn.)* | Data wstrzyknietego zrodla wazy — ale TYLKO w strone ostrzezenia. |

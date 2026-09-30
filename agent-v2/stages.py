@@ -3997,6 +3997,40 @@ def zapomnij_niewystawiony() -> None:
         pass
 
 
+def ostatni_wystawiony_artykul():
+    """Kiedy (UTC) wyszedl ostatni artykul potwierdzony przez Substack. NIGDY nie rzuca.
+
+    Z dziennika: wpis `artykul` z `udane`. `browser.wystaw_artykul` stawia
+    `udane` dopiero wtedy, gdy Substack pokazal tekst jako opublikowany —
+    takze przy wystawieniu zaleglego tekstu przez rutyne dnia i przy recznym
+    `--wymus`. Na tej dacie stoi nadrabianie w `artykul_z_puli.artykul_nalezny`.
+    None, gdy zaden artykul nie wyszedl albo dziennika nie da sie przeczytac.
+    """
+    from datetime import datetime, timezone
+
+    najpozniej = None
+    try:
+        with open(config.DATA_DIR / "dziennik.jsonl", encoding="utf-8") as plik:
+            for linia in plik:
+                if '"artykul"' not in linia:
+                    continue
+                try:
+                    wpis = json.loads(linia)
+                    if wpis.get("rodzaj") != "artykul" or not wpis.get("udane"):
+                        continue
+                    kiedy = datetime.fromisoformat(
+                        str(wpis.get("kiedy") or "").replace("Z", "+00:00"))
+                except (ValueError, AttributeError):
+                    continue
+                if kiedy.tzinfo is None:
+                    kiedy = kiedy.replace(tzinfo=timezone.utc)
+                if najpozniej is None or kiedy > najpozniej:
+                    najpozniej = kiedy
+    except OSError:
+        return None
+    return najpozniej
+
+
 def zapisz_do_promocji(url: str, tytul: str, tekst: str) -> None:
     """Zapisuje opublikowany artykul do promowania przez kolejne dni."""
     from datetime import datetime, timezone
