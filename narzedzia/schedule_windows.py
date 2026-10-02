@@ -39,23 +39,10 @@ def task_xml(cfg, kind, python, root, sid, now=None):
             boundary += timedelta(days=1)
         add(trigger, "StartBoundary", boundary.isoformat())
         add(trigger, "Enabled", "true")
-        if kind == "daily":
-            add(add(trigger, "ScheduleByDay"), "DaysInterval", "1")
-        elif cfg.ARTYKULY_MIESIECZNIE:
-            monthly = add(trigger, "ScheduleByMonth")
-            days = add(monthly, "DaysOfMonth")
-            for day in cfg.DNI_MIESIACA_ARTYKULU:
-                add(days, "Day", day)
-            months = add(monthly, "Months")
-            for month in ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"):
-                add(months, month)
-        else:
-            weekly = add(trigger, "ScheduleByWeek")
-            add(weekly, "WeeksInterval", "1")
-            days = add(weekly, "DaysOfWeek")
-            names = dict(zip(("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"), ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))
-            for day in cfg.DNI_ARTYKULU:
-                add(days, names[day])
+        # The article task runs daily too: artykul_z_puli.artykul_nalezny decides
+        # the day (a plan day, or catching up a plan day whose article did not
+        # come out), as with the systemd timer (konfiguracja.on_calendar_artykulu).
+        add(add(trigger, "ScheduleByDay"), "DaysInterval", "1")
     principal = add(add(task, "Principals"), "Principal", id="Author")
     add(principal, "UserId", sid)
     add(principal, "LogonType", "InteractiveToken")

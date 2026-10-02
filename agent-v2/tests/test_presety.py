@@ -359,8 +359,11 @@ sprawdz("zegar agenta ma dokladnie tyle OnCalendar, ile godzin w kartridzu",
         linie == ["OnCalendar=*-*-* 09:05:00", "OnCalendar=*-*-* 21:30:00"], linie)
 zegar_art = next(t for n, t in z_godz.items() if n.endswith(".timer") and
                  "artykul_z_puli" in z_godz.get(n[:-6] + ".service", ""))
-sprawdz("zegar artykulu bierze dni i godzine z kartridza",
-        "OnCalendar=Tue *-*-* 14:00:00" in zegar_art, zegar_art)
+# Od 30.09.2026 zegar artykulu chodzi codziennie o godzinie z kartridza, a dzien
+# rozstrzyga `artykul_z_puli.artykul_nalezny` (dzien z planu albo nadrabianie).
+sprawdz("zegar artykulu bierze godzine z kartridza i chodzi codziennie",
+        "OnCalendar=*-*-* 14:00:00" in zegar_art
+        and "OnCalendar=Tue" not in zegar_art, zegar_art)
 domyslny = jednostki.zbuduj(KATALOG, UZYTKOWNIK, MARKA, cfg=preset.proba_konfiguracji(config, BAZA))
 sprawdz("kontrdowod: bez kartridza komplet szesciu jednostek", len(domyslny) == 6, sorted(domyslny))
 

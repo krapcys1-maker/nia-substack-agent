@@ -2512,6 +2512,23 @@ def dzis_dzien_artykulu(kiedy=None) -> bool:
             or (ARTYKULY_TYGODNIOWO > 0 and dzien in DNI_ARTYKULU))
 
 
+def ostatni_dzien_planu(kiedy=None):
+    """Ostatni dzien artykulu z planu, ktory juz nastal (dzis albo wczesniej).
+
+    Data UTC albo None, gdy plan nie ma zadnego dnia. Od tego terminu
+    `artykul_z_puli.artykul_nalezny` liczy, czy artykul z planu juz wyszedl.
+    62 dni wstecz: plan tygodniowy siega najwyzej 6 dni, miesieczny do ~31.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    kiedy = kiedy or datetime.now(timezone.utc)
+    for wstecz in range(62):
+        dzien = kiedy - timedelta(days=wstecz)
+        if dzis_dzien_artykulu(dzien):
+            return dzien.date()
+    return None
+
+
 def zegar_agenta_on_calendar() -> list[str]:
     """Linie `OnCalendar=` zegara rutyny dnia, z harmonogramu presetu."""
     import konfiguracja as _k
@@ -2519,7 +2536,11 @@ def zegar_agenta_on_calendar() -> list[str]:
 
 
 def zegar_artykulu_on_calendar() -> list[str]:
-    """Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma."""
+    """Linie `OnCalendar=` zegara artykulu; pusta lista, gdy artykulow nie ma.
+
+    Zegar chodzi CODZIENNIE o godzinie artykulu, a dzien rozstrzyga
+    `artykul_z_puli.artykul_nalezny` — patrz `konfiguracja.on_calendar_artykulu`.
+    """
     import konfiguracja as _k
     return _k.on_calendar_artykulu(DNI_ARTYKULU, GODZINA_ARTYKULU_UTC, ARTYKULY_TYGODNIOWO, DNI_MIESIACA_ARTYKULU)
 

@@ -341,7 +341,10 @@ godziny_przebiegow_utc = ["11:20", "17:00", "19:20", "21:30", "23:40"]
 dni_artykulu = ["Tue"]
 dni_miesiaca_artykulu = []
 
-# O ktorej (UTC) startuje przebieg artykulu w te dni.
+# O ktorej (UTC) CODZIENNIE startuje zegar artykulu. Pisze w dniu z planu,
+# a gdy artykul z terminu nie wyszedl (przebieg padl, zamek zajety), nadrabia
+# kazdego nastepnego dnia az do skutku albo do kolejnego dnia z planu
+# (`artykul_z_puli.artykul_nalezny`). W pozostale dni konczy sie od razu.
 godzina_artykulu_utc = "14:00"
 
 

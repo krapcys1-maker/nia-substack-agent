@@ -1,4 +1,9 @@
-"""The task generated from a preset uses real monthly days and UTC boundaries."""
+"""The task generated from a preset keeps UTC boundaries; the article task runs daily.
+
+Since 2026-09-30 the article script decides the day (a plan day, or catching up a
+plan day whose article did not come out), so the article trigger is daily for
+monthly and weekly plans alike, and absent when the plan has no articles.
+"""
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -23,10 +28,11 @@ class ScheduleTests(unittest.TestCase):
     def xml(self, kind):
         return ET.fromstring(task_xml(self.cfg, kind, "C:/Program Files/Python/python.exe", Path("C:/NIA app"), "S-1-5-example", self.now))
 
-    def test_monthly_and_daily_do_not_become_weekly(self):
+    def test_monthly_article_task_runs_daily_and_daily_stays_daily(self):
         article = self.xml("article")
-        self.assertEqual([n.text for n in article.findall(".//{%s}Day" % NS)], ["8", "22"])
-        self.assertEqual(len(article.findall(".//{%s}Months/*" % NS)), 12)
+        self.assertEqual(article.find(".//{%s}ScheduleByDay/{%s}DaysInterval" % (NS, NS)).text, "1")
+        self.assertEqual(article.findall(".//{%s}Day" % NS), [])
+        self.assertEqual(len(article.findall(".//{%s}CalendarTrigger" % NS)), 1)
         self.assertEqual(article.find(".//{%s}StartBoundary" % NS).text, "2026-09-07T17:00:00+00:00")
         daily = self.xml("daily")
         self.assertEqual(len(daily.findall(".//{%s}CalendarTrigger" % NS)), 2)
@@ -38,7 +44,9 @@ class ScheduleTests(unittest.TestCase):
         self.assertIsNone(task_xml(self.cfg, "article", "python", ROOT, "sid"))
         self.cfg.ARTYKULY_TYGODNIOWO = 1
         self.cfg.DNI_ARTYKULU = ("Tue",)
-        self.assertIsNotNone(self.xml("article").find(".//{%s}Tuesday" % NS))
+        weekly = self.xml("article")
+        self.assertIsNone(weekly.find(".//{%s}Tuesday" % NS))
+        self.assertEqual(weekly.find(".//{%s}ScheduleByDay/{%s}DaysInterval" % (NS, NS)).text, "1")
 
     def test_task_xml_declares_its_windows_unicode_encoding(self):
         xml = task_xml(self.cfg, "daily", "python", ROOT, "sid", self.now)

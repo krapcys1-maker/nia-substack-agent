@@ -85,17 +85,36 @@ class RuntimeContract(unittest.TestCase):
         self.assertEqual((row['tokens_in'],row['tokens_out'],row['usage_status']),(1000,2000,'known'))
         self.assertGreater(row['cost_usd'],0)
         self.assertEqual(row['reserved_usd'],0)
+    # `/responses` zostal przy OpenAI. DeepSeek z siecia idzie od 28.09.2026 przez
+    # endpoint zgodny z API Anthropic (`_call_deepseek_z_siecia`, test nizej) —
+    # stare wersje tych testow wolaly DeepSeeka z `web_search=True`, atrapa
+    # `httpx.stream` przestala byc trafiana i test szedl do sieci.
     def test_incomplete_responses_preserves_usage(self):
         event={'type':'response.incomplete','response':{'output_text':'partial',
             'output':[{'type':'message','content':[{'type':'output_text','text':'partial'}]}],
             'usage':{'input_tokens':1000,'output_tokens':2000}}}
-        with patch.object(llm.httpx,'stream',return_value=Stream([event])):
-            with self.assertRaises(llm.Truncated): self.call(web_search=True)
+        with patch.dict(config.MODEL_FOR,{'comment':config.GPT_SOL}), \
+                patch.object(llm.httpx,'stream',return_value=Stream([event])):
+            with self.assertRaises(llm.Truncated): self.call()
         self.assertEqual(self.rows()[0]['tokens_out'],2000)
     def test_failed_responses_preserves_usage(self):
         event={'type':'response.failed','response':{'error':{'message':'failed'},
             'usage':{'input_tokens':1000,'output_tokens':2000}}}
-        with patch.object(llm.httpx,'stream',return_value=Stream([event])):
+        with patch.dict(config.MODEL_FOR,{'comment':config.GPT_SOL}), \
+                patch.object(llm.httpx,'stream',return_value=Stream([event])):
+            with self.assertRaises(llm.Truncated): self.call()
+        row=self.rows()[0]
+        self.assertEqual((row['tokens_out'],row['ok'],row['usage_status']),(2000,0,'known'))
+    def test_truncated_search_preserves_usage(self):
+        dane={'stop_reason':'max_tokens','content':[{'type':'text','text':'partial'}],
+              'usage':{'input_tokens':1000,'output_tokens':2000,
+                       'server_tool_use':{'web_search_requests':3}}}
+        class Klient:
+            def __init__(self,*a,**k): pass
+            def post(self,*a,**k):
+                return SimpleNamespace(raise_for_status=lambda: None, json=lambda: dane)
+            def close(self): pass
+        with patch.object(llm.httpx,'Client',Klient):
             with self.assertRaises(llm.Truncated): self.call(web_search=True)
         row=self.rows()[0]
         self.assertEqual((row['tokens_out'],row['ok'],row['usage_status']),(2000,0,'known'))

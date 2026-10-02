@@ -452,6 +452,47 @@ def wybierz_fakt(conn, run_id, ile: int = 8) -> dict:
     return fakty[0]
 
 
+def artykul_nalezny(teraz=None) -> tuple[bool, str]:
+    """Czy dzis ma powstac artykul — i dlaczego tak albo nie.
+
+    TERMIN Z PLANU TRWA DO SKUTKU (30.09.2026). Plan miesieczny [1, 8, 15, 22]
+    wypadal we wrzesniu 2026 we wtorki, wiec konto pisalo „co wtorek" — az
+    przyszedl piaty wtorek (29.09), ktorego w planie nie bylo: dziewiec dni
+    do 1.10 bez artykulu. Druga dziura byla starsza. Zegar odpalal artykul RAZ,
+    a rutyna dnia ponawia tylko WYSTAWIENIE gotowego tekstu (`run.py`,
+    `stages.niewystawiony_artykul`). Przebieg, ktory padl przed napisaniem
+    tekstu — 8.09 „pula ciekawostek pusta" — oznaczal tydzien bez artykulu.
+
+    Teraz zegar chodzi codziennie, a ta funkcja pyta: czy od ostatniego dnia
+    z planu (`config.ostatni_dzien_planu`) wyszedl artykul
+    (`stages.ostatni_wystawiony_artykul`)? Nie wyszedl — piszemy: w dniu planu
+    albo NADRABIAJAC kazdego nastepnego dnia, az wyjdzie albo przyjdzie kolejny
+    dzien z planu. Wyszedl — drugiego nie piszemy. Gotowy tekst czeka na
+    wystawienie i ma jeszcze proby — tez nie piszemy, wystawi go rutyna dnia;
+    po wyczerpaniu prob (alarm `artykul-nie-wychodzi`) nowy tekst juz wolno.
+    """
+    from datetime import datetime, timezone
+
+    teraz = teraz or datetime.now(timezone.utc)
+    termin = config.ostatni_dzien_planu(teraz)
+    if termin is None:
+        return False, "plan presetu nie ma zadnego dnia artykulu"
+    ostatni = stages.ostatni_wystawiony_artykul()
+    if ostatni is not None and ostatni.date() >= termin:
+        return False, ("artykul z terminu %s juz wyszedl (%s UTC)"
+                       % (termin.isoformat(), ostatni.strftime("%Y-%m-%d %H:%M")))
+    zaleg = stages.niewystawiony_artykul()
+    if zaleg and int(zaleg.get("proby", 0)) < config.PROB_ZALEGLEGO_ARTYKULU:
+        return False, ("gotowy artykul czeka na wystawienie (proba %d z %d) — wystawi"
+                       " go rutyna dnia, drugiego nie piszemy"
+                       % (int(zaleg.get("proby", 0)), config.PROB_ZALEGLEGO_ARTYKULU))
+    if termin < teraz.date():
+        return True, ("NADRABIAM termin %s — artykul z planu nie wyszedl (ostatni: %s)"
+                      % (termin.isoformat(),
+                         ostatni.strftime("%Y-%m-%d") if ostatni else "brak"))
+    return True, "dzien artykulu z planu (%s)" % termin.isoformat()
+
+
 @stages._na_kanal("artykul")
 def main() -> int:
     """Otwiera przebieg, oddaje robote i ZAMYKA go — takze przy wyjatku.
@@ -494,20 +535,22 @@ def main() -> int:
     except preset.BrakPresetu as exc:
         print(str(exc), flush=True)
         return 3
-    # PLAN Z PRESETU, NIE Z ZEGARA. Zegar odpala ten plik w dniu artykulu,
-    # ale zegar bywa stary (jednostki zbudowane pod poprzedni preset) albo
-    # reczny. Preset z zerem artykulow na tydzien nie pisze nigdy; preset
-    # z innym dniem nie pisze dzis — chyba ze czlowiek powie `--wymus`.
+    # PLAN Z PRESETU, NIE Z ZEGARA. Zegar chodzi codziennie (od 30.09.2026),
+    # a czy dzis ma powstac artykul, rozstrzyga `artykul_nalezny`: dzien
+    # z planu albo nadrabianie terminu, z ktorego artykul nie wyszedl. Preset
+    # z zerem artykulow nie pisze nigdy — chyba ze czlowiek powie `--wymus`.
     if config.PRESET is not None and "--wymus" not in sys.argv:
         if config.ARTYKULY_TYGODNIOWO <= 0 and config.ARTYKULY_MIESIECZNIE <= 0:
             print(">> preset %r ma 0 artykulow na tydzien — nie pisze. "
                   "(`--wymus` omija plan)" % config.PRESET.nazwa, flush=True)
             return 1
-        if not config.dzis_dzien_artykulu():
-            print(">> dzis nie jest dzien artykulu wedlug presetu %r (dni: %s) — "
-                  "nie pisze. (`--wymus` omija plan)"
-                  % (config.PRESET.nazwa, ", ".join(config.DNI_ARTYKULU)), flush=True)
-            return 1
+        nalezny, powod = artykul_nalezny()
+        if not nalezny:
+            # ZERO, NIE JEDEN: przy codziennym zegarze dzien bez artykulu to
+            # zwykly stan, a nie awaria uslugi.
+            print(">> nie pisze: %s. (`--wymus` omija plan)" % powod, flush=True)
+            return 0
+        print(">> pisze: %s" % powod, flush=True)
     conn = db.connect()
     run_id = db.start_run(conn, "artykul-z-puli")
     # NOWSZE WERSJE MODELI PRZED PISANIEM — ta sama kontrola, co na starcie
