@@ -342,7 +342,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6999 wierszy, 119 funkcji na poziomie modułu, 3 klas
+7060 wierszy, 120 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -460,6 +460,7 @@
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `read_pages(urls)` | Read sources with a deadline that also covers browser shutdown. |
+| `_odcisk_notki(tekst)` *(wewn.)* | Odcisk cudzej notki — BEZ etykiety wieku, ktora zmienia sie co minute. |
 | `kogo_juz_restackowalismy(dni)` | Autorzy podani dalej w ostatnich `dni` dniach. Z dziennika, bez sieci. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |

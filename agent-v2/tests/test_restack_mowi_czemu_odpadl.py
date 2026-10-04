@@ -161,9 +161,13 @@ sprawdz("norma nadal przerywa petle",
         'wynik["restackowane"] < ile' in CIALO
         or 'wynik["restackowane"] >= ile' in CIALO)
 # PO RESTACKU LISTA JEST POBIERANA OD NOWA — patrz pomiar w naglowku pliku.
+# SZUKAMY W CIELE PETLI, nie w oknie znakow za znacznikiem: miedzy
+# `zrobione_odciski` a petla moze stac jeszcze cos (4 pazdziernika 2026 stanal
+# tam `odpocznij_po`) i okno przesuwalo sie poza badane miejsce.
+_petla = (CIALO.split('while wynik["restackowane"] < ile')[1][:900]
+          if 'while wynik["restackowane"] < ile' in CIALO else "")
 sprawdz("lista pobierana od nowa po kazdym obrocie",
-        "przyciski.count()" in CIALO.split("zrobione_odciski")[1][:900]
-        if "zrobione_odciski" in CIALO else False)
+        "przyciski.count()" in _petla, _petla[:120])
 sprawdz("obsluzonych poznajemy po odcisku tresci, nie po numerze",
         "zrobione_odciski.add(" in CIALO)
 sprawdz("i petla ma wlasny sufit obrotow", "MAKS_OBROTOW" in CIALO)

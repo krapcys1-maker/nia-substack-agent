@@ -141,8 +141,11 @@ sprawdz("rachunek podaje te liczbe", "%d odpoczywa" in CIALO)
 print()
 print("=== 5. DZIENNIK ZAPAMIETUJE ZRODLO ===")
 # Bez tego pola odcisk nie mialby skad sie wziac przy nastepnym przebiegu.
+# ODCISK LICZY `_odcisk_notki`, bo od 4 pazdziernika 2026 wycina z niego wiek
+# notki („just now" / „1m") — patrz `test_restack_jeden_autor_raz.py`.
 sprawdz("zapis restacka niesie odcisk cudzej notki",
-        'zrodlo=plaski(str(notka.get("tekst") or ""))[:120]' in CIALO)
+        "zrodlo=odcisk_zrodla" in CIALO
+        and "odcisk_zrodla = _odcisk_notki(" in CIALO)
 sprawdz("i nadal zapisuje autora", 'komu=notka.get("autor", "")' in CIALO)
 
 print()

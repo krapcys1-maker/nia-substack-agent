@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **39 plików**, 42 004 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **39 plików**, 42 065 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -113,8 +113,8 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 > w głównej ścieżce artykułu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
-się testować bez przeglądarki i bez pieniędzy**. 240 zestawów
-testów, 5425 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+się testować bez przeglądarki i bez pieniędzy**. 241 zestawów
+testów, 5439 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -484,7 +484,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-6999 wierszy, 119 funkcji na poziomie modułu, 3 klas
+7060 wierszy, 120 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -602,6 +602,7 @@ wiec nie da sie go rozjechac z kodem.
 | `potwierdz_komentarz(page, url, tekst)` | Pyta Substacka, czy komentarz naprawdę wisi — zamiast wierzyć kliknięciu. |
 | `wystaw_komentarz(url, tekst, wyslij, kontekst)` | Wystawia komentarz pod cudzym postem. Domyślnie WYPEŁNIA i NIE WYSYŁA. |
 | `read_pages(urls)` | Read sources with a deadline that also covers browser shutdown. |
+| `_odcisk_notki(tekst)` *(wewn.)* | Odcisk cudzej notki — BEZ etykiety wieku, ktora zmienia sie co minute. |
 | `kogo_juz_restackowalismy(dni)` | Autorzy podani dalej w ostatnich `dni` dniach. Z dziennika, bez sieci. |
 | `restackuj_w_kanale(ile, decyzja, wyslij)` | Podaje dalej cudze notki z wlasnym zdaniem. |
 | `w_rewirze(tekst)` | Czy cudza notka jest o tym, o czym pisze ta publikacja — po znakach niszy. |
@@ -9136,6 +9137,22 @@ def restackuj_w_kanale(
         if odpoczywaja:
             print("  %d autorow odpoczywa po niedawnym restacku"
                   % len(odpoczywaja), flush=True)
+
+        def odpocznij_po(autor: str, odcisk: str) -> None:
+            """Autor i tresc, ktore WLASNIE podalismy dalej — od razu do odpoczynku.
+
+            Lista odpoczywajacych powstawala RAZ, przed petla, a petla robi do
+            `ile` restackow. 3 pazdziernika 2026 w przebiegu 185 poszly przez to
+            dwa restacki tej samej publikacji w odstepie 24 minut: pierwszy
+            o 15:52, drugi o 16:16, oba „The Agent Stack | AI Workflows".
+            W rachunku bloku stalo wtedy „0 odpoczywa" przy dwoch wystawionych —
+            bo w chwili filtrowania ten autor jeszcze nie byl podany dalej.
+            Dziennik dostaje wpis od razu, ale ten zbior juz go nie czytal.
+            """
+            if autor:
+                odpoczywaja.add(autor.casefold())
+            if odcisk:
+                odpoczywaja.add(odcisk)
         obrotow = 0
         MAKS_OBROTOW = max(int(ile) * 6, 18)
         doladowan = 0
@@ -9157,7 +9174,7 @@ def restackuj_w_kanale(
                     except Exception:                  # noqa: BLE001
                         skan["blad"] += 1
                         continue
-                    odcisk = plaski(str(wstepna.get("tekst") or ""))[:120]
+                    odcisk = _odcisk_notki(wstepna.get("tekst"))
                     if not odcisk:
                         skan["bez_tekstu"] += 1
                         continue
@@ -9239,7 +9256,7 @@ def restackuj_w_kanale(
                 # dni. Dobry autor ma wracac, tylko nie codziennie.
                 autor_teraz = " ".join(
                     str(notka.get("autor") or (kto or {}).get("autor") or "").split())
-                odcisk_zrodla = plaski(str(notka.get("tekst") or ""))[:120].casefold()
+                odcisk_zrodla = _odcisk_notki(notka.get("tekst"))
                 if ((autor_teraz and autor_teraz.casefold() in odpoczywaja)
                         or (odcisk_zrodla and odcisk_zrodla in odpoczywaja)):
                     wynik["odpoczywa"] = wynik.get("odpoczywa", 0) + 1
@@ -9265,6 +9282,7 @@ def restackuj_w_kanale(
                       flush=True)
                 if not wyslij:
                     wynik["restackowane"] += 1
+                    odpocznij_po(autor_teraz, odcisk_zrodla)
                     continue
 
                 # ODSTEP STOI PRZED KOLEJNYM RESTACKIEM, NIE PO POPRZEDNIM.
@@ -9385,7 +9403,10 @@ def restackuj_w_kanale(
                                    komu=notka.get("autor", ""),
                                    slow=len(zdanie.split()),
                                    tekst=zdanie[:300], id=numer_restacka,
-                                   zrodlo=plaski(str(notka.get("tekst") or ""))[:120])
+                                   zrodlo=odcisk_zrodla)
+                # ODPOCZYNEK ZACZYNA SIE TERAZ, NIE PRZY NASTEPNYM PRZEBIEGU —
+                # patrz `odpocznij_po`.
+                odpocznij_po(autor_teraz, odcisk_zrodla)
                 if config.PERSONA_WLACZONA and numer_restacka:
                     import personality
                     personality.remember_interaction("restack", ocena,
