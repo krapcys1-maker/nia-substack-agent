@@ -6372,6 +6372,43 @@ def read_pages(urls: list[str]) -> list[dict[str, Any]]:
 DNI_ODPOCZYNKU_AUTORA = 7
 
 
+def _odcisk_notki(tekst: str) -> str:
+    """Odcisk cudzej notki — BEZ etykiety wieku, ktora zmienia sie co minute.
+
+    ZMIERZONE NA KONCIE 3 pazdziernika 2026. W JEDNYM przebiegu (185) poszly
+    dwa restacki tej samej notki „Do you know where your agent's stop button
+    is?" — o 15:52 i 16:16, nasze numery 352011816 i 352029911. Autor wystawil
+    ja drugi raz, wiec byly to dwa rozne przyciski, a odcisk, ktory mial je
+    polaczyc, bral z kontenera TAKZE wiek:
+
+        „The Agent Stack | AI Workflows just now Do you know where your..."
+        „The Agent Stack | AI Workflows 1m Do you know where your..."
+
+    Dwa rozne napisy, wiec ani `zrobione_odciski` w tym przebiegu, ani pamiec
+    z dziennika nie mialy jak rozpoznac tej samej tresci.
+
+    Wiek wycinamy TYLKO z poczatku napisu (pierwsze 80 znakow), bo tam stoi
+    naglowek kontenera: nazwa autora, wiek i czasem „Subscribe". Dalej zaczyna
+    sie tresc, w ktorej „5 m" albo „2 days" bywa trescia i nie wolno jej ruszac.
+
+    STO ZNAKOW, NIE STO DWADZIESCIA — i to nie jest kosmetyka. Wpisy
+    w dzienniku sprzed tej poprawki maja uciete 120 znakow RAZEM z wiekiem,
+    wiec po wycieciu wieku zostaje ich mniej niz ze swiezego odczytu tej samej
+    notki. Przy rownym cieciu na 120 te dwa napisy nigdy nie byly rowne;
+    przy 100 obie drogi daja ten sam poczatek tresci.
+    """
+    import re as _re
+
+    plaski_tekst = plaski(str(tekst or ""))
+    naglowek, reszta = plaski_tekst[:80], plaski_tekst[80:]
+    naglowek = _re.sub(
+        r"\b(?:just now|now|yesterday|subscribe"
+        r"|\d+\s*(?:s|m|h|d|w|mo|y)"
+        r"|\d+\s+(?:second|minute|hour|day|week|month|year)s?(?:\s+ago)?)\b",
+        " ", naglowek, flags=_re.I)
+    return " ".join((naglowek + reszta).split())[:100].casefold()
+
+
 def kogo_juz_restackowalismy(dni: int = DNI_ODPOCZYNKU_AUTORA) -> set[str]:
     """Autorzy podani dalej w ostatnich `dni` dniach. Z dziennika, bez sieci.
 
@@ -6437,7 +6474,11 @@ def kogo_juz_restackowalismy(dni: int = DNI_ODPOCZYNKU_AUTORA) -> set[str]:
                 if kto:
                     byli.add(kto)
                 if zrodlo:
+                    # SUROWY ODCISK TEZ, bo wpisy sprzed 4 pazdziernika 2026
+                    # maja w nim wiek notki — patrz `_odcisk_notki`. Przez
+                    # tydzien okna odpoczynku obie postacie musza pasowac.
                     byli.add(zrodlo)
+                    byli.add(_odcisk_notki(zrodlo))
     except OSError:
         pass                      # brak dziennika to pusta wiedza, nie awaria
     return byli
@@ -6576,6 +6617,22 @@ def restackuj_w_kanale(
         if odpoczywaja:
             print("  %d autorow odpoczywa po niedawnym restacku"
                   % len(odpoczywaja), flush=True)
+
+        def odpocznij_po(autor: str, odcisk: str) -> None:
+            """Autor i tresc, ktore WLASNIE podalismy dalej — od razu do odpoczynku.
+
+            Lista odpoczywajacych powstawala RAZ, przed petla, a petla robi do
+            `ile` restackow. 3 pazdziernika 2026 w przebiegu 185 poszly przez to
+            dwa restacki tej samej publikacji w odstepie 24 minut: pierwszy
+            o 15:52, drugi o 16:16, oba „The Agent Stack | AI Workflows".
+            W rachunku bloku stalo wtedy „0 odpoczywa" przy dwoch wystawionych —
+            bo w chwili filtrowania ten autor jeszcze nie byl podany dalej.
+            Dziennik dostaje wpis od razu, ale ten zbior juz go nie czytal.
+            """
+            if autor:
+                odpoczywaja.add(autor.casefold())
+            if odcisk:
+                odpoczywaja.add(odcisk)
         obrotow = 0
         MAKS_OBROTOW = max(int(ile) * 6, 18)
         doladowan = 0
@@ -6597,7 +6654,7 @@ def restackuj_w_kanale(
                     except Exception:                  # noqa: BLE001
                         skan["blad"] += 1
                         continue
-                    odcisk = plaski(str(wstepna.get("tekst") or ""))[:120]
+                    odcisk = _odcisk_notki(wstepna.get("tekst"))
                     if not odcisk:
                         skan["bez_tekstu"] += 1
                         continue
@@ -6679,7 +6736,7 @@ def restackuj_w_kanale(
                 # dni. Dobry autor ma wracac, tylko nie codziennie.
                 autor_teraz = " ".join(
                     str(notka.get("autor") or (kto or {}).get("autor") or "").split())
-                odcisk_zrodla = plaski(str(notka.get("tekst") or ""))[:120].casefold()
+                odcisk_zrodla = _odcisk_notki(notka.get("tekst"))
                 if ((autor_teraz and autor_teraz.casefold() in odpoczywaja)
                         or (odcisk_zrodla and odcisk_zrodla in odpoczywaja)):
                     wynik["odpoczywa"] = wynik.get("odpoczywa", 0) + 1
@@ -6705,6 +6762,7 @@ def restackuj_w_kanale(
                       flush=True)
                 if not wyslij:
                     wynik["restackowane"] += 1
+                    odpocznij_po(autor_teraz, odcisk_zrodla)
                     continue
 
                 # ODSTEP STOI PRZED KOLEJNYM RESTACKIEM, NIE PO POPRZEDNIM.
@@ -6825,7 +6883,10 @@ def restackuj_w_kanale(
                                    komu=notka.get("autor", ""),
                                    slow=len(zdanie.split()),
                                    tekst=zdanie[:300], id=numer_restacka,
-                                   zrodlo=plaski(str(notka.get("tekst") or ""))[:120])
+                                   zrodlo=odcisk_zrodla)
+                # ODPOCZYNEK ZACZYNA SIE TERAZ, NIE PRZY NASTEPNYM PRZEBIEGU —
+                # patrz `odpocznij_po`.
+                odpocznij_po(autor_teraz, odcisk_zrodla)
                 if config.PERSONA_WLACZONA and numer_restacka:
                     import personality
                     personality.remember_interaction("restack", ocena,
