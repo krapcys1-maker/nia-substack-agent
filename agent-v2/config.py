@@ -2471,6 +2471,40 @@ RESTACK_MAX_SLOW = 40
 # miesci sie z zapasem.
 PRZEBIEGOW_DZIENNIE = 5
 
+# --- EKSPERYMENTY PRZEPLATANE ------------------------------------------------
+#
+# {nazwa zmiany: ustawienie}. PUSTO = WSZYSTKO JAK ZAWSZE i tak jest domyslnie.
+# Sam mechanizm niczego nie zmienia: dziala dopiero wtedy, gdy ktos dopisze tu
+# wpis I postawi w kodzie galaz na `stages.ramie(nazwa, ...)`.
+#
+# PO CO. Porownanie „przed i po" myli zmiane z trendem konta: zasieg notek
+# potrafi spasc albo urosnac z tygodnia na tydzien bez zadnej zmiany w kodzie,
+# wiec kazda zmiana wdrozona w zlym tygodniu wyglada na szkodliwa, a w dobrym
+# na skuteczna. Przy przeplataniu obie grupy dziela te same dni, godziny i ten
+# sam trend, wiec roznica miedzy nimi jest skutkiem zmiany, a nie kalendarza.
+#
+# PRZYDZIAL JEST DETERMINISTYCZNY (`stages.ramie`): z nazwy, dnia UTC i miejsca
+# jednostki w dobie — numeru notki, numeru miejsca na komentarz albo klucza
+# tekstowego. Ten sam slot zawsze trafia do tego samego ramienia, wiec da sie go
+# odtworzyc z dziennika bez dodatkowej ksiegowosci. Kazda nazwa losuje OSOBNO,
+# wiec kilka eksperymentow moze isc naraz bez mieszania ramion.
+#
+# Wartosc:
+#   * liczba 0-1 — udzial jednostek w ramieniu „on", bez daty konca;
+#   * {"udzial": 0.5, "od": "RRRR-MM-DD", "do": "RRRR-MM-DD"} — z oknem dat
+#     eksperyment sam startuje i sam sie konczy; poza oknem `ramie` oddaje "".
+#     Bez konca zmiana dzialalaby na czesci notek az do dnia, w ktorym ktos
+#     przypomni sobie o tym wpisie;
+#   * {"plan": ["on", "off", ...], "okres_dni": 7, "od": ..., "do": ...} —
+#     ramie z KALENDARZA zamiast z losowania: okres numer k od `od` dostaje
+#     `plan[k % len(plan)]`. Dla zmian, ktore dzialaja na cale konto naraz
+#     (np. dzienna norma) i nie da sie ich przydzielic pojedynczej notce.
+#
+# Ramiona notki trafiaja do dziennika w polu `eksperymenty` (`run.py` ->
+# `browser.wystaw_notke`) TYLKO wtedy, gdy jakis eksperyment ja objal — przy
+# pustym slowniku wpisy w dzienniku sa dokladnie takie jak dotad.
+EKSPERYMENTY: dict = {}
+
 # --- HARMONOGRAM Z KONFIGURACJI, NIE Z SZABLONU ZEGARA ----------------------
 #
 # Do 2026-09-05 godziny przebiegow staly WYLACZNIE w `systemd/nia-agent.timer`,

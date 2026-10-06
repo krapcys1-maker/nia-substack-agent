@@ -1620,7 +1620,13 @@ def dzien(conn, run_id: int, wyslij: bool) -> int:
                                              # tam stoja wyniki. Bez tego pola
                                              # koszt obu modeli znamy z `calls`,
                                              # a SKUTKU nie porownamy nigdy.
-                                             model=gotowe[0].get("model", ""))
+                                             model=gotowe[0].get("model", ""),
+                                             # RAMIONA EKSPERYMENTOW — z tego
+                                             # samego powodu. Notka dostaje je
+                                             # od etapu, ktory zastosowal
+                                             # zmiane (`stages.ramie`); bez
+                                             # eksperymentu pola nie ma.
+                                             eksperymenty=n.get("eksperymenty"))
                 if config.PERSONA_WLACZONA:
                     import personality
                     personality.remember(n, wynik)
