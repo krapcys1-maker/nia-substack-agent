@@ -5449,13 +5449,21 @@ def wystaw_odpowiedz(note_id: int, tekst: str, wyslij: bool = False,
 
 
 def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
-                 forma: str = "", model: str = "") -> dict[str, Any]:
+                 forma: str = "", model: str = "",
+                 eksperymenty: dict[str, str] | None = None) -> dict[str, Any]:
     """Wystawia notkę. Domyślnie WYPEŁNIA i NIE WYSYŁA.
 
     `wyslij=False` to nie ostrożność dla samej ostrożności: notki nie da się
     cofnąć w oczach tych, którzy ją zobaczyli. Najpierw sprawdzamy, czy kod
     trafia we właściwe pole, dopiero potem wysyłamy.
+
+    `eksperymenty` = ramiona eksperymentow przeplatanych, ktore objely te
+    notke (`stages.ramie`). Trafiaja do dziennika TYLKO, gdy sa — pusty albo
+    brak nie zostawia pola, wiec bez eksperymentu wpis jest taki jak dotad.
     """
+    # Ramiona sa czescia wpisu jak `model`: bez nich dziennik mialby koszt
+    # i zasieg notki, ale nie to, ktora wersja zmiany je dala.
+    ramiona = {"eksperymenty": dict(eksperymenty)} if eksperymenty else {}
     wyslij = naprawde_wyslac(wyslij, "notka")
     wymagaj_sesji()
     p, browser, context = podlacz_sie()
@@ -5556,7 +5564,7 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
                       flush=True)
             dopisz_wynik("notka", wynik, slow=len(tekst.split()),
                          tekst=tekst[:1200], id=wynik["id"],
-                         typ=typ, forma=forma, model=model)
+                         typ=typ, forma=forma, model=model, **ramiona)
         elif not wyslij:
             wynik["posprzatane"] = oproznij_pole(page, pole, "notka")
             print("  (nie wysyłam — tryb sprawdzenia; pole wyczyszczone)", flush=True)
@@ -5569,7 +5577,7 @@ def wystaw_notke(tekst: str, wyslij: bool = False, typ: str = "",
         if wyslij:
             dopisz_wynik("notka", wynik, slow=len(tekst.split()),
                          tekst=tekst[:1200], id=wynik.get("id", ""),
-                         typ=typ, forma=forma, model=model)
+                         typ=typ, forma=forma, model=model, **ramiona)
         page.close()
         browser.close()
         p.stop()
