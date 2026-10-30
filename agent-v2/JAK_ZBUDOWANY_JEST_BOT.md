@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **39 plików**, 42 169 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **39 plików**, 42 269 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 242 zestawów
-testów, 5474 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 5486 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -485,7 +485,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-7068 wierszy, 120 funkcji na poziomie modułu, 3 klas
+7168 wierszy, 123 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -517,8 +517,11 @@ wiec nie da sie go rozjechac z kodem.
 | `statystyki_pozycji(pozycje)` | Pobiera statystyki NASZYCH tresci — jedna przegladarka na cala liste. |
 | `_ludzie_z_zakladki_ze_stanem(page)` *(wewn.)* | Kto jest na tej zakladce ORAZ czy zakladke w ogole udalo sie odczytac. |
 | `_ludzie_z_zakladki(page)` *(wewn.)* | Sama lista ludzi z zakladki. Dla wolajacych, ktorych stan nie obchodzi. |
+| `_ludzie_gdy_wstana(page, sekund)` *(wewn.)* | Jak `_ludzie_z_zakladki_ze_stanem`, ale pusta lista dostaje czas. |
+| `_opis_pustej_zakladki(page)` *(wewn.)* | Co stoi na pustej zakladce — same liczby, bez nazw osob. |
 | `kto_nas_czyta(page)` | KTO nas obserwuje i subskrybuje — imiennie i z data. |
-| `zapisz_czytelnikow(page)` | Zrzut listy czytelnikow do pliku, jeden wiersz na wywolanie. |
+| `_puste_wbrew_licznikowi(kto, licznik)` *(wewn.)* | Grupy ODCZYTANE, ale puste, choc licznik profilu z tej chwili mowi inaczej. |
+| `zapisz_czytelnikow(page, licznik)` | Zrzut listy czytelnikow do pliku, jeden wiersz na wywolanie. |
 | `kogo_obserwujemy()` | Kogo juz obserwujemy — Z DYSKU, BEZ SIECI. |
 | `_zapisz_kogo_obserwujemy(pamiec)` *(wewn.)* | Nigdy nie przerywa dzialania — to pamiec pomocnicza, nie warunek pracy. |
 | `zapamietaj_obserwowanego(uchwyt, host)` | Dopisuje JEDNEGO do pamieci — po udanej obserwacji albo po zastaniu |
