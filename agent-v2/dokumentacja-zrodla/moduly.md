@@ -343,7 +343,7 @@
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-7168 wierszy, 123 funkcji na poziomie modułu, 3 klas
+7201 wierszy, 124 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -379,6 +379,7 @@
 | `_opis_pustej_zakladki(page)` *(wewn.)* | Co stoi na pustej zakladce — same liczby, bez nazw osob. |
 | `kto_nas_czyta(page)` | KTO nas obserwuje i subskrybuje — imiennie i z data. |
 | `_puste_wbrew_licznikowi(kto, licznik)` *(wewn.)* | Grupy ODCZYTANE, ale puste, choc licznik profilu z tej chwili mowi inaczej. |
+| `_scal_odczyty(pierwszy, drugi, puste_w_pierwszym)` *(wewn.)* | Po ponowieniu: dla kazdej grupy bierzemy lepszy z dwoch odczytow. |
 | `zapisz_czytelnikow(page, licznik)` | Zrzut listy czytelnikow do pliku, jeden wiersz na wywolanie. |
 | `kogo_obserwujemy()` | Kogo juz obserwujemy — Z DYSKU, BEZ SIECI. |
 | `_zapisz_kogo_obserwujemy(pamiec)` *(wewn.)* | Nigdy nie przerywa dzialania — to pamiec pomocnicza, nie warunek pracy. |

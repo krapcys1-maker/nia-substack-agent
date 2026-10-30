@@ -400,6 +400,76 @@ sprawdz("pomiar podaje licznik z tej samej chwili",
         "zapisz_czytelnikow(page, licznik=stan)" in _zr)
 
 print()
+print("=== 7b. PONOWIENIE: KIEDY, PO ILE CZASU I CO Z DOBRA GRUPA ===")
+# Podmieniamy `time.sleep`, zeby sprawdzic, KIEDY i na ILE ponowienie czeka,
+# zamiast wierzyc napisowi w zrodle (stala ustawiona na 0 nie pokazuje, czy
+# spanie w ogole istnieje).
+_spania = []
+_sen_oryg = browser.time.sleep
+_stala_oryg = browser.PONOWNY_ODCZYT_CZYTELNIKOW_S
+browser.time.sleep = lambda s: _spania.append(s)
+browser.PONOWNY_ODCZYT_CZYTELNIKOW_S = 7
+try:
+    zdrowa = Strona(NAWIGACJA + OBSERWUJACY, NAWIGACJA + SUBSKRYBENCI)
+    try:
+        browser.CZYTELNICY = ROBOCZY / "zdrowy_z_licznikiem.jsonl"
+        browser.zapisz_czytelnikow(zdrowa, licznik={"obserwujacy": 5, "subskrybenci": 2})
+    finally:
+        browser.CZYTELNICY = stary_zapis
+    sprawdz("KONTRDOWOD: zdrowy zrzut z licznikiem nie ponawia i nie czeka",
+            zdrowa.wejscia == 1 and _spania == [], (zdrowa.wejscia, _spania))
+
+    _spania.clear()
+    po_pustce = StronaPoCzkawce(NAWIGACJA + OBSERWUJACY, NAWIGACJA + SUBSKRYBENCI)
+    try:
+        browser.CZYTELNICY = ROBOCZY / "czeka_przed_ponowieniem.jsonl"
+        browser.zapisz_czytelnikow(po_pustce, licznik=LICZNIK)
+    finally:
+        browser.CZYTELNICY = stary_zapis
+    sprawdz("pusta lista wbrew licznikowi: jedno spanie o dlugosci stalej, potem drugie wejscie",
+            _spania == [7] and po_pustce.wejscia == 2, (_spania, po_pustce.wejscia))
+
+    # DOBRA GRUPA Z PIERWSZEGO ODCZYTU NIE GINIE, GDY PONOWIENIE SIE NIE UDA.
+    # Obserwujacy sa, subskrybenci pusci wbrew licznikowi; drugie wejscie na
+    # strone pada. Dawniej taki przebieg zapisalby chociaz obserwujacych.
+    class StronaPadaPrzyPonowieniu(Strona):
+        def __init__(self):
+            super().__init__(NAWIGACJA + OBSERWUJACY, list(NAWIGACJA))
+
+        def goto(self, url, timeout=None, wait_until=None):
+            super().goto(url, timeout, wait_until)
+            if self.wejscia > 1:
+                raise RuntimeError("net::ERR_ABORTED")
+
+    pada = StronaPadaPrzyPonowieniu()
+    plik7d = ROBOCZY / "dobra_grupa_przezywa.jsonl"
+    try:
+        browser.CZYTELNICY = plik7d
+        wynik7d = browser.zapisz_czytelnikow(pada, licznik=LICZNIK)
+    finally:
+        browser.CZYTELNICY = stary_zapis
+    sprawdz("ponowienie pada: dobra grupa z pierwszego odczytu zostaje, zrzut sie zapisuje",
+            wynik7d is not None and len(linie(plik7d)) == 1
+            and linie(plik7d)[0]["odczytane"] == ["obserwujacy"]
+            and len(linie(plik7d)[0]["obserwujacy"]) == 3,
+            (wynik7d, linie(plik7d)))
+    sprawdz("i powod jest w `blad`, a subskrybenci NIE sa udawani jako odczytani",
+            bool(linie(plik7d)[0]["blad"]) and "subskrybenci" not in linie(plik7d)[0]["odczytane"],
+            linie(plik7d))
+    sprawdz("`_scal_odczyty`: lepszy z dwoch odczytow dla kazdej grupy",
+            browser._scal_odczyty(
+                {"odczytane": ["obserwujacy", "subskrybenci"], "obserwujacy": ["a"],
+                 "subskrybenci": [], "blad": None},
+                {"odczytane": ["subskrybenci"], "obserwujacy": [], "subskrybenci": ["x", "y"],
+                 "blad": None},
+                ["subskrybenci"])
+            == {"obserwujacy": ["a"], "subskrybenci": ["x", "y"],
+                "odczytane": ["obserwujacy", "subskrybenci"], "blad": None})
+finally:
+    browser.time.sleep = _sen_oryg
+    browser.PONOWNY_ODCZYT_CZYTELNIKOW_S = _stala_oryg
+
+print()
 print("=== 8. WOLNA ZAKLADKA DOSTAJE CZAS ===")
 # Lista na zakladce potrafi sie pokazac dopiero po kilku sekundach; odczyt po
 # stalych pieciu oddawal wtedy sama nawigacje.

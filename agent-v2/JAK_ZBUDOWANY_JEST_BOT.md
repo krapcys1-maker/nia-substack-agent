@@ -49,7 +49,7 @@ Ograniczenia postawione przy starcie wersji drugiej:
 
 | ograniczenie | stan faktyczny | ocena |
 |---|---|---|
-| maksimum 10 plików `.py` | **39 plików**, 42 269 wierszy | **PRZEKROCZONE** |
+| maksimum 10 plików `.py` | **39 plików**, 42 302 wierszy | **PRZEKROCZONE** |
 | 4 tabele w bazie | 4: `runs`, `calls`, `articles`, `sources` | dotrzymane |
 | jedna warstwa abstrakcji | jedna: `llm.py` | dotrzymane |
 | brak migracji, brak kolejek | `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE` | dotrzymane |
@@ -114,7 +114,7 @@ przeglądarki, `browser.py` nigdy nie woła modelu.
 
 Powód tego rozdziału jest praktyczny: dzięki niemu **cała warstwa myślowa da
 się testować bez przeglądarki i bez pieniędzy**. 242 zestawów
-testów, 5486 sprawdzeń, żaden nie otwiera Chrome i żaden nie
+testów, 5491 sprawdzeń, żaden nie otwiera Chrome i żaden nie
 woła płatnego modelu.
 
 ### I.4. Trzy zasady, z których wynika reszta
@@ -485,7 +485,7 @@ wiec nie da sie go rozjechac z kodem.
 
 ### `browser.py` — cała styczność z Substackiem; nie woła modelu
 
-7168 wierszy, 123 funkcji na poziomie modułu, 3 klas
+7201 wierszy, 124 funkcji na poziomie modułu, 3 klas
 
 | funkcja | co robi |
 |---|---|
@@ -521,6 +521,7 @@ wiec nie da sie go rozjechac z kodem.
 | `_opis_pustej_zakladki(page)` *(wewn.)* | Co stoi na pustej zakladce — same liczby, bez nazw osob. |
 | `kto_nas_czyta(page)` | KTO nas obserwuje i subskrybuje — imiennie i z data. |
 | `_puste_wbrew_licznikowi(kto, licznik)` *(wewn.)* | Grupy ODCZYTANE, ale puste, choc licznik profilu z tej chwili mowi inaczej. |
+| `_scal_odczyty(pierwszy, drugi, puste_w_pierwszym)` *(wewn.)* | Po ponowieniu: dla kazdej grupy bierzemy lepszy z dwoch odczytow. |
 | `zapisz_czytelnikow(page, licznik)` | Zrzut listy czytelnikow do pliku, jeden wiersz na wywolanie. |
 | `kogo_obserwujemy()` | Kogo juz obserwujemy — Z DYSKU, BEZ SIECI. |
 | `_zapisz_kogo_obserwujemy(pamiec)` *(wewn.)* | Nigdy nie przerywa dzialania — to pamiec pomocnicza, nie warunek pracy. |

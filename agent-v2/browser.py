@@ -1431,6 +1431,38 @@ def _puste_wbrew_licznikowi(kto: dict[str, Any],
     return sorted(out)
 
 
+def _scal_odczyty(pierwszy: dict[str, Any], drugi: dict[str, Any],
+                  puste_w_pierwszym: list[str]) -> dict[str, Any]:
+    """Po ponowieniu: dla kazdej grupy bierzemy lepszy z dwoch odczytow.
+
+    PONOWIENIE NIE MOZE POGORSZYC TEGO, CO JUZ MAMY. Gdy pierwszy odczyt dal
+    dobra grupe, a drugi rzucil wyjatek albo trafil w inna czkawke, dobra grupa
+    ma zostac — inaczej przebieg, ktory dawniej zapisalby chociaz ja, nie
+    zapisalby nic. Pierwszenstwo dla grupy: drugi odczyt, gdy ja odczytal
+    i jest niepusta; inaczej pierwszy, gdy ja odczytal i nie byla pusta wbrew
+    licznikowi; inaczej drugi, gdy ja odczytal (nawet pusta — wtedy zlapie ja
+    kontrola licznika).
+    """
+    wynik: dict[str, Any] = {"obserwujacy": [], "subskrybenci": [],
+                             "odczytane": [],
+                             "blad": drugi.get("blad") or pierwszy.get("blad")}
+    for grupa in ("obserwujacy", "subskrybenci"):
+        z_drugiego = grupa in (drugi.get("odczytane") or [])
+        z_pierwszego = (grupa in (pierwszy.get("odczytane") or [])
+                        and grupa not in puste_w_pierwszym)
+        if z_drugiego and drugi.get(grupa):
+            zrodlo = drugi
+        elif z_pierwszego:
+            zrodlo = pierwszy
+        elif z_drugiego:
+            zrodlo = drugi
+        else:
+            continue
+        wynik[grupa] = list(zrodlo.get(grupa) or [])
+        wynik["odczytane"].append(grupa)
+    return wynik
+
+
 def zapisz_czytelnikow(page=None, licznik: dict[str, Any] | None = None
                        ) -> dict[str, Any] | None:
     """Zrzut listy czytelnikow do pliku, jeden wiersz na wywolanie.
@@ -1482,7 +1514,8 @@ def zapisz_czytelnikow(page=None, licznik: dict[str, Any] | None = None
         print("  [czytelnicy] pusto wbrew licznikowi (%s) — czytam jeszcze raz"
               % ", ".join(puste), flush=True)
         time.sleep(PONOWNY_ODCZYT_CZYTELNIKOW_S)
-        kto = kto_nas_czyta(page)
+        # SCALAMY, NIE ZASTEPUJEMY: drugi odczyt moze byc gorszy od pierwszego.
+        kto = _scal_odczyty(kto, kto_nas_czyta(page), puste)
         puste = _puste_wbrew_licznikowi(kto, licznik)
     odczytane = [g for g in (kto.get("odczytane") or []) if g not in puste]
     if puste:
