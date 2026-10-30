@@ -58,7 +58,12 @@ def sprawdz(nazwa, warunek, szczegol=""):
         print("  BLAD  %s   %s" % (nazwa, szczegol))
 
 
-TERAZ = datetime(2026, 9, 13, 12, 0, tzinfo=timezone.utc)
+# PRAWDZIWY ZEGAR, NIE STALA DATA. Stala data (13 wrzesnia 2026) przestala
+# pasowac do pamieci decyzji po 30 dniach: `zapamietaj_decyzje` bez `teraz`
+# bierze zegar systemowy i sprzata wpisy starsze niz 30 dni, wiec decyzje
+# zapisane z `teraz=TERAZ` znikaly przy nastepnym zapisie, a test oblewal sie
+# na kazdym swiezym checkoucie — niezaleznie od zmiany, ktora go uruchamiala.
+TERAZ = datetime.now(timezone.utc).replace(microsecond=0)
 
 print("=== 1. RODZAJ KOMENTARZA ===")
 for tekst, gdzie, oczekiwany in (
