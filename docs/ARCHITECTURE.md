@@ -3,7 +3,7 @@
 Two pipelines, one process, twenty-four modules. This document is the map: what
 each directory holds, what each module does, and how a run actually proceeds.
 
-For the complete function-level inventory — 860 functions with line numbers,
+For the complete function-level inventory — 861 functions with line numbers,
 cost markers and call edges — see [FUNCTION_MAP.md](FUNCTION_MAP.md), which is
 generated from the abstract syntax tree.
 
@@ -24,7 +24,7 @@ agent-v2/              the bot. Everything that runs is here
   db.py                four tables, narrow column migrations
   gates.py             deterministic checks on finished text
   prompts/             27 prompt files, read from disk on every call
-  tests/               241 free tests, 9 paid ones in tests/platne/
+  tests/               242 free tests, 9 paid ones in tests/platne/
   systemd/             three services, three timers
   dokumentacja-zrodla/ the generator for the reconstruction document
   data/                database, journal, session — gitignored, never committed
@@ -105,6 +105,35 @@ odd-numbered to the cheap one. They are **separate stage names rather than a
 parameter**, so the `calls` table splits their cost by itself, with no extra
 column and nothing counted by hand. It is simultaneously a saving and a running
 blind test.
+
+### Interleaved experiments — off by default
+
+A before/after comparison mixes a change with the account's own trend: note
+reach moves from week to week with no code change at all, so anything shipped
+in a bad week looks harmful and anything shipped in a good one looks like a
+win. An interleaved experiment compares two groups **in the same period** —
+some notes get the change, the rest do not — so both share the same days,
+hours and trend.
+
+| piece | where | what it does |
+|---|---|---|
+| registry | `config.EKSPERYMENTY` | `{name: setting}`; **empty by default**, which means nothing changes |
+| assignment | `stages.ramie(name, slot, day)` | returns `"on"`, `"off"`, or `""` when the experiment is not running |
+| record | `run.py` → `browser.wystaw_notke(..., eksperymenty=...)` | the note's arms go into the log entry, and only when there are any |
+
+The assignment is **deterministic**: a hash of the name, the UTC day and the
+note's slot in the day. The same slot always lands in the same arm, so it can be
+reconstructed from the log, and each name draws separately, so several
+experiments can run at once without their arms overlapping. A setting is a
+share (`0.5`), a share with a date window (`{"udzial": 0.5, "od": ..., "do":
+...}`, so an experiment starts and ends by itself), or a calendar plan for
+account-wide changes that cannot be given to a single note (`{"plan": ["on",
+"off"], "okres_dni": 7, "od": ...}`).
+
+The mechanism is inert until two things happen together: an entry in the
+registry, and a branch in the code that asks `stages.ramie` and sets the note's
+`eksperymenty` field. Tested by `tests/test_eksperymenty_przeplatane.py`,
+including that an empty registry leaves the log entry exactly as it was.
 
 ---
 
@@ -244,7 +273,7 @@ without a denominator is not a measurement.
 
 ## What is universal and what is not
 
-Measured across the 860 functions:
+Measured across the 861 functions:
 
 | layer | functions | portable? |
 |---|---|---|

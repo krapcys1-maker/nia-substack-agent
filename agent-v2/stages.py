@@ -4488,6 +4488,51 @@ def wybierz_material(zapas: list[dict[str, Any]],
     return None
 
 
+def ramie(nazwa: str, miejsce: int | str, dzien: str | None = None) -> str:
+    """Ramie jednostki w eksperymencie przeplatanym: "on", "off" albo "" (nie trwa).
+
+    `config.EKSPERYMENTY` = {nazwa: ustawienie}; format opisany przy stalej.
+    Przydzial jest DETERMINISTYCZNY z nazwy, dnia UTC i `miejsce` — numeru
+    notki w dobie, numeru miejsca na komentarz albo klucza tekstowego — wiec
+    ten sam slot zawsze trafia do tego samego ramienia i da sie go odtworzyc
+    z dziennika, a obie grupy dziela te same dni i ten sam trend zasiegu.
+
+    "" znaczy: takiego eksperymentu nie ma albo dzien jest poza jego oknem.
+    Kod, ktory pyta, zachowuje sie wtedy jak przed eksperymentem i nie
+    dopisuje ramienia do dziennika — stad pusty slownik nic nie zmienia.
+    """
+    ustaw = (getattr(config, "EKSPERYMENTY", None) or {}).get(nazwa)
+    if ustaw is None:
+        return ""
+    from datetime import date as _data, datetime as _dt, timezone as _tz
+    # Sam dzien, bez godziny: ta sama doba ma dawac to samo ramie niezaleznie
+    # od tego, czy wolajacy podal date, czy znacznik czasu.
+    dzien = (str(dzien) if dzien else _dt.now(_tz.utc).date().isoformat())[:10]
+    if isinstance(ustaw, dict):
+        if ((ustaw.get("od") and dzien < str(ustaw["od"])[:10])
+                or (ustaw.get("do") and dzien > str(ustaw["do"])[:10])):
+            return ""
+        # RAMIE Z KALENDARZA: okres numer k od `od` dostaje `plan[k % len(plan)]`,
+        # `miejsce` nie ma znaczenia. Plan bez daty startu nie ma okresu zero,
+        # wiec nie trwa — lepiej nic niz ramie liczone od przypadkowego dnia.
+        if ustaw.get("plan"):
+            try:
+                dni = (_data.fromisoformat(dzien)
+                       - _data.fromisoformat(str(ustaw["od"])[:10])).days
+            except (KeyError, ValueError):
+                return ""
+            plan = [str(r) for r in ustaw["plan"]]
+            return plan[(dni // max(1, int(ustaw.get("okres_dni", 7)))) % len(plan)]
+        udzial = float(ustaw.get("udzial", 0.5))
+    else:
+        udzial = float(ustaw)
+    # `%s`, nie `%d`: przyjmuje i numer miejsca, i klucz tekstowy (np. cel
+    # komentarza), a dla liczby daje ten sam napis.
+    los = int(hashlib.sha256(("%s|%s|%s" % (nazwa, dzien, miejsce)).encode())
+              .hexdigest()[:8], 16) / 0x100000000
+    return "on" if los < udzial else "off"
+
+
 _POBRANE_DO_NOTEK = ContextVar('pobrane_do_notek', default=None)
 
 
