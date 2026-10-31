@@ -1258,6 +1258,50 @@ def _ludzie_z_zakladki(page) -> list[dict[str, str]]:
     return _ludzie_z_zakladki_ze_stanem(page)[0]
 
 
+# Ile sekund pusta zakladka dostaje na zaladowanie listy (`_ludzie_gdy_wstana`).
+CZEKANIE_NA_LISTE_S = 20
+
+
+def _ludzie_gdy_wstana(page, sekund: int | None = None
+                       ) -> tuple[list[dict[str, str]], bool]:
+    """Jak `_ludzie_z_zakladki_ze_stanem`, ale pusta lista dostaje czas.
+
+    SZTYWNE CZEKANIE WYSTARCZA W ZWYKLY DZIEN I NIE WYSTARCZA W WOLNY. Lista
+    na zakladce potrafi sie pokazac dopiero po kilku sekundach, a odczyt po
+    stalych pieciu oddawal wtedy sama nawigacje — `odczytane` mowilo, ze
+    zakladka odpowiedziala, a lista byla pusta. Od 1 pazdziernika 2026 taki
+    zrzut mial okolo polowa wpisow (79 z 148 z pusta lista subskrybentow),
+    wiec pomiar wzajemnosci i retencji liczyl sie z danych okrojonych.
+
+    Pelna lista wychodzi od razu, jak dotad. Pusta czytamy ponownie co sekunde,
+    najdluzej `sekund` razy — licznik prob, nie zegar, wiec atrapa strony bez
+    czekania nie wisi. Gdy nadal pusto: jedna linia w logu z LICZBAMI (adres,
+    ile odnosnikow w ogole), bez nazw osob, zeby nastepnym razem odroznic
+    strone, ktora nie wstala, od zmiany znacznikow.
+    """
+    sekund = CZEKANIE_NA_LISTE_S if sekund is None else sekund
+    ludzie, ok = _ludzie_z_zakladki_ze_stanem(page)
+    for _ in range(sekund):
+        if ludzie or not ok:
+            return ludzie, ok
+        page.wait_for_timeout(1000)
+        ludzie, ok = _ludzie_z_zakladki_ze_stanem(page)
+    if ok and not ludzie:
+        print("  [czytelnicy] zakladka pusta po %d s: %s"
+              % (sekund, _opis_pustej_zakladki(page)), flush=True)
+    return ludzie, ok
+
+
+def _opis_pustej_zakladki(page) -> str:
+    """Co stoi na pustej zakladce — same liczby, bez nazw osob."""
+    try:
+        return "adres %s, odnosnikow %d, w tym do profili %d" % (
+            getattr(page, "url", "?"), page.locator("a[href]").count(),
+            page.locator('a[href^="/@"]').count())
+    except Exception as exc:
+        return "bez opisu (%s)" % type(exc).__name__
+
+
 def kto_nas_czyta(page=None) -> dict[str, Any]:
     """KTO nas obserwuje i subskrybuje — imiennie i z data.
 
@@ -1326,7 +1370,7 @@ def kto_nas_czyta(page=None) -> dict[str, Any]:
         page.wait_for_timeout(SETTLE_MS + 5000)
 
         # Zakladka otwarta domyslnie to „Followers" — bierzemy ja bez klikania.
-        wynik["obserwujacy"], ok = _ludzie_z_zakladki_ze_stanem(page)
+        wynik["obserwujacy"], ok = _ludzie_gdy_wstana(page)
         if ok:
             wynik["odczytane"].append("obserwujacy")
 
@@ -1336,7 +1380,7 @@ def kto_nas_czyta(page=None) -> dict[str, Any]:
                 continue
             zakladka.click(timeout=10_000)
             page.wait_for_timeout(5000)
-            wynik["subskrybenci"], ok = _ludzie_z_zakladki_ze_stanem(page)
+            wynik["subskrybenci"], ok = _ludzie_gdy_wstana(page)
             if ok:
                 wynik["odczytane"].append("subskrybenci")
             break
@@ -1357,7 +1401,70 @@ def kto_nas_czyta(page=None) -> dict[str, Any]:
     return wynik
 
 
-def zapisz_czytelnikow(page=None) -> dict[str, Any] | None:
+# Ile czekamy przed ponownym odczytem list, gdy zakladki oddaly pustke wbrew
+# licznikowi profilu (`zapisz_czytelnikow`). 30 s, nie 5: krotkie ponowienie
+# trafialo w ta sama wolna chwile strony. Placi sie tylko przy awarii — zdrowy
+# zrzut nie ponawia.
+PONOWNY_ODCZYT_CZYTELNIKOW_S = 30
+
+
+def _puste_wbrew_licznikowi(kto: dict[str, Any],
+                            licznik: dict[str, Any] | None) -> list[str]:
+    """Grupy ODCZYTANE, ale puste, choc licznik profilu z tej chwili mowi inaczej.
+
+    Listy sa ROZLACZNE: kto obserwuje i subskrybuje, stoi tylko w
+    „Subscribers". Pusta lista obserwujacych jest wiec mozliwa przy
+    `followerCount` > 0 — ale tylko wtedy, gdy wszyscy obserwujacy stoja na
+    liscie subskrybentow, czyli gdy licznik nie przekracza jej dlugosci.
+    Subskrybenci: pusta lista przy liczniku > 0 to zawsze awaria.
+    """
+    if not licznik:
+        return []
+    odczytane = set(kto.get("odczytane") or [])
+    out = []
+    if ("subskrybenci" in odczytane and not kto.get("subskrybenci")
+            and int(licznik.get("subskrybenci") or 0) > 0):
+        out.append("subskrybenci")
+    if ("obserwujacy" in odczytane and not kto.get("obserwujacy")
+            and int(licznik.get("obserwujacy") or 0) > len(kto.get("subskrybenci") or [])):
+        out.append("obserwujacy")
+    return sorted(out)
+
+
+def _scal_odczyty(pierwszy: dict[str, Any], drugi: dict[str, Any],
+                  puste_w_pierwszym: list[str]) -> dict[str, Any]:
+    """Po ponowieniu: dla kazdej grupy bierzemy lepszy z dwoch odczytow.
+
+    PONOWIENIE NIE MOZE POGORSZYC TEGO, CO JUZ MAMY. Gdy pierwszy odczyt dal
+    dobra grupe, a drugi rzucil wyjatek albo trafil w inna czkawke, dobra grupa
+    ma zostac — inaczej przebieg, ktory dawniej zapisalby chociaz ja, nie
+    zapisalby nic. Pierwszenstwo dla grupy: drugi odczyt, gdy ja odczytal
+    i jest niepusta; inaczej pierwszy, gdy ja odczytal i nie byla pusta wbrew
+    licznikowi; inaczej drugi, gdy ja odczytal (nawet pusta — wtedy zlapie ja
+    kontrola licznika).
+    """
+    wynik: dict[str, Any] = {"obserwujacy": [], "subskrybenci": [],
+                             "odczytane": [],
+                             "blad": drugi.get("blad") or pierwszy.get("blad")}
+    for grupa in ("obserwujacy", "subskrybenci"):
+        z_drugiego = grupa in (drugi.get("odczytane") or [])
+        z_pierwszego = (grupa in (pierwszy.get("odczytane") or [])
+                        and grupa not in puste_w_pierwszym)
+        if z_drugiego and drugi.get(grupa):
+            zrodlo = drugi
+        elif z_pierwszego:
+            zrodlo = pierwszy
+        elif z_drugiego:
+            zrodlo = drugi
+        else:
+            continue
+        wynik[grupa] = list(zrodlo.get(grupa) or [])
+        wynik["odczytane"].append(grupa)
+    return wynik
+
+
+def zapisz_czytelnikow(page=None, licznik: dict[str, Any] | None = None
+                       ) -> dict[str, Any] | None:
     """Zrzut listy czytelnikow do pliku, jeden wiersz na wywolanie.
 
     ZRZUT OKROJONY ZAPISUJE SIE Z ETYKIETA, A NIE JAKO PELNY. Stary warunek
@@ -1393,7 +1500,31 @@ def zapisz_czytelnikow(page=None) -> dict[str, Any] | None:
 
     NOWA_LINIA = chr(10)
     kto = kto_nas_czyta(page)
-    odczytane = list(kto.get("odczytane") or [])
+    # PUSTA ZAKLADKA WBREW LICZNIKOWI TO AWARIA ODCZYTU, NIE PUSTE KONTO.
+    # Obie zakladki potrafia „odpowiedziec" pustka bez zadnego wyjatku, a
+    # licznik profilu z tej samej chwili mowi, ze ludzie sa. Taki zrzut
+    # zapisywal sie jako pelny i zanizal retencje oraz wzajemnosc (od
+    # 1 pazdziernika 2026 dotyczylo to 79 z 148 zrzutow). Jedno ponowienie,
+    # bo czkawka strony zwykle mija; gdy nadal pusto — grupa NIE jest
+    # odczytana i zrzut mowi o tym w polu `blad`. Bez licznika jak dotad:
+    # konto, ktore naprawde nie ma nikogo, nadal zapisuje pusty, odczytany
+    # zrzut.
+    puste = _puste_wbrew_licznikowi(kto, licznik)
+    if puste:
+        print("  [czytelnicy] pusto wbrew licznikowi (%s) — czytam jeszcze raz"
+              % ", ".join(puste), flush=True)
+        time.sleep(PONOWNY_ODCZYT_CZYTELNIKOW_S)
+        # SCALAMY, NIE ZASTEPUJEMY: drugi odczyt moze byc gorszy od pierwszego.
+        kto = _scal_odczyty(kto, kto_nas_czyta(page), puste)
+        puste = _puste_wbrew_licznikowi(kto, licznik)
+    odczytane = [g for g in (kto.get("odczytane") or []) if g not in puste]
+    if puste:
+        kto["blad"] = kto.get("blad") or "; ".join(
+            "zakladka `%s` pusta, a licznik profilu z tej samej chwili mowi %d"
+            % (g, int((licznik or {}).get(g) or 0)) for g in puste)
+        print("  [czytelnicy] ! nadal pusto wbrew licznikowi (%s)%s"
+              % (", ".join(puste), "" if odczytane else " — zrzutu nie zapisuje"),
+              flush=True)
     # NIC NIE ODCZYTANE TO NIE JEST POMIAR. Wczesniej bramka pytala o `blad`
     # i o puste listy; teraz pyta wprost o to, co nas obchodzi — czy
     # ktorakolwiek zakladka w ogole odpowiedziala. Konto, ktore naprawde nie ma
@@ -2138,7 +2269,9 @@ def nasze_pozycje_do_pomiaru(page=None, ile: int = 60) -> list[dict[str, Any]]:
             # KTO, NIE TYLKO ILU. Liczba mowi, ze konto rosnie; lista pozwala
             # zapytac, CZY ROSNIE OD NASZYCH DZIALAN. Jedno wejscie na strone
             # na caly pomiar.
-            zrzut = zapisz_czytelnikow(page)
+            # LICZNIK Z TEJ SAMEJ CHWILI rozstrzyga, czy pusta zakladka to puste
+            # konto, czy czkawka strony (`_puste_wbrew_licznikowi`).
+            zrzut = zapisz_czytelnikow(page, licznik=stan)
             if zrzut:
                 print("  [czytelnicy] obserwujacych %d, subskrybentow %d"
                       % (len(zrzut["obserwujacy"]), len(zrzut["subskrybenci"])),

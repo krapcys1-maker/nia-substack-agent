@@ -314,6 +314,215 @@ sprawdz("ta sama osoba na obu zakladkach jest w obu listach",
         kto6)
 
 print()
+print("=== 7. PUSTKA WBREW LICZNIKOWI TO AWARIA, NIE PUSTE KONTO ===")
+# Obie zakladki „odpowiadaja" pustka bez wyjatku, a licznik profilu z tej samej
+# chwili mowi, ze ludzie sa. Taki zrzut zapisywal sie jako pelny: od
+# 1 pazdziernika 2026 dotyczylo to 79 z 148 zrzutow z pusta lista subskrybentow.
+_PONOWNY_S_ORYGINAL = browser.PONOWNY_ODCZYT_CZYTELNIKOW_S
+browser.PONOWNY_ODCZYT_CZYTELNIKOW_S = 0
+LICZNIK = {"obserwujacy": 41, "subskrybenci": 27}
+
+
+class StronaPoCzkawce(Strona):
+    """Pierwsze wejscie oddaje pustke (sama nawigacja), kazde nastepne — listy."""
+
+    def __init__(self, pelne_obs, pelne_sub, czkawek=1):
+        super().__init__(list(NAWIGACJA), list(NAWIGACJA))
+        self._pelne = {"obserwujacy": pelne_obs, "subskrybenci": pelne_sub}
+        self._czkawek = czkawek
+
+    def goto(self, url, timeout=None, wait_until=None):
+        super().goto(url, timeout, wait_until)
+        self.otwarta = "obserwujacy"
+        if self.wejscia > self._czkawek:
+            self.linki = dict(self._pelne)
+
+
+stale_puste = StronaPoCzkawce([], [], czkawek=99)
+plik7 = ROBOCZY / "czkawka_stala.jsonl"
+stary_zapis = browser.CZYTELNICY
+try:
+    browser.CZYTELNICY = plik7
+    wynik7 = browser.zapisz_czytelnikow(stale_puste, licznik=LICZNIK)
+finally:
+    browser.CZYTELNICY = stary_zapis
+sprawdz("obie puste wbrew licznikowi, takze po ponowieniu — NIC nie ladzie na dysku",
+        wynik7 is None and linie(plik7) == [] and stale_puste.wejscia == 2,
+        (wynik7, linie(plik7), stale_puste.wejscia))
+
+po_czkawce = StronaPoCzkawce(NAWIGACJA + OBSERWUJACY, NAWIGACJA + SUBSKRYBENCI)
+plik7b = ROBOCZY / "czkawka_mija.jsonl"
+try:
+    browser.CZYTELNICY = plik7b
+    wynik7b = browser.zapisz_czytelnikow(po_czkawce, licznik=LICZNIK)
+finally:
+    browser.CZYTELNICY = stary_zapis
+sprawdz("czkawka mija przy ponowieniu — zapisany PELNY zrzut, bez bledu",
+        wynik7b is not None and len(linie(plik7b)) == 1
+        and linie(plik7b)[0]["odczytane"] == ["obserwujacy", "subskrybenci"]
+        and len(linie(plik7b)[0]["obserwujacy"]) == 3
+        and linie(plik7b)[0]["blad"] is None,
+        linie(plik7b))
+
+# Zywa strona po `goto` na /followers wraca na zakladke obserwujacych; ta atrapa
+# robi to samo (inaczej ponowienie czytaloby liste subskrybentow jako obserwujacych).
+tylko_sub = StronaPoCzkawce(list(NAWIGACJA), NAWIGACJA + SUBSKRYBENCI, czkawek=0)
+plik7c = ROBOCZY / "pusta_jedna.jsonl"
+try:
+    browser.CZYTELNICY = plik7c
+    wynik7c = browser.zapisz_czytelnikow(tylko_sub, licznik=LICZNIK)
+finally:
+    browser.CZYTELNICY = stary_zapis
+sprawdz("pusta jedna grupa wbrew licznikowi — zrzut z etykieta: odczytani sami "
+        "subskrybenci, powod w `blad`",
+        wynik7c is not None and linie(plik7c)[0]["odczytane"] == ["subskrybenci"]
+        and "licznik profilu z tej samej chwili mowi 41" in str(linie(plik7c)[0]["blad"]),
+        linie(plik7c))
+sprawdz("ten sam wniosek wyprowadza `_puste_wbrew_licznikowi` dla obu pustych grup",
+        browser._puste_wbrew_licznikowi(
+            {"odczytane": ["obserwujacy", "subskrybenci"], "obserwujacy": [],
+             "subskrybenci": []}, LICZNIK) == ["obserwujacy", "subskrybenci"])
+sprawdz("KONTRDOWOD: obserwujacy moga byc pusci, gdy wszyscy stoja na liscie "
+        "subskrybentow",
+        browser._puste_wbrew_licznikowi(
+            {"odczytane": ["obserwujacy", "subskrybenci"], "obserwujacy": [],
+             "subskrybenci": ["a", "b"]},
+            {"obserwujacy": 2, "subskrybenci": 2}) == [])
+sprawdz("KONTRDOWOD: bez licznika jak dotad (konto naprawde puste zapisuje sie)",
+        browser._puste_wbrew_licznikowi(
+            {"odczytane": ["obserwujacy", "subskrybenci"], "obserwujacy": [],
+             "subskrybenci": []}, None) == []
+        and browser._puste_wbrew_licznikowi(
+            {"odczytane": ["obserwujacy", "subskrybenci"], "obserwujacy": [],
+             "subskrybenci": []}, {"obserwujacy": 0, "subskrybenci": 0}) == [])
+_zr = pathlib.Path(KORZEN / "agent-v2" / "browser.py").read_text(encoding="utf-8")
+sprawdz("pomiar podaje licznik z tej samej chwili",
+        "zapisz_czytelnikow(page, licznik=stan)" in _zr)
+
+print()
+print("=== 7b. PONOWIENIE: KIEDY, PO ILE CZASU I CO Z DOBRA GRUPA ===")
+# Podmieniamy `time.sleep`, zeby sprawdzic, KIEDY i na ILE ponowienie czeka,
+# zamiast wierzyc napisowi w zrodle (stala ustawiona na 0 nie pokazuje, czy
+# spanie w ogole istnieje).
+_spania = []
+_sen_oryg = browser.time.sleep
+_stala_oryg = browser.PONOWNY_ODCZYT_CZYTELNIKOW_S
+browser.time.sleep = lambda s: _spania.append(s)
+browser.PONOWNY_ODCZYT_CZYTELNIKOW_S = 7
+try:
+    zdrowa = Strona(NAWIGACJA + OBSERWUJACY, NAWIGACJA + SUBSKRYBENCI)
+    try:
+        browser.CZYTELNICY = ROBOCZY / "zdrowy_z_licznikiem.jsonl"
+        browser.zapisz_czytelnikow(zdrowa, licznik={"obserwujacy": 5, "subskrybenci": 2})
+    finally:
+        browser.CZYTELNICY = stary_zapis
+    sprawdz("KONTRDOWOD: zdrowy zrzut z licznikiem nie ponawia i nie czeka",
+            zdrowa.wejscia == 1 and _spania == [], (zdrowa.wejscia, _spania))
+
+    _spania.clear()
+    po_pustce = StronaPoCzkawce(NAWIGACJA + OBSERWUJACY, NAWIGACJA + SUBSKRYBENCI)
+    try:
+        browser.CZYTELNICY = ROBOCZY / "czeka_przed_ponowieniem.jsonl"
+        browser.zapisz_czytelnikow(po_pustce, licznik=LICZNIK)
+    finally:
+        browser.CZYTELNICY = stary_zapis
+    sprawdz("pusta lista wbrew licznikowi: jedno spanie o dlugosci stalej, potem drugie wejscie",
+            _spania == [7] and po_pustce.wejscia == 2, (_spania, po_pustce.wejscia))
+
+    # DOBRA GRUPA Z PIERWSZEGO ODCZYTU NIE GINIE, GDY PONOWIENIE SIE NIE UDA.
+    # Obserwujacy sa, subskrybenci pusci wbrew licznikowi; drugie wejscie na
+    # strone pada. Dawniej taki przebieg zapisalby chociaz obserwujacych.
+    class StronaPadaPrzyPonowieniu(Strona):
+        def __init__(self):
+            super().__init__(NAWIGACJA + OBSERWUJACY, list(NAWIGACJA))
+
+        def goto(self, url, timeout=None, wait_until=None):
+            super().goto(url, timeout, wait_until)
+            if self.wejscia > 1:
+                raise RuntimeError("net::ERR_ABORTED")
+
+    pada = StronaPadaPrzyPonowieniu()
+    plik7d = ROBOCZY / "dobra_grupa_przezywa.jsonl"
+    try:
+        browser.CZYTELNICY = plik7d
+        wynik7d = browser.zapisz_czytelnikow(pada, licznik=LICZNIK)
+    finally:
+        browser.CZYTELNICY = stary_zapis
+    sprawdz("ponowienie pada: dobra grupa z pierwszego odczytu zostaje, zrzut sie zapisuje",
+            wynik7d is not None and len(linie(plik7d)) == 1
+            and linie(plik7d)[0]["odczytane"] == ["obserwujacy"]
+            and len(linie(plik7d)[0]["obserwujacy"]) == 3,
+            (wynik7d, linie(plik7d)))
+    sprawdz("i powod jest w `blad`, a subskrybenci NIE sa udawani jako odczytani",
+            bool(linie(plik7d)[0]["blad"]) and "subskrybenci" not in linie(plik7d)[0]["odczytane"],
+            linie(plik7d))
+    sprawdz("`_scal_odczyty`: lepszy z dwoch odczytow dla kazdej grupy",
+            browser._scal_odczyty(
+                {"odczytane": ["obserwujacy", "subskrybenci"], "obserwujacy": ["a"],
+                 "subskrybenci": [], "blad": None},
+                {"odczytane": ["subskrybenci"], "obserwujacy": [], "subskrybenci": ["x", "y"],
+                 "blad": None},
+                ["subskrybenci"])
+            == {"obserwujacy": ["a"], "subskrybenci": ["x", "y"],
+                "odczytane": ["obserwujacy", "subskrybenci"], "blad": None})
+finally:
+    browser.time.sleep = _sen_oryg
+    browser.PONOWNY_ODCZYT_CZYTELNIKOW_S = _stala_oryg
+
+print()
+print("=== 8. WOLNA ZAKLADKA DOSTAJE CZAS ===")
+# Lista na zakladce potrafi sie pokazac dopiero po kilku sekundach; odczyt po
+# stalych pieciu oddawal wtedy sama nawigacje.
+
+
+class WolnaStrona(Strona):
+    """Lista otwartej zakladki pokazuje sie dopiero po `opoznienie` czekaniach na niej."""
+
+    def __init__(self, obs, sub, opoznienie):
+        super().__init__(list(NAWIGACJA), list(NAWIGACJA))
+        self._pelne = {"obserwujacy": obs, "subskrybenci": sub}
+        self._opoznienie = opoznienie
+        self._czekano = {"obserwujacy": 0, "subskrybenci": 0}
+        self.czekania = 0
+
+    def wait_for_timeout(self, _ms):
+        self.czekania += 1
+        self._czekano[self.otwarta] += 1
+        if self._czekano[self.otwarta] > self._opoznienie:
+            self.linki[self.otwarta] = self._pelne[self.otwarta]
+
+
+wolna = WolnaStrona(NAWIGACJA + OBSERWUJACY, NAWIGACJA + SUBSKRYBENCI, opoznienie=6)
+kto8 = browser.kto_nas_czyta(wolna)
+sprawdz("lista, ktora wstaje po kilku sekundach, jest odczytana w TYM SAMYM wejsciu",
+        len(kto8["obserwujacy"]) == 3 and len(kto8["subskrybenci"]) == 2
+        and kto8["odczytane"] == ["obserwujacy", "subskrybenci"] and wolna.wejscia == 1,
+        (kto8, wolna.wejscia))
+
+szybka = WolnaStrona(NAWIGACJA + OBSERWUJACY, NAWIGACJA + SUBSKRYBENCI, opoznienie=0)
+browser.kto_nas_czyta(szybka)
+sprawdz("KONTRDOWOD: pelna lista nie czeka ani sekundy dluzej niz dotad (2 czekania)",
+        szybka.czekania == 2, szybka.czekania)
+
+nigdy = WolnaStrona(NAWIGACJA + OBSERWUJACY, NAWIGACJA + SUBSKRYBENCI,
+                    opoznienie=10 ** 6)
+kto8b = browser.kto_nas_czyta(nigdy)
+sprawdz("lista, ktora nie wstaje, konczy czekanie po CZEKANIE_NA_LISTE_S probach "
+        "na zakladke",
+        kto8b["obserwujacy"] == [] and kto8b["subskrybenci"] == []
+        and nigdy.czekania == 2 + 2 * browser.CZEKANIE_NA_LISTE_S,
+        (nigdy.czekania, kto8b))
+sprawdz("opis pustej zakladki nie wywraca odczytu, gdy strona nie umie policzyc "
+        "odnosnikow",
+        browser._opis_pustej_zakladki(nigdy).startswith("bez opisu"),
+        browser._opis_pustej_zakladki(nigdy))
+sprawdz("ponowienie po pustce czeka dluzej niz sama czkawka (30 s, nie 5 s)",
+        "PONOWNY_ODCZYT_CZYTELNIKOW_S = 30" in _zr)
+
+# Stala wraca do wartosci produkcyjnej: dalsze sekcje nie maja jej widziec zerowej.
+browser.PONOWNY_ODCZYT_CZYTELNIKOW_S = _PONOWNY_S_ORYGINAL
+
+print()
 # HISTORIA JEST WARUNKIEM TYLKO TEGO, CO PONIZEJ.
 #
 # Guard stal w naglowku pliku, wiec w kopii z historia zalozona
