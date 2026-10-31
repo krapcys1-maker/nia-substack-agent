@@ -38,8 +38,8 @@ a banem konta.
 3. WPIS Z NIECZYTELNA DATA LICZY SIE. Przy pytaniu „czy cos sie zapetlilo"
    bezpieczniej policzyc za duzo niz za malo — cisza wyglada tak samo jak
    spokoj.
-4. NIEUDANE PROBY I `skutek` NIE LICZA SIE. Ban bierze sie z tego, co wyszlo
-   w swiat.
+4. NIEUDANE PROBY, `skutek` I `*_pominieta` NIE LICZA SIE. Ban bierze sie
+   z tego, co wyszlo w swiat, a pominiecie to kandydat odrzucony przez sito.
 5. ALARM MA PROG — sam pod sufitem milczy, tuz nad nim krzyczy.
 
 BEZ PYTESTA, bez sieci, bez platnych wywolan. Uruchamiac z korzenia repo:
@@ -164,6 +164,21 @@ try:
     sprawdz("same wpisy `skutek` -> cisza", alarm.nadaktywnosc() is None)
     zapisz([wpis(1, rodzaj="") for _ in range(SUFIT + 5)])
     sprawdz("wpisy bez rodzaju -> cisza", alarm.nadaktywnosc() is None)
+    # POMINIECIE (`*_pominieta`) TO ODRZUCONY KANDYDAT, NIE DZIALANIE.
+    for rodzaj in ("subskrypcja_pominieta", "obserwacja_pominieta"):
+        zapisz([wpis(1, rodzaj=rodzaj) for _ in range(SUFIT + 5)])
+        sprawdz("same wpisy `%s` -> cisza" % rodzaj,
+                alarm.nadaktywnosc() is None, alarm.nadaktywnosc())
+    # Pominiecia nie moga tez ukryc prawdziwej petli: zapetlenie liczy sie
+    # nadal, nawet gdy obok leza setki odrzuconych kandydatow.
+    zapisz([wpis(1) for _ in range(SUFIT + 1)]
+           + [wpis(1, rodzaj="obserwacja_pominieta") for _ in range(300)])
+    sprawdz("prawdziwe dzialania ponad sufit + pominiete -> alarm",
+            alarm.nadaktywnosc() is not None)
+    zapisz([wpis(1) for _ in range(SUFIT)]
+           + [wpis(1, rodzaj="obserwacja_pominieta") for _ in range(300)])
+    sprawdz("dzialania dokladnie na suficie + pominiete -> cisza",
+            alarm.nadaktywnosc() is None, alarm.nadaktywnosc())
 
     print()
     print("=== 5. PROG DZIALA W OBIE STRONY ===")

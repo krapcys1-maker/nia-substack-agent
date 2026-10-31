@@ -680,7 +680,7 @@
 
 ### `alarm.py` — kontrola sesji, zdrowia i alarm do właściciela
 
-1193 wierszy, 30 funkcji na poziomie modułu, 0 klas
+1204 wierszy, 30 funkcji na poziomie modułu, 0 klas
 
 | funkcja | co robi |
 |---|---|

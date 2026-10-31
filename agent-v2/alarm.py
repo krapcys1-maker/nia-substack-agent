@@ -498,7 +498,18 @@ def nadaktywnosc() -> str | None:
                 continue
             if not isinstance(w, dict) or not w.get("udane"):
                 continue
-            if str(w.get("rodzaj") or "") in ("skutek", ""):
+            rodzaj = str(w.get("rodzaj") or "")
+            if rodzaj in ("skutek", ""):
+                continue
+            # POMINIECIE TO NIE DZIALANIE. `*_pominieta` zapisuje, ze kandydata
+            # odrzucilo sito (konto juz obserwowane, za duze, pusta pula) — nic
+            # nie wyszlo na Substacka. Takich wpisow jest od kilkunastu do
+            # kilkuset na dobe i liczone jako dzialania zapalaly alarm
+            # zapetlenia prawie codziennie (28 z 30 dni pazdziernika 2026,
+            # a bez nich dobowa suma nie przekraczala 47 przy suficie 57).
+            # Alarm, ktory swieci bez powodu, przestaje byc czytany, a to
+            # jedyny straznik miedzy zapetleniem a banem konta.
+            if rodzaj.endswith("_pominieta"):
                 continue
             # PARSUJEMY, NIE POROWNUJEMY NAPISOW. Stalo tu
             # `str(w.get("kiedy")) >= granica`, gdzie granica byla napisem
